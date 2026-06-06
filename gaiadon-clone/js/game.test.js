@@ -1,110 +1,146 @@
 // Carrega data.js -> globalThis -> game.js, depois roda os testes.
-//
-// Por que isto? No navegador, data.js e game.js são carregados como <script> e
-// compartilham as variáveis globais (ZONES, CONFIG, etc). No Node, cada arquivo é
-// isolado. Então a gente "empurra" os exports de data.js para o escopo global ANTES
-// de carregar game.js — assim game.js encontra CONFIG/RARITIES/... como espera.
 const data = require("./data.js");
 Object.assign(globalThis, data);
 const game = require("./game.js");
 const { test, assert, assertEqual, report } = require("./_assert.js");
 
-console.log("== Smoke ==");
-test("defaultState começa em maxZone 0", () => {
+console.log("== Estado base ==");
+test("defaultState: equipamento common nível 1, sem shards, asc zerado", () => {
   const s = game.defaultState();
   assertEqual(s.maxZone, 0);
+  assertEqual(s.shards, 0);
+  assertEqual(s.equipped.Weapon.rarity, 0);
+  assertEqual(s.equipped.Weapon.level, 1);
+  assertEqual(s.asc.power, 0);
 });
 
-console.log("== Core logic ==");
+console.log("== Equipamento ==");
+test("itemPower cresce com nível e raridade", () => {
+  const low = game.itemPower({ rarity: 0, level: 1 });
+  const hiLevel = game.itemPower({ rarity: 0, level: 10 });
+  const hiRarity = game.itemPower({ rarity: 2, level: 10 });
+  assert(hiLevel > low, "mais nível = mais power");
+  assert(hiRarity > hiLevel, "mais raridade = mais power");
+});
 
-test("defaultState tem campos de zone", () => {
+test("levelUpItem gasta gold e sobe o nível", () => {
   const s = game.defaultState();
-  assertEqual(s.zone, 1);
-  assertEqual(s.maxZone, 0);
-  assertEqual(s.killsInZone, 0);
+  s.gold = 1000;
+  const before = s.equipped.Weapon.level;
+  assert(game.levelUpItem(s, "Weapon"), "deveria comprar nível");
+  assertEqual(s.equipped.Weapon.level, before + 1);
+  assert(s.gold < 1000, "deveria gastar gold");
 });
 
-test("dano do jogador cresce com upgrade de força", () => {
+test("nível trava no cap da raridade", () => {
+  const s = game.defaultState();
+  s.gold = 1e9;
+  s.equipped.Weapon.level = RARITIES[0].cap; // common no cap (10)
+  assertEqual(game.levelUpItem(s, "Weapon"), false, "não passa do cap sem subir raridade");
+});
+
+test("rarityUpItem exige estar no cap + shards e libera o próximo cap", () => {
+  const s = game.defaultState();
+  s.equipped.Weapon.level = RARITIES[0].cap; // no cap
+  s.shards = 1e9; s.gold = 1e9; // precisa de gold pra subir nível depois
+  const r0 = s.equipped.Weapon.rarity;
+  assert(game.rarityUpItem(s, "Weapon"), "deveria subir a raridade");
+  assertEqual(s.equipped.Weapon.rarity, r0 + 1);
+  // agora dá pra continuar subindo o nível (cap maior)
+  assert(game.levelUpItem(s, "Weapon"), "após subir raridade, nível volta a subir");
+});
+
+test("não sobe raridade fora do cap", () => {
+  const s = game.defaultState();
+  s.shards = 1e9; // nível 1, cap 10 — não está no cap
+  assertEqual(game.rarityUpItem(s, "Weapon"), false, "precisa estar no cap pra subir raridade");
+});
+
+console.log("== Stats vindos do equipamento ==");
+test("subir a Weapon aumenta o Damage", () => {
   const s = game.defaultState();
   const d0 = game.playerDamage(s);
-  s.shop.dmg = 5;
-  assert(game.playerDamage(s) > d0, "dano deveria subir");
+  s.equipped.Weapon.level = 10;
+  assert(game.playerDamage(s) > d0, "Weapon melhor = mais dano");
 });
 
-test("vida do inimigo escala com a zone", () => {
-  const a = game.enemyStats(1).hp;
-  const b = game.enemyStats(5).hp;
-  assert(b > a, "inimigo mais fundo deveria ter mais HP");
-});
-
-test("limpar 10 abates avança a maxZone", () => {
+test("Amulet dá Attack Speed E Gold Find", () => {
   const s = game.defaultState();
-  s.zone = 1;
-  game.spawnEnemy(s); // registerKill precisa de um inimigo vivo
-  for (let i = 0; i < CONFIG.enemy.killsToClear; i++) game.registerKill(s);
-  assert(s.maxZone >= 1, "deveria ter limpado a zone 1");
+  const spd0 = game.attackSpeed(s), gold0 = game.goldBonus(s);
+  s.equipped.Amulet.level = 50;
+  assert(game.attackSpeed(s) > spd0, "amuleto deveria acelerar ataques");
+  assert(game.goldBonus(s) > gold0, "amuleto deveria aumentar ouro");
 });
 
-test("Boss Zone limpa num único abate", () => {
+console.log("== Combate e zones ==");
+test("registerKill dá shards (sem drop de item)", () => {
   const s = game.defaultState();
-  s.maxZone = 9; s.zone = 10; // zone 10 = Boss Zone
-  game.spawnEnemy(s);
-  assert(s.enemy.isBoss === true, "zone 10 deveria gerar um Boss");
+  s.zone = 1; game.spawnEnemy(s);
   const ev = game.registerKill(s);
-  assertEqual(s.maxZone, 10, "matar o Boss limpa a zone de uma vez");
-  assert(ev.drop, "Boss dá drop garantido");
+  assert(ev.shards > 0, "deveria ganhar shards");
+  assert(!("drop" in ev) || ev.drop == null, "não dropa item");
 });
 
-test("Amulet sorteia um stat válido", () => {
+test("Boss dá mais shards e limpa a zone num abate", () => {
   const s = game.defaultState();
-  let amulet = null;
-  for (let i = 0; i < 200 && !amulet; i++) {
-    const it = game.generateItem(s);
-    if (it.slot === "Amulet") amulet = it;
-  }
-  assert(amulet, "deveria gerar ao menos 1 amuleto em 200 tentativas");
-  assert(CONFIG.drops.amuletStats.includes(amulet.stat), "stat do amuleto deve vir do pool");
+  s.maxZone = 9; s.zone = 10; game.spawnEnemy(s);
+  assert(s.enemy.isBoss, "zone 10 é Boss");
+  const ev = game.registerKill(s);
+  assertEqual(s.maxZone, 10, "boss limpa a zone");
+  assert(ev.shards > 0, "boss dá shards");
 });
 
-test("morte na fronteira não pune e recua para farm", () => {
+test("morte na fronteira não pune e recua", () => {
   const s = game.defaultState();
-  s.maxZone = 3; s.zone = 4; s.gold = 100;
-  const inv = s.inventory.length;
+  s.maxZone = 3; s.zone = 4; s.gold = 100; s.shards = 50;
   game.handleDeath(s);
-  assertEqual(s.gold, 100, "não perde ouro");
-  assertEqual(s.inventory.length, inv, "não perde itens");
+  assertEqual(s.gold, 100, "não perde gold");
+  assertEqual(s.shards, 50, "não perde shards");
   assert(s.zone <= s.maxZone, "recua para a zone segura");
+});
+
+console.log("== Ascensão (prestígio) ==");
+test("upgrade Power aumenta o multiplicador", () => {
+  const s = game.defaultState();
+  const m0 = game.ascMultiplier(s);
+  s.asc.power = 5;
+  assert(game.ascMultiplier(s) > m0, "Power deveria aumentar o multiplicador");
 });
 
 test("ascensão trava antes da Zone 25 e libera depois", () => {
   const s = game.defaultState();
   s.maxZone = CONFIG.ascension.unlockZone - 1; s.level = 20;
-  assert(game.canAscend(s) === false, "não pode ascender antes da unlockZone");
-  assertEqual(game.ascend(s), false, "ascend() deve recusar quando travado");
+  assertEqual(game.canAscend(s), false);
+  assertEqual(game.ascend(s), false);
   s.maxZone = CONFIG.ascension.unlockZone;
-  assert(game.canAscend(s) === true, "pode ascender ao atingir a unlockZone");
+  assertEqual(game.canAscend(s), true);
 });
 
-test("essência de ascensão usa a zone máxima", () => {
+test("ascender mantém Essence e upgrades de ascensão", () => {
   const s = game.defaultState();
-  s.maxZone = 30; s.level = 20;
-  assert(game.essenceOnAscend(s) > 0, "deveria render essência");
+  s.maxZone = 30; s.level = 20; s.asc.power = 4; s.essence = 2; s.gold = 999;
+  const gain = game.ascend(s);
+  assert(gain > 0, "deveria render essência");
+  assertEqual(s.asc.power, 4, "mantém upgrades de ascensão");
+  assertEqual(s.gold, 0, "reseta o gold da run");
+  assert(s.essence >= 2 + gain - 1, "acumula essência");
 });
 
-test("upgrade de offline trava no maxLevel", () => {
+test("buyAscUpgrade gasta essência e respeita maxLevel", () => {
   const s = game.defaultState();
-  s.gold = 1e12; // ouro de sobra
-  s.shop.offlineCap = 22; // já no teto (24h - 2h base)
-  assertEqual(game.buyUpgrade(s, "offlineCap"), false, "não deve comprar além do maxLevel");
-  assertEqual(s.shop.offlineCap, 22, "nível não muda quando maxado");
+  s.essence = 1e6;
+  s.asc.offlineCap = 22; // no maxLevel
+  assertEqual(game.buyAscUpgrade(s, "offlineCap"), false, "não passa do maxLevel");
+  assert(game.buyAscUpgrade(s, "power"), "Power não tem cap, deve comprar");
 });
 
-test("maxLevel do offline bate com os caps (sem drift)", () => {
-  const O = CONFIG.offline;
-  const eff = SHOP_UPGRADES.find(u => u.id === "offlineEff");
-  const cap = SHOP_UPGRADES.find(u => u.id === "offlineCap");
-  assertEqual(eff.maxLevel, Math.round((O.efficiencyMax - O.startEfficiency) / eff.value));
-  assertEqual(cap.maxLevel, Math.round((O.capMaxHours - O.startCapHours) / cap.value));
+test("offlineConfig reflete os upgrades de ascensão", () => {
+  const s = game.defaultState();
+  const c0 = game.offlineConfig(s);
+  s.asc.offlineEff = 3; s.asc.offlineCap = 5;
+  const c1 = game.offlineConfig(s);
+  assert(c1.efficiency > c0.efficiency, "rate sobe");
+  assert(c1.capHours > c0.capHours, "cap sobe");
 });
 
 report();

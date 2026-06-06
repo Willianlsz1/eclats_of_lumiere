@@ -10,35 +10,31 @@ const REGIONS = [
   { name: "Gaiadon's Peak",       enemies: ["Young Dragon", "Chimera", "Titan"] },
 ];
 
-const SLOTS = ["Weapon", "Armor", "Amulet"];
-
-// Raridades: nome (EN), peso de drop (chance relativa), multiplicador de stats.
-const RARITIES = [
-  { name: "common",    weight: 60, mult: 1.0 },
-  { name: "uncommon",  weight: 25, mult: 1.5 },
-  { name: "rare",      weight: 10, mult: 2.2 },
-  { name: "epic",      weight: 4,  mult: 3.5 },
-  { name: "legendary", weight: 1,  mult: 6.0 },
+// Slots de equipamento (data-driven — dá pra adicionar mais slots no futuro).
+// Cada slot concede um ou mais Stats e tem um nome-base por raridade (cosmético).
+const SLOTS = [
+  { id: "Weapon", stats: ["Damage"],                   defaultName: "Sword" },
+  { id: "Armor",  stats: ["Health"],                   defaultName: "Tunic" },
+  { id: "Amulet", stats: ["Attack Speed", "Gold Find"], defaultName: "Pendant" },
 ];
 
-const ITEM_NAMES = {
-  "Weapon": ["Sword", "Axe", "Staff", "Dagger", "Spear"],
-  "Armor":  ["Breastplate", "Chainmail", "Tunic", "Cuirass"],
-  "Amulet": ["Pendant", "Ring", "Talisman", "Medallion"],
-};
+// Raridades: nome, multiplicador de Item Power, e CAP de nível (×10 por tier).
+// A ORDEM importa (índice = tier). legendary tem cap "infinito".
+const RARITIES = [
+  { name: "common",    mult: 1.0, cap: 10 },
+  { name: "uncommon",  mult: 1.5, cap: 100 },
+  { name: "rare",      mult: 2.2, cap: 1000 },
+  { name: "epic",      mult: 3.5, cap: 10000 },
+  { name: "legendary", mult: 6.0, cap: Infinity },
+];
 
-// Loja: id, nome (EN), custo base, fator de crescimento por nível, valor por nível,
-// e como descrever o efeito (unit / percent / suffix) para a UI mostrar ao jogador.
-// A ORDEM importa: game.js referencia SHOP_UPGRADES[0..5] por índice.
-const SHOP_UPGRADES = [
-  { id: "dmg",        name: "Strength",    baseCost: 10,  growth: 1.22, value: 2,    unit: "damage" },
-  { id: "hp",         name: "Vitality",    baseCost: 15,  growth: 1.22, value: 10,   unit: "health" },
-  { id: "spd",        name: "Agility",     baseCost: 25,  growth: 1.26, value: 0.05, unit: "atk speed" },
-  { id: "gold",       name: "Greed",       baseCost: 40,  growth: 1.24, value: 0.10, unit: "gold", percent: true },
-  // Upgrades de offline: premium e íngremes de propósito (evita fechar o jogo e farmar de graça).
-  // maxLevel deriva dos caps: offlineEff (0.60-0.25)/0.05 = 7; offlineCap (24-2)/1 = 22.
-  { id: "offlineEff", name: "Dreamcatcher", baseCost: 500, growth: 1.75, value: 0.05, unit: "offline rate", percent: true, maxLevel: 7 },
-  { id: "offlineCap", name: "Hourglass",    baseCost: 750, growth: 1.60, value: 1,    unit: "offline cap", suffix: "h", maxLevel: 22 },
+// Upgrades de Ascensão: comprados com ESSENCE (moeda de prestígio).
+// A ORDEM importa: game.js referencia por índice. "power" substitui o antigo
+// multiplicador automático de essência.
+const ASCENSION_UPGRADES = [
+  { id: "power",      name: "Power",       baseCost: 1, growth: 2.0, value: 0.10, unit: "damage & gold", percent: true },
+  { id: "offlineEff", name: "Dreamcatcher", baseCost: 3, growth: 2.5, value: 0.05, unit: "offline rate", percent: true, maxLevel: 7 },
+  { id: "offlineCap", name: "Hourglass",    baseCost: 5, growth: 2.5, value: 1,    unit: "offline cap", suffix: "h", maxLevel: 22 },
 ];
 
 // ===== Painel de balanceamento — TODAS as alavancas num só lugar =====
@@ -53,39 +49,41 @@ const CONFIG = {
     baseDmg: 3, dmgGrowth: 1.15,
     baseGold: 6, goldGrowth: 1.14,
     baseXp: 4, xpGrowth: 1.12,
-    killsToClear: 10,               // abates para limpar uma zone
+    killsToClear: 10,
     damageFactor: 0.5,              // fração do dano do inimigo aplicada por segundo
   },
   boss: {
-    everyZones: 10,                 // Boss Zone a cada N zones (10, 20, 30...)
+    everyZones: 10,                 // Boss Zone a cada N zones
     hpMult: 8,                      // Health do Boss = Enemy normal × isto
-    minRarity: "rare",              // drop garantido de rarity >= isto
-    goldMult: 5, xpMult: 5,         // recompensa extra do Boss
+    goldMult: 5, xpMult: 5, shardMult: 5, // recompensas extras do Boss
   },
-  drops: {
-    baseChance: 0.22,               // chance de drop por abate (inimigo normal)
-    guaranteedFirstKills: 3,        // os primeiros N abates do save SEMPRE dropam
-    powerBase: 3, powerPerZone: 1.5,
-    inventoryMax: 24,
-    // Stats que o Amulet pode sortear (o slot "surpresa"):
-    amuletStats: ["Attack Speed", "Gold Find"],
+  // Equipamento: Item Power = powerPerLevel × level × mult(raridade).
+  gear: {
+    powerPerLevel: 1,
+    levelCostBase: 5, levelCostGrowth: 1.08,  // custo de GOLD por nível
+    rarityCostBase: 5, rarityCostGrowth: 8,   // custo de SHARDS por tier de raridade
   },
-  xp: { base: 20, growth: 1.25 },   // xpToNext = base * growth^(level-1)
-  ascension: { unlockZone: 25, perEssencePct: 0.10, zoneExp: 1.5, zoneDiv: 3, levelDiv: 5 },
-  offline: {
-    startEfficiency: 0.25, efficiencyMax: 0.60, // base + offlineEff*value, teto 0.60
-    startCapHours: 2, capMaxHours: 24,          // base 2h + offlineCap*value, teto absoluto 24h
+  // Shards (material) dropam dos inimigos e sobem a raridade do equipamento.
+  shards: {
+    basePerKill: 1, perZone: 0.2,   // por abate, escala com a zone
+    bossMult: 5,
   },
   // Como o Item Power vira bônus de cada stat:
   itemStats: {
     healthPerPower: 3,          // Armor: +power × 3 de Health
     attackSpeedPerPower: 0.01,  // Amulet (Attack Speed): +power × 0.01 golpes/s
-    goldFindPerPower: 0.02,     // Amulet (Gold Find): +power × 0.02 (×2%/power) de ouro
+    goldFindPerPower: 0.02,     // Amulet (Gold Find): +power × 0.02 de ouro
     // Weapon: Damage usa o power 1:1 (sem fator).
+  },
+  xp: { base: 20, growth: 1.25 }, // xpToNext = base * growth^(level-1)
+  ascension: { unlockZone: 25, zoneExp: 1.5, zoneDiv: 3, levelDiv: 5 },
+  offline: {
+    startEfficiency: 0.25, efficiencyMax: 0.60, // base + offlineEff*value, teto 0.60
+    startCapHours: 2, capMaxHours: 24,          // base 2h + offlineCap*value, teto 24h
   },
   zonesPerRegion: 10, // muda a region cosmética a cada 10 zones
 };
 
 if (typeof module !== "undefined") {
-  module.exports = { REGIONS, SLOTS, RARITIES, ITEM_NAMES, SHOP_UPGRADES, CONFIG };
+  module.exports = { REGIONS, SLOTS, RARITIES, ASCENSION_UPGRADES, CONFIG };
 }
