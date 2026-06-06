@@ -315,10 +315,12 @@ function ascend(s) {
   const keepEssence = s.essence + gain;
   const keepAsc = s.asc;                 // upgrades de ascensão são permanentes
   const keepAscensions = s.ascensions + 1; // conta esta ascensão
+  const keepEquipped = s.equipped;       // EQUIPAMENTO é permanente (não reseta)
   Object.assign(s, defaultState());
   s.essence = keepEssence;
   s.asc = keepAsc;
   s.ascensions = keepAscensions;
+  s.equipped = keepEquipped;
   return gain;
 }
 

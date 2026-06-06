@@ -119,7 +119,7 @@ function bindButtons() {
   });
   $("ascendBtn").onclick = () => {
     if (!canAscend(state)) return;
-    if (confirm("Ascending resets your run (gold, zones, equipment). You keep Essence and permanent upgrades. Continue?")) {
+    if (confirm("Ascending resets gold, zones and character level. You KEEP your equipment, Essence and permanent upgrades. Continue?")) {
       const g = ascend(state);
       spawnPack(state); state.playerHp = playerMaxHp(state);
       logMsg(`✨ You ascended! +${fmt(g)} essence.`, "milestone");

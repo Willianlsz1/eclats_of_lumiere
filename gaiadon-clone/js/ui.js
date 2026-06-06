@@ -164,7 +164,7 @@ function renderAscend(s) {
   const unlocked = canAscend(s);
   $("ascendBtn").disabled = !unlocked;
   if (unlocked) {
-    $("ascInfo").innerHTML = `Ascend #${s.ascensions + 1} for <b>${fmt(essenceOnAscend(s))}</b> Essence. Keeps Essence & upgrades; resets the run.`;
+    $("ascInfo").innerHTML = `Ascend #${s.ascensions + 1} for <b>${fmt(essenceOnAscend(s))}</b> Essence. Keeps equipment, Essence & upgrades; resets gold/zones/level.`;
   } else {
     $("ascInfo").innerHTML = `Reach <b>Level ${fmt(ascLevelReq(s))}</b> to ascend (you're Level ${fmt(s.level)}).`;
   }

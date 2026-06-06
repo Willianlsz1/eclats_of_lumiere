@@ -262,14 +262,18 @@ test("o requisito de nível ESCALA a cada ascensão", () => {
   assert(game.ascLevelReq(s) > req0, "ascensões seguintes exigem nível maior");
 });
 
-test("ascender mantém Essence/upgrades e incrementa a contagem", () => {
+test("ascender mantém Essence/upgrades/EQUIPAMENTO e incrementa a contagem", () => {
   const s = game.defaultState();
   s.maxZone = 30; s.level = 100; s.asc.power = 4; s.essence = 2; s.gold = 999;
+  s.shards = 500; s.equipped.Weapon.rarity = 3; s.equipped.Weapon.level = 120;
   const gain = game.ascend(s);
   assert(gain > 0, "deveria render essência");
   assertEqual(s.asc.power, 4, "mantém upgrades de ascensão");
   assertEqual(s.ascensions, 1, "conta a ascensão");
+  assertEqual(s.equipped.Weapon.rarity, 3, "EQUIPAMENTO persiste (raridade)");
+  assertEqual(s.equipped.Weapon.level, 120, "EQUIPAMENTO persiste (nível)");
   assertEqual(s.gold, 0, "reseta o gold da run");
+  assertEqual(s.shards, 0, "reseta os shards da run");
   assert(s.essence >= 2 + gain - 1, "acumula essência");
 });
 
