@@ -31,14 +31,14 @@ const ITEM_NAMES = {
 // e como descrever o efeito (unit / percent / suffix) para a UI mostrar ao jogador.
 // A ORDEM importa: game.js referencia SHOP_UPGRADES[0..5] por índice.
 const SHOP_UPGRADES = [
-  { id: "dmg",        name: "Strength (+damage)",        baseCost: 10,  growth: 1.22, value: 2,    unit: "damage" },
-  { id: "hp",         name: "Vitality (+health)",        baseCost: 15,  growth: 1.22, value: 10,   unit: "health" },
-  { id: "spd",        name: "Agility (+attack speed)",   baseCost: 25,  growth: 1.26, value: 0.05, unit: "atk speed" },
-  { id: "gold",       name: "Greed (+gold)",             baseCost: 40,  growth: 1.24, value: 0.10, unit: "gold", percent: true },
+  { id: "dmg",        name: "Strength",    baseCost: 10,  growth: 1.22, value: 2,    unit: "damage" },
+  { id: "hp",         name: "Vitality",    baseCost: 15,  growth: 1.22, value: 10,   unit: "health" },
+  { id: "spd",        name: "Agility",     baseCost: 25,  growth: 1.26, value: 0.05, unit: "atk speed" },
+  { id: "gold",       name: "Greed",       baseCost: 40,  growth: 1.24, value: 0.10, unit: "gold", percent: true },
   // Upgrades de offline: premium e íngremes de propósito (evita fechar o jogo e farmar de graça).
   // maxLevel deriva dos caps: offlineEff (0.60-0.25)/0.05 = 7; offlineCap (24-2)/1 = 22.
-  { id: "offlineEff", name: "Dreamcatcher (+offline %)", baseCost: 500, growth: 1.75, value: 0.05, unit: "offline rate", percent: true, maxLevel: 7 },
-  { id: "offlineCap", name: "Hourglass (+offline cap)",  baseCost: 750, growth: 1.60, value: 1,    unit: "offline cap", suffix: "h", maxLevel: 22 },
+  { id: "offlineEff", name: "Dreamcatcher", baseCost: 500, growth: 1.75, value: 0.05, unit: "offline rate", percent: true, maxLevel: 7 },
+  { id: "offlineCap", name: "Hourglass",    baseCost: 750, growth: 1.60, value: 1,    unit: "offline cap", suffix: "h", maxLevel: 22 },
 ];
 
 // ===== Painel de balanceamento — TODAS as alavancas num só lugar =====

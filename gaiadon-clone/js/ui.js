@@ -40,9 +40,21 @@ function renderCombat(s) {
   const needed = (s.enemy && s.enemy.isBoss) ? 1 : CONFIG.enemy.killsToClear;
   $("kills").textContent = s.killsInZone;
   $("killsNeeded").textContent = needed;
-  $("dmg").textContent = fmt(playerDamage(s));
-  $("hp").textContent = fmt(playerMaxHp(s));
-  $("dps").textContent = fmt(playerDps(s));
+}
+
+// Painel do Hero: nível, XP e os 4 stats (+ DPS derivado).
+function renderHero(s) {
+  $("heroLevel").textContent = s.level;
+  const need = xpToNext(s);
+  $("xpFill").style.width = Math.min(100, (s.xp / need) * 100) + "%";
+  $("xpText").textContent = fmt(s.xp) + " / " + fmt(need) + " XP";
+  $("statDamage").textContent = fmt(playerDamage(s));
+  $("statHealth").textContent = fmt(playerMaxHp(s));
+  $("statSpeed").textContent = attackSpeed(s).toFixed(2) + "/s";
+  $("statGold").textContent = "+" + Math.round((goldBonus(s) - 1) * 100) + "%";
+  $("statDps").textContent = fmt(playerDps(s));
+  const P = CONFIG.player;
+  $("heroFoot").textContent = `Each level grants +${P.damagePerLevel} damage and +${P.hpPerLevel} health.`;
 }
 
 // Barra "próximo objetivo" — sempre algo à vista (pacing).
@@ -81,7 +93,7 @@ function renderGear(s) {
   inv.querySelectorAll(".inv-item").forEach(el => {
     el.onclick = () => {
       equipItem(s, el.dataset.id);
-      renderGear(s); renderCombat(s);
+      renderGear(s); renderCombat(s); renderHero(s);
     };
   });
 }
@@ -102,13 +114,13 @@ function renderShop(s) {
       ? `<button disabled class="maxed">MAX</button>`
       : `<button data-id="${u.id}" ${afford ? "" : "disabled"}>💰 ${fmt(cost)}</button>`;
     return `<div class="shop-item">
-      <span class="info">${u.name} <span class="lvl">Lv ${s.shop[u.id]}</span><br><small class="effect">${upgradeEffect(u)}</small></span>
+      <span class="info"><b class="uname">${u.name}</b> <span class="lvl">Lv ${s.shop[u.id]}</span><br><small class="effect">${upgradeEffect(u)}</small></span>
       ${btn}
     </div>`;
   }).join("");
   $("shop").querySelectorAll("button").forEach(b => {
     b.onclick = () => {
-      if (buyUpgrade(s, b.dataset.id)) { renderShop(s); renderResources(s); renderCombat(s); }
+      if (buyUpgrade(s, b.dataset.id)) { renderShop(s); renderResources(s); renderCombat(s); renderHero(s); }
     };
   });
 }
@@ -137,6 +149,7 @@ function spawnFloatingDamage(amount) {
 function renderAll(s) {
   renderResources(s);
   renderCombat(s);
+  renderHero(s);
   renderNextGoal(s);
   renderGear(s);
   renderShop(s);

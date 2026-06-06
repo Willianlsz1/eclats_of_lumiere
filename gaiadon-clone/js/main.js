@@ -49,6 +49,7 @@ function gameLoop() {
   handleEvents(events);
   renderResources(state);
   renderCombat(state);
+  renderHero(state);
   renderNextGoal(state);
   if (events.some(e => e.drop)) renderGear(state);
   if (events.some(e => e.type === "kill")) { renderShop(state); renderAscend(state); }
