@@ -81,6 +81,35 @@ test("não sobe raridade fora do cap", () => {
   assertEqual(game.rarityUpItem(s, "Weapon"), false, "precisa estar no cap pra subir raridade");
 });
 
+console.log("== Afixos / Crítico ==");
+test("itemAffixes ativa afixos conforme a raridade", () => {
+  assertEqual(game.itemAffixes("Weapon", 0).length, 0); // common
+  assertEqual(game.itemAffixes("Weapon", 1).length, 1); // uncommon
+  assertEqual(game.itemAffixes("Weapon", 4).length, 4); // legendary
+});
+
+test("affixTotals soma os afixos dos itens equipados", () => {
+  const s = game.defaultState();
+  s.equipped.Weapon.rarity = 2; // critRate + critDmg
+  const t = game.affixTotals(s);
+  assert(t.critRate > 0 && t.critDmg > 0, "deveria somar crit dos afixos");
+});
+
+test("afixos de crítico aumentam o DPS", () => {
+  const s = game.defaultState();
+  const dps0 = game.playerDps(s); // common: sem crit
+  s.equipped.Weapon.rarity = 2;   // rare: critRate + critDmg
+  assert(game.critRate(s) > 0, "deveria ter crit rate");
+  assert(game.playerDps(s) > game.playerDamage(s) * game.attackSpeed(s), "crit deveria multiplicar o DPS");
+});
+
+test("Damage % e Health % dos afixos aumentam os stats", () => {
+  const s = game.defaultState();
+  s.equipped.Armor.rarity = 1; // hpMult
+  const hpBase = CONFIG.player.baseHp;
+  assert(game.playerMaxHp(s) > hpBase, "hpMult deveria aumentar a vida acima da base");
+});
+
 console.log("== Stats vindos do equipamento ==");
 test("subir a Weapon aumenta o Damage", () => {
   const s = game.defaultState();

@@ -34,6 +34,28 @@ function itemPower(item) {
 function slotPower(s, slotId) { return itemPower(s.equipped[slotId]); }
 function rarityCap(item) { return RARITIES[item.rarity].cap; }
 
+// --- Afixos (sub-stats por raridade) ---
+// Afixos ativos de um item = os primeiros `rarity` da lista do slot.
+function itemAffixes(slotId, rarity) { return AFFIXES[slotId].slice(0, rarity); }
+// Soma todos os afixos dos itens equipados em modificadores globais.
+function affixTotals(s) {
+  const t = { critRate: 0, critDmg: 0, dmgMult: 0, hpMult: 0, goldMult: 0 };
+  for (const slot of SLOTS) {
+    const it = s.equipped[slot.id];
+    for (const a of itemAffixes(slot.id, it.rarity)) t[a.stat] += a.value;
+  }
+  return t;
+}
+function critRate(s) { return Math.min(1, affixTotals(s).critRate); }
+function critMult(s) { return CONFIG.combat.baseCritMult + affixTotals(s).critDmg; }
+// Crítico como valor esperado (sem RNG por tick): multiplicador médio do DPS.
+function critExpectedMult(s) {
+  const t = affixTotals(s);
+  const rate = Math.min(1, t.critRate);
+  const mult = CONFIG.combat.baseCritMult + t.critDmg;
+  return 1 + rate * (mult - 1);
+}
+
 // --- Stats derivados ---
 // Power é MULTIPLICATIVO: cada nível multiplica por (1 + value). Compõe entre ascensões.
 function ascMultiplier(s) { return Math.pow(1 + ASCENSION_UPGRADES[0].value, s.asc.power); }
@@ -42,21 +64,25 @@ function playerDamage(s) {
   const P = CONFIG.player;
   let base = P.baseDamage + (s.level - 1) * P.damagePerLevel;
   base += slotPower(s, "Weapon"); // Weapon → Damage (1:1)
+  base *= (1 + affixTotals(s).dmgMult); // afixo Damage %
   return Math.round(base * ascMultiplier(s));
 }
 function playerMaxHp(s) {
   const P = CONFIG.player;
   let base = P.baseHp + (s.level - 1) * P.hpPerLevel;
   base += slotPower(s, "Armor") * CONFIG.itemStats.healthPerPower; // Armor → Health
+  base *= (1 + affixTotals(s).hpMult); // afixo Health %
   return Math.round(base * ascMultiplier(s));
 }
 function attackSpeed(s) {
   // Amulet → Attack Speed (+ também Gold Find em goldBonus).
   return CONFIG.player.baseAttackSpeed + slotPower(s, "Amulet") * CONFIG.itemStats.attackSpeedPerPower;
 }
-function playerDps(s) { return playerDamage(s) * attackSpeed(s); }
+// DPS efetivo inclui o crítico (valor esperado).
+function playerDps(s) { return playerDamage(s) * attackSpeed(s) * critExpectedMult(s); }
 function goldBonus(s) {
   let b = 1 + slotPower(s, "Amulet") * CONFIG.itemStats.goldFindPerPower; // Amulet → Gold Find
+  b *= (1 + affixTotals(s).goldMult); // afixo Gold %
   return b * ascMultiplier(s);
 }
 
@@ -318,6 +344,7 @@ function computeOfflineGains(s, elapsedSec) {
 if (typeof module !== "undefined") {
   module.exports = {
     defaultState, itemPower, slotPower, rarityCap, ascMultiplier,
+    itemAffixes, affixTotals, critRate, critMult, critExpectedMult,
     playerDamage, playerMaxHp, attackSpeed, playerDps, goldBonus,
     levelCostAt, levelUpCost, levelUpMaxPreview, levelUpMax, canLevelUp, levelUpItem,
     rarityUpCost, canRarityUp, rarityUpItem,

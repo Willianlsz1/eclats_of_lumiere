@@ -18,6 +18,30 @@ const SLOTS = [
   { id: "Amulet", stats: ["Attack Speed", "Gold Find"], defaultName: "Pendant" },
 ];
 
+// Afixos por slot, FIXOS por raridade. O item ativa os primeiros `rarity` afixos da
+// lista (common=0, uncommon=1, rare=2, epic=3, legendary=4). Temáticos por slot.
+// stats (frações): critRate, critDmg, dmgMult, hpMult, goldMult.
+const AFFIXES = {
+  Weapon: [
+    { stat: "critRate", value: 0.05 }, // uncommon
+    { stat: "critDmg",  value: 0.30 }, // rare
+    { stat: "dmgMult",  value: 0.15 }, // epic
+    { stat: "critDmg",  value: 0.60 }, // legendary
+  ],
+  Armor: [
+    { stat: "hpMult",   value: 0.20 },
+    { stat: "critRate", value: 0.05 },
+    { stat: "hpMult",   value: 0.35 },
+    { stat: "dmgMult",  value: 0.20 },
+  ],
+  Amulet: [
+    { stat: "goldMult", value: 0.25 },
+    { stat: "dmgMult",  value: 0.10 },
+    { stat: "critDmg",  value: 0.30 },
+    { stat: "goldMult", value: 0.60 },
+  ],
+};
+
 // Raridades: nome, multiplicador de Item Power, e CAP de nível (×10 por tier).
 // A ORDEM importa (índice = tier). legendary tem cap "infinito".
 const RARITIES = [
@@ -46,6 +70,7 @@ const CONFIG = {
     damagePerLevel: 1.5, hpPerLevel: 8,
     baseAttackSpeed: 1.0, // ataques por segundo
   },
+  combat: { baseCritMult: 2.0 }, // crítico base = ×2 (afixos de Crit Damage somam a isto)
   enemy: {
     baseHp: 4, hpGrowth: 1.20,      // HP escala com a zone (primeiro abate <1s)
     baseDmg: 3, dmgGrowth: 1.18,
@@ -92,5 +117,5 @@ const CONFIG = {
 };
 
 if (typeof module !== "undefined") {
-  module.exports = { REGIONS, SLOTS, RARITIES, ASCENSION_UPGRADES, CONFIG };
+  module.exports = { REGIONS, SLOTS, RARITIES, AFFIXES, ASCENSION_UPGRADES, CONFIG };
 }
