@@ -170,6 +170,18 @@ function spawnFloatingDamage(amount) {
   setTimeout(() => el.remove(), 800);
 }
 
+// "Bem-vindo de volta": mostra o resumo dos ganhos offline.
+function showOfflineSummary(g) {
+  const h = Math.floor(g.seconds / 3600);
+  const m = Math.floor((g.seconds % 3600) / 60);
+  const time = h > 0 ? `${h}h ${m}m` : `${m}m`;
+  $("offlineText").innerHTML =
+    `While you were away (<b>${time}</b>):<br>` +
+    `💰 +${fmt(g.gold)} gold · 💎 +${fmt(g.shards)} shards · ⭐ +${fmt(g.xp)} XP<br>` +
+    `<small>(${fmt(g.kills)} kills simulated)</small>`;
+  $("offlineModal").classList.remove("hidden");
+}
+
 function renderAll(s) {
   renderResources(s);
   renderCombat(s);

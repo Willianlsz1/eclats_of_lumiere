@@ -191,4 +191,23 @@ test("offlineConfig reflete os upgrades de ascensão", () => {
   assert(c1.capHours > c0.capHours, "cap sobe");
 });
 
+test("ganhos offline > 0 e respeitam o teto de horas", () => {
+  const s = game.defaultState();
+  s.maxZone = 3; s.zone = 3;
+  const oneH = game.computeOfflineGains(s, 3600);
+  const huge = game.computeOfflineGains(s, 999 * 3600); // muito além do cap
+  assert(oneH.gold > 0, "deveria render gold");
+  assert(oneH.shards >= 0, "deveria ter shards");
+  const capSec = game.offlineConfig(s).capHours * 3600;
+  assert(huge.seconds <= capSec + 1, "respeita o teto de acúmulo");
+});
+
+test("mais tempo offline = mais ganho (dentro do teto)", () => {
+  const s = game.defaultState();
+  s.maxZone = 2; s.zone = 2;
+  const a = game.computeOfflineGains(s, 600);   // 10 min
+  const b = game.computeOfflineGains(s, 1800);  // 30 min (dentro do cap de 2h)
+  assert(b.gold > a.gold, "mais tempo deveria render mais gold");
+});
+
 report();

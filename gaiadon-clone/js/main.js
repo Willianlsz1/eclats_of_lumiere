@@ -1,6 +1,7 @@
 // ===== Loop principal, save/load e botões =====
 const SAVE_KEY = "gaiadon_clone_save";
 let state = defaultState();
+let pendingOffline = null; // ganhos offline a mostrar após o load
 
 function load() {
   try {
@@ -21,6 +22,18 @@ function load() {
           : { rarity: 0, level: 1 };
       }
       state.asc = Object.assign({ power: 0, offlineEff: 0, offlineCap: 0 }, parsed.asc || {});
+
+      // Progresso offline: credita os ganhos do tempo ausente (acima de 1 min).
+      if (state.lastSeen) {
+        const elapsed = (Date.now() - state.lastSeen) / 1000;
+        if (elapsed > 60) {
+          const g = computeOfflineGains(state, elapsed);
+          if (g.gold > 0 || g.xp > 0 || g.shards > 0) {
+            state.gold += g.gold; state.shards += g.shards; gainXp(state, g.xp);
+            pendingOffline = g;
+          }
+        }
+      }
     }
   } catch (e) { console.warn("Failed to load save", e); }
   spawnEnemy(state);
@@ -73,6 +86,7 @@ function bindButtons() {
       renderAll(state);
     }
   };
+  $("offlineCollect").onclick = () => { $("offlineModal").classList.add("hidden"); };
   $("saveBtn").onclick = save;
   $("resetBtn").onclick = () => {
     if (confirm("Erase ALL progress, including essence and upgrades?")) {
@@ -88,6 +102,7 @@ window.addEventListener("DOMContentLoaded", () => {
   load();
   bindButtons();
   renderAll(state);
+  if (pendingOffline) showOfflineSummary(pendingOffline);
   setInterval(gameLoop, 100);   // combate
   setInterval(save, 15000);     // autosave a cada 15s
 });

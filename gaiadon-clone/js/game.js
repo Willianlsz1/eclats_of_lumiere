@@ -153,8 +153,8 @@ function spawnEnemy(s) {
 }
 
 // --- Shards (drop) ---
-function shardsOnKill(s, isBoss) {
-  let n = Math.floor(CONFIG.shards.basePerKill + s.zone * CONFIG.shards.perZone);
+function shardsOnKill(zone, isBoss) {
+  let n = Math.floor(CONFIG.shards.basePerKill + zone * CONFIG.shards.perZone);
   if (isBoss) n *= CONFIG.shards.bossMult;
   return Math.max(1, n);
 }
@@ -175,7 +175,7 @@ function registerKill(s) {
   s.gold += g;
   const leveled = gainXp(s, e.xpReward);
   s.totalKills++;
-  const sh = shardsOnKill(s, e.isBoss);
+  const sh = shardsOnKill(s.zone, e.isBoss);
   s.shards += sh;
   s.killsInZone++;
   const needed = e.isBoss ? 1 : CONFIG.enemy.killsToClear;
@@ -269,6 +269,21 @@ function offlineConfig(s) {
   return { efficiency, capHours };
 }
 
+// Estima os ganhos enquanto offline, de forma BARATA (fórmula, sem rodar ticks).
+// Farma na zone segura (onde o jogador estava, no máximo até a maxZone).
+function computeOfflineGains(s, elapsedSec) {
+  const { efficiency, capHours } = offlineConfig(s);
+  const seconds = Math.max(0, Math.min(elapsedSec, capHours * 3600));
+  const farmZone = Math.max(1, Math.min(s.zone, s.maxZone));
+  const st = enemyStats(farmZone);
+  const killsPerSec = playerDps(s) / Math.max(1, st.hp);
+  const kills = killsPerSec * seconds * efficiency;
+  const gold = Math.round(kills * st.gold * goldBonus(s));
+  const xp = Math.round(kills * st.xp);
+  const shards = Math.round(kills * shardsOnKill(farmZone, false));
+  return { seconds, kills: Math.floor(kills), gold, xp, shards };
+}
+
 if (typeof module !== "undefined") {
   module.exports = {
     defaultState, itemPower, slotPower, rarityCap, ascMultiplier,
@@ -277,6 +292,6 @@ if (typeof module !== "undefined") {
     rarityUpCost, canRarityUp, rarityUpItem,
     enemyStats, regionFor, isBossZone, spawnEnemy, shardsOnKill,
     xpToNext, gainXp, registerKill, changeZone, handleDeath, tick,
-    canAscend, essenceOnAscend, ascend, ascUpgradeCost, buyAscUpgrade, offlineConfig,
+    canAscend, essenceOnAscend, ascend, ascUpgradeCost, buyAscUpgrade, offlineConfig, computeOfflineGains,
   };
 }
