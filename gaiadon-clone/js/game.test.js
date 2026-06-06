@@ -117,16 +117,28 @@ test("Boss dá mais shards e limpa a zone num abate", () => {
 
 test("limpar a fronteira sobe maxZone e auto-avança", () => {
   const s = game.defaultState(); s.zone = 1; game.spawnEnemy(s);
-  for (let i = 0; i < CONFIG.enemy.killsToClear; i++) game.registerKill(s);
+  for (let i = 0; i < game.killsToClear(1); i++) game.registerKill(s);
   assertEqual(s.maxZone, 1);
   assertEqual(s.zone, 2); // auto-avança para a nova fronteira
 });
 
 test("farmar uma zone já limpa NÃO auto-avança", () => {
   const s = game.defaultState(); s.maxZone = 5; s.zone = 3; game.spawnEnemy(s);
-  for (let i = 0; i < CONFIG.enemy.killsToClear; i++) game.registerKill(s);
+  for (let i = 0; i < game.killsToClear(3); i++) game.registerKill(s);
   assertEqual(s.zone, 3, "deveria ficar farmando a zone 3");
   assertEqual(s.maxZone, 5, "maxZone inalterada");
+});
+
+test("killsToClear cresce com a zone", () => {
+  assertEqual(game.killsToClear(1), CONFIG.enemy.killsBase);
+  assert(game.killsToClear(15) > game.killsToClear(1), "zona funda exige mais abates");
+});
+
+test("Insight multiplica a essência ganha", () => {
+  const s = game.defaultState(); s.maxZone = 30; s.level = 20;
+  const base = game.essenceOnAscend(s);
+  s.asc.insight = 4;
+  assert(game.essenceOnAscend(s) > base, "Insight deveria aumentar a essência");
 });
 
 test("changeZone respeita os limites [1, maxZone+1]", () => {

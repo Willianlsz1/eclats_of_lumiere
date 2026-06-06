@@ -37,7 +37,7 @@ function renderCombat(s) {
     $("enemyHpFill").className = "hpfill" + (s.enemy.isBoss ? " boss" : "");
     $("enemyHpText").textContent = fmt(Math.max(0, s.enemy.hp)) + "/" + fmt(s.enemy.maxHp);
   }
-  const needed = (s.enemy && s.enemy.isBoss) ? 1 : CONFIG.enemy.killsToClear;
+  const needed = (s.enemy && s.enemy.isBoss) ? 1 : killsToClear(s.zone);
   $("kills").textContent = s.killsInZone;
   $("killsNeeded").textContent = needed;
 
@@ -68,7 +68,7 @@ function renderHero(s) {
 
 function renderNextGoal(s) {
   const isBoss = s.enemy && s.enemy.isBoss;
-  const needed = isBoss ? 1 : CONFIG.enemy.killsToClear;
+  const needed = isBoss ? 1 : killsToClear(s.zone);
   const left = Math.max(0, needed - s.killsInZone);
   if (!isBoss && s.zone <= s.maxZone) {
     $("nextGoal").textContent = `Farming Zone ${s.zone} (cleared) · deepest: ${s.maxZone}`;

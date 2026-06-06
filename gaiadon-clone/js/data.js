@@ -31,10 +31,12 @@ const RARITIES = [
 // Upgrades de Ascensão: comprados com ESSENCE (moeda de prestígio).
 // A ORDEM importa: game.js referencia por índice. "power" substitui o antigo
 // multiplicador automático de essência.
+// A ORDEM importa: game.js referencia por índice (0=power, 1=offlineEff, 2=offlineCap, 3=insight).
 const ASCENSION_UPGRADES = [
   { id: "power",      name: "Power",       baseCost: 2, growth: 1.8, value: 0.50, unit: "damage & gold", multiplicative: true },
   { id: "offlineEff", name: "Dreamcatcher", baseCost: 3, growth: 2.5, value: 0.05, unit: "offline rate", percent: true, maxLevel: 7 },
   { id: "offlineCap", name: "Hourglass",    baseCost: 5, growth: 2.5, value: 1,    unit: "offline cap", suffix: "h", maxLevel: 22 },
+  { id: "insight",    name: "Insight",      baseCost: 3, growth: 1.7, value: 0.25, unit: "essence gained", percent: true },
 ];
 
 // ===== Painel de balanceamento — TODAS as alavancas num só lugar =====
@@ -49,7 +51,7 @@ const CONFIG = {
     baseDmg: 3, dmgGrowth: 1.20,
     baseGold: 6, goldGrowth: 1.14,
     baseXp: 4, xpGrowth: 1.12,
-    killsToClear: 10,
+    killsBase: 10, killsPerZone: 3, // abates p/ limpar = killsBase + (zone-1)*killsPerZone
     damageFactor: 0.7,              // fração do dano do inimigo aplicada por segundo
   },
   boss: {

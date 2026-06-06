@@ -19,7 +19,7 @@ function defaultState() {
       Amulet: { rarity: 0, level: 1 },
     },
     // Níveis dos upgrades permanentes de Ascensão.
-    asc: { power: 0, offlineEff: 0, offlineCap: 0 },
+    asc: { power: 0, offlineEff: 0, offlineCap: 0, insight: 0 },
     enemy: null,
     playerHp: null,
     lastSeen: null,
@@ -134,6 +134,10 @@ function regionFor(zone) {
   return REGIONS[i];
 }
 function isBossZone(zone) { return zone % CONFIG.boss.everyZones === 0; }
+// Abates para limpar uma zone — cresce com a profundidade.
+function killsToClear(zone) {
+  return CONFIG.enemy.killsBase + Math.floor((zone - 1) * CONFIG.enemy.killsPerZone);
+}
 
 function spawnEnemy(s) {
   const region = regionFor(s.zone);
@@ -179,7 +183,7 @@ function registerKill(s) {
   const sh = shardsOnKill(s.zone, e.isBoss);
   s.shards += sh;
   s.killsInZone++;
-  const needed = e.isBoss ? 1 : CONFIG.enemy.killsToClear;
+  const needed = e.isBoss ? 1 : killsToClear(s.zone);
   let advanced = false, walledCleared = false;
   if (s.killsInZone >= needed) {
     s.killsInZone = 0;
@@ -232,9 +236,12 @@ function tick(s, dt) {
 
 // --- Ascensão (prestígio) ---
 function canAscend(s) { return s.maxZone >= CONFIG.ascension.unlockZone; }
+// Insight multiplica a essência ganha (cresce com a profundidade via maxZone).
+function essenceMultiplier(s) { return 1 + s.asc.insight * ASCENSION_UPGRADES[3].value; }
 function essenceOnAscend(s) {
   const A = CONFIG.ascension;
-  return Math.floor(Math.pow(s.maxZone + 1, A.zoneExp) / A.zoneDiv + s.level / A.levelDiv);
+  const base = Math.pow(s.maxZone + 1, A.zoneExp) / A.zoneDiv + s.level / A.levelDiv;
+  return Math.floor(base * essenceMultiplier(s));
 }
 function ascend(s) {
   if (!canAscend(s)) return false;
@@ -291,8 +298,8 @@ if (typeof module !== "undefined") {
     playerDamage, playerMaxHp, attackSpeed, playerDps, goldBonus,
     levelCostAt, levelUpCost, levelUpMaxPreview, levelUpMax, canLevelUp, levelUpItem,
     rarityUpCost, canRarityUp, rarityUpItem,
-    enemyStats, regionFor, isBossZone, spawnEnemy, shardsOnKill,
+    enemyStats, regionFor, isBossZone, killsToClear, spawnEnemy, shardsOnKill,
     xpToNext, gainXp, registerKill, changeZone, handleDeath, tick,
-    canAscend, essenceOnAscend, ascend, ascUpgradeCost, buyAscUpgrade, offlineConfig, computeOfflineGains,
+    canAscend, essenceMultiplier, essenceOnAscend, ascend, ascUpgradeCost, buyAscUpgrade, offlineConfig, computeOfflineGains,
   };
 }
