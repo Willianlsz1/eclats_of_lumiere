@@ -47,11 +47,11 @@ const AFFIXES = {
 // Raridades: nome, multiplicador de Item Power, e CAP de nível (×10 por tier).
 // A ORDEM importa (índice = tier). legendary tem cap "infinito".
 const RARITIES = [
-  { name: "common",    mult: 1.0, cap: 10 },
-  { name: "uncommon",  mult: 1.5, cap: 100 },
-  { name: "rare",      mult: 2.2, cap: 1000 },
-  { name: "epic",      mult: 3.5, cap: 10000 },
-  { name: "legendary", mult: 6.0, cap: Infinity },
+  { name: "common",    mult: 1.0, cap: 25 },
+  { name: "uncommon",  mult: 1.5, cap: 75 },
+  { name: "rare",      mult: 2.2, cap: 150 },
+  { name: "epic",      mult: 3.5, cap: 300 },
+  { name: "legendary", mult: 6.0, cap: Infinity }, // sem teto: nivela infinitamente
 ];
 
 // Upgrades de Ascensão: comprados com ESSENCE (moeda de prestígio).
