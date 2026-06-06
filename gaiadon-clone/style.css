@@ -12,10 +12,17 @@
 * { box-sizing: border-box; }
 body {
   margin: 0;
-  font-family: "Segoe UI", system-ui, sans-serif;
+  font-family: "Cinzel", "Segoe UI", serif;
   background: radial-gradient(circle at top, #182038, var(--bg));
   color: var(--text);
   padding-bottom: 60px;
+}
+/* Título principal e nome do herói: Cinzel Decorative (mais ornamentado) */
+h1, h2, .asc-tier-name { font-family: "Cinzel Decorative", "Cinzel", serif; }
+/* Números e valores: volta para sans-serif limpo (legibilidade em combate) */
+#resources b, .stat-row span:last-child, .hpbar span, .xpbar span,
+.equip-head .slot-power, .floating-dmg, #statDps {
+  font-family: "Segoe UI", system-ui, sans-serif;
 }
 header {
   padding: 16px 24px;
