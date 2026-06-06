@@ -112,7 +112,8 @@ const CONFIG = {
   xp: { base: 20, growth: 1.10 }, // xpToNext = base * growth^(level-1) (curva achatada p/ níveis altos)
   // Ascensão em tiers: gatilho por NÍVEL do personagem, escalando a cada ascensão.
   // req(n) = firstReqLevel × reqGrowth^n  (n = nº de ascensões já feitas).
-  ascension: { firstReqLevel: 25, reqGrowth: 1.7, zoneExp: 1.5, zoneDiv: 3, levelDiv: 5 },
+  // perLevelGrowth: a cada ascensão, os stats POR NÍVEL (dano/vida) multiplicam por isto.
+  ascension: { firstReqLevel: 25, reqGrowth: 1.7, perLevelGrowth: 1.4, zoneExp: 1.5, zoneDiv: 3, levelDiv: 5 },
   offline: {
     startEfficiency: 0.25, efficiencyMax: 0.60, // base + offlineEff*value, teto 0.60
     startCapHours: 2, capMaxHours: 24,          // base 2h + offlineCap*value, teto 24h

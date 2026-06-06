@@ -77,8 +77,10 @@ function renderHero(s) {
   $("statCritRate").textContent = Math.round(critRate(s) * 100) + "%";
   $("statCritDmg").textContent = "×" + critMult(s).toFixed(2);
   $("statDps").textContent = fmt(playerDps(s));
-  const P = CONFIG.player;
-  $("heroFoot").textContent = `Each level grants +${P.damagePerLevel} damage and +${P.hpPerLevel} health.`;
+  const dpl = damagePerLevel(s), hpl = hpPerLevel(s), g = CONFIG.ascension.perLevelGrowth;
+  const f1 = n => n < 100 ? n.toFixed(1) : fmt(n); // mantém decimal nos valores pequenos
+  $("heroFoot").innerHTML = `Each level grants <b>+${f1(dpl)} damage</b> and <b>+${f1(hpl)} health</b>.` +
+    `<br><span class="next-asc">↑ Next ascension: +${f1(dpl * g)} dmg / +${f1(hpl * g)} hp per level</span>`;
 }
 
 function renderNextGoal(s) {

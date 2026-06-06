@@ -63,16 +63,21 @@ function critExpectedMult(s) {
 // Power é MULTIPLICATIVO: cada nível multiplica por (1 + value). Compõe entre ascensões.
 function ascMultiplier(s) { return Math.pow(1 + ASCENSION_UPGRADES[0].value, s.asc.power); }
 
+// Stats POR NÍVEL crescem a cada ascensão (o Hero fica permanentemente mais forte).
+function perLevelMult(s) { return Math.pow(CONFIG.ascension.perLevelGrowth, s.ascensions); }
+function damagePerLevel(s) { return CONFIG.player.damagePerLevel * perLevelMult(s); }
+function hpPerLevel(s) { return CONFIG.player.hpPerLevel * perLevelMult(s); }
+
 function playerDamage(s) {
   const P = CONFIG.player;
-  let base = P.baseDamage + (s.level - 1) * P.damagePerLevel;
+  let base = P.baseDamage + (s.level - 1) * damagePerLevel(s);
   base += slotPower(s, "Weapon"); // Weapon → Damage (1:1)
   base *= (1 + affixTotals(s).dmgMult); // afixo Damage %
   return Math.round(base * ascMultiplier(s));
 }
 function playerMaxHp(s) {
   const P = CONFIG.player;
-  let base = P.baseHp + (s.level - 1) * P.hpPerLevel;
+  let base = P.baseHp + (s.level - 1) * hpPerLevel(s);
   base += slotPower(s, "Armor") * CONFIG.itemStats.healthPerPower; // Armor → Health
   base *= (1 + affixTotals(s).hpMult); // afixo Health %
   return Math.round(base * ascMultiplier(s));
@@ -357,6 +362,7 @@ function computeOfflineGains(s, elapsedSec) {
 if (typeof module !== "undefined") {
   module.exports = {
     defaultState, itemPower, slotPower, rarityCap, ascMultiplier,
+    perLevelMult, damagePerLevel, hpPerLevel,
     itemAffixes, affixValue, affixTotals, critRate, critMult, critExpectedMult,
     playerDamage, playerMaxHp, attackSpeed, playerDps, goldBonus,
     levelCostAt, levelUpCost, levelUpMaxPreview, levelUpMax, canLevelUp, levelUpItem,

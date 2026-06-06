@@ -244,6 +244,17 @@ test("ascensão trava abaixo do nível exigido e libera ao atingi-lo", () => {
   assertEqual(game.canAscend(s), true);
 });
 
+test("stats por nível crescem a cada ascensão", () => {
+  const s = game.defaultState();
+  const d0 = game.damagePerLevel(s), h0 = game.hpPerLevel(s);
+  s.ascensions = 3;
+  assert(game.damagePerLevel(s) > d0, "dano por nível deveria crescer");
+  assert(game.hpPerLevel(s) > h0, "vida por nível deveria crescer");
+  // e isso aumenta os stats do Hero num mesmo nível
+  s.level = 50; const s0 = game.defaultState(); s0.level = 50;
+  assert(game.playerDamage(s) > game.playerDamage(s0), "mais ascensões = Hero mais forte no mesmo nível");
+});
+
 test("o requisito de nível ESCALA a cada ascensão", () => {
   const s = game.defaultState();
   const req0 = game.ascLevelReq(s);
