@@ -10,9 +10,9 @@ const game = require("./game.js");
 const { test, assertEqual, report } = require("./_assert.js");
 
 console.log("== Smoke ==");
-test("defaultState começa em maxDepth 0", () => {
+test("defaultState começa em maxZone 0", () => {
   const s = game.defaultState();
-  assertEqual(s.maxDepth, 0);
+  assertEqual(s.maxZone, 0);
 });
 
 report();

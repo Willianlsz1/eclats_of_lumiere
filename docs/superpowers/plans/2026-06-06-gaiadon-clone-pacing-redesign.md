@@ -9,12 +9,12 @@
 **Tech Stack:** HTML, CSS, JavaScript vanilla (ES2020). Node.js (v24, já instalado) só para rodar os testes. Git para commits.
 
 **Modelo de progressão (referência para todas as tasks):**
-- `state.maxDepth` = profundidade mais funda já **limpa** (10 abates nela). Começa em 0.
-- `state.depth` = profundidade onde estamos lutando agora.
-- `state.killsAtDepth` = abates acumulados na profundidade atual (limpa em 10).
+- `state.maxZone` = profundidade mais funda já **limpa** (10 abates nela). Começa em 0.
+- `state.zone` = profundidade onde estamos lutando agora.
+- `state.killsInZone` = abates acumulados na profundidade atual (limpa em 10).
 - Inimigos escalam pela **profundidade** (não pelo nível do herói).
-- **Auto-loop idle:** farma na profundidade segura (`maxDepth`); a cada 10 abates, tenta automaticamente a fronteira (`maxDepth + 1`). Se limpar a fronteira → `maxDepth++`. Se **morrer** na fronteira → volta a farmar em `maxDepth`, sem perder nada, com mensagem "fique mais forte".
-- No início `maxDepth = 0`, então `depth = 1` é a primeira fronteira (trivial, balanceada para não matar).
+- **Auto-loop idle:** farma na profundidade segura (`maxZone`); a cada 10 abates, tenta automaticamente a fronteira (`maxZone + 1`). Se limpar a fronteira → `maxZone++`. Se **morrer** na fronteira → volta a farmar em `maxZone`, sem perder nada, com mensagem "fique mais forte".
+- No início `maxZone = 0`, então `zone = 1` é a primeira fronteira (trivial, balanceada para não matar).
 
 ---
 
@@ -114,9 +114,9 @@ const game = require("./game.js");
 const { test, assertEqual, report } = require("./_assert.js");
 
 console.log("== Smoke ==");
-test("defaultState começa em maxDepth 0", () => {
+test("defaultState começa em maxZone 0", () => {
   const s = game.defaultState();
-  assertEqual(s.maxDepth, 0);
+  assertEqual(s.maxZone, 0);
 });
 
 report();
@@ -125,7 +125,7 @@ report();
 - [ ] **Step 3: Rodar para verificar que FALHA (ainda não existe o novo defaultState)**
 
 Run: `node gaiadon-clone/js/game.test.js`
-Expected: ❌ — porque `defaultState` atual não tem `maxDepth` (ele tem `maxZoneReached`). Falha esperada confirma que o runner funciona e o teste cobre a mudança.
+Expected: ❌ — porque `defaultState` atual não tem `maxZone` (ele tem `maxZoneReached`). Falha esperada confirma que o runner funciona e o teste cobre a mudança.
 
 - [ ] **Step 4: Commit**
 
@@ -147,8 +147,8 @@ git commit -m "test: add minimal node test runner + smoke test"
 // ===== Static game data & balancing (single source of truth) =====
 // Todo texto visível ao jogador em inglês.
 
-// Cosmetic themes — purely visual, change every CONFIG.depthPerTheme depth levels.
-const THEMES = [
+// Cosmetic regions — purely visual, change every CONFIG.zonesPerRegion zone levels.
+const REGIONS = [
   { name: "Plains of Aurin",      enemies: ["Slime", "Giant Rat", "Goblin"] },
   { name: "Whispering Forest",    enemies: ["Shadow Wolf", "Spider", "Treant"] },
   { name: "Frostbound Caverns",   enemies: ["Yeti", "Ice Golem", "Bat"] },
@@ -196,20 +196,20 @@ const CONFIG = {
   drops: {
     baseChance: 0.22,
     guaranteedFirstKills: 3, // primeiros N abates do save sempre dropam
-    powerBase: 3, powerPerDepth: 1.5,
+    powerBase: 3, powerPerZone: 1.5,
     inventoryMax: 24,
   },
   xp: { base: 20, growth: 1.25 }, // xpToNext = base * growth^(level-1)
-  ascension: { perEssencePct: 0.10, depthExp: 1.5, depthDiv: 3, levelDiv: 5 },
+  ascension: { perEssencePct: 0.10, zoneExp: 1.5, zoneDiv: 3, levelDiv: 5 },
   offline: {
     startEfficiency: 0.25, efficiencyMax: 0.60, // base + offlineEff*value, teto 0.60
     startCapHours: 2, capMaxHours: 8,           // base + offlineCap*value, teto 8h
   },
-  depthPerTheme: 10, // muda o tema cosmético a cada 10 de profundidade
+  zonesPerRegion: 10, // muda o tema cosmético a cada 10 de profundidade
 };
 
 if (typeof module !== "undefined") {
-  module.exports = { THEMES, SLOTS, RARITIES, ITEM_NAMES, SHOP_UPGRADES, CONFIG };
+  module.exports = { REGIONS, SLOTS, RARITIES, ITEM_NAMES, SHOP_UPGRADES, CONFIG };
 }
 ```
 
@@ -222,7 +222,7 @@ Expected: o arquivo carrega sem `ReferenceError`; o teste-fumaça ainda ❌ porq
 
 ```bash
 git add gaiadon-clone/js/data.js
-git commit -m "feat(data): rewrite balancing config + English text, infinite-depth model"
+git commit -m "feat(data): rewrite balancing config + English text, infinite-zone model"
 ```
 
 ---
@@ -243,9 +243,9 @@ console.log("== Core logic ==");
 
 test("defaultState tem campos de profundidade", () => {
   const s = game.defaultState();
-  assertEqual(s.depth, 1);
-  assertEqual(s.maxDepth, 0);
-  assertEqual(s.killsAtDepth, 0);
+  assertEqual(s.zone, 1);
+  assertEqual(s.maxZone, 0);
+  assertEqual(s.killsInZone, 0);
 });
 
 test("dano do jogador cresce com upgrade de força", () => {
@@ -261,26 +261,26 @@ test("vida do inimigo escala com a profundidade", () => {
   assert(b > a, "inimigo mais fundo deveria ter mais HP");
 });
 
-test("limpar 10 abates avança a maxDepth", () => {
+test("limpar 10 abates avança a maxZone", () => {
   const s = game.defaultState();
-  s.depth = 1;
+  s.zone = 1;
   for (let i = 0; i < CONFIG.enemy.killsToClear; i++) game.registerKill(s);
-  assert(s.maxDepth >= 1, "deveria ter limpado a profundidade 1");
+  assert(s.maxZone >= 1, "deveria ter limpado a profundidade 1");
 });
 
 test("morte na fronteira não pune e recua para farm", () => {
   const s = game.defaultState();
-  s.maxDepth = 3; s.depth = 4; s.gold = 100;
+  s.maxZone = 3; s.zone = 4; s.gold = 100;
   const inv = s.inventory.length;
   game.handleDeath(s);
   assertEqual(s.gold, 100, "não perde ouro");
   assertEqual(s.inventory.length, inv, "não perde itens");
-  assert(s.depth <= s.maxDepth, "recua para a profundidade segura");
+  assert(s.zone <= s.maxZone, "recua para a profundidade segura");
 });
 
 test("essência de ascensão usa profundidade máxima", () => {
   const s = game.defaultState();
-  s.maxDepth = 10; s.level = 20;
+  s.maxZone = 10; s.level = 20;
   assert(game.essenceOnAscend(s) > 0, "deveria render essência");
 });
 ```
@@ -301,9 +301,9 @@ function defaultState() {
     level: 1,
     xp: 0,
     essence: 0,
-    depth: 1,            // profundidade em combate agora
-    maxDepth: 0,         // profundidade mais funda já limpa
-    killsAtDepth: 0,     // abates na profundidade atual (limpa em killsToClear)
+    zone: 1,            // profundidade em combate agora
+    maxZone: 0,         // profundidade mais funda já limpa
+    killsInZone: 0,     // abates na profundidade atual (limpa em killsToClear)
     totalKills: 0,       // usado para drops garantidos iniciais
     shop: { dmg: 0, hp: 0, spd: 0, gold: 0, offlineEff: 0, offlineCap: 0 },
     equipped: { Weapon: null, Armor: null, Amulet: null },
@@ -341,9 +341,9 @@ function goldBonus(s) {
 }
 
 // --- Inimigos (escala por profundidade) ---
-function enemyStats(depth) {
+function enemyStats(zone) {
   const E = CONFIG.enemy;
-  const d = depth - 1; // depth 1 = expoente 0
+  const d = zone - 1; // zone 1 = expoente 0
   return {
     hp:   Math.round(E.baseHp   * Math.pow(E.hpGrowth, d)),
     dmg:  Math.round(E.baseDmg  * Math.pow(E.dmgGrowth, d)),
@@ -351,14 +351,14 @@ function enemyStats(depth) {
     xp:   Math.round(E.baseXp   * Math.pow(E.xpGrowth, d)),
   };
 }
-function themeFor(depth) {
-  const i = Math.floor((depth - 1) / CONFIG.depthPerTheme) % THEMES.length;
-  return THEMES[i];
+function regionFor(zone) {
+  const i = Math.floor((zone - 1) / CONFIG.zonesPerRegion) % REGIONS.length;
+  return REGIONS[i];
 }
 function spawnEnemy(s) {
-  const theme = themeFor(s.depth);
-  const stats = enemyStats(s.depth);
-  const name = theme.enemies[Math.floor(Math.random() * theme.enemies.length)];
+  const region = regionFor(s.zone);
+  const stats = enemyStats(s.zone);
+  const name = region.enemies[Math.floor(Math.random() * region.enemies.length)];
   s.enemy = { name, hp: stats.hp, maxHp: stats.hp, dmg: stats.dmg, goldReward: stats.gold, xpReward: stats.xp };
   return s.enemy;
 }
@@ -375,7 +375,7 @@ function generateItem(s) {
   const slot = SLOTS[Math.floor(Math.random() * SLOTS.length)];
   const rarity = rollRarity();
   const baseName = ITEM_NAMES[slot][Math.floor(Math.random() * ITEM_NAMES[slot].length)];
-  const power = Math.round((D.powerBase + s.depth * D.powerPerDepth) * rarity.mult * (0.8 + Math.random() * 0.4));
+  const power = Math.round((D.powerBase + s.zone * D.powerPerZone) * rarity.mult * (0.8 + Math.random() * 0.4));
   return { id: Math.random().toString(36).slice(2, 9), slot, rarity: rarity.name, name: baseName, power };
 }
 function maybeDrop(s) {
@@ -417,27 +417,27 @@ function registerKill(s) {
   const leveled = gainXp(s, e.xpReward);
   s.totalKills++;
   const drop = maybeDrop(s);
-  s.killsAtDepth++;
+  s.killsInZone++;
   let advanced = false, walledCleared = false;
-  if (s.killsAtDepth >= CONFIG.enemy.killsToClear) {
-    s.killsAtDepth = 0;
-    if (s.depth > s.maxDepth) { s.maxDepth = s.depth; walledCleared = true; } // limpou a fronteira
+  if (s.killsInZone >= CONFIG.enemy.killsToClear) {
+    s.killsInZone = 0;
+    if (s.zone > s.maxZone) { s.maxZone = s.zone; walledCleared = true; } // limpou a fronteira
     // Próximo passo: tentar a fronteira seguinte automaticamente.
-    s.depth = s.maxDepth + 1;
+    s.zone = s.maxZone + 1;
     advanced = true;
   }
   s.playerHp = playerMaxHp(s); // cura ao matar
-  return { type: "kill", name: e.name, gold: g, leveled, drop, advanced, walledCleared, depth: s.depth };
+  return { type: "kill", name: e.name, gold: g, leveled, drop, advanced, walledCleared, zone: s.zone };
 }
 
-// Morte: sem punição. Recua para a profundidade segura (maxDepth) e zera o contador.
+// Morte: sem punição. Recua para a profundidade segura (maxZone) e zera o contador.
 // Captura a profundidade da PAREDE (onde morreu) antes de recuar, para a mensagem.
 function handleDeath(s) {
-  const wallDepth = s.depth;
-  s.killsAtDepth = 0;
-  s.depth = Math.max(1, s.maxDepth);
+  const wallZone = s.zone;
+  s.killsInZone = 0;
+  s.zone = Math.max(1, s.maxZone);
   s.playerHp = playerMaxHp(s);
-  return { type: "death", wallDepth, depth: s.depth };
+  return { type: "death", wallZone, zone: s.zone };
 }
 
 // Processa dt segundos de combate. Retorna lista de eventos para a UI.
@@ -461,7 +461,7 @@ function tick(s, dt) {
 // --- Ascensão ---
 function essenceOnAscend(s) {
   const A = CONFIG.ascension;
-  return Math.floor(Math.pow(s.maxDepth + 1, A.depthExp) / A.depthDiv + s.level / A.levelDiv);
+  return Math.floor(Math.pow(s.maxZone + 1, A.zoneExp) / A.zoneDiv + s.level / A.levelDiv);
 }
 function ascend(s) {
   const gain = essenceOnAscend(s);
@@ -487,7 +487,7 @@ function buyUpgrade(s, id) {
 if (typeof module !== "undefined") {
   module.exports = {
     defaultState, ascMultiplier, playerDamage, playerMaxHp, attackSpeed, playerDps, goldBonus,
-    enemyStats, themeFor, spawnEnemy, rollRarity, generateItem, maybeDrop, equipItem,
+    enemyStats, regionFor, spawnEnemy, rollRarity, generateItem, maybeDrop, equipItem,
     xpToNext, gainXp, registerKill, handleDeath, tick, essenceOnAscend, ascend, shopCost, buyUpgrade,
   };
 }
@@ -502,7 +502,7 @@ Expected: todos ✅. Se algum ❌, corrigir a lógica (não o teste, salvo erro 
 
 ```bash
 git add gaiadon-clone/js/game.js gaiadon-clone/js/game.test.js
-git commit -m "feat(game): infinite-depth combat, wall/death, depth-based ascension"
+git commit -m "feat(game): infinite-zone combat, wall/death, zone-based ascension"
 ```
 
 ---
@@ -520,14 +520,14 @@ Objetivo: o jogo volta a rodar no navegador, em inglês, com o novo modelo. Veri
 
 Trocar todos os textos PT→EN e adaptar a seção de combate ao modelo de profundidade.
 
-> ⚠️ **Importante (evita bug):** **substitua por completo** a `<section id="combat">` antiga e **remova** a `<div class="zone-controls">` (botões `prevZone`/`nextZone`) e os elementos antigos `#zoneName`/`#zone`. Não pode haver IDs duplicados — `getElementById` quebra se sobrar marcação velha. Os antigos `#zoneName`/`#zone` são **trocados** por `#themeName`/`#depth`.
+> ⚠️ **Importante (evita bug):** **substitua por completo** a `<section id="combat">` antiga e **remova** a `<div class="zone-controls">` (botões `prevZone`/`nextZone`) e os elementos antigos `#zoneName`/`#zone`. Não pode haver IDs duplicados — `getElementById` quebra se sobrar marcação velha. Os antigos `#zoneName`/`#zone` são **trocados** por `#regionName`/`#zone`.
 
 Mudanças principais:
 - `<title>`: `Gaiadon Clone — Eternal Quest (prototype)`
 - Header recursos: `💰 Gold`, `⭐ Level`, `🔮 Essence`, `📈 Multiplier`.
-- Seção de combate: trocar "Zona/zone" por **Depth**. Substituir o bloco de zona por:
+- Seção de combate: trocar "Zona/zone" por **Zone**. Substituir o bloco de zona por:
 ```html
-<h2><span id="themeName">Plains of Aurin</span> <small>(depth <span id="depth">1</span>)</small></h2>
+<h2><span id="regionName">Plains of Aurin</span> <small>(zone <span id="zone">1</span>)</small></h2>
 <div class="enemy">
   <div class="enemy-name" id="enemyName">Slime</div>
   <div class="hpbar"><div class="hpfill" id="enemyHpFill"></div><span id="enemyHpText">0/0</span></div>
@@ -550,12 +550,12 @@ Mudanças principais:
 
 Pontos-chave (manter estrutura atual de funções `render*`):
 - `renderResources`: `Gold/Level/Essence`, multiplicador `"x" + ascMultiplier(s).toFixed(2)`.
-- `renderCombat`: usar `themeFor(s).name` em `themeName`, `s.depth` em `depth`, `s.enemy` HP, `s.killsAtDepth` em `kills`, `playerDamage/playerMaxHp/playerDps`. Remover lógica de botões de zona.
+- `renderCombat`: usar `regionFor(s).name` em `regionName`, `s.zone` em `zone`, `s.enemy` HP, `s.killsInZone` em `kills`, `playerDamage/playerMaxHp/playerDps`. Remover lógica de botões de zona.
 - `renderNextGoal(s)`: texto do próximo marco, ex.:
 ```js
 function renderNextGoal(s) {
-  const left = CONFIG.enemy.killsToClear - s.killsAtDepth;
-  const target = s.depth > s.maxDepth ? `Breaking through depth ${s.depth}` : `Clearing depth ${s.depth}`;
+  const left = CONFIG.enemy.killsToClear - s.killsInZone;
+  const target = s.zone > s.maxZone ? `Breaking through zone ${s.zone}` : `Clearing zone ${s.zone}`;
   $("nextGoal").textContent = `Next: ${target} — ${left} kill${left===1?"":"s"} left`;
 }
 ```
@@ -565,7 +565,7 @@ function renderNextGoal(s) {
 
 - [ ] **Step 3: Atualizar `main.js` (EN + handlers + remover botões de zona)**
 
-- `handleEvents`: mensagens em inglês. Tratar `kill`, `death` (usar `ev.wallDepth`: `"You're not strong enough for depth ${ev.wallDepth} yet. Farm and grow stronger!"`), `walledCleared` (`"Broke through to depth X!"`).
+- `handleEvents`: mensagens em inglês. Tratar `kill`, `death` (usar `ev.wallZone`: `"You're not strong enough for zone ${ev.wallZone} yet. Farm and grow stronger!"`), `walledCleared` (`"Broke through to zone X!"`).
 - `bindButtons`: remover `prevZone`/`nextZone`. Manter `ascendBtn` (confirm em inglês), `saveBtn`, `resetBtn` (confirms em inglês).
 - `gameLoop`: chamar `renderNextGoal(state)` junto com os outros renders.
 - Save/load: ver Task 5 (timestamp já incluído aqui só como `state.lastSeen = Date.now()` no `save()`).
@@ -575,7 +575,7 @@ function renderNextGoal(s) {
 Abrir `gaiadon-clone/index.html` no navegador.
 Expected:
 - Texto todo em inglês.
-- Combate roda; "Clear progress" sobe; ao limpar 10, a depth avança sozinha.
+- Combate roda; "Clear progress" sobe; ao limpar 10, a zone avança sozinha.
 - Loja compra; dano/vida sobem.
 - Sem erros no console (F12).
 
@@ -583,7 +583,7 @@ Expected:
 
 ```bash
 git add gaiadon-clone/index.html gaiadon-clone/js/ui.js gaiadon-clone/js/main.js
-git commit -m "feat(ui): English UI, depth model wiring, next-goal bar"
+git commit -m "feat(ui): English UI, zone model wiring, next-goal bar"
 ```
 
 ---
@@ -610,7 +610,7 @@ test("eficiência offline sobe com upgrade e respeita o teto", () => {
 });
 test("ganhos offline são proporcionais ao tempo, com teto de acúmulo", () => {
   const s = game.defaultState();
-  s.maxDepth = 3; s.depth = 3;
+  s.maxZone = 3; s.zone = 3;
   const oneHour = game.computeOfflineGains(s, 3600);
   const tenHours = game.computeOfflineGains(s, 36000); // > teto inicial (2h)
   assert(oneHour.gold > 0, "deveria render ouro");
@@ -637,8 +637,8 @@ function offlineConfig(s) {
 function computeOfflineGains(s, elapsedSec) {
   const { efficiency, capHours } = offlineConfig(s);
   const seconds = Math.max(0, Math.min(elapsedSec, capHours * 3600));
-  const farmDepth = Math.max(1, s.maxDepth); // farma na profundidade segura
-  const stats = enemyStats(farmDepth);
+  const farmZone = Math.max(1, s.maxZone); // farma na profundidade segura
+  const stats = enemyStats(farmZone);
   const killsPerSec = playerDps(s) / Math.max(1, stats.hp);
   const kills = killsPerSec * seconds * efficiency;
   const gold = Math.round(kills * stats.gold * goldBonus(s));
@@ -713,7 +713,7 @@ Adicionar a `style.css`:
 
 - [ ] **Step 3: `main.js` — disparar efeitos e marcos**
 
-- Em `handleEvents`/`gameLoop`: para eventos `hit`, alimentar o acumulador de floating damage; para `drop` de raridade ≥ rare, disparar flash; para `walledCleared`, logar com classe `milestone` ("Broke through to depth X!"). Primeira lendária e primeira ascensão também com `milestone`.
+- Em `handleEvents`/`gameLoop`: para eventos `hit`, alimentar o acumulador de floating damage; para `drop` de raridade ≥ rare, disparar flash; para `walledCleared`, logar com classe `milestone` ("Broke through to zone X!"). Primeira lendária e primeira ascensão também com `milestone`.
 
 - [ ] **Step 4: Verificação manual**
 
