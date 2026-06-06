@@ -101,7 +101,13 @@ small { color: var(--muted); font-weight: normal; }
 .equip-head { display: flex; justify-content: space-between; align-items: center; }
 .equip-head .slot-name { font-size: 13px; }
 .equip-head .slot-power { font-size: 12px; color: var(--accent); font-weight: bold; }
-.equip-sub { font-size: 11px; color: var(--muted); margin: 4px 0 8px; }
+.equip-sub { font-size: 11px; color: var(--muted); margin: 4px 0 6px; }
+.equip-affixes { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
+.equip-affixes.empty { margin-bottom: 8px; }
+.affix {
+  font-size: 11px; background: #2a2140; color: #c084fc;
+  border-radius: 4px; padding: 2px 6px; font-weight: bold;
+}
 .equip-actions { display: flex; gap: 8px; }
 .equip-actions button { flex: 1; }
 .equip-actions .rarity-btn:not(:disabled) { background: #3a2d52; }
@@ -117,6 +123,7 @@ small { color: var(--muted); font-weight: normal; }
   animation: floatUp .8s ease-out forwards;
 }
 .floating-dmg.boss { color: var(--red); font-size: 18px; }
+.floating-dmg.crit { color: var(--gold); font-size: 21px; text-shadow: 0 0 8px rgba(255,209,102,.8); }
 @keyframes floatUp {
   0%   { transform: translate(-50%, 0) scale(1); opacity: 1; }
   100% { transform: translate(-50%, -34px) scale(1.1); opacity: 0; }

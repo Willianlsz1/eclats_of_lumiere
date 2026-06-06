@@ -73,7 +73,10 @@ function gameLoop() {
   for (const e of events) if (e.type === "hit") floatAccum += e.amount;
   if (++floatTick >= 3) {
     if (floatAccum > 0) {
-      spawnFloatingDamage(floatAccum, state.enemy && state.enemy.isBoss);
+      const isBoss = state.enemies && state.enemies[0] && state.enemies[0].isBoss;
+      const isCrit = critRate(state) > 0 && Math.random() < critRate(state);
+      const shown = isCrit ? floatAccum * critMult(state) : floatAccum;
+      spawnFloatingDamage(shown, isBoss, isCrit);
       const nm = $("enemyName"); nm.classList.add("hit"); setTimeout(() => nm.classList.remove("hit"), 120);
     }
     floatAccum = 0; floatTick = 0;

@@ -73,6 +73,8 @@ function renderHero(s) {
   $("statHealth").textContent = fmt(playerMaxHp(s));
   $("statSpeed").textContent = attackSpeed(s).toFixed(2) + "/s";
   $("statGold").textContent = "+" + Math.round((goldBonus(s) - 1) * 100) + "%";
+  $("statCritRate").textContent = Math.round(critRate(s) * 100) + "%";
+  $("statCritDmg").textContent = "×" + critMult(s).toFixed(2);
   $("statDps").textContent = fmt(playerDps(s));
   const P = CONFIG.player;
   $("heroFoot").textContent = `Each level grants +${P.damagePerLevel} damage and +${P.hpPerLevel} health.`;
@@ -89,6 +91,10 @@ function renderNextGoal(s) {
   const target = isBoss ? `Defeat the Zone ${s.zone} Boss` : `Break through Zone ${s.zone}`;
   $("nextGoal").textContent = `Next: ${target} — ${left} kill${left === 1 ? "" : "s"} left`;
 }
+
+// Nome amigável de cada afixo para a UI.
+const AFFIX_NAMES = { critRate: "Crit Rate", critDmg: "Crit Dmg", dmgMult: "Damage", hpMult: "Health", goldMult: "Gold" };
+function affixLabel(a) { return `+${Math.round(a.value * 100)}% ${AFFIX_NAMES[a.stat]}`; }
 
 // Painel de equipamento: 3 slots, cada um com level-up (gold) e rarity-up (shards).
 function renderEquipment(s) {
@@ -122,6 +128,9 @@ function renderEquipment(s) {
         <span class="slot-power">⚙️ ${fmt(itemPower(it))}</span>
       </div>
       <div class="equip-sub">Level ${fmt(it.level)} / ${fmtCap(cap)} · gives ${slot.stats.join(" + ")}</div>
+      ${itemAffixes(slot.id, it.rarity).length
+        ? `<div class="equip-affixes">${itemAffixes(slot.id, it.rarity).map(a => `<span class="affix">${affixLabel(a)}</span>`).join("")}</div>`
+        : `<div class="equip-affixes empty"><small>No affixes — raise rarity to unlock</small></div>`}
       <div class="equip-actions">${lvBtn}${maxBtn}</div>
       <div class="equip-actions">${rrBtn}</div>
     </div>`;
@@ -177,12 +186,12 @@ function renderAscend(s) {
 }
 
 // Número de dano que sobe e some sobre o palco de combate.
-function spawnFloatingDamage(amount, isBoss) {
+function spawnFloatingDamage(amount, isBoss, isCrit) {
   const stage = $("combatStage");
   if (!stage) return;
   const el = document.createElement("span");
-  el.className = "floating-dmg" + (isBoss ? " boss" : "");
-  el.textContent = "-" + fmt(amount);
+  el.className = "floating-dmg" + (isBoss ? " boss" : "") + (isCrit ? " crit" : "");
+  el.textContent = (isCrit ? "💥 " : "-") + fmt(amount);
   el.style.left = (40 + Math.random() * 20) + "%"; // leve variação horizontal
   stage.appendChild(el);
   setTimeout(() => el.remove(), 800);
