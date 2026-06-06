@@ -9,10 +9,16 @@ function load() {
       const parsed = JSON.parse(raw);
       const d = defaultState();
       state = Object.assign(d, parsed);
-      // re-merge das estruturas aninhadas (saves antigos podem não ter tudo)
-      state.equipped = Object.assign({}, d.equipped, parsed.equipped || {});
+      // Sanitiza o equipamento: garante { rarity:int, level:number } por slot.
+      // Saves antigos (raridade como texto, item objeto, etc.) são descartados sem quebrar.
+      state.equipped = {};
       for (const slot of SLOTS) {
-        state.equipped[slot.id] = Object.assign({ rarity: 0, level: 1 }, state.equipped[slot.id]);
+        const it = (parsed.equipped || {})[slot.id];
+        const validRarity = it && Number.isInteger(it.rarity) && it.rarity >= 0 && it.rarity < RARITIES.length;
+        const validLevel = it && typeof it.level === "number" && it.level >= 1;
+        state.equipped[slot.id] = (validRarity && validLevel)
+          ? { rarity: it.rarity, level: it.level }
+          : { rarity: 0, level: 1 };
       }
       state.asc = Object.assign({ power: 0, offlineEff: 0, offlineCap: 0 }, parsed.asc || {});
     }
