@@ -19,7 +19,7 @@ function defaultState() {
       Amulet: { rarity: 0, level: 1 },
     },
     // Níveis dos upgrades permanentes de Ascensão.
-    asc: { power: 0, offlineEff: 0, offlineCap: 0, insight: 0 },
+    asc: { power: 0, offlineEff: 0, offlineCap: 0, insight: 0, wisdom: 0 },
     enemies: [],           // pack de inimigos atual (você foca o [0]; todos atacam)
     playerHp: null,
     lastSeen: null,
@@ -41,7 +41,7 @@ function itemAffixes(slotId, rarity) { return AFFIXES[slotId].slice(0, rarity); 
 function affixValue(a, level) { return a.base + a.perLevel * level; }
 // Soma todos os afixos dos itens equipados em modificadores globais.
 function affixTotals(s) {
-  const t = { critRate: 0, critDmg: 0, dmgMult: 0, hpMult: 0, goldMult: 0 };
+  const t = { critRate: 0, critDmg: 0, dmgMult: 0, hpMult: 0, goldMult: 0, xpMult: 0 };
   for (const slot of SLOTS) {
     const it = s.equipped[slot.id];
     for (const a of itemAffixes(slot.id, it.rarity)) t[a.stat] += affixValue(a, it.level);
@@ -86,6 +86,11 @@ function goldBonus(s) {
   let b = 1 + slotPower(s, "Amulet") * CONFIG.itemStats.goldFindPerPower; // Amulet → Gold Find
   b *= (1 + affixTotals(s).goldMult); // afixo Gold %
   return b * ascMultiplier(s);
+}
+// Multiplicador de XP: upgrade Wisdom (ascensão) × afixo XP % do gear.
+function xpMultiplier(s) {
+  const wisdom = 1 + s.asc.wisdom * ASCENSION_UPGRADES[4].value;
+  return wisdom * (1 + affixTotals(s).xpMult);
 }
 
 // --- Custos e ações de equipamento ---
@@ -218,7 +223,7 @@ function registerKill(s, e) {
   e = e || s.enemies[0];
   const g = Math.round(e.goldReward * goldBonus(s));
   s.gold += g;
-  const leveled = gainXp(s, e.xpReward);
+  const leveled = gainXp(s, e.xpReward * xpMultiplier(s));
   s.totalKills++;
   const sh = shardsOnKill(s.zone, e.isBoss);
   s.shards += sh;
@@ -338,7 +343,7 @@ function computeOfflineGains(s, elapsedSec) {
   const killsPerSec = playerDps(s) / Math.max(1, st.hp);
   const kills = killsPerSec * seconds * efficiency;
   const gold = Math.round(kills * st.gold * goldBonus(s));
-  const xp = Math.round(kills * st.xp);
+  const xp = Math.round(kills * st.xp * xpMultiplier(s));
   const shards = Math.round(kills * shardsOnKill(farmZone, false));
   return { seconds, kills: Math.floor(kills), gold, xp, shards };
 }
@@ -351,7 +356,7 @@ if (typeof module !== "undefined") {
     levelCostAt, levelUpCost, levelUpMaxPreview, levelUpMax, canLevelUp, levelUpItem,
     rarityUpCost, canRarityUp, rarityUpItem,
     enemyStats, regionFor, isBossZone, killsToClear, packSize, makeEnemy, spawnPack, shardsOnKill,
-    xpToNext, gainXp, registerKill, changeZone, handleDeath, tick,
+    xpToNext, gainXp, xpMultiplier, registerKill, changeZone, handleDeath, tick,
     canAscend, essenceMultiplier, essenceOnAscend, ascend, ascUpgradeCost, buyAscUpgrade, offlineConfig, computeOfflineGains,
   };
 }

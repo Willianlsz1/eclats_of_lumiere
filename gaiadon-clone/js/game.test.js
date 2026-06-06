@@ -192,6 +192,16 @@ test("pack maior causa mais dano por segundo ao jogador", () => {
   assert(dmgPack > dmgSingle, "o pack inteiro deveria doer mais que um inimigo só");
 });
 
+test("Wisdom e afixo de XP aumentam o multiplicador de XP", () => {
+  const s = game.defaultState();
+  const base = game.xpMultiplier(s);
+  s.asc.wisdom = 4;
+  assert(game.xpMultiplier(s) > base, "Wisdom deveria aumentar o XP mult");
+  const withWisdom = game.xpMultiplier(s);
+  s.equipped.Amulet.rarity = 2; // inclui afixo xpMult
+  assert(game.xpMultiplier(s) > withWisdom, "afixo de XP deveria somar ainda mais");
+});
+
 test("Insight multiplica a essência ganha", () => {
   const s = game.defaultState(); s.maxZone = 30; s.level = 20;
   const base = game.essenceOnAscend(s);

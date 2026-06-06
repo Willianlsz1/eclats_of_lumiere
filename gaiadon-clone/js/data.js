@@ -36,11 +36,11 @@ const AFFIXES = {
     { stat: "hpMult",   base: 0.35, perLevel: 0.006 },
     { stat: "dmgMult",  base: 0.20, perLevel: 0.003 },
   ],
-  Amulet: [
+  Amulet: [ // economia + utilidade
     { stat: "goldMult", base: 0.25, perLevel: 0.005 },
-    { stat: "dmgMult",  base: 0.10, perLevel: 0.002 },
-    { stat: "critDmg",  base: 0.30, perLevel: 0.004 },
-    { stat: "goldMult", base: 0.60, perLevel: 0.008 },
+    { stat: "xpMult",   base: 0.25, perLevel: 0.005 },
+    { stat: "goldMult", base: 0.50, perLevel: 0.007 },
+    { stat: "xpMult",   base: 0.50, perLevel: 0.008 },
   ],
 };
 
@@ -63,6 +63,7 @@ const ASCENSION_UPGRADES = [
   { id: "offlineEff", name: "Dreamcatcher", baseCost: 3, growth: 2.5, value: 0.05, unit: "offline rate", percent: true, maxLevel: 7 },
   { id: "offlineCap", name: "Hourglass",    baseCost: 5, growth: 2.5, value: 1,    unit: "offline cap", suffix: "h", maxLevel: 22 },
   { id: "insight",    name: "Insight",      baseCost: 3, growth: 1.7, value: 0.25, unit: "essence gained", percent: true },
+  { id: "wisdom",     name: "Wisdom",       baseCost: 3, growth: 1.7, value: 0.25, unit: "XP gained", percent: true },
 ];
 
 // ===== Painel de balanceamento — TODAS as alavancas num só lugar =====

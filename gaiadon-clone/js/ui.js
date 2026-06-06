@@ -94,7 +94,7 @@ function renderNextGoal(s) {
 }
 
 // Nome amigável de cada afixo para a UI.
-const AFFIX_NAMES = { critRate: "Crit Rate", critDmg: "Crit Dmg", dmgMult: "Damage", hpMult: "Health", goldMult: "Gold" };
+const AFFIX_NAMES = { critRate: "Crit Rate", critDmg: "Crit Dmg", dmgMult: "Damage", hpMult: "Health", goldMult: "Gold", xpMult: "XP" };
 // Valor do afixo já escalado pelo nível do item (cresce ao subir o nível).
 function affixLabel(a, level) {
   const pct = affixValue(a, level) * 100;
