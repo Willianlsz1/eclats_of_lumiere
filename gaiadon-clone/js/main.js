@@ -2,28 +2,15 @@
 const SAVE_KEY = "gaiadon_clone_save";
 let state = defaultState();
 let pendingOffline = null; // ganhos offline a mostrar após o load
+const eventCtx = createEventCtx(); // contexto de acumuladores do event dispatch
 
 function load() {
   try {
     const raw = localStorage.getItem(SAVE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
-      const d = defaultState();
-      state = Object.assign(d, parsed);
-      // Sanitiza o equipamento: garante { rarity:int, level:number } por slot.
-      // Saves antigos (raridade como texto, item objeto, etc.) são descartados sem quebrar.
-      state.equipped = {};
-      for (const slot of SLOTS) {
-        const it = (parsed.equipped || {})[slot.id];
-        const validRarity = it && Number.isInteger(it.rarity) && it.rarity >= 0 && it.rarity < RARITIES.length;
-        const validLevel = it && typeof it.level === "number" && it.level >= 1;
-        state.equipped[slot.id] = (validRarity && validLevel)
-          ? { rarity: it.rarity, level: it.level }
-          : { rarity: 0, level: 1 };
-      }
-      // Migração de saves antigos: remove campos de Essence que não existem mais.
-      if (state.asc !== undefined)     delete state.asc;
-      if (state.essence !== undefined) delete state.essence;
+      state = Object.assign(defaultState(), parsed);
+      migrate(state); // normaliza equipment, remove campos obsoletos (migrate.js)
 
       // Progresso offline: credita os ganhos do tempo ausente (acima de 1 min).
       if (state.lastSeen) {
@@ -32,6 +19,10 @@ function load() {
           const g = computeOfflineGains(state, elapsed);
           if (g.gold > 0 || g.xp > 0 || g.shards > 0) {
             state.gold += g.gold; state.shards += g.shards; gainXp(state, g.xp);
+            // Acumula kills offline no Zone Mastery (farming durante ausência conta).
+            if (g.kills > 0 && g.farmZone > 0 && !isBossZone(g.farmZone)) {
+              addMasteryKills(state, g.farmZone, g.kills);
+            }
             pendingOffline = g;
           }
         }
@@ -53,48 +44,35 @@ function save() {
   } catch (e) { console.warn(e); }
 }
 
-function handleEvents(events) {
-  for (const ev of events) {
-    if (ev.type === "kill") {
-      let msg = `Defeated ${ev.name}! +${fmt(ev.gold)} gold, +${fmt(ev.shards)} shards.`;
-      if (ev.leveled) msg += ` Reached level ${state.level}!`;
-      logMsg(msg);
-      if (ev.walledCleared) logMsg(`✨ Broke through to Zone ${ev.zone}!`, "milestone");
-    } else if (ev.type === "death") {
-      logMsg(`💀 You're not strong enough for Zone ${ev.wallZone} yet. Farm and grow stronger!`);
-    }
-  }
-}
-
-let floatAccum = 0, floatTick = 0;
 let eqDirty = false, eqTick = 0;
 function gameLoop() {
   const events = tick(state, 0.1); // 100ms por tick
-  handleEvents(events);
+  dispatchEvents(events, state, eventCtx); // kill/death logs + hit float + flash (events.js)
 
-  // Game feel: acumula o dano e mostra um número flutuante a cada ~300ms.
-  for (const e of events) if (e.type === "hit") floatAccum += e.amount;
-  if (++floatTick >= 3) {
-    if (floatAccum > 0) {
-      const isBoss = state.enemies && state.enemies[0] && state.enemies[0].isBoss;
-      const isCrit = critRate(state) > 0 && Math.random() < critRate(state);
-      const shown = isCrit ? floatAccum * critMult(state) : floatAccum;
-      spawnFloatingDamage(shown, isBoss, isCrit);
-      const nm = $("enemyName"); nm.classList.add("hit"); setTimeout(() => nm.classList.remove("hit"), 120);
-    }
-    floatAccum = 0; floatTick = 0;
-  }
-
-  renderResources(state);
-  renderCombat(state);
-  renderHero(state);
-  renderNextGoal(state);
+  scheduleRender(new Set(["resources", "combat", "hero"]), state);
   // Equipamento/ascensão re-renderizam no máx a cada ~500ms (menos churn, clique estável).
   if (events.some(e => e.type === "kill")) eqDirty = true;
-  if (eqDirty && ++eqTick >= 5) { renderEquipment(state); renderAscend(state); eqDirty = false; eqTick = 0; }
+  if (eqDirty && ++eqTick >= 5) {
+    scheduleRender(new Set(["equipment", "ascension"]), state);
+    eqDirty = false; eqTick = 0;
+  }
 }
 
 function bindButtons() {
+  // ── Main navigation: each button switches the entire view ─────────────────
+  document.querySelectorAll(".nav-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
+      document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+      btn.classList.add("active");
+      document.getElementById("view-" + btn.dataset.view).classList.add("active");
+      // Re-render the newly visible view so its content is immediately fresh.
+      const VIEW_CAT = { stats: "hero", ascension: "ascension", equipment: "equipment" };
+      const cat = VIEW_CAT[btn.dataset.view];
+      if (cat) scheduleRender(new Set([cat]), state);
+    });
+  });
+
   $("prevZone").onclick = () => { if (changeZone(state, -1)) renderAll(state); };
   $("nextZone").onclick = () => { if (changeZone(state, +1)) renderAll(state); };
 
@@ -108,24 +86,33 @@ function bindButtons() {
              : act === "max"   ? levelUpMax(state, slot) > 0
              : rarityUpItem(state, slot);
     if (ok) {
-      if (act === "rarity") logMsg(`⚔️ ${slot} is now ${RARITIES[state.equipped[slot].rarity].name}!`, "milestone");
-      renderEquipment(state); renderResources(state); renderCombat(state); renderHero(state);
-      if (act === "rarity") flashSlot(slot);
+      if (act === "rarity") {
+        const newRarity = state.equipped[slot].rarity;
+        const rName     = RARITIES[newRarity].name;
+        const newAffix  = getNewAffix(slot, newRarity);
+        if (newAffix) {
+          const val   = (affixValue(newAffix, state.equipped[slot].level) * 100).toFixed(1);
+          const aName = AFFIX_NAMES[newAffix.stat] || newAffix.stat;
+          logMsg(`💎 ${slot} → ${rName}! New affix: +${val}% ${aName}`, "milestone");
+        } else {
+          logMsg(`💎 ${slot} upgraded to ${rName}!`, "milestone");
+        }
+        flashSlot(slot);
+      }
+      scheduleRender(new Set(["equipment", "resources", "combat", "hero"]), state);
     }
   });
   $("ascendBtn").onclick = () => {
-    if (!canAscend(state)) return;
-    const tier  = heroTier(state);
-    const nextT = tier + 1 < TIERS.length ? TIERS[tier + 1] : null;
-    const isTierPromo = nextT && state.ascensions + 1 === nextT.minAsc;
-    const msg = isTierPromo
-      ? `TIER PROMOTION: ${TIERS[tier].name} → ${nextT.name}!\n\nPower Spike ×${fmt(nextT.spike)} awaits!\nThis resets gold, zones and level — equipment is kept.\n\nAscend?`
-      : `Ascending resets gold, zones and character level.\nYou KEEP your equipment.\n\nAscend?`;
+    const asc = getAscensionStatus(state);
+    if (!asc.canAscend) return;
+    const msg = asc.isTierPromo
+      ? `🎉 TIER PROMOTION!\n${asc.tierName} → ${asc.nextTier.name}!\n\n✓ KEEP  — All Equipment (your gear stays!)\n✗ RESET — Gold, Level, Zones\n\nPower Spike ×${fmt(asc.nextTier.spike)} will be applied!\n\nAscend?`
+      : `🎖️ Ascension #${asc.ascensionNumber}\n\n✓ KEEP  — All Equipment & gear bonuses\n✗ RESET — Gold, Level, Zones\n\nEach ascension: ×${asc.tierMult.toFixed(2)} to all stats (compounds!)\nYou'll rebuild much faster.\nNext goal: reach ${zoneName(asc.zoneReq + 1)} for ascension #${asc.ascensionNumber + 1}.\n\nAscend?`;
     if (confirm(msg)) {
       ascend(state);
       spawnPack(state); state.playerHp = playerMaxHp(state);
-      const tName = TIERS[heroTier(state)].name;
-      logMsg(isTierPromo ? `🎉 TIER UP! Welcome, ${tName}!` : `✨ Ascension #${state.ascensions}! Keep pushing, ${tName}!`, "milestone");
+      const postAsc = getAscensionStatus(state);
+      logMsg(asc.isTierPromo ? `🎉 TIER UP! Welcome, ${postAsc.tierName}!` : `✨ Ascension #${state.ascensions}! Keep pushing, ${postAsc.tierName}!`, "milestone");
       renderAll(state);
     }
   };
@@ -145,6 +132,7 @@ window.addEventListener("DOMContentLoaded", () => {
   load();
   bindButtons();
   renderAll(state);
+  logMsg("⚔️ Adventure starts! Defeat enemies, collect 💰 Gold. Tap 🛡️ Gear to upgrade your power!");
   if (pendingOffline) showOfflineSummary(pendingOffline);
   setInterval(gameLoop, 100);   // combate
   setInterval(save, 15000);     // autosave a cada 15s

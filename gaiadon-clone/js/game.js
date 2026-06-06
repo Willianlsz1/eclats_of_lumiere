@@ -1,5 +1,6 @@
-// ===== Core logic (sem DOM, testável em Node) =====
-// Progressão centrada em EQUIPAMENTO (ver docs/adr/0002). Tudo aqui é função pura.
+// ===== Game: estado, stats do jogador, loop de combate, ascensão =====
+// Módulo de orquestração que combina progression.js + loot.js + zones.js.
+// Depende de todos os módulos anteriores via scope global (sem import).
 
 function defaultState() {
   return {
@@ -17,106 +18,37 @@ function defaultState() {
       Weapon: { rarity: 0, level: 1 },
       Armor:  { rarity: 0, level: 1 },
       Amulet: { rarity: 0, level: 1 },
+      Ring:   { rarity: 0, level: 1 },
+      Gloves: { rarity: 0, level: 1 },
+      Helmet: { rarity: 0, level: 1 },
     },
     enemies: [],           // pack de inimigos atual (você foca o [0]; todos atacam)
     playerHp: null,
     lastSeen: null,
+    // Zone Mastery: kills acumulados POR ZONA — persiste entre ascensões.
+    // Chave: número da zona (como número). Valor: total de kills nessa zona.
+    zoneMastery: {},
+    // Zone Progress: kills de limpeza por zona NA RUN ATUAL.
+    // Persiste entre mortes e navegação (morte sem punição).
+    // Reseta na ascensão (nova run começa do zero).
+    zoneProgress: {},
   };
 }
 
-// --- Equipamento ---
-function itemPower(item) {
-  if (!item) return 0;
-  return Math.round(CONFIG.gear.powerPerLevel * item.level * RARITIES[item.rarity].mult);
-}
-function slotPower(s, slotId) { return itemPower(s.equipped[slotId]); }
-function rarityCap(item) { return RARITIES[item.rarity].cap; }
-
-// --- Afixos (sub-stats por raridade) ---
-// Afixos ativos de um item = os primeiros `rarity` da lista do slot.
-function itemAffixes(slotId, rarity) { return AFFIXES[slotId].slice(0, rarity); }
-// Valor de um afixo escala com o NÍVEL do item: base + perLevel × nível.
-function affixValue(a, level) { return a.base + a.perLevel * level; }
-// Soma todos os afixos dos itens equipados em modificadores globais.
-function affixTotals(s) {
-  const t = { critRate: 0, critDmg: 0, dmgMult: 0, hpMult: 0, goldMult: 0, xpMult: 0 };
-  for (const slot of SLOTS) {
-    const it = s.equipped[slot.id];
-    for (const a of itemAffixes(slot.id, it.rarity)) t[a.stat] += affixValue(a, it.level);
-  }
-  return t;
-}
-function critRate(s) { return Math.min(1, affixTotals(s).critRate); }
-function critMult(s) { return CONFIG.combat.baseCritMult + affixTotals(s).critDmg; }
-// Crítico como valor esperado (sem RNG por tick): multiplicador médio do DPS.
-function critExpectedMult(s) {
-  const t = affixTotals(s);
-  const rate = Math.min(1, t.critRate);
-  const mult = CONFIG.combat.baseCritMult + t.critDmg;
-  return 1 + rate * (mult - 1);
-}
-
-// --- Tiers de classe e multiplicador de ascensão ---
-// Tier atual: derivado de s.ascensions (nunca salvo — evita saves corrompidos).
-function heroTier(s) {
-  for (let i = TIERS.length - 1; i >= 0; i--) {
-    if (s.ascensions >= TIERS[i].minAsc) return i;
-  }
-  return 0;
-}
-
-// Produto acumulado dos spikes de todos os tiers já alcançados.
-// Ex: 200 ascensões → Warrior (×10) + Champion (×50) = ×500.
-function tierSpikeMultiplier(totalAscensions) {
-  let spike = 1;
-  for (let i = 1; i < TIERS.length; i++) {
-    if (totalAscensions >= TIERS[i].minAsc) spike *= TIERS[i].spike;
-  }
-  return spike;
-}
-
-// Multiplicador total acumulado de todas as ascensões feitas, agrupadas por tier.
-// Tier 0: ascensões 1-49 usam rate 1.06 (a 50ª já usa Warrior — ver spec).
-// Tier i>0: ascensões de TIERS[i].minAsc em diante usam TIERS[i].mult.
-function ascMultiplier(s) {
-  const n = s.ascensions;
-  if (n === 0) return 1;
-  let mult = 1;
-  for (let i = 0; i < TIERS.length; i++) {
-    const t = TIERS[i];
-    const nextMin = i + 1 < TIERS.length ? TIERS[i + 1].minAsc : Infinity;
-    let exp;
-    if (i === 0) {
-      // Tier 0: máximo 49 ascensões neste rate (a 50ª começa o Warrior).
-      exp = Math.min(n, nextMin - 1);
-    } else {
-      // Tier i: de t.minAsc até (nextMin - 1).
-      const tierCap = nextMin === Infinity ? n - t.minAsc : nextMin - t.minAsc;
-      exp = Math.max(0, Math.min(n - t.minAsc, tierCap));
-    }
-    if (exp > 0) mult *= Math.pow(t.mult, exp);
-  }
-  return mult * tierSpikeMultiplier(n);
-}
-
-// Stats POR NÍVEL crescem a cada ascensão (o Hero fica permanentemente mais forte).
-function perLevelMult(s) { return Math.pow(CONFIG.ascension.perLevelGrowth, s.ascensions); }
-function damagePerLevel(s) { return CONFIG.player.damagePerLevel * perLevelMult(s); }
-function hpPerLevel(s) { return CONFIG.player.hpPerLevel * perLevelMult(s); }
-
+// --- Stats do jogador (combinam equipment + progression) ---
 function playerDamage(s) {
   const P = CONFIG.player;
   let base = P.baseDamage + (s.level - 1) * damagePerLevel(s);
   base += slotPower(s, "Weapon"); // Weapon → Damage (1:1)
   base *= (1 + affixTotals(s).dmgMult); // afixo Damage %
-  return Math.round(base * ascMultiplier(s));
+  return Math.round(base * totalPowerMult(s));
 }
 function playerMaxHp(s) {
   const P = CONFIG.player;
   let base = P.baseHp + (s.level - 1) * hpPerLevel(s);
   base += slotPower(s, "Armor") * CONFIG.itemStats.healthPerPower; // Armor → Health
   base *= (1 + affixTotals(s).hpMult); // afixo Health %
-  return Math.round(base * ascMultiplier(s));
+  return Math.round(base * totalPowerMult(s));
 }
 function attackSpeed(s) {
   // Amulet → Attack Speed (+ também Gold Find em goldBonus).
@@ -127,126 +59,21 @@ function playerDps(s) { return playerDamage(s) * attackSpeed(s) * critExpectedMu
 function goldBonus(s) {
   let b = 1 + slotPower(s, "Amulet") * CONFIG.itemStats.goldFindPerPower; // Amulet → Gold Find
   b *= (1 + affixTotals(s).goldMult); // afixo Gold %
-  return b * ascMultiplier(s);
+  return b * totalPowerMult(s) * zoneMasteryBonus(s); // Zone Mastery bônus de farming
 }
-// Multiplicador de XP: o multiplicador do Power (damage/gold/XP) × afixo XP % do gear.
+// Multiplicador de XP: o multiplicador do Power × afixo XP % × Zone Mastery.
 function xpMultiplier(s) {
-  return ascMultiplier(s) * (1 + affixTotals(s).xpMult);
+  return totalPowerMult(s) * (1 + affixTotals(s).xpMult) * zoneMasteryBonus(s);
 }
-
-// --- Custos e ações de equipamento ---
-function levelCostAt(level) {
-  return Math.round(CONFIG.gear.levelCostBase * Math.pow(CONFIG.gear.levelCostGrowth, level));
+// Ring: Shard Find — multiplica shards de cada abate (base stat + afixos + poder total + mastery).
+function shardBonus(s) {
+  let b = 1 + slotPower(s, "Ring") * CONFIG.itemStats.shardFindPerPower;
+  b *= (1 + affixTotals(s).shardMult);
+  return b * totalPowerMult(s) * zoneMasteryBonus(s);
 }
-function levelUpCost(s, slotId) {
-  return levelCostAt(s.equipped[slotId].level);
-}
-// Quantos níveis dá pra comprar agora (e o custo total), sem alterar o estado.
-function levelUpMaxPreview(s, slotId) {
-  const item = s.equipped[slotId];
-  const cap = rarityCap(item);
-  let gold = s.gold, level = item.level, count = 0, spent = 0;
-  while (level < cap) {
-    const cost = levelCostAt(level);
-    if (gold < cost) break;
-    gold -= cost; level++; count++; spent += cost;
-    if (count > 1e6) break; // trava de segurança
-  }
-  return { count, spent };
-}
-// Compra o máximo de níveis possível de uma vez. Retorna quantos comprou.
-function levelUpMax(s, slotId) {
-  let count = 0;
-  while (levelUpItem(s, slotId)) { if (++count > 1e6) break; }
-  return count;
-}
-function canLevelUp(s, slotId) {
-  const item = s.equipped[slotId];
-  return item.level < rarityCap(item) && s.gold >= levelUpCost(s, slotId);
-}
-function levelUpItem(s, slotId) {
-  const item = s.equipped[slotId];
-  if (item.level >= rarityCap(item)) return false; // travado no cap
-  const cost = levelUpCost(s, slotId);
-  if (s.gold < cost) return false;
-  s.gold -= cost; item.level++;
-  return true;
-}
-function rarityUpCost(s, slotId) {
-  const item = s.equipped[slotId];
-  return Math.round(CONFIG.gear.rarityCostBase * Math.pow(CONFIG.gear.rarityCostGrowth, item.rarity));
-}
-function canRarityUp(s, slotId) {
-  const item = s.equipped[slotId];
-  return item.rarity < RARITIES.length - 1
-      && item.level >= rarityCap(item)        // precisa estar no cap atual
-      && s.shards >= rarityUpCost(s, slotId);
-}
-function rarityUpItem(s, slotId) {
-  const item = s.equipped[slotId];
-  if (item.rarity >= RARITIES.length - 1) return false;
-  if (item.level < rarityCap(item)) return false; // precisa estar no cap
-  const cost = rarityUpCost(s, slotId);
-  if (s.shards < cost) return false;
-  s.shards -= cost; item.rarity++; // nível mantém; cap agora é maior
-  return true;
-}
-
-// --- Inimigos (escala pela zone — ver docs/adr/0001) ---
-function enemyStats(zone) {
-  const E = CONFIG.enemy;
-  const d = zone - 1;
-  return {
-    hp:   Math.round(E.baseHp   * Math.pow(E.hpGrowth, d)),
-    dmg:  Math.round(E.baseDmg  * Math.pow(E.dmgGrowth, d)),
-    gold: Math.round(E.baseGold * Math.pow(E.goldGrowth, d)),
-    xp:   Math.round(E.baseXp   * Math.pow(E.xpGrowth, d)),
-  };
-}
-function regionFor(zone) {
-  const i = Math.floor((zone - 1) / CONFIG.zonesPerRegion) % REGIONS.length;
-  return REGIONS[i];
-}
-function isBossZone(zone) { return zone % CONFIG.boss.everyZones === 0; }
-// Abates para limpar uma zone — cresce com a profundidade.
-function killsToClear(zone) {
-  return CONFIG.enemy.killsBase + Math.floor((zone - 1) * CONFIG.enemy.killsPerZone);
-}
-
-// Quantos inimigos aparecem juntos numa zone (Boss vem sempre sozinho).
-function packSize(zone) {
-  if (isBossZone(zone)) return 1;
-  const P = CONFIG.pack;
-  return Math.min(P.max, P.base + Math.floor((zone - 1) / P.perZones));
-}
-
-// Cria UM inimigo (ou Boss) da zone.
-function makeEnemy(zone) {
-  const region = regionFor(zone);
-  const stats = enemyStats(zone);
-  if (isBossZone(zone)) {
-    const B = CONFIG.boss;
-    const hp = stats.hp * B.hpMult;
-    return { name: region.enemies[0] + " Boss", isBoss: true, hp, maxHp: hp, dmg: stats.dmg,
-             goldReward: stats.gold * B.goldMult, xpReward: stats.xp * B.xpMult };
-  }
-  const name = region.enemies[Math.floor(Math.random() * region.enemies.length)];
-  return { name, isBoss: false, hp: stats.hp, maxHp: stats.hp, dmg: stats.dmg, goldReward: stats.gold, xpReward: stats.xp };
-}
-
-// Spawna um pack novo na zone atual.
-function spawnPack(s) {
-  const n = packSize(s.zone);
-  s.enemies = [];
-  for (let i = 0; i < n; i++) s.enemies.push(makeEnemy(s.zone));
-  return s.enemies;
-}
-
-// --- Shards (drop) ---
-function shardsOnKill(zone, isBoss) {
-  let n = Math.floor(CONFIG.shards.basePerKill + zone * CONFIG.shards.perZone);
-  if (isBoss) n *= CONFIG.shards.bossMult;
-  return Math.max(1, n);
+// Helmet: Boss Damage — multiplicador de dano apenas contra bosses.
+function bossDmgMult(s) {
+  return 1 + slotPower(s, "Helmet") * CONFIG.itemStats.bossDmgPerPower + affixTotals(s).bossDmg;
 }
 
 // --- XP / nível do Hero ---
@@ -262,42 +89,59 @@ function gainXp(s, amount) {
 // (a cura acontece ao limpar o pack inteiro — packs maiores são mais perigosos).
 function registerKill(s, e) {
   e = e || s.enemies[0];
+  const zoneAtKill = s.zone; // captura antes de advanced mudar s.zone
   const g = Math.round(e.goldReward * goldBonus(s));
   s.gold += g;
   const leveled = gainXp(s, e.xpReward * xpMultiplier(s));
   s.totalKills++;
-  const sh = shardsOnKill(s.zone, e.isBoss);
+  const sh = Math.round(shardsOnKill(s.zone, e.isBoss) * shardBonus(s) * (e.shardMult || 1));
   s.shards += sh;
   s.killsInZone++;
+
+  // ── Zone Mastery: acumula kills permanentes nesta zona ───────────────────
+  const justMastered = recordMasteryKill(s, zoneAtKill);
+
   const needed = e.isBoss ? 1 : killsToClear(s.zone);
   let advanced = false, walledCleared = false;
   if (s.killsInZone >= needed) {
-    s.killsInZone = 0;
+    clearZoneProgress(s, zoneAtKill);
     if (s.zone > s.maxZone) {            // limpou uma FRONTEIRA nova
       s.maxZone = s.zone; walledCleared = true;
       s.zone = s.maxZone + 1; advanced = true; // segue empurrando
     }
     // farmando uma zone já limpa (zone <= maxZone): fica, não é empurrado.
   }
-  return { type: "kill", name: e.name, gold: g, shards: sh, leveled, advanced, walledCleared, zone: s.zone, wasBoss: e.isBoss };
+  // Avisa quando o tamanho do pack aumenta ao entrar em nova zona.
+  const packIncreased = advanced && packSize(s.zone) > packSize(zoneAtKill);
+  return { type: "kill", name: e.name, tier: e.tier || "normal", gold: g, shards: sh, leveled, advanced, walledCleared, packIncreased, zone: s.zone, wasBoss: e.isBoss, justMastered, masteredZone: justMastered ? zoneAtKill : null };
 }
 
-// Navegação manual de zone: entre a Zone 1 e a fronteira (maxZone + 1).
+// Navegação manual de zone: entre a Zone 1 e a fronteira (accessibleDepth + 1).
+// accessibleDepth garante que o player possa navegar até sua fronteira real
+// mesmo que maxZone esteja baixo por bug de save.
 function changeZone(s, dir) {
   const target = s.zone + dir;
-  if (target < 1 || target > s.maxZone + 1) return false;
+  if (target < 1 || target > accessibleDepth(s) + 1) return false;
+  saveZoneProgress(s);
   s.zone = target;
-  s.killsInZone = 0;
+  restoreZoneProgress(s, target);
   spawnPack(s);
   s.playerHp = playerMaxHp(s);
   return true;
 }
 
-// Morte: sem punição. Recua para a zone segura (maxZone), zera o contador e o pack.
+// Morte: SEM PUNIÇÃO DE PROGRESSO. Recua para a zone segura mais próxima,
+// mas PRESERVA os kills acumulados em zoneProgress — o jogador retoma de onde parou.
+// Filosofia: morte é um "tente de novo", não uma punição que apaga esforço.
+// "Segura" = a zone anterior à parede. Se morrer de novo, recua mais 1.
+// Caso extremo (pós-ascensão em zona alta): recua até zone 1 se preciso.
 function handleDeath(s) {
   const wallZone = s.zone;
-  s.killsInZone = 0;
-  s.zone = Math.max(1, s.maxZone);
+  saveZoneProgress(s);
+  // Recua 1 zona abaixo da parede (não fica preso repetindo a mesma zona letal).
+  // Mínimo zone 1 para evitar ficar stuck quando o jogador está fraco demais.
+  s.zone = Math.max(1, s.zone - 1);
+  restoreZoneProgress(s, s.zone);
   s.enemies = [];
   s.playerHp = playerMaxHp(s);
   return { type: "death", wallZone, zone: s.zone };
@@ -311,7 +155,9 @@ function tick(s, dt) {
 
   // Você FOCA o inimigo da frente.
   const target = s.enemies[0];
-  const dmgToEnemy = playerDps(s) * dt;
+  // Helmet: Boss Damage multiplier applies only against boss enemies.
+  let dmgToEnemy = playerDps(s) * dt;
+  if (target.isBoss) dmgToEnemy *= bossDmgMult(s);
   target.hp -= dmgToEnemy;
   events.push({ type: "hit", amount: dmgToEnemy });
 
@@ -332,33 +178,53 @@ function tick(s, dt) {
 }
 
 // --- Ascensão (prestígio) ---
-// Nível do personagem exigido para a próxima ascensão (escala com o nº de ascensões).
-// reqGrowth 1.15 (suave) — aguentar centenas de ascensões.
-function ascLevelReq(s) {
-  return Math.round(CONFIG.ascension.firstReqLevel * Math.pow(CONFIG.ascension.reqGrowth, s.ascensions));
+function canAscend(s) {
+  return s.level  >= CONFIG.ascension.firstReqLevel
+      && s.maxZone >= ascZoneReq(s);
 }
-function canAscend(s) { return s.level >= ascLevelReq(s); }
 
-// Ascender: incrementa ascensions, mantém equipamento, reseta o resto.
-// Retorna true em sucesso; false se o requisito de nível não foi atingido.
+// Snapshot de todo o status de ascensão — callers exibem, ninguém recalcula.
+// Centraliza a lógica que antes estava espalhada em main.js e ui.js.
+function getAscensionStatus(s) {
+  const tier = heroTier(s);
+  const t    = TIERS[tier];
+  const nextT = tier + 1 < TIERS.length ? TIERS[tier + 1] : null;
+  const zoneReq = ascZoneReq(s);
+  const isTierPromo = !!(nextT && s.ascensions + 1 === nextT.minAsc);
+  return {
+    tier,
+    tierName: t.name,
+    tierMult: t.mult,
+    nextTier: nextT,
+    isTierPromo,
+    canAscend: canAscend(s),
+    ascensionNumber: s.ascensions + 1,
+    zoneReq,
+    levelReq: CONFIG.ascension.firstReqLevel,
+    currentPowerMult: ascMultiplier(s),
+    compoundPreview: Math.pow(t.mult, 10), // ×X after 10 more
+  };
+}
+
+// Ascender: incrementa ascensions, mantém equipamento e território limpo, reseta o resto.
+// maxZone é PRESERVADO — a calibração de fronteira só se aplica a zonas acima dele.
+// O jogador começa na zona 1: breezes pelas zonas triviais (power fantasy!)
+// e reconstrui nível/gold naturalmente. Padrão de idles como Clicker Heroes.
+// Retorna true em sucesso; false se os requisitos não foram atingidos.
 function ascend(s) {
   if (!canAscend(s)) return false;
-  const keepAscensions = s.ascensions + 1;
-  const keepEquipped   = s.equipped;
+  const keepAscensions  = s.ascensions + 1;
+  const keepEquipped    = s.equipped;
+  const keepMaxZone     = s.maxZone;      // preserva território limpo
+  const keepZoneMastery = s.zoneMastery || {}; // kills permanentes — nunca resetam
   Object.assign(s, defaultState());
-  s.ascensions = keepAscensions;
-  s.equipped   = keepEquipped;
+  s.ascensions  = keepAscensions;
+  s.equipped    = keepEquipped;
+  s.maxZone     = keepMaxZone;
+  s.zone        = 1;                   // recomeça do início — zonas triviais voam, fronteira = desafio
+  s.zoneMastery = keepZoneMastery;     // bônus de farming sobrevivem à ascensão
+  // zoneProgress NÃO é preservado — pertence à run atual, não ao progresso permanente
   return true;
-}
-
-// Config de offline: melhora automaticamente a cada CONFIG.offline.ascPerStep ascensões.
-// Teto: 50% de eficiência, 24h de cap.
-function offlineConfig(s) {
-  const O = CONFIG.offline;
-  const steps = Math.floor(s.ascensions / O.ascPerStep);
-  const efficiency = Math.min(O.efficiencyMax, O.startEfficiency + steps * O.effPerStep);
-  const capHours   = Math.min(O.capMaxHours,   O.startCapHours   + steps * O.capHoursPerStep);
-  return { efficiency, capHours };
 }
 
 // Estima os ganhos enquanto offline, de forma BARATA (fórmula, sem rodar ticks).
@@ -368,25 +234,24 @@ function computeOfflineGains(s, elapsedSec) {
   const seconds = Math.max(0, Math.min(elapsedSec, capHours * 3600));
   const farmZone = Math.max(1, Math.min(s.zone, s.maxZone));
   const st = enemyStats(farmZone);
-  const killsPerSec = playerDps(s) / Math.max(1, st.hp);
+  // Inimigos offline também escalam com ascensões (mesma dificuldade do jogo ao vivo).
+  const ascMult = Math.pow(CONFIG.enemy.ascGrowth, s.ascensions);
+  const killsPerSec = playerDps(s) / Math.max(1, st.hp * ascMult);
   const kills = killsPerSec * seconds * efficiency;
   const gold = Math.round(kills * st.gold * goldBonus(s));
   const xp = Math.round(kills * st.xp * xpMultiplier(s));
-  const shards = Math.round(kills * shardsOnKill(farmZone, false));
-  return { seconds, kills: Math.floor(kills), gold, xp, shards };
+  const shards = Math.round(kills * shardsOnKill(farmZone, false) * shardBonus(s));
+  return { seconds, kills: Math.floor(kills), gold, xp, shards, farmZone };
 }
 
 if (typeof module !== "undefined") {
   module.exports = {
-    defaultState, itemPower, slotPower, rarityCap,
-    heroTier, tierSpikeMultiplier, ascMultiplier,
-    perLevelMult, damagePerLevel, hpPerLevel,
-    itemAffixes, affixValue, affixTotals, critRate, critMult, critExpectedMult,
-    playerDamage, playerMaxHp, attackSpeed, playerDps, goldBonus,
-    levelCostAt, levelUpCost, levelUpMaxPreview, levelUpMax, canLevelUp, levelUpItem,
-    rarityUpCost, canRarityUp, rarityUpItem,
-    enemyStats, regionFor, isBossZone, killsToClear, packSize, makeEnemy, spawnPack, shardsOnKill,
-    xpToNext, gainXp, xpMultiplier, registerKill, changeZone, handleDeath, tick,
-    ascLevelReq, canAscend, ascend, offlineConfig, computeOfflineGains,
+    defaultState,
+    playerDamage, playerMaxHp, attackSpeed, playerDps,
+    goldBonus, xpMultiplier, shardBonus, bossDmgMult,
+    xpToNext, gainXp,
+    registerKill, changeZone, handleDeath, tick,
+    canAscend, getAscensionStatus, ascend,
+    computeOfflineGains,
   };
 }

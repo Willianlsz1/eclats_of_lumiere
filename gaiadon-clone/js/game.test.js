@@ -1,7 +1,15 @@
-// Carrega data.js -> globalThis -> game.js, depois roda os testes.
+// Carrega todos os módulos em ordem de dependência -> globalThis, depois roda os testes.
+// Cada módulo é mergeado em globalThis (scope global, como no browser).
 const data = require("./data.js");
 Object.assign(globalThis, data);
-const game = require("./game.js");
+for (const f of ["./progression.js", "./loot.js", "./zones.js", "./game.js"]) {
+  Object.assign(globalThis, require(f));
+}
+// 'game' unificado: tests referenciam game.funcName() sem saber em qual arquivo mora.
+const game = {};
+for (const f of ["./progression.js", "./loot.js", "./zones.js", "./game.js"]) {
+  Object.assign(game, require(f));
+}
 const { test, assert, assertEqual, report } = require("./_assert.js");
 
 console.log("== Estado base ==");
@@ -203,21 +211,21 @@ test("ascensões e afixo de XP aumentam o multiplicador de XP", () => {
 });
 
 test("changeZone respeita os limites [1, maxZone+1]", () => {
-  const s = game.defaultState(); s.maxZone = 4; s.zone = 2;
+  const s = game.defaultState(); s.maxZone = 10; s.zone = 2;
   assert(game.changeZone(s, -1), "deveria voltar"); assertEqual(s.zone, 1);
   assertEqual(game.changeZone(s, -1), false, "não vai abaixo de 1");
-  s.zone = 5; // fronteira = maxZone+1
+  s.zone = 11; // fronteira = accessibleDepth(s)+1
   assertEqual(game.changeZone(s, +1), false, "não passa da fronteira");
-  assert(game.changeZone(s, -1), "deveria avançar de volta"); assertEqual(s.zone, 4);
+  assert(game.changeZone(s, -1), "deveria avançar de volta"); assertEqual(s.zone, 10);
 });
 
 test("morte na fronteira não pune e recua", () => {
   const s = game.defaultState();
-  s.maxZone = 3; s.zone = 4; s.gold = 100; s.shards = 50;
+  s.maxZone = 10; s.zone = 11; s.gold = 100; s.shards = 50;
   game.handleDeath(s);
   assertEqual(s.gold, 100, "não perde gold");
   assertEqual(s.shards, 50, "não perde shards");
-  assert(s.zone <= s.maxZone, "recua para a zone segura");
+  assertEqual(s.zone, 10, "recua 1 zona abaixo da parede");
 });
 
 console.log("== Ascensão (prestígio) ==");
