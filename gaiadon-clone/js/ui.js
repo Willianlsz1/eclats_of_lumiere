@@ -75,6 +75,7 @@ function renderHero(s) {
   $("statCritRate").textContent = Math.round(critRate(s) * 100) + "%";
   $("statCritDmg").textContent = "×" + critMult(s).toFixed(2);
   $("statDps").textContent = fmt(playerDps(s));
+  $("statXp").textContent = "×" + xpMultiplier(s).toFixed(2);
   const dpl = damagePerLevel(s), hpl = hpPerLevel(s);
   const f1 = n => n < 100 ? n.toFixed(1) : fmt(n);
   const tier = heroTier(s);
