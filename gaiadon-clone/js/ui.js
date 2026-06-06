@@ -1,5 +1,8 @@
 // ===== Renderização (DOM) =====
+// A UI só LÊ o estado e desenha. Nunca decide regra de jogo.
 const $ = id => document.getElementById(id);
+
+// Formata números grandes: 1234 -> "1.2K", etc.
 const fmt = n => {
   n = Math.floor(n);
   if (n < 1000) return "" + n;
@@ -9,8 +12,10 @@ const fmt = n => {
   return n.toFixed(1) + units[i];
 };
 
-function logMsg(msg) {
-  $("log").textContent = msg;
+function logMsg(msg, cls) {
+  const el = $("log");
+  el.textContent = msg;
+  el.className = "log" + (cls ? " " + cls : "");
 }
 
 function renderResources(s) {
@@ -21,44 +26,57 @@ function renderResources(s) {
 }
 
 function renderCombat(s) {
-  $("zoneName").textContent = ZONES[s.zone].name;
-  $("zone").textContent = s.zone + 1;
+  $("regionName").textContent = regionFor(s.zone).name;
+  $("zone").textContent = s.zone;
   if (s.enemy) {
     $("enemyName").textContent = s.enemy.name;
+    $("enemyName").className = "enemy-name" + (s.enemy.isBoss ? " boss" : "");
     const pct = Math.max(0, (s.enemy.hp / s.enemy.maxHp) * 100);
     $("enemyHpFill").style.width = pct + "%";
+    $("enemyHpFill").className = "hpfill" + (s.enemy.isBoss ? " boss" : "");
     $("enemyHpText").textContent = fmt(Math.max(0, s.enemy.hp)) + "/" + fmt(s.enemy.maxHp);
   }
+  // Boss limpa em 1 abate; zone normal precisa de killsToClear.
+  const needed = (s.enemy && s.enemy.isBoss) ? 1 : CONFIG.enemy.killsToClear;
   $("kills").textContent = s.killsInZone;
+  $("killsNeeded").textContent = needed;
   $("dmg").textContent = fmt(playerDamage(s));
   $("hp").textContent = fmt(playerMaxHp(s));
-  $("dps").textContent = fmt(playerDamage(s) * attackSpeed(s));
-  $("prevZone").disabled = s.zone <= 0;
-  $("nextZone").disabled = !canAdvance(s);
-  $("nextZone").textContent = canAdvance(s)
-    ? "Próxima zona ▶"
-    : `Próxima (${s.killsInZone}/10) ▶`;
+  $("dps").textContent = fmt(playerDps(s));
+}
+
+// Barra "próximo objetivo" — sempre algo à vista (pacing).
+function renderNextGoal(s) {
+  const isBoss = s.enemy && s.enemy.isBoss;
+  const needed = isBoss ? 1 : CONFIG.enemy.killsToClear;
+  const left = Math.max(0, needed - s.killsInZone);
+  let target;
+  if (isBoss) target = `Defeat the Zone ${s.zone} Boss`;
+  else if (s.zone > s.maxZone) target = `Break through Zone ${s.zone}`;
+  else target = `Clear Zone ${s.zone}`;
+  $("nextGoal").textContent = `Next: ${target} — ${left} kill${left === 1 ? "" : "s"} left`;
 }
 
 function itemLabel(it) {
-  return `<span class="rar-${it.rarity}"><span class="item-name">${it.name}</span> · ${it.rarity} · +${it.power}</span>`;
+  const stat = it.stat ? ` ${it.stat}` : "";
+  return `<span class="rar-${it.rarity}"><span class="item-name">${it.name}</span> · ${it.rarity} · +${it.power}${stat}</span>`;
 }
 
 function renderGear(s) {
   const eq = $("equipped");
   eq.innerHTML = SLOTS.map(slot => {
     const it = s.equipped[slot];
-    return `<div class="slot"><small>${slot}</small><br>${it ? itemLabel(it) : "<i>vazio</i>"}</div>`;
+    return `<div class="slot"><small>${slot}</small><br>${it ? itemLabel(it) : "<i>empty</i>"}</div>`;
   }).join("");
 
-  $("invCount").textContent = `(${s.inventory.length}/24)`;
+  $("invCount").textContent = `(${s.inventory.length}/${CONFIG.drops.inventoryMax})`;
   const inv = $("inventory");
   if (!s.inventory.length) {
-    inv.innerHTML = "<i style='color:var(--muted)'>Mochila vazia — derrote inimigos para dropar itens.</i>";
+    inv.innerHTML = "<i style='color:var(--muted)'>Backpack empty — defeat enemies to drop items.</i>";
     return;
   }
   inv.innerHTML = s.inventory.map(it =>
-    `<div class="inv-item" data-id="${it.id}"><small>${it.slot}</small>${itemLabel(it)}<small>clique p/ equipar</small></div>`
+    `<div class="inv-item" data-id="${it.id}"><small>${it.slot}</small>${itemLabel(it)}<small>click to equip</small></div>`
   ).join("");
   inv.querySelectorAll(".inv-item").forEach(el => {
     el.onclick = () => {
@@ -73,7 +91,7 @@ function renderShop(s) {
     const cost = shopCost(s, u.id);
     const afford = s.gold >= cost;
     return `<div class="shop-item">
-      <span class="info">${u.name} <span class="lvl">Nv ${s.shop[u.id]}</span></span>
+      <span class="info">${u.name} <span class="lvl">Lv ${s.shop[u.id]}</span></span>
       <button data-id="${u.id}" ${afford ? "" : "disabled"}>💰 ${fmt(cost)}</button>
     </div>`;
   }).join("");
@@ -85,12 +103,30 @@ function renderShop(s) {
 }
 
 function renderAscend(s) {
-  $("essenceGain").textContent = fmt(essenceOnAscend(s));
+  const unlocked = canAscend(s);
+  $("ascendBtn").disabled = !unlocked;
+  if (unlocked) {
+    $("ascInfo").innerHTML = `Essence on ascend now: <b id="essenceGain">${fmt(essenceOnAscend(s))}</b>`;
+  } else {
+    $("ascInfo").textContent = `Reach Zone ${CONFIG.ascension.unlockZone} to unlock Ascension (deepest: ${s.maxZone}).`;
+  }
+}
+
+// Número de dano que sobe e some — preenchido de verdade na Task 6 (game feel).
+function spawnFloatingDamage(amount) {
+  const stage = $("combatStage");
+  if (!stage) return;
+  const el = document.createElement("span");
+  el.className = "floating-dmg";
+  el.textContent = "-" + fmt(amount);
+  stage.appendChild(el);
+  setTimeout(() => el.remove(), 800);
 }
 
 function renderAll(s) {
   renderResources(s);
   renderCombat(s);
+  renderNextGoal(s);
   renderGear(s);
   renderShop(s);
   renderAscend(s);

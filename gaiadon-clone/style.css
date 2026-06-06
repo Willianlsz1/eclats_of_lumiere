@@ -72,6 +72,19 @@ small { color: var(--muted); font-weight: normal; }
 }
 .zone-controls { display: flex; gap: 8px; }
 
+/* Barra de próximo objetivo (pacing) */
+.next-goal {
+  background: #111726; border-left: 3px solid var(--accent);
+  border-radius: 6px; padding: 8px 10px; margin: 10px 0;
+  font-size: 13px; color: var(--accent);
+}
+/* Palco de combate — base para os números de dano flutuantes (Task 6) */
+.combat-stage { position: relative; min-height: 50px; }
+/* Destaque de Boss */
+.enemy-name.boss { color: var(--gold); text-shadow: 0 0 8px rgba(255,209,102,.6); }
+.hpfill.boss { background: linear-gradient(90deg, #c084fc, var(--gold)); }
+.log.milestone { color: var(--gold); font-weight: bold; }
+
 button {
   background: var(--panel2); color: var(--text);
   border: 1px solid #34405e; border-radius: 8px;

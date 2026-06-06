@@ -6,3 +6,6 @@ Thumbs.db
 # Documentos internos (contexto e decisões) — não versionar, só local
 /CONTEXT.md
 /docs/
+
+# Ferramentas locais de dev (preview) — não fazem parte do jogo
+/.claude/

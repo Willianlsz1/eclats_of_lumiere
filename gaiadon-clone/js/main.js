@@ -8,21 +8,22 @@ function load() {
     if (raw) {
       const parsed = JSON.parse(raw);
       state = Object.assign(defaultState(), parsed);
-      // garante estruturas
-      state.shop = Object.assign({ dmg: 0, hp: 0, spd: 0, gold: 0 }, parsed.shop || {});
-      state.equipped = Object.assign({ Arma: null, Armadura: null, Amuleto: null }, parsed.equipped || {});
+      // garante estruturas (caso o save seja de uma versão mais antiga)
+      state.shop = Object.assign({ dmg: 0, hp: 0, spd: 0, gold: 0, offlineEff: 0, offlineCap: 0 }, parsed.shop || {});
+      state.equipped = Object.assign({ Weapon: null, Armor: null, Amulet: null }, parsed.equipped || {});
     }
-  } catch (e) { console.warn("Falha ao carregar save", e); }
+  } catch (e) { console.warn("Failed to load save", e); }
   spawnEnemy(state);
   state.playerHp = playerMaxHp(state);
 }
 
 function save() {
   try {
+    state.lastSeen = Date.now(); // timestamp para o cálculo offline (Task 5)
     const copy = Object.assign({}, state);
     delete copy.enemy; delete copy.playerHp; // regenerados ao carregar
     localStorage.setItem(SAVE_KEY, JSON.stringify(copy));
-    $("saveStatus").textContent = "Salvo ✓";
+    $("saveStatus").textContent = "Saved ✓";
     setTimeout(() => $("saveStatus").textContent = "", 1500);
   } catch (e) { console.warn(e); }
 }
@@ -30,10 +31,15 @@ function save() {
 function handleEvents(events) {
   for (const ev of events) {
     if (ev.type === "kill") {
-      let msg = `Derrotou ${ev.name}! +${fmt(ev.gold)} ouro.`;
-      if (ev.leveled) msg += ` Subiu para o nível ${state.level}!`;
-      if (ev.drop) msg += ` 🎁 Dropou: ${ev.drop.name} (${ev.drop.rarity} +${ev.drop.power})`;
+      let msg = `Defeated ${ev.name}! +${fmt(ev.gold)} gold.`;
+      if (ev.leveled) msg += ` Reached level ${state.level}!`;
+      if (ev.drop) msg += ` 🎁 Dropped: ${ev.drop.name} (${ev.drop.rarity} +${ev.drop.power})`;
       logMsg(msg);
+      if (ev.walledCleared) {
+        logMsg(`✨ Broke through to Zone ${ev.zone}!`, "milestone");
+      }
+    } else if (ev.type === "death") {
+      logMsg(`💀 You're not strong enough for Zone ${ev.wallZone} yet. Farm and grow stronger!`);
     }
   }
 }
@@ -43,28 +49,28 @@ function gameLoop() {
   handleEvents(events);
   renderResources(state);
   renderCombat(state);
+  renderNextGoal(state);
   if (events.some(e => e.drop)) renderGear(state);
   if (events.some(e => e.type === "kill")) { renderShop(state); renderAscend(state); }
 }
 
 function bindButtons() {
-  $("prevZone").onclick = () => { if (changeZone(state, -1)) renderAll(state); };
-  $("nextZone").onclick = () => { if (changeZone(state, +1)) renderAll(state); };
   $("ascendBtn").onclick = () => {
-    if (confirm("Ascender reinicia todo o progresso (exceto Essência). Continuar?")) {
+    if (!canAscend(state)) return;
+    if (confirm("Ascending resets all progress (except Essence). Continue?")) {
       const g = ascend(state);
       spawnEnemy(state); state.playerHp = playerMaxHp(state);
-      logMsg(`✨ Você ascendeu! +${fmt(g)} de essência.`);
+      logMsg(`✨ You ascended! +${fmt(g)} essence.`, "milestone");
       renderAll(state);
     }
   };
   $("saveBtn").onclick = save;
   $("resetBtn").onclick = () => {
-    if (confirm("Apagar TODO o progresso, incluindo essência?")) {
+    if (confirm("Erase ALL progress, including essence?")) {
       localStorage.removeItem(SAVE_KEY);
       state = defaultState();
       spawnEnemy(state); state.playerHp = playerMaxHp(state);
-      renderAll(state); logMsg("Jogo reiniciado do zero.");
+      renderAll(state); logMsg("Game reset from scratch.");
     }
   };
 }
