@@ -29,15 +29,27 @@ function renderResources(s) {
 function renderCombat(s) {
   $("regionName").textContent = regionFor(s.zone).name;
   $("zone").textContent = s.zone;
-  if (s.enemy) {
-    $("enemyName").textContent = s.enemy.name;
-    $("enemyName").className = "enemy-name" + (s.enemy.isBoss ? " boss" : "");
-    const pct = Math.max(0, (s.enemy.hp / s.enemy.maxHp) * 100);
+  const pack = s.enemies || [];
+  const target = pack[0]; // o inimigo que você está focando (frente do pack)
+  if (target) {
+    $("enemyName").textContent = target.name;
+    $("enemyName").className = "enemy-name" + (target.isBoss ? " boss" : "");
+    const pct = Math.max(0, (target.hp / target.maxHp) * 100);
     $("enemyHpFill").style.width = pct + "%";
-    $("enemyHpFill").className = "hpfill" + (s.enemy.isBoss ? " boss" : "");
-    $("enemyHpText").textContent = fmt(Math.max(0, s.enemy.hp)) + "/" + fmt(s.enemy.maxHp);
+    $("enemyHpFill").className = "hpfill" + (target.isBoss ? " boss" : "");
+    $("enemyHpText").textContent = fmt(Math.max(0, target.hp)) + "/" + fmt(target.maxHp);
   }
-  const needed = (s.enemy && s.enemy.isBoss) ? 1 : killsToClear(s.zone);
+  // Pack: mini-barras dos demais inimigos (todos te atacam).
+  if (pack.length > 1) {
+    $("packInfo").innerHTML = `<small>👥 Pack of ${pack.length} — all attacking!</small>` +
+      pack.map((e, i) => {
+        const p = Math.max(0, (e.hp / e.maxHp) * 100);
+        return `<div class="pack-mini${i === 0 ? " target" : ""}"><div style="width:${p}%"></div></div>`;
+      }).join("");
+  } else {
+    $("packInfo").innerHTML = "";
+  }
+  const needed = (target && target.isBoss) ? 1 : killsToClear(s.zone);
   $("kills").textContent = s.killsInZone;
   $("killsNeeded").textContent = needed;
 
