@@ -166,7 +166,12 @@ small { color: var(--muted); font-weight: normal; }
 .hero-stats td:last-child { text-align: right; font-weight: bold; color: var(--text); }
 .hero-stats tr.derived td { color: var(--gold); border-bottom: none; }
 .hero-foot { font-size: 12px; color: var(--muted); margin: 10px 0 0; }
-.hero-foot .next-asc { color: var(--green); }
+.hero-foot-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 4px 0; border-top: 1px solid #2b3650;
+}
+.hero-foot-row:first-child { border-top: none; }
+.hero-foot-label { color: var(--muted); }
 
 button {
   background: var(--panel2); color: var(--text);

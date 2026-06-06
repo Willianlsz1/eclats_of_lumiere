@@ -75,10 +75,20 @@ function renderHero(s) {
   $("statCritRate").textContent = Math.round(critRate(s) * 100) + "%";
   $("statCritDmg").textContent = "×" + critMult(s).toFixed(2);
   $("statDps").textContent = fmt(playerDps(s));
-  const dpl = damagePerLevel(s), hpl = hpPerLevel(s), g = CONFIG.ascension.perLevelGrowth;
-  const f1 = n => n < 100 ? n.toFixed(1) : fmt(n); // mantém decimal nos valores pequenos
-  $("heroFoot").innerHTML = `Each level grants <b>+${f1(dpl)} damage</b> and <b>+${f1(hpl)} health</b>.` +
-    `<br><span class="next-asc">↑ Next ascension: +${f1(dpl * g)} dmg / +${f1(hpl * g)} hp per level</span>`;
+  const dpl = damagePerLevel(s), hpl = hpPerLevel(s);
+  const f1 = n => n < 100 ? n.toFixed(1) : fmt(n);
+  const tier = heroTier(s);
+  const t = TIERS[tier];
+  const tierColor = ["common","uncommon","rare","epic","legendary"][tier];
+  $("heroFoot").innerHTML =
+    `<div class="hero-foot-row">
+       <span class="hero-foot-label">Per level</span>
+       <span>+${f1(dpl)} dmg &nbsp;·&nbsp; +${f1(hpl)} hp</span>
+     </div>
+     <div class="hero-foot-row">
+       <span class="hero-foot-label">Per ascension</span>
+       <span class="rar-${tierColor}">×${t.mult.toFixed(2)} all stats <small>(${t.name})</small></span>
+     </div>`;
 }
 
 function renderNextGoal(s) {
