@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gaiadon Clone — Eternal Quest (protótipo)</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>⚔️ Gaiadon — Eternal Quest <span class="tag">protótipo</span></h1>
+    <div id="resources">
+      <span>💰 Ouro: <b id="gold">0</b></span>
+      <span>⭐ Nível: <b id="level">1</b></span>
+      <span>🔮 Essência: <b id="essence">0</b></span>
+      <span>📈 Multiplicador: <b id="ascMult">x1.00</b></span>
+    </div>
+  </header>
+
+  <main>
+    <!-- Combate -->
+    <section id="combat" class="panel">
+      <h2>Zona <span id="zoneName">Planície de Aurin</span> <small>(zona <span id="zone">1</span>)</small></h2>
+      <div class="enemy">
+        <div class="enemy-name" id="enemyName">Slime</div>
+        <div class="hpbar"><div class="hpfill" id="enemyHpFill"></div><span id="enemyHpText">0/0</span></div>
+        <div class="kills">Abates nesta zona: <b id="kills">0</b>/10</div>
+      </div>
+      <div class="player-stats">
+        <span>🗡️ Dano: <b id="dmg">0</b></span>
+        <span>❤️ Vida: <b id="hp">0</b></span>
+        <span>⚡ DPS: <b id="dps">0</b></span>
+      </div>
+      <p class="log" id="log">Aventura iniciada...</p>
+      <div class="zone-controls">
+        <button id="prevZone">◀ Zona anterior</button>
+        <button id="nextZone">Próxima zona ▶</button>
+      </div>
+    </section>
+
+    <!-- Equipamento -->
+    <section id="gearPanel" class="panel">
+      <h2>🛡️ Equipamento</h2>
+      <div id="equipped" class="equipped"></div>
+      <h3>Mochila <small id="invCount"></small></h3>
+      <div id="inventory" class="inventory"></div>
+    </section>
+
+    <!-- Loja -->
+    <section id="shopPanel" class="panel">
+      <h2>🏪 Loja de Upgrades</h2>
+      <div id="shop"></div>
+    </section>
+
+    <!-- Ascensão -->
+    <section id="ascPanel" class="panel">
+      <h2>🔮 Ascensão</h2>
+      <p>Reinicie a jornada para ganhar <b>Essência</b>, que dá um multiplicador permanente de dano e ouro.</p>
+      <p>Essência ao ascender agora: <b id="essenceGain">0</b></p>
+      <button id="ascendBtn">Ascender</button>
+    </section>
+  </main>
+
+  <footer>
+    <button id="saveBtn">💾 Salvar</button>
+    <button id="resetBtn">🗑️ Resetar tudo</button>
+    <span id="saveStatus"></span>
+  </footer>
+
+  <script src="js/data.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
