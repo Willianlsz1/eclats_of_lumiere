@@ -109,8 +109,10 @@ const CONFIG = {
     goldFindPerPower: 0.02,     // Amulet (Gold Find): +power × 0.02 de ouro
     // Weapon: Damage usa o power 1:1 (sem fator).
   },
-  xp: { base: 20, growth: 1.25 }, // xpToNext = base * growth^(level-1)
-  ascension: { unlockZone: 25, zoneExp: 1.5, zoneDiv: 3, levelDiv: 5 },
+  xp: { base: 20, growth: 1.10 }, // xpToNext = base * growth^(level-1) (curva achatada p/ níveis altos)
+  // Ascensão em tiers: gatilho por NÍVEL do personagem, escalando a cada ascensão.
+  // req(n) = firstReqLevel × reqGrowth^n  (n = nº de ascensões já feitas).
+  ascension: { firstReqLevel: 25, reqGrowth: 1.7, zoneExp: 1.5, zoneDiv: 3, levelDiv: 5 },
   offline: {
     startEfficiency: 0.25, efficiencyMax: 0.60, // base + offlineEff*value, teto 0.60
     startCapHours: 2, capMaxHours: 24,          // base 2h + offlineCap*value, teto 24h

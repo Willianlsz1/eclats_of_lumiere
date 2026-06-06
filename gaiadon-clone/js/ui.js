@@ -147,12 +147,24 @@ function renderEquipment(s) {
 
 // Painel de Ascensão: ascend + upgrades permanentes comprados com Essence.
 function renderAscend(s) {
+  // Tiers de ascensão: os próximos requisitos de nível (estilo "referência").
+  const A = CONFIG.ascension;
+  const reqFor = n => Math.round(A.firstReqLevel * Math.pow(A.reqGrowth, n));
+  $("ascCount").textContent = "×" + s.ascensions;
+  let tiers = "";
+  for (let i = s.ascensions; i < s.ascensions + 5; i++) {
+    const req = reqFor(i), isNext = i === s.ascensions, ready = isNext && s.level >= req;
+    tiers += `<div class="asc-tier${isNext ? " next" : ""}${ready ? " ready" : ""}">
+      <span class="asc-n">${i + 1}</span><span class="asc-req">Lv ${fmt(req)}</span></div>`;
+  }
+  $("ascTiers").innerHTML = tiers;
+
   const unlocked = canAscend(s);
   $("ascendBtn").disabled = !unlocked;
   if (unlocked) {
-    $("ascInfo").innerHTML = `Reset your run for <b>${fmt(essenceOnAscend(s))}</b> Essence (permanent). You keep Essence and these upgrades.`;
+    $("ascInfo").innerHTML = `Ascend #${s.ascensions + 1} for <b>${fmt(essenceOnAscend(s))}</b> Essence. Keeps Essence & upgrades; resets the run.`;
   } else {
-    $("ascInfo").textContent = `Reach Zone ${CONFIG.ascension.unlockZone} to unlock Ascension (deepest: ${s.maxZone}).`;
+    $("ascInfo").innerHTML = `Reach <b>Level ${fmt(ascLevelReq(s))}</b> to ascend (you're Level ${fmt(s.level)}).`;
   }
 
   $("ascUpgrades").innerHTML = ASCENSION_UPGRADES.map(u => {

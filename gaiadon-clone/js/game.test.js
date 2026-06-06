@@ -235,21 +235,29 @@ test("upgrade Power aumenta o multiplicador", () => {
   assert(game.ascMultiplier(s) > m0, "Power deveria aumentar o multiplicador");
 });
 
-test("ascensão trava antes da Zone 25 e libera depois", () => {
+test("ascensão trava abaixo do nível exigido e libera ao atingi-lo", () => {
   const s = game.defaultState();
-  s.maxZone = CONFIG.ascension.unlockZone - 1; s.level = 20;
+  s.maxZone = 30; s.level = game.ascLevelReq(s) - 1;
   assertEqual(game.canAscend(s), false);
   assertEqual(game.ascend(s), false);
-  s.maxZone = CONFIG.ascension.unlockZone;
+  s.level = game.ascLevelReq(s);
   assertEqual(game.canAscend(s), true);
 });
 
-test("ascender mantém Essence e upgrades de ascensão", () => {
+test("o requisito de nível ESCALA a cada ascensão", () => {
   const s = game.defaultState();
-  s.maxZone = 30; s.level = 20; s.asc.power = 4; s.essence = 2; s.gold = 999;
+  const req0 = game.ascLevelReq(s);
+  s.ascensions = 3;
+  assert(game.ascLevelReq(s) > req0, "ascensões seguintes exigem nível maior");
+});
+
+test("ascender mantém Essence/upgrades e incrementa a contagem", () => {
+  const s = game.defaultState();
+  s.maxZone = 30; s.level = 100; s.asc.power = 4; s.essence = 2; s.gold = 999;
   const gain = game.ascend(s);
   assert(gain > 0, "deveria render essência");
   assertEqual(s.asc.power, 4, "mantém upgrades de ascensão");
+  assertEqual(s.ascensions, 1, "conta a ascensão");
   assertEqual(s.gold, 0, "reseta o gold da run");
   assert(s.essence >= 2 + gain - 1, "acumula essência");
 });

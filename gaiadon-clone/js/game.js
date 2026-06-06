@@ -8,6 +8,7 @@ function defaultState() {
     level: 1,
     xp: 0,
     essence: 0,            // moeda de prestígio (gasta em asc upgrades)
+    ascensions: 0,         // nº de ascensões feitas (define o requisito de nível do próximo)
     zone: 1,
     maxZone: 0,
     killsInZone: 0,
@@ -290,7 +291,11 @@ function tick(s, dt) {
 }
 
 // --- Ascensão (prestígio) ---
-function canAscend(s) { return s.maxZone >= CONFIG.ascension.unlockZone; }
+// Nível do personagem exigido para a próxima ascensão (escala com o nº de ascensões).
+function ascLevelReq(s) {
+  return Math.round(CONFIG.ascension.firstReqLevel * Math.pow(CONFIG.ascension.reqGrowth, s.ascensions));
+}
+function canAscend(s) { return s.level >= ascLevelReq(s); }
 // Insight multiplica a essência ganha (cresce com a profundidade via maxZone).
 function essenceMultiplier(s) { return 1 + s.asc.insight * ASCENSION_UPGRADES[3].value; }
 function essenceOnAscend(s) {
@@ -303,10 +308,12 @@ function ascend(s) {
   const gain = essenceOnAscend(s);
   if (gain <= 0) return false;
   const keepEssence = s.essence + gain;
-  const keepAsc = s.asc; // upgrades de ascensão são permanentes
+  const keepAsc = s.asc;                 // upgrades de ascensão são permanentes
+  const keepAscensions = s.ascensions + 1; // conta esta ascensão
   Object.assign(s, defaultState());
   s.essence = keepEssence;
   s.asc = keepAsc;
+  s.ascensions = keepAscensions;
   return gain;
 }
 
@@ -356,6 +363,6 @@ if (typeof module !== "undefined") {
     rarityUpCost, canRarityUp, rarityUpItem,
     enemyStats, regionFor, isBossZone, killsToClear, packSize, makeEnemy, spawnPack, shardsOnKill,
     xpToNext, gainXp, xpMultiplier, registerKill, changeZone, handleDeath, tick,
-    canAscend, essenceMultiplier, essenceOnAscend, ascend, ascUpgradeCost, buyAscUpgrade, offlineConfig, computeOfflineGains,
+    ascLevelReq, canAscend, essenceMultiplier, essenceOnAscend, ascend, ascUpgradeCost, buyAscUpgrade, offlineConfig, computeOfflineGains,
   };
 }
