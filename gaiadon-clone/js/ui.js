@@ -86,12 +86,19 @@ function renderGear(s) {
   });
 }
 
+// Descreve o que cada nível de um upgrade concede ao Hero.
+function upgradeEffect(u) {
+  if (u.percent) return `+${Math.round(u.value * 100)}% ${u.unit} / level`;
+  if (u.suffix)  return `+${u.value}${u.suffix} ${u.unit} / level`;
+  return `+${u.value} ${u.unit} / level`;
+}
+
 function renderShop(s) {
   $("shop").innerHTML = SHOP_UPGRADES.map(u => {
     const cost = shopCost(s, u.id);
     const afford = s.gold >= cost;
     return `<div class="shop-item">
-      <span class="info">${u.name} <span class="lvl">Lv ${s.shop[u.id]}</span></span>
+      <span class="info">${u.name} <span class="lvl">Lv ${s.shop[u.id]}</span><br><small class="effect">${upgradeEffect(u)}</small></span>
       <button data-id="${u.id}" ${afford ? "" : "disabled"}>💰 ${fmt(cost)}</button>
     </div>`;
   }).join("");

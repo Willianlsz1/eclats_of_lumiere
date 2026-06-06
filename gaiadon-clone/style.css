@@ -101,6 +101,7 @@ button:disabled { opacity: .4; cursor: not-allowed; }
 }
 .shop-item .info { font-size: 13px; }
 .shop-item .lvl { color: var(--accent); }
+.shop-item .effect { display: block; margin-top: 3px; font-size: 11px; }
 .inventory { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .inv-item { flex-direction: column; align-items: flex-start; font-size: 12px; cursor: pointer; }
 .inv-item:hover { outline: 2px solid var(--accent); }

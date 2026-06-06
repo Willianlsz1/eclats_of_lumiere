@@ -27,15 +27,16 @@ const ITEM_NAMES = {
   "Amulet": ["Pendant", "Ring", "Talisman", "Medallion"],
 };
 
-// Loja: id, nome (EN), custo base, fator de crescimento por nível, valor por nível.
+// Loja: id, nome (EN), custo base, fator de crescimento por nível, valor por nível,
+// e como descrever o efeito (unit / percent / suffix) para a UI mostrar ao jogador.
 // A ORDEM importa: game.js referencia SHOP_UPGRADES[0..5] por índice.
 const SHOP_UPGRADES = [
-  { id: "dmg",        name: "Strength (+damage)",        baseCost: 10,  growth: 1.15, value: 2 },
-  { id: "hp",         name: "Vitality (+health)",        baseCost: 15,  growth: 1.15, value: 10 },
-  { id: "spd",        name: "Agility (+attack speed)",   baseCost: 25,  growth: 1.20, value: 0.05 },
-  { id: "gold",       name: "Greed (+gold)",             baseCost: 40,  growth: 1.18, value: 0.10 },
-  { id: "offlineEff", name: "Dreamcatcher (+offline %)", baseCost: 100, growth: 1.30, value: 0.05 },
-  { id: "offlineCap", name: "Hourglass (+offline cap)",  baseCost: 150, growth: 1.35, value: 1 }, // +1h por nível
+  { id: "dmg",        name: "Strength (+damage)",        baseCost: 10,  growth: 1.22, value: 2,    unit: "damage" },
+  { id: "hp",         name: "Vitality (+health)",        baseCost: 15,  growth: 1.22, value: 10,   unit: "health" },
+  { id: "spd",        name: "Agility (+attack speed)",   baseCost: 25,  growth: 1.26, value: 0.05, unit: "atk speed" },
+  { id: "gold",       name: "Greed (+gold)",             baseCost: 40,  growth: 1.24, value: 0.10, unit: "gold", percent: true },
+  { id: "offlineEff", name: "Dreamcatcher (+offline %)", baseCost: 100, growth: 1.30, value: 0.05, unit: "offline rate", percent: true },
+  { id: "offlineCap", name: "Hourglass (+offline cap)",  baseCost: 150, growth: 1.35, value: 1,    unit: "offline cap", suffix: "h" },
 ];
 
 // ===== Painel de balanceamento — TODAS as alavancas num só lugar =====
