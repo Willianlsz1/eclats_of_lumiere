@@ -7,8 +7,7 @@ function defaultState() {
     shards: 0,             // material que sobe a raridade do equipamento
     level: 1,
     xp: 0,
-    essence: 0,            // moeda de prestígio (gasta em asc upgrades)
-    ascensions: 0,         // nº de ascensões feitas (define o requisito de nível do próximo)
+    ascensions: 0,         // nº de ascensões totais (define tier e multiplicador)
     zone: 1,
     maxZone: 0,
     killsInZone: 0,
@@ -19,8 +18,6 @@ function defaultState() {
       Armor:  { rarity: 0, level: 1 },
       Amulet: { rarity: 0, level: 1 },
     },
-    // Níveis dos upgrades permanentes de Ascensão.
-    asc: { power: 0, offlineEff: 0, offlineCap: 0, insight: 0 },
     enemies: [],           // pack de inimigos atual (você foca o [0]; todos atacam)
     playerHp: null,
     lastSeen: null,
@@ -59,9 +56,48 @@ function critExpectedMult(s) {
   return 1 + rate * (mult - 1);
 }
 
-// --- Stats derivados ---
-// Power é MULTIPLICATIVO: cada nível multiplica por (1 + value). Compõe entre ascensões.
-function ascMultiplier(s) { return Math.pow(1 + ASCENSION_UPGRADES[0].value, s.asc.power); }
+// --- Tiers de classe e multiplicador de ascensão ---
+// Tier atual: derivado de s.ascensions (nunca salvo — evita saves corrompidos).
+function heroTier(s) {
+  for (let i = TIERS.length - 1; i >= 0; i--) {
+    if (s.ascensions >= TIERS[i].minAsc) return i;
+  }
+  return 0;
+}
+
+// Produto acumulado dos spikes de todos os tiers já alcançados.
+// Ex: 200 ascensões → Warrior (×10) + Champion (×50) = ×500.
+function tierSpikeMultiplier(totalAscensions) {
+  let spike = 1;
+  for (let i = 1; i < TIERS.length; i++) {
+    if (totalAscensions >= TIERS[i].minAsc) spike *= TIERS[i].spike;
+  }
+  return spike;
+}
+
+// Multiplicador total acumulado de todas as ascensões feitas, agrupadas por tier.
+// Tier 0: ascensões 1-49 usam rate 1.06 (a 50ª já usa Warrior — ver spec).
+// Tier i>0: ascensões de TIERS[i].minAsc em diante usam TIERS[i].mult.
+function ascMultiplier(s) {
+  const n = s.ascensions;
+  if (n === 0) return 1;
+  let mult = 1;
+  for (let i = 0; i < TIERS.length; i++) {
+    const t = TIERS[i];
+    const nextMin = i + 1 < TIERS.length ? TIERS[i + 1].minAsc : Infinity;
+    let exp;
+    if (i === 0) {
+      // Tier 0: máximo 49 ascensões neste rate (a 50ª começa o Warrior).
+      exp = Math.min(n, nextMin - 1);
+    } else {
+      // Tier i: de t.minAsc até (nextMin - 1).
+      const tierCap = nextMin === Infinity ? n - t.minAsc : nextMin - t.minAsc;
+      exp = Math.max(0, Math.min(n - t.minAsc, tierCap));
+    }
+    if (exp > 0) mult *= Math.pow(t.mult, exp);
+  }
+  return mult * tierSpikeMultiplier(n);
+}
 
 // Stats POR NÍVEL crescem a cada ascensão (o Hero fica permanentemente mais forte).
 function perLevelMult(s) { return Math.pow(CONFIG.ascension.perLevelGrowth, s.ascensions); }
@@ -297,52 +333,31 @@ function tick(s, dt) {
 
 // --- Ascensão (prestígio) ---
 // Nível do personagem exigido para a próxima ascensão (escala com o nº de ascensões).
+// reqGrowth 1.15 (suave) — aguentar centenas de ascensões.
 function ascLevelReq(s) {
   return Math.round(CONFIG.ascension.firstReqLevel * Math.pow(CONFIG.ascension.reqGrowth, s.ascensions));
 }
 function canAscend(s) { return s.level >= ascLevelReq(s); }
-// Insight multiplica a essência ganha (cresce com a profundidade via maxZone).
-function essenceMultiplier(s) { return 1 + s.asc.insight * ASCENSION_UPGRADES[3].value; }
-function essenceOnAscend(s) {
-  const A = CONFIG.ascension;
-  const base = Math.pow(s.maxZone + 1, A.zoneExp) / A.zoneDiv + s.level / A.levelDiv;
-  return Math.floor(base * essenceMultiplier(s));
-}
+
+// Ascender: incrementa ascensions, mantém equipamento, reseta o resto.
+// Retorna true em sucesso; false se o requisito de nível não foi atingido.
 function ascend(s) {
   if (!canAscend(s)) return false;
-  const gain = essenceOnAscend(s);
-  if (gain <= 0) return false;
-  const keepEssence = s.essence + gain;
-  const keepAsc = s.asc;                 // upgrades de ascensão são permanentes
-  const keepAscensions = s.ascensions + 1; // conta esta ascensão
-  const keepEquipped = s.equipped;       // EQUIPAMENTO é permanente (não reseta)
+  const keepAscensions = s.ascensions + 1;
+  const keepEquipped   = s.equipped;
   Object.assign(s, defaultState());
-  s.essence = keepEssence;
-  s.asc = keepAsc;
   s.ascensions = keepAscensions;
-  s.equipped = keepEquipped;
-  return gain;
-}
-
-// Upgrades permanentes comprados com Essence.
-function ascUpgradeCost(s, id) {
-  const u = ASCENSION_UPGRADES.find(x => x.id === id);
-  return Math.round(u.baseCost * Math.pow(u.growth, s.asc[id]));
-}
-function buyAscUpgrade(s, id) {
-  const u = ASCENSION_UPGRADES.find(x => x.id === id);
-  if (u.maxLevel != null && s.asc[id] >= u.maxLevel) return false;
-  const cost = ascUpgradeCost(s, id);
-  if (s.essence < cost) return false;
-  s.essence -= cost; s.asc[id]++;
+  s.equipped   = keepEquipped;
   return true;
 }
 
-// Config de offline derivada dos upgrades de ascensão.
+// Config de offline: melhora automaticamente a cada CONFIG.offline.ascPerStep ascensões.
+// Teto: 50% de eficiência, 24h de cap.
 function offlineConfig(s) {
   const O = CONFIG.offline;
-  const efficiency = Math.min(O.efficiencyMax, O.startEfficiency + s.asc.offlineEff * ASCENSION_UPGRADES[1].value);
-  const capHours   = Math.min(O.capMaxHours,   O.startCapHours   + s.asc.offlineCap * ASCENSION_UPGRADES[2].value);
+  const steps = Math.floor(s.ascensions / O.ascPerStep);
+  const efficiency = Math.min(O.efficiencyMax, O.startEfficiency + steps * O.effPerStep);
+  const capHours   = Math.min(O.capMaxHours,   O.startCapHours   + steps * O.capHoursPerStep);
   return { efficiency, capHours };
 }
 
@@ -363,7 +378,8 @@ function computeOfflineGains(s, elapsedSec) {
 
 if (typeof module !== "undefined") {
   module.exports = {
-    defaultState, itemPower, slotPower, rarityCap, ascMultiplier,
+    defaultState, itemPower, slotPower, rarityCap,
+    heroTier, tierSpikeMultiplier, ascMultiplier,
     perLevelMult, damagePerLevel, hpPerLevel,
     itemAffixes, affixValue, affixTotals, critRate, critMult, critExpectedMult,
     playerDamage, playerMaxHp, attackSpeed, playerDps, goldBonus,
@@ -371,6 +387,6 @@ if (typeof module !== "undefined") {
     rarityUpCost, canRarityUp, rarityUpItem,
     enemyStats, regionFor, isBossZone, killsToClear, packSize, makeEnemy, spawnPack, shardsOnKill,
     xpToNext, gainXp, xpMultiplier, registerKill, changeZone, handleDeath, tick,
-    ascLevelReq, canAscend, essenceMultiplier, essenceOnAscend, ascend, ascUpgradeCost, buyAscUpgrade, offlineConfig, computeOfflineGains,
+    ascLevelReq, canAscend, ascend, offlineConfig, computeOfflineGains,
   };
 }

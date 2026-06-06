@@ -54,15 +54,17 @@ const RARITIES = [
   { name: "legendary", mult: 6.0, cap: Infinity }, // sem teto: nivela infinitamente
 ];
 
-// Upgrades de Ascensão: comprados com ESSENCE (moeda de prestígio).
-// A ORDEM importa: game.js referencia por índice. "power" substitui o antigo
-// multiplicador automático de essência.
-// A ORDEM importa: game.js referencia por índice (0=power, 1=offlineEff, 2=offlineCap, 3=insight).
-const ASCENSION_UPGRADES = [
-  { id: "power",      name: "Power",       baseCost: 2, growth: 1.8, value: 0.50, unit: "damage, gold & XP", multiplicative: true },
-  { id: "offlineEff", name: "Dreamcatcher", baseCost: 3, growth: 2.5, value: 0.05, unit: "offline rate", percent: true, maxLevel: 7 },
-  { id: "offlineCap", name: "Hourglass",    baseCost: 5, growth: 2.5, value: 1,    unit: "offline cap", suffix: "h", maxLevel: 22 },
-  { id: "insight",    name: "Insight",      baseCost: 3, growth: 1.7, value: 0.25, unit: "essence gained", percent: true },
+// Tiers de classe do herói. Cada tier tem:
+//   minAsc  — nº total de ascensões para entrar neste tier
+//   mult    — multiplicador por ascensão feita DENTRO deste tier
+//   spike   — bônus único aplicado AO ENTRAR no tier (acumula nos tiers seguintes)
+// Tier 0 não tem spike (é o inicial). A ascensão 50 já usa o rate do Warrior.
+const TIERS = [
+  { name: "Adventurer", minAsc: 0,    mult: 1.06, spike: 1    },
+  { name: "Warrior",    minAsc: 50,   mult: 1.08, spike: 10   },
+  { name: "Champion",   minAsc: 200,  mult: 1.10, spike: 50   },
+  { name: "Legend",     minAsc: 500,  mult: 1.12, spike: 200  },
+  { name: "Mythic",     minAsc: 1000, mult: 1.15, spike: 1000 },
 ];
 
 // ===== Painel de balanceamento — TODAS as alavancas num só lugar =====
@@ -110,17 +112,19 @@ const CONFIG = {
     // Weapon: Damage usa o power 1:1 (sem fator).
   },
   xp: { base: 20, growth: 1.10 }, // xpToNext = base * growth^(level-1) (curva achatada p/ níveis altos)
-  // Ascensão em tiers: gatilho por NÍVEL do personagem, escalando a cada ascensão.
-  // req(n) = firstReqLevel × reqGrowth^n  (n = nº de ascensões já feitas).
-  // perLevelGrowth: a cada ascensão, os stats POR NÍVEL (dano/vida) multiplicam por isto.
-  ascension: { firstReqLevel: 25, reqGrowth: 1.4, perLevelGrowth: 1.4, zoneExp: 1.5, zoneDiv: 3, levelDiv: 5 },
+  // Ascensão: requisito de nível escalando. reqGrowth 1.15 (suave — aguentar centenas de asc).
+  // perLevelGrowth: stats por nível (dano/vida) multiplicam a cada ascensão.
+  ascension: { firstReqLevel: 25, reqGrowth: 1.15, perLevelGrowth: 1.4 },
+  // Offline melhora automaticamente a cada ascPerStep ascensões (sem gastar nada).
   offline: {
-    startEfficiency: 0.25, efficiencyMax: 0.60, // base + offlineEff*value, teto 0.60
-    startCapHours: 2, capMaxHours: 24,          // base 2h + offlineCap*value, teto 24h
+    startEfficiency: 0.25, efficiencyMax: 0.50, // teto: 50%
+    startCapHours: 2,      capMaxHours: 24,      // teto: 24h
+    ascPerStep: 10,        effPerStep: 0.0125,   // +1.25% por passo (~200 asc p/ 50%)
+    capHoursPerStep: 0.25,                       // +15 min por passo (~880 asc p/ 24h)
   },
   zonesPerRegion: 10, // muda a region cosmética a cada 10 zones
 };
 
 if (typeof module !== "undefined") {
-  module.exports = { REGIONS, SLOTS, RARITIES, AFFIXES, ASCENSION_UPGRADES, CONFIG };
+  module.exports = { REGIONS, SLOTS, RARITIES, AFFIXES, TIERS, CONFIG };
 }

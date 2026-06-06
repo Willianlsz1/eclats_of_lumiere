@@ -22,8 +22,6 @@ function renderResources(s) {
   $("gold").textContent = fmt(s.gold);
   $("shards").textContent = fmt(s.shards);
   $("level").textContent = s.level;
-  $("essence").textContent = fmt(s.essence);
-  $("ascMult").textContent = "x" + ascMultiplier(s).toFixed(2);
 }
 
 function renderCombat(s) {
@@ -147,46 +145,55 @@ function renderEquipment(s) {
   // Cliques tratados por delegação (ver bindButtons) — robusto a re-renders.
 }
 
-// Painel de Ascensão: ascend + upgrades permanentes comprados com Essence.
+// Painel de Ascensão: tier atual, barra de progresso, próximo tier e botão de ascender.
 function renderAscend(s) {
-  // Tiers de ascensão: os próximos requisitos de nível (estilo "referência").
-  const A = CONFIG.ascension;
-  const reqFor = n => Math.round(A.firstReqLevel * Math.pow(A.reqGrowth, n));
+  const tier   = heroTier(s);
+  const t      = TIERS[tier];
+  const nextT  = tier + 1 < TIERS.length ? TIERS[tier + 1] : null;
+
   $("ascCount").textContent = "×" + s.ascensions;
-  let tiers = "";
-  for (let i = s.ascensions; i < s.ascensions + 5; i++) {
-    const req = reqFor(i), isNext = i === s.ascensions, ready = isNext && s.level >= req;
-    tiers += `<div class="asc-tier${isNext ? " next" : ""}${ready ? " ready" : ""}">
-      <span class="asc-n">${i + 1}</span><span class="asc-req">Lv ${fmt(req)}</span></div>`;
+
+  // Progresso dentro do tier atual.
+  const inTier   = s.ascensions - t.minAsc;
+  const tierSize = nextT ? nextT.minAsc - t.minAsc : null;
+  const pct      = tierSize ? Math.min(100, (inTier / tierSize) * 100) : 100;
+
+  // Cor do tier (reutiliza as classes de raridade de equipamento — temática similar).
+  const tierColor = ["common", "uncommon", "rare", "epic", "legendary"][tier];
+
+  let html = `
+    <div class="asc-tier-name rar-${tierColor}">${t.name}</div>
+    <div class="asc-bar-wrap">
+      <div class="asc-bar-fill rar-fill-${tierColor}" style="width:${pct.toFixed(1)}%"></div>
+      <span class="asc-bar-text">
+        ${nextT ? `${inTier} / ${tierSize} ascensions` : `${inTier} ascensions — MAX TIER`}
+      </span>
+    </div>`;
+
+  if (nextT) {
+    html += `<div class="asc-next-tier">
+      Next tier: <b class="rar-${["common","uncommon","rare","epic","legendary"][tier+1]}">${nextT.name}</b>
+      at ${fmt(nextT.minAsc)} ascensions
+      <span class="asc-spike">→ Power Spike ×${fmt(nextT.spike)}</span>
+    </div>`;
   }
-  $("ascTiers").innerHTML = tiers;
+
+  html += `<div class="asc-mult-info">Each ascension: <b>×${t.mult.toFixed(2)}</b> to all stats · Current power: <b>×${fmt(ascMultiplier(s))}</b></div>`;
+
+  $("ascTierDisplay").innerHTML = html;
 
   const unlocked = canAscend(s);
   $("ascendBtn").disabled = !unlocked;
+
+  const nextAsc = s.ascensions + 1;
+  const isTierPromo = nextT && nextAsc === nextT.minAsc;
   if (unlocked) {
-    $("ascInfo").innerHTML = `Ascend #${s.ascensions + 1} for <b>${fmt(essenceOnAscend(s))}</b> Essence. Keeps equipment, Essence & upgrades; resets gold/zones/level.`;
+    $("ascInfo").innerHTML = isTierPromo
+      ? `<b class="milestone-text">🎉 TIER UP! You're becoming ${nextT.name}! Spike ×${fmt(nextT.spike)} awaits!</b>`
+      : `Ready to ascend #${nextAsc}. Keeps equipment; resets gold, zones &amp; level.`;
   } else {
     $("ascInfo").innerHTML = `Reach <b>Level ${fmt(ascLevelReq(s))}</b> to ascend (you're Level ${fmt(s.level)}).`;
   }
-
-  $("ascUpgrades").innerHTML = ASCENSION_UPGRADES.map(u => {
-    const maxed = u.maxLevel != null && s.asc[u.id] >= u.maxLevel;
-    const cost = ascUpgradeCost(s, u.id);
-    const afford = s.essence >= cost;
-    const effect = u.multiplicative ? `×${(1 + u.value).toFixed(2)} ${u.unit} (compounding)`
-                 : u.percent ? `+${Math.round(u.value * 100)}% ${u.unit}`
-                 : u.suffix  ? `+${u.value}${u.suffix} ${u.unit}`
-                 : `+${u.value} ${u.unit}`;
-    const btn = maxed
-      ? `<button disabled class="maxed">MAX</button>`
-      : `<button data-asc="${u.id}" ${afford ? "" : "disabled"}>🔮 ${fmt(cost)}</button>`;
-    return `<div class="shop-item">
-      <span class="info"><b>${u.name}</b> <span class="lvl">Lv ${s.asc[u.id]}</span><br><small class="effect">${effect} / level</small></span>
-      ${btn}
-    </div>`;
-  }).join("");
-
-  // Cliques tratados por delegação (ver bindButtons).
 }
 
 // Número de dano que sobe e some sobre o palco de combate.

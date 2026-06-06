@@ -21,7 +21,9 @@ function load() {
           ? { rarity: it.rarity, level: it.level }
           : { rarity: 0, level: 1 };
       }
-      state.asc = Object.assign({}, d.asc, parsed.asc || {}); // defaulta todas as chaves de asc
+      // Migração de saves antigos: remove campos de Essence que não existem mais.
+      if (state.asc !== undefined)     delete state.asc;
+      if (state.essence !== undefined) delete state.essence;
 
       // Progresso offline: credita os ganhos do tempo ausente (acima de 1 min).
       if (state.lastSeen) {
@@ -111,25 +113,26 @@ function bindButtons() {
       if (act === "rarity") flashSlot(slot);
     }
   });
-  // Cliques dos upgrades de ascensão, também por delegação.
-  $("ascUpgrades").addEventListener("click", (e) => {
-    const b = e.target.closest("button[data-asc]");
-    if (!b || b.disabled) return;
-    if (buyAscUpgrade(state, b.dataset.asc)) { renderAscend(state); renderResources(state); renderCombat(state); renderHero(state); }
-  });
   $("ascendBtn").onclick = () => {
     if (!canAscend(state)) return;
-    if (confirm("Ascending resets gold, zones and character level. You KEEP your equipment, Essence and permanent upgrades. Continue?")) {
-      const g = ascend(state);
+    const tier  = heroTier(state);
+    const nextT = tier + 1 < TIERS.length ? TIERS[tier + 1] : null;
+    const isTierPromo = nextT && state.ascensions + 1 === nextT.minAsc;
+    const msg = isTierPromo
+      ? `TIER PROMOTION: ${TIERS[tier].name} → ${nextT.name}!\n\nPower Spike ×${fmt(nextT.spike)} awaits!\nThis resets gold, zones and level — equipment is kept.\n\nAscend?`
+      : `Ascending resets gold, zones and character level.\nYou KEEP your equipment.\n\nAscend?`;
+    if (confirm(msg)) {
+      ascend(state);
       spawnPack(state); state.playerHp = playerMaxHp(state);
-      logMsg(`✨ You ascended! +${fmt(g)} essence.`, "milestone");
+      const tName = TIERS[heroTier(state)].name;
+      logMsg(isTierPromo ? `🎉 TIER UP! Welcome, ${tName}!` : `✨ Ascension #${state.ascensions}! Keep pushing, ${tName}!`, "milestone");
       renderAll(state);
     }
   };
   $("offlineCollect").onclick = () => { $("offlineModal").classList.add("hidden"); };
   $("saveBtn").onclick = save;
   $("resetBtn").onclick = () => {
-    if (confirm("Erase ALL progress, including essence and upgrades?")) {
+    if (confirm("Erase ALL progress, including equipment and ascensions?")) {
       localStorage.removeItem(SAVE_KEY);
       state = defaultState();
       spawnPack(state); state.playerHp = playerMaxHp(state);

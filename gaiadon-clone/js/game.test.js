@@ -5,13 +5,13 @@ const game = require("./game.js");
 const { test, assert, assertEqual, report } = require("./_assert.js");
 
 console.log("== Estado base ==");
-test("defaultState: equipamento common nível 1, sem shards, asc zerado", () => {
+test("defaultState: equipamento common nível 1, sem shards, ascensions zerado", () => {
   const s = game.defaultState();
   assertEqual(s.maxZone, 0);
   assertEqual(s.shards, 0);
   assertEqual(s.equipped.Weapon.rarity, 0);
   assertEqual(s.equipped.Weapon.level, 1);
-  assertEqual(s.asc.power, 0);
+  assertEqual(s.ascensions, 0);
 });
 
 console.log("== Equipamento ==");
@@ -192,21 +192,14 @@ test("pack maior causa mais dano por segundo ao jogador", () => {
   assert(dmgPack > dmgSingle, "o pack inteiro deveria doer mais que um inimigo só");
 });
 
-test("Power e afixo de XP aumentam o multiplicador de XP", () => {
+test("ascensões e afixo de XP aumentam o multiplicador de XP", () => {
   const s = game.defaultState();
   const base = game.xpMultiplier(s);
-  s.asc.power = 4; // Power agora também multiplica XP
-  assert(game.xpMultiplier(s) > base, "Power deveria aumentar o XP mult");
-  const withPower = game.xpMultiplier(s);
+  s.ascensions = 4;
+  assert(game.xpMultiplier(s) > base, "ascensões devem aumentar o XP mult");
+  const withAsc = game.xpMultiplier(s);
   s.equipped.Amulet.rarity = 2; // inclui afixo xpMult
-  assert(game.xpMultiplier(s) > withPower, "afixo de XP deveria somar ainda mais");
-});
-
-test("Insight multiplica a essência ganha", () => {
-  const s = game.defaultState(); s.maxZone = 30; s.level = 20;
-  const base = game.essenceOnAscend(s);
-  s.asc.insight = 4;
-  assert(game.essenceOnAscend(s) > base, "Insight deveria aumentar a essência");
+  assert(game.xpMultiplier(s) > withAsc, "afixo de XP deveria somar ainda mais");
 });
 
 test("changeZone respeita os limites [1, maxZone+1]", () => {
@@ -228,16 +221,51 @@ test("morte na fronteira não pune e recua", () => {
 });
 
 console.log("== Ascensão (prestígio) ==");
-test("upgrade Power aumenta o multiplicador", () => {
+test("heroTier retorna o tier correto conforme o número de ascensões", () => {
+  const s = game.defaultState();
+  assertEqual(game.heroTier(s), 0, "0 ascensões = Adventurer (tier 0)");
+  s.ascensions = 49;
+  assertEqual(game.heroTier(s), 0, "49 ascensões ainda = Adventurer");
+  s.ascensions = 50;
+  assertEqual(game.heroTier(s), 1, "50 ascensões = Warrior (tier 1)");
+  s.ascensions = 200;
+  assertEqual(game.heroTier(s), 2, "200 = Champion (tier 2)");
+  s.ascensions = 500;
+  assertEqual(game.heroTier(s), 3, "500 = Legend (tier 3)");
+  s.ascensions = 1000;
+  assertEqual(game.heroTier(s), 4, "1000 = Mythic (tier 4)");
+});
+
+test("tierSpikeMultiplier acumula corretamente nos limiares", () => {
+  assertEqual(game.tierSpikeMultiplier(0),   1,               "sem tier = sem spike");
+  assertEqual(game.tierSpikeMultiplier(49),  1,               "ainda Adventurer = sem spike");
+  assertEqual(game.tierSpikeMultiplier(50),  10,              "Warrior spike ×10");
+  assertEqual(game.tierSpikeMultiplier(200), 10 * 50,         "Champion spike acumulado");
+  assertEqual(game.tierSpikeMultiplier(500), 10 * 50 * 200,   "Legend spike acumulado");
+});
+
+test("ascensões aumentam o multiplicador automaticamente", () => {
   const s = game.defaultState();
   const m0 = game.ascMultiplier(s);
-  s.asc.power = 5;
-  assert(game.ascMultiplier(s) > m0, "Power deveria aumentar o multiplicador");
+  s.ascensions = 5;
+  assert(game.ascMultiplier(s) > m0, "ascensões devem aumentar o mult");
+  const m5 = game.ascMultiplier(s);
+  s.ascensions = 10;
+  assert(game.ascMultiplier(s) > m5, "mais ascensões = mult maior");
+});
+
+test("tier 1 (Warrior) usa rate maior que tier 0 (Adventurer)", () => {
+  const s = game.defaultState();
+  s.ascensions = 49; const mBase = game.ascMultiplier(s);
+  // Ascensão 50: entra no Warrior + spike ×10, ascensão 51: +1 no rate Warrior (×1.08)
+  s.ascensions = 51;
+  const expected = mBase * 10 * Math.pow(TIERS[1].mult, 1); // spike + 1 Warrior
+  assert(Math.abs(game.ascMultiplier(s) - expected) < 0.001, "spike + 1 ascensão Warrior");
 });
 
 test("ascensão trava abaixo do nível exigido e libera ao atingi-lo", () => {
   const s = game.defaultState();
-  s.maxZone = 30; s.level = game.ascLevelReq(s) - 1;
+  s.level = game.ascLevelReq(s) - 1;
   assertEqual(game.canAscend(s), false);
   assertEqual(game.ascend(s), false);
   s.level = game.ascLevelReq(s);
@@ -250,48 +278,54 @@ test("stats por nível crescem a cada ascensão", () => {
   s.ascensions = 3;
   assert(game.damagePerLevel(s) > d0, "dano por nível deveria crescer");
   assert(game.hpPerLevel(s) > h0, "vida por nível deveria crescer");
-  // e isso aumenta os stats do Hero num mesmo nível
   s.level = 50; const s0 = game.defaultState(); s0.level = 50;
   assert(game.playerDamage(s) > game.playerDamage(s0), "mais ascensões = Hero mais forte no mesmo nível");
 });
 
-test("o requisito de nível ESCALA a cada ascensão", () => {
+test("o requisito de nível ESCALA a cada ascensão (nova fórmula 1.15^n)", () => {
   const s = game.defaultState();
   const req0 = game.ascLevelReq(s);
+  assertEqual(req0, 25, "req inicial = 25");
   s.ascensions = 3;
   assert(game.ascLevelReq(s) > req0, "ascensões seguintes exigem nível maior");
 });
 
-test("ascender mantém Essence/upgrades/EQUIPAMENTO e incrementa a contagem", () => {
+test("ascender mantém EQUIPAMENTO, incrementa ascensions e reseta recursos", () => {
   const s = game.defaultState();
-  s.maxZone = 30; s.level = 100; s.asc.power = 4; s.essence = 2; s.gold = 999;
-  s.shards = 500; s.equipped.Weapon.rarity = 3; s.equipped.Weapon.level = 120;
-  const gain = game.ascend(s);
-  assert(gain > 0, "deveria render essência");
-  assertEqual(s.asc.power, 4, "mantém upgrades de ascensão");
+  s.level = game.ascLevelReq(s); s.gold = 999; s.shards = 500;
+  s.equipped.Weapon.rarity = 3; s.equipped.Weapon.level = 120;
+  const result = game.ascend(s);
+  assertEqual(result, true, "deveria retornar true");
   assertEqual(s.ascensions, 1, "conta a ascensão");
   assertEqual(s.equipped.Weapon.rarity, 3, "EQUIPAMENTO persiste (raridade)");
   assertEqual(s.equipped.Weapon.level, 120, "EQUIPAMENTO persiste (nível)");
   assertEqual(s.gold, 0, "reseta o gold da run");
   assertEqual(s.shards, 0, "reseta os shards da run");
-  assert(s.essence >= 2 + gain - 1, "acumula essência");
 });
 
-test("buyAscUpgrade gasta essência e respeita maxLevel", () => {
+test("ascMultiplier se aplica ao dano e ao ouro do herói", () => {
   const s = game.defaultState();
-  s.essence = 1e6;
-  s.asc.offlineCap = 22; // no maxLevel
-  assertEqual(game.buyAscUpgrade(s, "offlineCap"), false, "não passa do maxLevel");
-  assert(game.buyAscUpgrade(s, "power"), "Power não tem cap, deve comprar");
+  const dmg0 = game.playerDamage(s), gold0 = game.goldBonus(s);
+  s.ascensions = 20;
+  assert(game.playerDamage(s) > dmg0, "ascensões devem aumentar o dano");
+  assert(game.goldBonus(s) > gold0, "ascensões devem aumentar o ouro");
 });
 
-test("offlineConfig reflete os upgrades de ascensão", () => {
+test("offlineConfig cresce automaticamente com ascensões", () => {
   const s = game.defaultState();
   const c0 = game.offlineConfig(s);
-  s.asc.offlineEff = 3; s.asc.offlineCap = 5;
+  s.ascensions = 50;
   const c1 = game.offlineConfig(s);
-  assert(c1.efficiency > c0.efficiency, "rate sobe");
-  assert(c1.capHours > c0.capHours, "cap sobe");
+  assert(c1.efficiency > c0.efficiency, "eficiência offline sobe com ascensões");
+  assert(c1.capHours > c0.capHours, "cap de horas sobe com ascensões");
+});
+
+test("offlineConfig respeita teto de 50% e 24h", () => {
+  const s = game.defaultState();
+  s.ascensions = 10000;
+  const c = game.offlineConfig(s);
+  assert(c.efficiency <= 0.50, "eficiência não passa de 50%");
+  assert(c.capHours <= 24, "cap não passa de 24h");
 });
 
 test("ganhos offline > 0 e respeitam o teto de horas", () => {

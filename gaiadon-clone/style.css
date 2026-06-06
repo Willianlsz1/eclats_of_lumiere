@@ -186,18 +186,38 @@ button:disabled { opacity: .4; cursor: not-allowed; }
 .shop-item .lvl { color: var(--accent); }
 .shop-item .effect { display: block; margin-top: 3px; font-size: 11px; }
 
-/* Tiers de ascensão (estilo referência) */
-.asc-tiers { display: flex; gap: 6px; margin: 4px 0 12px; flex-wrap: wrap; }
-.asc-tier {
-  flex: 1; min-width: 54px; background: var(--panel2); border: 1px solid #34405e;
-  border-radius: 8px; padding: 6px 4px; text-align: center; opacity: .55;
+/* Painel de tier de ascensão */
+.asc-tier-name {
+  font-size: 20px; font-weight: bold; letter-spacing: 1px;
+  text-transform: uppercase; margin: 4px 0 8px;
 }
-.asc-tier .asc-n { display: block; font-size: 16px; font-weight: bold; color: var(--muted); }
-.asc-tier .asc-req { display: block; font-size: 10px; color: var(--gold); }
-.asc-tier.next { opacity: 1; border-color: var(--accent); }
-.asc-tier.next .asc-n { color: var(--accent); }
-.asc-tier.ready { border-color: var(--green); box-shadow: 0 0 8px rgba(74,222,128,.4); }
-.asc-tier.ready .asc-n { color: var(--green); }
+.asc-bar-wrap {
+  position: relative; height: 22px; background: #111726;
+  border-radius: 6px; overflow: hidden; margin-bottom: 8px;
+}
+.asc-bar-fill {
+  height: 100%; width: 0%;
+  background: linear-gradient(90deg, var(--accent), var(--green));
+  transition: width .3s ease;
+}
+/* Cores da barra por tier */
+.rar-fill-common    { background: linear-gradient(90deg, #94a3b8, #cbd5e1); }
+.rar-fill-uncommon  { background: linear-gradient(90deg, #22c55e, var(--green)); }
+.rar-fill-rare      { background: linear-gradient(90deg, #38bdf8, var(--accent)); }
+.rar-fill-epic      { background: linear-gradient(90deg, #a855f7, #c084fc); }
+.rar-fill-legendary { background: linear-gradient(90deg, #f59e0b, var(--gold)); box-shadow: 0 0 8px rgba(255,209,102,.4); }
+.asc-bar-wrap span {
+  position: absolute; inset: 0; display: flex; align-items: center;
+  justify-content: center; font-size: 11px; font-weight: bold;
+  text-shadow: 0 1px 2px #000;
+}
+.asc-next-tier {
+  font-size: 12px; color: var(--muted); margin-bottom: 6px;
+}
+.asc-spike { color: var(--gold); font-weight: bold; margin-left: 4px; }
+.asc-mult-info { font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+.asc-mult-info b { color: var(--text); }
+.milestone-text { color: var(--gold); }
 .inventory { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .inv-item { flex-direction: column; align-items: flex-start; font-size: 12px; cursor: pointer; }
 .inv-item:hover { outline: 2px solid var(--accent); }
