@@ -92,10 +92,14 @@ function renderEquipment(s) {
     const rCost = rarityUpCost(s, slot.id);
     const canRr = canRarityUp(s, slot.id);
 
-    // Botão de nível: se no cap, vira o de raridade em destaque.
+    // Botão de +1 nível e botão MAX (compra tudo que dá). No cap, somem.
+    const maxPrev = atCap ? { count: 0, spent: 0 } : levelUpMaxPreview(s, slot.id);
     const lvBtn = atCap
       ? `<button disabled title="Raise rarity to unlock more levels">Lv ${fmtCap(cap)} (cap)</button>`
-      : `<button data-act="level" data-slot="${slot.id}" ${canLv ? "" : "disabled"}>💰 ${fmt(lvCost)}</button>`;
+      : `<button data-act="level" data-slot="${slot.id}" ${canLv ? "" : "disabled"}>💰 ${fmt(lvCost)} ▲1</button>`;
+    const maxBtn = atCap
+      ? ""
+      : `<button data-act="max" data-slot="${slot.id}" ${maxPrev.count > 0 ? "" : "disabled"}>MAX +${fmt(maxPrev.count)} (💰 ${fmt(maxPrev.spent)})</button>`;
     const rrBtn = maxRarity
       ? `<button disabled>Max rarity</button>`
       : `<button class="rarity-btn" data-act="rarity" data-slot="${slot.id}" ${canRr ? "" : "disabled"}>💎 ${fmt(rCost)}${atCap ? "" : " (reach cap)"}</button>`;
@@ -106,14 +110,17 @@ function renderEquipment(s) {
         <span class="slot-power">⚙️ ${fmt(itemPower(it))}</span>
       </div>
       <div class="equip-sub">Level ${fmt(it.level)} / ${fmtCap(cap)} · gives ${slot.stats.join(" + ")}</div>
-      <div class="equip-actions">${lvBtn}${rrBtn}</div>
+      <div class="equip-actions">${lvBtn}${maxBtn}</div>
+      <div class="equip-actions">${rrBtn}</div>
     </div>`;
   }).join("");
 
   el.querySelectorAll("button[data-act]").forEach(b => {
     b.onclick = () => {
-      const slot = b.dataset.slot;
-      const ok = b.dataset.act === "level" ? levelUpItem(s, slot) : rarityUpItem(s, slot);
+      const slot = b.dataset.slot, act = b.dataset.act;
+      const ok = act === "level" ? levelUpItem(s, slot)
+               : act === "max"   ? levelUpMax(s, slot) > 0
+               : rarityUpItem(s, slot);
       if (ok) { renderEquipment(s); renderResources(s); renderCombat(s); renderHero(s); }
     };
   });

@@ -60,9 +60,30 @@ function goldBonus(s) {
 }
 
 // --- Custos e ações de equipamento ---
+function levelCostAt(level) {
+  return Math.round(CONFIG.gear.levelCostBase * Math.pow(CONFIG.gear.levelCostGrowth, level));
+}
 function levelUpCost(s, slotId) {
+  return levelCostAt(s.equipped[slotId].level);
+}
+// Quantos níveis dá pra comprar agora (e o custo total), sem alterar o estado.
+function levelUpMaxPreview(s, slotId) {
   const item = s.equipped[slotId];
-  return Math.round(CONFIG.gear.levelCostBase * Math.pow(CONFIG.gear.levelCostGrowth, item.level));
+  const cap = rarityCap(item);
+  let gold = s.gold, level = item.level, count = 0, spent = 0;
+  while (level < cap) {
+    const cost = levelCostAt(level);
+    if (gold < cost) break;
+    gold -= cost; level++; count++; spent += cost;
+    if (count > 1e6) break; // trava de segurança
+  }
+  return { count, spent };
+}
+// Compra o máximo de níveis possível de uma vez. Retorna quantos comprou.
+function levelUpMax(s, slotId) {
+  let count = 0;
+  while (levelUpItem(s, slotId)) { if (++count > 1e6) break; }
+  return count;
 }
 function canLevelUp(s, slotId) {
   const item = s.equipped[slotId];
@@ -252,7 +273,8 @@ if (typeof module !== "undefined") {
   module.exports = {
     defaultState, itemPower, slotPower, rarityCap, ascMultiplier,
     playerDamage, playerMaxHp, attackSpeed, playerDps, goldBonus,
-    levelUpCost, canLevelUp, levelUpItem, rarityUpCost, canRarityUp, rarityUpItem,
+    levelCostAt, levelUpCost, levelUpMaxPreview, levelUpMax, canLevelUp, levelUpItem,
+    rarityUpCost, canRarityUp, rarityUpItem,
     enemyStats, regionFor, isBossZone, spawnEnemy, shardsOnKill,
     xpToNext, gainXp, registerKill, changeZone, handleDeath, tick,
     canAscend, essenceOnAscend, ascend, ascUpgradeCost, buyAscUpgrade, offlineConfig,

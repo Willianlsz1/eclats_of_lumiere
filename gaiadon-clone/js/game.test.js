@@ -32,6 +32,31 @@ test("levelUpItem gasta gold e sobe o nível", () => {
   assert(s.gold < 1000, "deveria gastar gold");
 });
 
+test("levelUpMax compra vários níveis de uma vez", () => {
+  const s = game.defaultState();
+  s.gold = 1000;
+  const n = game.levelUpMax(s, "Weapon");
+  assert(n > 1, "deveria comprar vários níveis");
+  assertEqual(s.equipped.Weapon.level, 1 + n);
+});
+
+test("levelUpMax respeita o cap da raridade", () => {
+  const s = game.defaultState();
+  s.gold = 1e12; // gold de sobra
+  game.levelUpMax(s, "Weapon");
+  assertEqual(s.equipped.Weapon.level, RARITIES[0].cap, "para no cap da common (10)");
+});
+
+test("levelUpMaxPreview bate com a compra real (count e custo)", () => {
+  const s = game.defaultState();
+  s.gold = 800;
+  const pre = game.levelUpMaxPreview(s, "Weapon");
+  const goldBefore = s.gold;
+  const n = game.levelUpMax(s, "Weapon");
+  assertEqual(pre.count, n, "count previsto = comprado");
+  assertEqual(pre.spent, goldBefore - s.gold, "custo previsto = gasto");
+});
+
 test("nível trava no cap da raridade", () => {
   const s = game.defaultState();
   s.gold = 1e9;
