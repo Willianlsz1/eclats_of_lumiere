@@ -20,7 +20,7 @@ function defaultState() {
     },
     // Níveis dos upgrades permanentes de Ascensão.
     asc: { power: 0, offlineEff: 0, offlineCap: 0, insight: 0 },
-    enemy: null,
+    enemies: [],           // pack de inimigos atual (você foca o [0]; todos atacam)
     playerHp: null,
     lastSeen: null,
   };
@@ -139,22 +139,33 @@ function killsToClear(zone) {
   return CONFIG.enemy.killsBase + Math.floor((zone - 1) * CONFIG.enemy.killsPerZone);
 }
 
-function spawnEnemy(s) {
-  const region = regionFor(s.zone);
-  const stats = enemyStats(s.zone);
-  if (isBossZone(s.zone)) {
+// Quantos inimigos aparecem juntos numa zone (Boss vem sempre sozinho).
+function packSize(zone) {
+  if (isBossZone(zone)) return 1;
+  const P = CONFIG.pack;
+  return Math.min(P.max, P.base + Math.floor((zone - 1) / P.perZones));
+}
+
+// Cria UM inimigo (ou Boss) da zone.
+function makeEnemy(zone) {
+  const region = regionFor(zone);
+  const stats = enemyStats(zone);
+  if (isBossZone(zone)) {
     const B = CONFIG.boss;
     const hp = stats.hp * B.hpMult;
-    s.enemy = {
-      name: region.enemies[0] + " Boss", isBoss: true,
-      hp, maxHp: hp, dmg: stats.dmg,
-      goldReward: stats.gold * B.goldMult, xpReward: stats.xp * B.xpMult,
-    };
-  } else {
-    const name = region.enemies[Math.floor(Math.random() * region.enemies.length)];
-    s.enemy = { name, isBoss: false, hp: stats.hp, maxHp: stats.hp, dmg: stats.dmg, goldReward: stats.gold, xpReward: stats.xp };
+    return { name: region.enemies[0] + " Boss", isBoss: true, hp, maxHp: hp, dmg: stats.dmg,
+             goldReward: stats.gold * B.goldMult, xpReward: stats.xp * B.xpMult };
   }
-  return s.enemy;
+  const name = region.enemies[Math.floor(Math.random() * region.enemies.length)];
+  return { name, isBoss: false, hp: stats.hp, maxHp: stats.hp, dmg: stats.dmg, goldReward: stats.gold, xpReward: stats.xp };
+}
+
+// Spawna um pack novo na zone atual.
+function spawnPack(s) {
+  const n = packSize(s.zone);
+  s.enemies = [];
+  for (let i = 0; i < n; i++) s.enemies.push(makeEnemy(s.zone));
+  return s.enemies;
 }
 
 // --- Shards (drop) ---
@@ -173,9 +184,10 @@ function gainXp(s, amount) {
   return leveled;
 }
 
-// Registra um abate: recompensas (gold, xp, shards) + progressão de zone.
-function registerKill(s) {
-  const e = s.enemy;
+// Registra um abate de UM inimigo: recompensas + progressão de zone. NÃO cura
+// (a cura acontece ao limpar o pack inteiro — packs maiores são mais perigosos).
+function registerKill(s, e) {
+  e = e || s.enemies[0];
   const g = Math.round(e.goldReward * goldBonus(s));
   s.gold += g;
   const leveled = gainXp(s, e.xpReward);
@@ -193,7 +205,6 @@ function registerKill(s) {
     }
     // farmando uma zone já limpa (zone <= maxZone): fica, não é empurrado.
   }
-  s.playerHp = playerMaxHp(s); // cura ao matar
   return { type: "kill", name: e.name, gold: g, shards: sh, leveled, advanced, walledCleared, zone: s.zone, wasBoss: e.isBoss };
 }
 
@@ -203,34 +214,46 @@ function changeZone(s, dir) {
   if (target < 1 || target > s.maxZone + 1) return false;
   s.zone = target;
   s.killsInZone = 0;
-  spawnEnemy(s);
+  spawnPack(s);
   s.playerHp = playerMaxHp(s);
   return true;
 }
 
-// Morte: sem punição. Recua para a zone segura (maxZone) e zera o contador.
+// Morte: sem punição. Recua para a zone segura (maxZone), zera o contador e o pack.
 function handleDeath(s) {
   const wallZone = s.zone;
   s.killsInZone = 0;
   s.zone = Math.max(1, s.maxZone);
+  s.enemies = [];
   s.playerHp = playerMaxHp(s);
   return { type: "death", wallZone, zone: s.zone };
 }
 
 // Processa dt segundos de combate. Retorna lista de eventos para a UI.
 function tick(s, dt) {
-  if (!s.enemy) spawnEnemy(s);
+  if (!s.enemies || s.enemies.length === 0) spawnPack(s);
   if (s.playerHp === null) s.playerHp = playerMaxHp(s);
   const events = [];
 
+  // Você FOCA o inimigo da frente.
+  const target = s.enemies[0];
   const dmgToEnemy = playerDps(s) * dt;
-  s.enemy.hp -= dmgToEnemy;
+  target.hp -= dmgToEnemy;
   events.push({ type: "hit", amount: dmgToEnemy });
 
-  s.playerHp -= s.enemy.dmg * CONFIG.enemy.damageFactor * dt;
+  // TODOS os inimigos vivos do pack te atacam ao mesmo tempo.
+  const incoming = s.enemies.reduce((a, e) => a + e.dmg, 0) * CONFIG.enemy.damageFactor * dt;
+  s.playerHp -= incoming;
 
-  if (s.playerHp <= 0) { events.push(handleDeath(s)); spawnEnemy(s); return events; }
-  if (s.enemy.hp <= 0) { events.push(registerKill(s)); spawnEnemy(s); }
+  if (s.playerHp <= 0) { events.push(handleDeath(s)); spawnPack(s); return events; }
+
+  if (target.hp <= 0) {
+    const ev = registerKill(s, target);
+    events.push(ev);
+    s.enemies.shift(); // remove o morto
+    if (ev.advanced) s.enemies = []; // mudou de zone: descarta o pack antigo
+    if (s.enemies.length === 0) { s.playerHp = playerMaxHp(s); spawnPack(s); } // cura ao limpar o pack
+  }
   return events;
 }
 
@@ -298,7 +321,7 @@ if (typeof module !== "undefined") {
     playerDamage, playerMaxHp, attackSpeed, playerDps, goldBonus,
     levelCostAt, levelUpCost, levelUpMaxPreview, levelUpMax, canLevelUp, levelUpItem,
     rarityUpCost, canRarityUp, rarityUpItem,
-    enemyStats, regionFor, isBossZone, killsToClear, spawnEnemy, shardsOnKill,
+    enemyStats, regionFor, isBossZone, killsToClear, packSize, makeEnemy, spawnPack, shardsOnKill,
     xpToNext, gainXp, registerKill, changeZone, handleDeath, tick,
     canAscend, essenceMultiplier, essenceOnAscend, ascend, ascUpgradeCost, buyAscUpgrade, offlineConfig, computeOfflineGains,
   };

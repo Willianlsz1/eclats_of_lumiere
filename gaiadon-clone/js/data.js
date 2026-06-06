@@ -47,17 +47,22 @@ const CONFIG = {
     baseAttackSpeed: 1.0, // ataques por segundo
   },
   enemy: {
-    baseHp: 4, hpGrowth: 1.25,      // HP escala com a zone (primeiro abate <1s)
-    baseDmg: 3, dmgGrowth: 1.20,
-    baseGold: 6, goldGrowth: 1.14,
+    baseHp: 4, hpGrowth: 1.20,      // HP escala com a zone (primeiro abate <1s)
+    baseDmg: 3, dmgGrowth: 1.18,
+    baseGold: 6, goldGrowth: 1.16,
     baseXp: 4, xpGrowth: 1.12,
     killsBase: 10, killsPerZone: 3, // abates p/ limpar = killsBase + (zone-1)*killsPerZone
-    damageFactor: 0.7,              // fração do dano do inimigo aplicada por segundo
+    damageFactor: 0.3,              // dano por segundo de CADA inimigo do pack (vários atacam juntos)
   },
   boss: {
     everyZones: 10,                 // Boss Zone a cada N zones
     hpMult: 8,                      // Health do Boss = Enemy normal × isto
     goldMult: 5, xpMult: 5, shardMult: 5, // recompensas extras do Boss
+  },
+  // Pack: quantos inimigos aparecem juntos (todos atacam; você foca um por vez).
+  pack: {
+    base: 1, perZones: 7, max: 5,   // size = base + floor((zone-1)/perZones), teto max
+    // size = 1 (zone 1), 3 (zone 15), 5 (zone 29+). Boss vem sempre sozinho.
   },
   // Equipamento: Item Power = powerPerLevel × level × mult(raridade).
   gear: {

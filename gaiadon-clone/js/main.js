@@ -36,7 +36,7 @@ function load() {
       }
     }
   } catch (e) { console.warn("Failed to load save", e); }
-  spawnEnemy(state);
+  spawnPack(state);
   state.playerHp = playerMaxHp(state);
 }
 
@@ -44,7 +44,7 @@ function save() {
   try {
     state.lastSeen = Date.now();
     const copy = Object.assign({}, state);
-    delete copy.enemy; delete copy.playerHp; // regenerados ao carregar
+    delete copy.enemies; delete copy.playerHp; // regenerados ao carregar
     localStorage.setItem(SAVE_KEY, JSON.stringify(copy));
     $("saveStatus").textContent = "Saved ✓";
     setTimeout(() => $("saveStatus").textContent = "", 1500);
@@ -93,7 +93,7 @@ function bindButtons() {
     if (!canAscend(state)) return;
     if (confirm("Ascending resets your run (gold, zones, equipment). You keep Essence and permanent upgrades. Continue?")) {
       const g = ascend(state);
-      spawnEnemy(state); state.playerHp = playerMaxHp(state);
+      spawnPack(state); state.playerHp = playerMaxHp(state);
       logMsg(`✨ You ascended! +${fmt(g)} essence.`, "milestone");
       renderAll(state);
     }
@@ -104,7 +104,7 @@ function bindButtons() {
     if (confirm("Erase ALL progress, including essence and upgrades?")) {
       localStorage.removeItem(SAVE_KEY);
       state = defaultState();
-      spawnEnemy(state); state.playerHp = playerMaxHp(state);
+      spawnPack(state); state.playerHp = playerMaxHp(state);
       renderAll(state); logMsg("Game reset from scratch.");
     }
   };

@@ -100,7 +100,7 @@ test("Amulet dá Attack Speed E Gold Find", () => {
 console.log("== Combate e zones ==");
 test("registerKill dá shards (sem drop de item)", () => {
   const s = game.defaultState();
-  s.zone = 1; game.spawnEnemy(s);
+  s.zone = 1; game.spawnPack(s);
   const ev = game.registerKill(s);
   assert(ev.shards > 0, "deveria ganhar shards");
   assert(!("drop" in ev) || ev.drop == null, "não dropa item");
@@ -108,22 +108,22 @@ test("registerKill dá shards (sem drop de item)", () => {
 
 test("Boss dá mais shards e limpa a zone num abate", () => {
   const s = game.defaultState();
-  s.maxZone = 9; s.zone = 10; game.spawnEnemy(s);
-  assert(s.enemy.isBoss, "zone 10 é Boss");
+  s.maxZone = 9; s.zone = 10; game.spawnPack(s);
+  assert(s.enemies[0].isBoss, "zone 10 é Boss");
   const ev = game.registerKill(s);
   assertEqual(s.maxZone, 10, "boss limpa a zone");
   assert(ev.shards > 0, "boss dá shards");
 });
 
 test("limpar a fronteira sobe maxZone e auto-avança", () => {
-  const s = game.defaultState(); s.zone = 1; game.spawnEnemy(s);
+  const s = game.defaultState(); s.zone = 1; game.spawnPack(s);
   for (let i = 0; i < game.killsToClear(1); i++) game.registerKill(s);
   assertEqual(s.maxZone, 1);
   assertEqual(s.zone, 2); // auto-avança para a nova fronteira
 });
 
 test("farmar uma zone já limpa NÃO auto-avança", () => {
-  const s = game.defaultState(); s.maxZone = 5; s.zone = 3; game.spawnEnemy(s);
+  const s = game.defaultState(); s.maxZone = 5; s.zone = 3; game.spawnPack(s);
   for (let i = 0; i < game.killsToClear(3); i++) game.registerKill(s);
   assertEqual(s.zone, 3, "deveria ficar farmando a zone 3");
   assertEqual(s.maxZone, 5, "maxZone inalterada");
@@ -132,6 +132,25 @@ test("farmar uma zone já limpa NÃO auto-avança", () => {
 test("killsToClear cresce com a zone", () => {
   assertEqual(game.killsToClear(1), CONFIG.enemy.killsBase);
   assert(game.killsToClear(15) > game.killsToClear(1), "zona funda exige mais abates");
+});
+
+test("packSize cresce com a zone (Boss vem sozinho, respeita o teto)", () => {
+  assertEqual(game.packSize(1), CONFIG.pack.base);
+  assert(game.packSize(15) > game.packSize(1), "zona funda tem mais inimigos");
+  assertEqual(game.packSize(10), 1, "Boss Zone vem sozinho");
+  assert(game.packSize(1000) <= CONFIG.pack.max, "respeita o teto");
+});
+
+test("pack maior causa mais dano por segundo ao jogador", () => {
+  const s = game.defaultState(); s.maxZone = 20; s.zone = 15;
+  game.spawnPack(s); s.playerHp = game.playerMaxHp(s);
+  const hp0 = s.playerHp; game.tick(s, 0.1);
+  const dmgPack = hp0 - s.playerHp;
+  const s2 = game.defaultState(); s2.maxZone = 20; s2.zone = 15;
+  game.spawnPack(s2); s2.enemies = [s2.enemies[0]]; s2.playerHp = game.playerMaxHp(s2);
+  const hp1 = s2.playerHp; game.tick(s2, 0.1);
+  const dmgSingle = hp1 - s2.playerHp;
+  assert(dmgPack > dmgSingle, "o pack inteiro deveria doer mais que um inimigo só");
 });
 
 test("Insight multiplica a essência ganha", () => {
@@ -225,14 +244,14 @@ test("mais tempo offline = mais ganho (dentro do teto)", () => {
 console.log("== Balanceamento (sanidade) ==");
 test("o primeiro abate acontece em menos de 1s", () => {
   const s = game.defaultState();
-  game.spawnEnemy(s); s.playerHp = game.playerMaxHp(s);
+  game.spawnPack(s); s.playerHp = game.playerMaxHp(s);
   const evs = game.tick(s, 1.0); // 1 segundo de combate
   assert(evs.some(e => e.type === "kill"), "deveria matar o 1º inimigo em ~1s");
 });
 
 test("a parede é letal: jogador fresco morre numa zone muito funda", () => {
   const s = game.defaultState();
-  s.maxZone = 59; s.zone = 60; game.spawnEnemy(s); s.playerHp = game.playerMaxHp(s);
+  s.maxZone = 59; s.zone = 60; game.spawnPack(s); s.playerHp = game.playerMaxHp(s);
   let died = false, killed = false;
   for (let i = 0; i < 100 && !died && !killed; i++) {
     const evs = game.tick(s, 0.1);
