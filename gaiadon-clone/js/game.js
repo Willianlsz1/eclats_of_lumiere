@@ -223,6 +223,8 @@ function shopCost(s, id) {
   return Math.round(u.baseCost * Math.pow(u.growth, s.shop[id]));
 }
 function buyUpgrade(s, id) {
+  const u = SHOP_UPGRADES.find(x => x.id === id);
+  if (u.maxLevel != null && s.shop[id] >= u.maxLevel) return false; // já no teto
   const cost = shopCost(s, id);
   if (s.gold < cost) return false;
   s.gold -= cost; s.shop[id]++;

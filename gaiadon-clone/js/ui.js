@@ -95,11 +95,15 @@ function upgradeEffect(u) {
 
 function renderShop(s) {
   $("shop").innerHTML = SHOP_UPGRADES.map(u => {
+    const maxed = u.maxLevel != null && s.shop[u.id] >= u.maxLevel;
     const cost = shopCost(s, u.id);
     const afford = s.gold >= cost;
+    const btn = maxed
+      ? `<button disabled class="maxed">MAX</button>`
+      : `<button data-id="${u.id}" ${afford ? "" : "disabled"}>💰 ${fmt(cost)}</button>`;
     return `<div class="shop-item">
       <span class="info">${u.name} <span class="lvl">Lv ${s.shop[u.id]}</span><br><small class="effect">${upgradeEffect(u)}</small></span>
-      <button data-id="${u.id}" ${afford ? "" : "disabled"}>💰 ${fmt(cost)}</button>
+      ${btn}
     </div>`;
   }).join("");
   $("shop").querySelectorAll("button").forEach(b => {

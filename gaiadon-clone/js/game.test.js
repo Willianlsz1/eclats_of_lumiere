@@ -91,4 +91,20 @@ test("essência de ascensão usa a zone máxima", () => {
   assert(game.essenceOnAscend(s) > 0, "deveria render essência");
 });
 
+test("upgrade de offline trava no maxLevel", () => {
+  const s = game.defaultState();
+  s.gold = 1e12; // ouro de sobra
+  s.shop.offlineCap = 22; // já no teto (24h - 2h base)
+  assertEqual(game.buyUpgrade(s, "offlineCap"), false, "não deve comprar além do maxLevel");
+  assertEqual(s.shop.offlineCap, 22, "nível não muda quando maxado");
+});
+
+test("maxLevel do offline bate com os caps (sem drift)", () => {
+  const O = CONFIG.offline;
+  const eff = SHOP_UPGRADES.find(u => u.id === "offlineEff");
+  const cap = SHOP_UPGRADES.find(u => u.id === "offlineCap");
+  assertEqual(eff.maxLevel, Math.round((O.efficiencyMax - O.startEfficiency) / eff.value));
+  assertEqual(cap.maxLevel, Math.round((O.capMaxHours - O.startCapHours) / cap.value));
+});
+
 report();

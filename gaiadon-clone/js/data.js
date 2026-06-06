@@ -35,8 +35,10 @@ const SHOP_UPGRADES = [
   { id: "hp",         name: "Vitality (+health)",        baseCost: 15,  growth: 1.22, value: 10,   unit: "health" },
   { id: "spd",        name: "Agility (+attack speed)",   baseCost: 25,  growth: 1.26, value: 0.05, unit: "atk speed" },
   { id: "gold",       name: "Greed (+gold)",             baseCost: 40,  growth: 1.24, value: 0.10, unit: "gold", percent: true },
-  { id: "offlineEff", name: "Dreamcatcher (+offline %)", baseCost: 100, growth: 1.30, value: 0.05, unit: "offline rate", percent: true },
-  { id: "offlineCap", name: "Hourglass (+offline cap)",  baseCost: 150, growth: 1.35, value: 1,    unit: "offline cap", suffix: "h" },
+  // Upgrades de offline: premium e íngremes de propósito (evita fechar o jogo e farmar de graça).
+  // maxLevel deriva dos caps: offlineEff (0.60-0.25)/0.05 = 7; offlineCap (24-2)/1 = 22.
+  { id: "offlineEff", name: "Dreamcatcher (+offline %)", baseCost: 500, growth: 1.75, value: 0.05, unit: "offline rate", percent: true, maxLevel: 7 },
+  { id: "offlineCap", name: "Hourglass (+offline cap)",  baseCost: 750, growth: 1.60, value: 1,    unit: "offline cap", suffix: "h", maxLevel: 22 },
 ];
 
 // ===== Painel de balanceamento — TODAS as alavancas num só lugar =====
@@ -72,7 +74,7 @@ const CONFIG = {
   ascension: { unlockZone: 25, perEssencePct: 0.10, zoneExp: 1.5, zoneDiv: 3, levelDiv: 5 },
   offline: {
     startEfficiency: 0.25, efficiencyMax: 0.60, // base + offlineEff*value, teto 0.60
-    startCapHours: 2, capMaxHours: 8,           // base + offlineCap*value, teto 8h
+    startCapHours: 2, capMaxHours: 24,          // base 2h + offlineCap*value, teto absoluto 24h
   },
   // Como o Item Power vira bônus de cada stat:
   itemStats: {
