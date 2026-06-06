@@ -45,12 +45,12 @@ const CONFIG = {
     baseAttackSpeed: 1.0, // ataques por segundo
   },
   enemy: {
-    baseHp: 20, hpGrowth: 1.18,     // HP escala com a zone
-    baseDmg: 3, dmgGrowth: 1.15,
+    baseHp: 4, hpGrowth: 1.25,      // HP escala com a zone (primeiro abate <1s)
+    baseDmg: 3, dmgGrowth: 1.20,
     baseGold: 6, goldGrowth: 1.14,
     baseXp: 4, xpGrowth: 1.12,
     killsToClear: 10,
-    damageFactor: 0.5,              // fração do dano do inimigo aplicada por segundo
+    damageFactor: 0.7,              // fração do dano do inimigo aplicada por segundo
   },
   boss: {
     everyZones: 10,                 // Boss Zone a cada N zones
@@ -60,7 +60,7 @@ const CONFIG = {
   // Equipamento: Item Power = powerPerLevel × level × mult(raridade).
   gear: {
     powerPerLevel: 1,
-    levelCostBase: 5, levelCostGrowth: 1.08,  // custo de GOLD por nível
+    levelCostBase: 5, levelCostGrowth: 1.11,  // custo de GOLD por nível
     rarityCostBase: 5, rarityCostGrowth: 8,   // custo de SHARDS por tier de raridade
   },
   // Shards (material) dropam dos inimigos e sobem a raridade do equipamento.

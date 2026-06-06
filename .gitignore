@@ -9,3 +9,4 @@ Thumbs.db
 
 # Ferramentas locais de dev (preview) — não fazem parte do jogo
 /.claude/
+/gaiadon-clone/js/_sim.js

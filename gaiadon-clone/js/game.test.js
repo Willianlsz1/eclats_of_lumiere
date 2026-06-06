@@ -210,4 +210,24 @@ test("mais tempo offline = mais ganho (dentro do teto)", () => {
   assert(b.gold > a.gold, "mais tempo deveria render mais gold");
 });
 
+console.log("== Balanceamento (sanidade) ==");
+test("o primeiro abate acontece em menos de 1s", () => {
+  const s = game.defaultState();
+  game.spawnEnemy(s); s.playerHp = game.playerMaxHp(s);
+  const evs = game.tick(s, 1.0); // 1 segundo de combate
+  assert(evs.some(e => e.type === "kill"), "deveria matar o 1º inimigo em ~1s");
+});
+
+test("a parede é letal: jogador fresco morre numa zone muito funda", () => {
+  const s = game.defaultState();
+  s.maxZone = 59; s.zone = 60; game.spawnEnemy(s); s.playerHp = game.playerMaxHp(s);
+  let died = false, killed = false;
+  for (let i = 0; i < 100 && !died && !killed; i++) {
+    const evs = game.tick(s, 0.1);
+    if (evs.some(e => e.type === "death")) died = true;
+    if (evs.some(e => e.type === "kill")) killed = true;
+  }
+  assert(died && !killed, "jogador fresco deveria MORRER (não matar) numa zone funda");
+});
+
 report();
