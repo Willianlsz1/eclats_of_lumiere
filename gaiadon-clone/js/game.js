@@ -1,4 +1,5 @@
-// ===== Lógica central (sem DOM, para ser testável) =====
+// ===== Core logic (sem DOM, testável em Node) =====
+// Tudo aqui é função PURA: recebe o estado `s`, calcula, devolve. Nada de tela.
 
 function defaultState() {
   return {
@@ -6,90 +7,117 @@ function defaultState() {
     level: 1,
     xp: 0,
     essence: 0,            // moeda de ascensão
-    zone: 0,               // índice da zona atual
-    killsInZone: 0,        // abates na zona (10 = libera próxima)
-    maxZoneReached: 0,
-    shop: { dmg: 0, hp: 0, spd: 0, gold: 0 }, // níveis comprados
-    equipped: { Arma: null, Armadura: null, Amuleto: null },
+    zone: 1,               // zone em combate agora (profundidade)
+    maxZone: 0,            // zone mais funda já limpa
+    killsInZone: 0,        // abates na zone atual (limpa em killsToClear)
+    totalKills: 0,         // usado para os drops garantidos iniciais
+    shop: { dmg: 0, hp: 0, spd: 0, gold: 0, offlineEff: 0, offlineCap: 0 },
+    equipped: { Weapon: null, Armor: null, Amulet: null },
     inventory: [],
     enemy: null,
     playerHp: null,
+    lastSeen: null,        // timestamp do último save (para offline)
   };
 }
 
-// --- Cálculos derivados ---
-function ascMultiplier(s) {
-  return 1 + s.essence * 0.10; // cada essência = +10%
-}
+// --- Stats derivados ---
+function ascMultiplier(s) { return 1 + s.essence * CONFIG.ascension.perEssencePct; }
 
 function playerDamage(s) {
-  let base = 5 + s.shop.dmg * SHOP_UPGRADES[0].value + (s.level - 1) * 1.5;
-  const w = s.equipped.Arma;
-  if (w) base += w.power;
+  const P = CONFIG.player;
+  let base = P.baseDamage + s.shop.dmg * SHOP_UPGRADES[0].value + (s.level - 1) * P.damagePerLevel;
+  const w = s.equipped.Weapon;
+  if (w) base += w.power; // Weapon → Damage (1:1)
   return Math.round(base * ascMultiplier(s));
 }
-
 function playerMaxHp(s) {
-  let base = 50 + s.shop.hp * SHOP_UPGRADES[1].value + (s.level - 1) * 8;
-  const a = s.equipped.Armadura;
-  if (a) base += a.power * 3;
+  const P = CONFIG.player;
+  let base = P.baseHp + s.shop.hp * SHOP_UPGRADES[1].value + (s.level - 1) * P.hpPerLevel;
+  const a = s.equipped.Armor;
+  if (a) base += a.power * CONFIG.itemStats.healthPerPower; // Armor → Health
   return Math.round(base * ascMultiplier(s));
 }
-
-// ataques por segundo
 function attackSpeed(s) {
-  return 1 + s.shop.spd * SHOP_UPGRADES[2].value;
+  let spd = CONFIG.player.baseAttackSpeed + s.shop.spd * SHOP_UPGRADES[2].value;
+  const am = s.equipped.Amulet;
+  if (am && am.stat === "Attack Speed") spd += am.power * CONFIG.itemStats.attackSpeedPerPower;
+  return spd;
 }
-
+function playerDps(s) { return playerDamage(s) * attackSpeed(s); }
 function goldBonus(s) {
   let b = 1 + s.shop.gold * SHOP_UPGRADES[3].value;
-  const am = s.equipped.Amuleto;
-  if (am) b += am.power * 0.02;
+  const am = s.equipped.Amulet;
+  if (am && am.stat === "Gold Find") b += am.power * CONFIG.itemStats.goldFindPerPower;
   return b * ascMultiplier(s);
 }
 
-// --- Inimigos ---
+// --- Inimigos (escala pela zone — ver docs/adr/0001) ---
+function enemyStats(zone) {
+  const E = CONFIG.enemy;
+  const d = zone - 1; // zone 1 = expoente 0
+  return {
+    hp:   Math.round(E.baseHp   * Math.pow(E.hpGrowth, d)),
+    dmg:  Math.round(E.baseDmg  * Math.pow(E.dmgGrowth, d)),
+    gold: Math.round(E.baseGold * Math.pow(E.goldGrowth, d)),
+    xp:   Math.round(E.baseXp   * Math.pow(E.xpGrowth, d)),
+  };
+}
+function regionFor(zone) {
+  const i = Math.floor((zone - 1) / CONFIG.zonesPerRegion) % REGIONS.length;
+  return REGIONS[i];
+}
+// Boss Zone = toda zone múltipla de boss.everyZones (10, 20, 30...).
+function isBossZone(zone) { return zone % CONFIG.boss.everyZones === 0; }
+
 function spawnEnemy(s) {
-  const zone = ZONES[s.zone];
-  const tier = s.zone; // 0-based
-  const names = zone.enemies;
-  const name = names[Math.floor(Math.random() * names.length)];
-  const hp = Math.round(30 * Math.pow(1.55, tier) * (1 + s.killsInZone * 0.05));
-  const dmg = Math.round(5 * Math.pow(1.4, tier));
-  const goldReward = Math.round(8 * Math.pow(1.5, tier));
-  const xpReward = Math.round(5 * Math.pow(1.4, tier));
-  s.enemy = { name, hp, maxHp: hp, dmg, goldReward, xpReward };
+  const region = regionFor(s.zone);
+  const stats = enemyStats(s.zone);
+  if (isBossZone(s.zone)) {
+    const B = CONFIG.boss;
+    const hp = stats.hp * B.hpMult;
+    s.enemy = {
+      name: region.enemies[0] + " Boss", isBoss: true,
+      hp, maxHp: hp, dmg: stats.dmg,
+      goldReward: stats.gold * B.goldMult, xpReward: stats.xp * B.xpMult,
+    };
+  } else {
+    const name = region.enemies[Math.floor(Math.random() * region.enemies.length)];
+    s.enemy = { name, isBoss: false, hp: stats.hp, maxHp: stats.hp, dmg: stats.dmg, goldReward: stats.gold, xpReward: stats.xp };
+  }
   return s.enemy;
 }
 
-// --- Geração de loot ---
-function rollRarity() {
-  const total = RARITIES.reduce((a, r) => a + r.weight, 0);
-  let roll = Math.random() * total;
-  for (const r of RARITIES) {
-    if (roll < r.weight) return r;
-    roll -= r.weight;
+// --- Loot ---
+// Sorteia uma rarity. Se minName for passado, só considera rarities >= a ela (Boss).
+function rollRarity(minName) {
+  let pool = RARITIES;
+  if (minName) {
+    const minIdx = RARITIES.findIndex(r => r.name === minName);
+    if (minIdx > 0) pool = RARITIES.slice(minIdx);
   }
-  return RARITIES[0];
+  const total = pool.reduce((a, r) => a + r.weight, 0);
+  let roll = Math.random() * total;
+  for (const r of pool) { if (roll < r.weight) return r; roll -= r.weight; }
+  return pool[0];
 }
-
-function generateItem(s) {
+function generateItem(s, minRarity) {
+  const D = CONFIG.drops;
   const slot = SLOTS[Math.floor(Math.random() * SLOTS.length)];
-  const rarity = rollRarity();
+  const rarity = rollRarity(minRarity);
   const baseName = ITEM_NAMES[slot][Math.floor(Math.random() * ITEM_NAMES[slot].length)];
-  const power = Math.round((3 + s.zone * 4) * rarity.mult * (0.8 + Math.random() * 0.4));
-  return {
-    id: Math.random().toString(36).slice(2, 9),
-    slot, rarity: rarity.name, name: baseName, power,
-  };
+  const power = Math.round((D.powerBase + s.zone * D.powerPerZone) * rarity.mult * (0.8 + Math.random() * 0.4));
+  const item = { id: Math.random().toString(36).slice(2, 9), slot, rarity: rarity.name, name: baseName, power };
+  // Slot "surpresa": Amulet sorteia qual stat concede (Attack Speed ou Gold Find).
+  if (slot === "Amulet") item.stat = D.amuletStats[Math.floor(Math.random() * D.amuletStats.length)];
+  return item;
 }
-
-// ~22% de chance de drop por abate
 function maybeDrop(s) {
-  if (Math.random() < 0.22) {
+  const D = CONFIG.drops;
+  const guaranteed = s.totalKills <= D.guaranteedFirstKills;
+  if (guaranteed || Math.random() < D.baseChance) {
     const item = generateItem(s);
     s.inventory.push(item);
-    if (s.inventory.length > 24) s.inventory.shift(); // limite da mochila
+    if (s.inventory.length > D.inventoryMax) s.inventory.shift(); // limite da mochila
     return item;
   }
   return null;
@@ -106,93 +134,81 @@ function equipItem(s, itemId) {
   if (prev) s.inventory.push(prev); // devolve o antigo pra mochila
   return item;
 }
-
-function xpToNext(s) {
-  return Math.round(20 * Math.pow(1.25, s.level - 1));
-}
-
+function xpToNext(s) { return Math.round(CONFIG.xp.base * Math.pow(CONFIG.xp.growth, s.level - 1)); }
 function gainXp(s, amount) {
   s.xp += amount;
   let leveled = false;
-  while (s.xp >= xpToNext(s)) {
-    s.xp -= xpToNext(s);
-    s.level++;
-    leveled = true;
-  }
+  while (s.xp >= xpToNext(s)) { s.xp -= xpToNext(s); s.level++; leveled = true; }
   return leveled;
 }
 
-// Processa 1 segundo de combate. Retorna eventos para a UI/log.
+// Registra um abate: recompensas + progressão de zone. Retorna o evento "kill".
+function registerKill(s) {
+  const e = s.enemy;
+  const g = Math.round(e.goldReward * goldBonus(s));
+  s.gold += g;
+  const leveled = gainXp(s, e.xpReward);
+  s.totalKills++;
+  // Drop: Boss dá drop GARANTIDO de rarity >= boss.minRarity; inimigo normal usa maybeDrop.
+  let drop;
+  if (e.isBoss) {
+    drop = generateItem(s, CONFIG.boss.minRarity);
+    s.inventory.push(drop);
+    if (s.inventory.length > CONFIG.drops.inventoryMax) s.inventory.shift();
+  } else {
+    drop = maybeDrop(s);
+  }
+  s.killsInZone++;
+  // Boss limpa a zone num único abate; zone normal precisa de killsToClear.
+  const needed = e.isBoss ? 1 : CONFIG.enemy.killsToClear;
+  let advanced = false, walledCleared = false;
+  if (s.killsInZone >= needed) {
+    s.killsInZone = 0;
+    if (s.zone > s.maxZone) { s.maxZone = s.zone; walledCleared = true; } // limpou a fronteira
+    s.zone = s.maxZone + 1; // tenta a fronteira seguinte automaticamente
+    advanced = true;
+  }
+  s.playerHp = playerMaxHp(s); // cura ao matar
+  return { type: "kill", name: e.name, gold: g, leveled, drop, advanced, walledCleared, zone: s.zone, wasBoss: e.isBoss };
+}
+
+// Morte: sem punição. Recua para a zone segura (maxZone) e zera o contador.
+// Captura a zone da PAREDE (onde morreu) antes de recuar, para a mensagem.
+function handleDeath(s) {
+  const wallZone = s.zone;
+  s.killsInZone = 0;
+  s.zone = Math.max(1, s.maxZone);
+  s.playerHp = playerMaxHp(s);
+  return { type: "death", wallZone, zone: s.zone };
+}
+
+// Processa dt segundos de combate. Retorna lista de eventos para a UI.
 function tick(s, dt) {
   if (!s.enemy) spawnEnemy(s);
   if (s.playerHp === null) s.playerHp = playerMaxHp(s);
-
   const events = [];
-  const dps = playerDamage(s) * attackSpeed(s);
-  s.enemy.hp -= dps * dt;
 
-  // jogador também toma dano (mas regenera ao trocar de inimigo)
-  s.playerHp -= s.enemy.dmg * 0.5 * dt;
-  if (s.playerHp <= 0) {
-    // "morte" sem punição dura: cura total e perde poucos abates
-    s.playerHp = playerMaxHp(s);
-    events.push({ type: "death" });
-  }
+  const dmgToEnemy = playerDps(s) * dt;
+  s.enemy.hp -= dmgToEnemy;
+  events.push({ type: "hit", amount: dmgToEnemy }); // para floating damage
 
-  if (s.enemy.hp <= 0) {
-    const g = Math.round(s.enemy.goldReward * goldBonus(s));
-    s.gold += g;
-    const leveled = gainXp(s, s.enemy.xpReward);
-    const drop = maybeDrop(s);
-    s.killsInZone++;
-    events.push({ type: "kill", name: s.enemy.name, gold: g, leveled, drop });
+  s.playerHp -= s.enemy.dmg * CONFIG.enemy.damageFactor * dt;
 
-    // libera próxima zona a cada 10 abates
-    if (s.killsInZone >= 10 && s.zone < ZONES.length - 1) {
-      // não avança sozinho; apenas marca disponível
-    }
-    s.playerHp = playerMaxHp(s); // cura ao matar
-    spawnEnemy(s);
-  }
+  if (s.playerHp <= 0) { events.push(handleDeath(s)); spawnEnemy(s); return events; }
+
+  if (s.enemy.hp <= 0) { events.push(registerKill(s)); spawnEnemy(s); }
   return events;
 }
 
-// --- Zonas ---
-function canAdvance(s) {
-  return s.killsInZone >= 10 && s.zone < ZONES.length - 1;
-}
-function changeZone(s, dir) {
-  const target = s.zone + dir;
-  if (target < 0 || target >= ZONES.length) return false;
-  if (dir > 0 && s.killsInZone < 10) return false; // precisa de 10 abates
-  s.zone = target;
-  s.killsInZone = 0;
-  s.maxZoneReached = Math.max(s.maxZoneReached, target);
-  spawnEnemy(s);
-  s.playerHp = playerMaxHp(s);
-  return true;
-}
-
-// --- Loja ---
-function shopCost(s, id) {
-  const u = SHOP_UPGRADES.find(x => x.id === id);
-  const lvl = s.shop[id];
-  return Math.round(u.baseCost * Math.pow(u.growth, lvl));
-}
-function buyUpgrade(s, id) {
-  const cost = shopCost(s, id);
-  if (s.gold < cost) return false;
-  s.gold -= cost;
-  s.shop[id]++;
-  return true;
-}
-
 // --- Ascensão ---
+// Só desbloqueia ao limpar a Zone de unlockZone (25). Antes disso, não pode ascender.
+function canAscend(s) { return s.maxZone >= CONFIG.ascension.unlockZone; }
 function essenceOnAscend(s) {
-  // baseado na zona máxima e nível
-  return Math.floor(Math.pow(s.maxZoneReached + 1, 1.5) + s.level / 5);
+  const A = CONFIG.ascension;
+  return Math.floor(Math.pow(s.maxZone + 1, A.zoneExp) / A.zoneDiv + s.level / A.levelDiv);
 }
 function ascend(s) {
+  if (!canAscend(s)) return false;
   const gain = essenceOnAscend(s);
   if (gain <= 0) return false;
   const keepEssence = s.essence + gain;
@@ -201,11 +217,22 @@ function ascend(s) {
   return gain;
 }
 
+// --- Loja ---
+function shopCost(s, id) {
+  const u = SHOP_UPGRADES.find(x => x.id === id);
+  return Math.round(u.baseCost * Math.pow(u.growth, s.shop[id]));
+}
+function buyUpgrade(s, id) {
+  const cost = shopCost(s, id);
+  if (s.gold < cost) return false;
+  s.gold -= cost; s.shop[id]++;
+  return true;
+}
+
 if (typeof module !== "undefined") {
   module.exports = {
-    defaultState, ascMultiplier, playerDamage, playerMaxHp, attackSpeed,
-    goldBonus, spawnEnemy, rollRarity, generateItem, maybeDrop, equipItem,
-    xpToNext, gainXp, tick, canAdvance, changeZone, shopCost, buyUpgrade,
-    essenceOnAscend, ascend,
+    defaultState, ascMultiplier, playerDamage, playerMaxHp, attackSpeed, playerDps, goldBonus,
+    enemyStats, regionFor, isBossZone, spawnEnemy, rollRarity, generateItem, maybeDrop, equipItem,
+    xpToNext, gainXp, registerKill, handleDeath, tick, canAscend, essenceOnAscend, ascend, shopCost, buyUpgrade,
   };
 }
