@@ -35,7 +35,8 @@ function slotPower(s, slotId) { return itemPower(s.equipped[slotId]); }
 function rarityCap(item) { return RARITIES[item.rarity].cap; }
 
 // --- Stats derivados ---
-function ascMultiplier(s) { return 1 + s.asc.power * ASCENSION_UPGRADES[0].value; }
+// Power é MULTIPLICATIVO: cada nível multiplica por (1 + value). Compõe entre ascensões.
+function ascMultiplier(s) { return Math.pow(1 + ASCENSION_UPGRADES[0].value, s.asc.power); }
 
 function playerDamage(s) {
   const P = CONFIG.player;

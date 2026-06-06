@@ -144,7 +144,8 @@ function renderAscend(s) {
     const maxed = u.maxLevel != null && s.asc[u.id] >= u.maxLevel;
     const cost = ascUpgradeCost(s, u.id);
     const afford = s.essence >= cost;
-    const effect = u.percent ? `+${Math.round(u.value * 100)}% ${u.unit}`
+    const effect = u.multiplicative ? `×${(1 + u.value).toFixed(2)} ${u.unit} (compounding)`
+                 : u.percent ? `+${Math.round(u.value * 100)}% ${u.unit}`
                  : u.suffix  ? `+${u.value}${u.suffix} ${u.unit}`
                  : `+${u.value} ${u.unit}`;
     const btn = maxed

@@ -32,7 +32,7 @@ const RARITIES = [
 // A ORDEM importa: game.js referencia por índice. "power" substitui o antigo
 // multiplicador automático de essência.
 const ASCENSION_UPGRADES = [
-  { id: "power",      name: "Power",       baseCost: 1, growth: 2.0, value: 0.10, unit: "damage & gold", percent: true },
+  { id: "power",      name: "Power",       baseCost: 2, growth: 1.8, value: 0.50, unit: "damage & gold", multiplicative: true },
   { id: "offlineEff", name: "Dreamcatcher", baseCost: 3, growth: 2.5, value: 0.05, unit: "offline rate", percent: true, maxLevel: 7 },
   { id: "offlineCap", name: "Hourglass",    baseCost: 5, growth: 2.5, value: 1,    unit: "offline cap", suffix: "h", maxLevel: 22 },
 ];
