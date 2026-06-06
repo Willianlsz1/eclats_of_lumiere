@@ -74,8 +74,8 @@ const CONFIG = {
   },
   combat: { baseCritMult: 2.0 }, // crítico base = ×2 (afixos de Crit Damage somam a isto)
   enemy: {
-    baseHp: 4, hpGrowth: 1.20,      // HP escala com a zone (primeiro abate <1s)
-    baseDmg: 3, dmgGrowth: 1.18,
+    baseHp: 4, hpGrowth: 1.22,      // HP escala com a zone (mais hardcore que o original 1.20)
+    baseDmg: 3, dmgGrowth: 1.20,
     baseGold: 6, goldGrowth: 1.16,
     baseXp: 4, xpGrowth: 1.12,
     killsBase: 10, killsPerZone: 3, // abates p/ limpar = killsBase + (zone-1)*killsPerZone
@@ -95,7 +95,7 @@ const CONFIG = {
   gear: {
     powerPerLevel: 1,
     levelCostBase: 5, levelCostGrowth: 1.11,  // custo de GOLD por nível
-    rarityCostBase: 5, rarityCostGrowth: 8,   // custo de SHARDS por tier de raridade
+    rarityCostBase: 6, rarityCostGrowth: 14,  // custo de SHARDS por tier (jornada longa: 6/84/1176/16464)
   },
   // Shards (material) dropam dos inimigos e sobem a raridade do equipamento.
   shards: {
@@ -113,7 +113,7 @@ const CONFIG = {
   // Ascensão em tiers: gatilho por NÍVEL do personagem, escalando a cada ascensão.
   // req(n) = firstReqLevel × reqGrowth^n  (n = nº de ascensões já feitas).
   // perLevelGrowth: a cada ascensão, os stats POR NÍVEL (dano/vida) multiplicam por isto.
-  ascension: { firstReqLevel: 25, reqGrowth: 1.7, perLevelGrowth: 1.4, zoneExp: 1.5, zoneDiv: 3, levelDiv: 5 },
+  ascension: { firstReqLevel: 25, reqGrowth: 1.4, perLevelGrowth: 1.4, zoneExp: 1.5, zoneDiv: 3, levelDiv: 5 },
   offline: {
     startEfficiency: 0.25, efficiencyMax: 0.60, // base + offlineEff*value, teto 0.60
     startCapHours: 2, capMaxHours: 24,          // base 2h + offlineCap*value, teto 24h
