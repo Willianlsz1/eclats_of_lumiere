@@ -19,7 +19,7 @@ function defaultState() {
       Amulet: { rarity: 0, level: 1 },
     },
     // Níveis dos upgrades permanentes de Ascensão.
-    asc: { power: 0, offlineEff: 0, offlineCap: 0, insight: 0, wisdom: 0 },
+    asc: { power: 0, offlineEff: 0, offlineCap: 0, insight: 0 },
     enemies: [],           // pack de inimigos atual (você foca o [0]; todos atacam)
     playerHp: null,
     lastSeen: null,
@@ -87,10 +87,9 @@ function goldBonus(s) {
   b *= (1 + affixTotals(s).goldMult); // afixo Gold %
   return b * ascMultiplier(s);
 }
-// Multiplicador de XP: upgrade Wisdom (ascensão) × afixo XP % do gear.
+// Multiplicador de XP: o multiplicador do Power (damage/gold/XP) × afixo XP % do gear.
 function xpMultiplier(s) {
-  const wisdom = 1 + s.asc.wisdom * ASCENSION_UPGRADES[4].value;
-  return wisdom * (1 + affixTotals(s).xpMult);
+  return ascMultiplier(s) * (1 + affixTotals(s).xpMult);
 }
 
 // --- Custos e ações de equipamento ---

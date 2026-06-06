@@ -21,7 +21,7 @@ function load() {
           ? { rarity: it.rarity, level: it.level }
           : { rarity: 0, level: 1 };
       }
-      state.asc = Object.assign({ power: 0, offlineEff: 0, offlineCap: 0 }, parsed.asc || {});
+      state.asc = Object.assign({}, d.asc, parsed.asc || {}); // defaulta todas as chaves de asc
 
       // Progresso offline: credita os ganhos do tempo ausente (acima de 1 min).
       if (state.lastSeen) {
