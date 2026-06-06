@@ -37,12 +37,14 @@ function rarityCap(item) { return RARITIES[item.rarity].cap; }
 // --- Afixos (sub-stats por raridade) ---
 // Afixos ativos de um item = os primeiros `rarity` da lista do slot.
 function itemAffixes(slotId, rarity) { return AFFIXES[slotId].slice(0, rarity); }
+// Valor de um afixo escala com o NÍVEL do item: base + perLevel × nível.
+function affixValue(a, level) { return a.base + a.perLevel * level; }
 // Soma todos os afixos dos itens equipados em modificadores globais.
 function affixTotals(s) {
   const t = { critRate: 0, critDmg: 0, dmgMult: 0, hpMult: 0, goldMult: 0 };
   for (const slot of SLOTS) {
     const it = s.equipped[slot.id];
-    for (const a of itemAffixes(slot.id, it.rarity)) t[a.stat] += a.value;
+    for (const a of itemAffixes(slot.id, it.rarity)) t[a.stat] += affixValue(a, it.level);
   }
   return t;
 }
@@ -344,7 +346,7 @@ function computeOfflineGains(s, elapsedSec) {
 if (typeof module !== "undefined") {
   module.exports = {
     defaultState, itemPower, slotPower, rarityCap, ascMultiplier,
-    itemAffixes, affixTotals, critRate, critMult, critExpectedMult,
+    itemAffixes, affixValue, affixTotals, critRate, critMult, critExpectedMult,
     playerDamage, playerMaxHp, attackSpeed, playerDps, goldBonus,
     levelCostAt, levelUpCost, levelUpMaxPreview, levelUpMax, canLevelUp, levelUpItem,
     rarityUpCost, canRarityUp, rarityUpItem,

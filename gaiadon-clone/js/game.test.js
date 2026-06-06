@@ -95,6 +95,16 @@ test("affixTotals soma os afixos dos itens equipados", () => {
   assert(t.critRate > 0 && t.critDmg > 0, "deveria somar crit dos afixos");
 });
 
+test("afixos escalam com o nível do item", () => {
+  const s = game.defaultState();
+  s.equipped.Weapon.rarity = 2; // critRate + critDmg
+  s.equipped.Weapon.level = 1;
+  const low = game.affixTotals(s).critDmg;
+  s.equipped.Weapon.level = 500;
+  const high = game.affixTotals(s).critDmg;
+  assert(high > low, "subir o nível do item deveria aumentar o afixo");
+});
+
 test("afixos de crítico aumentam o DPS", () => {
   const s = game.defaultState();
   const dps0 = game.playerDps(s); // common: sem crit

@@ -21,24 +21,26 @@ const SLOTS = [
 // Afixos por slot, FIXOS por raridade. O item ativa os primeiros `rarity` afixos da
 // lista (common=0, uncommon=1, rare=2, epic=3, legendary=4). Temáticos por slot.
 // stats (frações): critRate, critDmg, dmgMult, hpMult, goldMult.
+// Cada afixo: { stat, base, perLevel }. Valor = base + perLevel × nível do item.
+// Ou seja, subir o NÍVEL do item também aumenta os afixos (não só o stat base).
 const AFFIXES = {
   Weapon: [
-    { stat: "critRate", value: 0.05 }, // uncommon
-    { stat: "critDmg",  value: 0.30 }, // rare
-    { stat: "dmgMult",  value: 0.15 }, // epic
-    { stat: "critDmg",  value: 0.60 }, // legendary
+    { stat: "critRate", base: 0.05, perLevel: 0.0003 }, // uncommon
+    { stat: "critDmg",  base: 0.30, perLevel: 0.004 },  // rare
+    { stat: "dmgMult",  base: 0.15, perLevel: 0.003 },  // epic
+    { stat: "critDmg",  base: 0.60, perLevel: 0.006 },  // legendary
   ],
   Armor: [
-    { stat: "hpMult",   value: 0.20 },
-    { stat: "critRate", value: 0.05 },
-    { stat: "hpMult",   value: 0.35 },
-    { stat: "dmgMult",  value: 0.20 },
+    { stat: "hpMult",   base: 0.20, perLevel: 0.004 },
+    { stat: "critRate", base: 0.05, perLevel: 0.0003 },
+    { stat: "hpMult",   base: 0.35, perLevel: 0.006 },
+    { stat: "dmgMult",  base: 0.20, perLevel: 0.003 },
   ],
   Amulet: [
-    { stat: "goldMult", value: 0.25 },
-    { stat: "dmgMult",  value: 0.10 },
-    { stat: "critDmg",  value: 0.30 },
-    { stat: "goldMult", value: 0.60 },
+    { stat: "goldMult", base: 0.25, perLevel: 0.005 },
+    { stat: "dmgMult",  base: 0.10, perLevel: 0.002 },
+    { stat: "critDmg",  base: 0.30, perLevel: 0.004 },
+    { stat: "goldMult", base: 0.60, perLevel: 0.008 },
   ],
 };
 

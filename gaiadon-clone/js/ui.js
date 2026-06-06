@@ -95,7 +95,12 @@ function renderNextGoal(s) {
 
 // Nome amigável de cada afixo para a UI.
 const AFFIX_NAMES = { critRate: "Crit Rate", critDmg: "Crit Dmg", dmgMult: "Damage", hpMult: "Health", goldMult: "Gold" };
-function affixLabel(a) { return `+${Math.round(a.value * 100)}% ${AFFIX_NAMES[a.stat]}`; }
+// Valor do afixo já escalado pelo nível do item (cresce ao subir o nível).
+function affixLabel(a, level) {
+  const pct = affixValue(a, level) * 100;
+  const shown = pct >= 100 ? Math.round(pct) : pct.toFixed(1);
+  return `+${shown}% ${AFFIX_NAMES[a.stat]}`;
+}
 
 // Painel de equipamento: 3 slots, cada um com level-up (gold) e rarity-up (shards).
 function renderEquipment(s) {
@@ -130,7 +135,7 @@ function renderEquipment(s) {
       </div>
       <div class="equip-sub">Level ${fmt(it.level)} / ${fmtCap(cap)} · gives ${slot.stats.join(" + ")}</div>
       ${itemAffixes(slot.id, it.rarity).length
-        ? `<div class="equip-affixes">${itemAffixes(slot.id, it.rarity).map(a => `<span class="affix">${affixLabel(a)}</span>`).join("")}</div>`
+        ? `<div class="equip-affixes">${itemAffixes(slot.id, it.rarity).map(a => `<span class="affix">${affixLabel(a, it.level)}</span>`).join("")}</div>`
         : `<div class="equip-affixes empty"><small>No affixes — raise rarity to unlock</small></div>`}
       <div class="equip-actions">${lvBtn}${maxBtn}</div>
       <div class="equip-actions">${rrBtn}</div>
