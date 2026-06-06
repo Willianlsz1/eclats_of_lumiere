@@ -264,8 +264,31 @@ test("vida do inimigo escala com a profundidade", () => {
 test("limpar 10 abates avança a maxZone", () => {
   const s = game.defaultState();
   s.zone = 1;
+  game.spawnEnemy(s); // registerKill precisa de um inimigo vivo
   for (let i = 0; i < CONFIG.enemy.killsToClear; i++) game.registerKill(s);
-  assert(s.maxZone >= 1, "deveria ter limpado a profundidade 1");
+  assert(s.maxZone >= 1, "deveria ter limpado a zone 1");
+});
+
+test("Boss Zone limpa num único abate", () => {
+  const s = game.defaultState();
+  s.maxZone = 9; s.zone = 10; // zone 10 = Boss Zone
+  game.spawnEnemy(s);
+  assert(s.enemy.isBoss === true, "zone 10 deveria gerar um Boss");
+  const ev = game.registerKill(s);
+  assertEqual(s.maxZone, 10, "matar o Boss limpa a zone de uma vez");
+  assert(ev.drop, "Boss dá drop garantido");
+});
+
+test("Amulet sorteia um stat válido", () => {
+  const s = game.defaultState();
+  // gera vários itens até sair um amuleto e confere que tem stat do pool
+  let amulet = null;
+  for (let i = 0; i < 200 && !amulet; i++) {
+    const it = game.generateItem(s);
+    if (it.slot === "Amulet") amulet = it;
+  }
+  assert(amulet, "deveria gerar ao menos 1 amuleto em 200 tentativas");
+  assert(CONFIG.drops.amuletStats.includes(amulet.stat), "stat do amuleto deve vir do pool");
 });
 
 test("morte na fronteira não pune e recua para farm", () => {
@@ -275,12 +298,21 @@ test("morte na fronteira não pune e recua para farm", () => {
   game.handleDeath(s);
   assertEqual(s.gold, 100, "não perde ouro");
   assertEqual(s.inventory.length, inv, "não perde itens");
-  assert(s.zone <= s.maxZone, "recua para a profundidade segura");
+  assert(s.zone <= s.maxZone, "recua para a zone segura");
+});
+
+test("ascensão trava antes da Zone 25 e libera depois", () => {
+  const s = game.defaultState();
+  s.maxZone = CONFIG.ascension.unlockZone - 1; s.level = 20;
+  assert(game.canAscend(s) === false, "não pode ascender antes da unlockZone");
+  assertEqual(game.ascend(s), false, "ascend() deve recusar quando travado");
+  s.maxZone = CONFIG.ascension.unlockZone;
+  assert(game.canAscend(s) === true, "pode ascender ao atingir a unlockZone");
 });
 
 test("essência de ascensão usa profundidade máxima", () => {
   const s = game.defaultState();
-  s.maxZone = 10; s.level = 20;
+  s.maxZone = 30; s.level = 20;
   assert(game.essenceOnAscend(s) > 0, "deveria render essência");
 });
 ```
@@ -328,15 +360,20 @@ function playerMaxHp(s) {
   const P = CONFIG.player;
   let base = P.baseHp + s.shop.hp * SHOP_UPGRADES[1].value + (s.level - 1) * P.hpPerLevel;
   const a = s.equipped.Armor;
-  if (a) base += a.power * 3;
+  if (a) base += a.power * CONFIG.itemStats.healthPerPower;
   return Math.round(base * ascMultiplier(s));
 }
-function attackSpeed(s) { return CONFIG.player.baseAttackSpeed + s.shop.spd * SHOP_UPGRADES[2].value; }
+function attackSpeed(s) {
+  let spd = CONFIG.player.baseAttackSpeed + s.shop.spd * SHOP_UPGRADES[2].value;
+  const am = s.equipped.Amulet;
+  if (am && am.stat === "Attack Speed") spd += am.power * CONFIG.itemStats.attackSpeedPerPower;
+  return spd;
+}
 function playerDps(s) { return playerDamage(s) * attackSpeed(s); }
 function goldBonus(s) {
   let b = 1 + s.shop.gold * SHOP_UPGRADES[3].value;
   const am = s.equipped.Amulet;
-  if (am) b += am.power * 0.02;
+  if (am && am.stat === "Gold Find") b += am.power * CONFIG.itemStats.goldFindPerPower;
   return b * ascMultiplier(s);
 }
 
@@ -355,28 +392,50 @@ function regionFor(zone) {
   const i = Math.floor((zone - 1) / CONFIG.zonesPerRegion) % REGIONS.length;
   return REGIONS[i];
 }
+// Boss Zone = toda zone múltipla de boss.everyZones (10, 20, 30...).
+function isBossZone(zone) { return zone % CONFIG.boss.everyZones === 0; }
+
 function spawnEnemy(s) {
   const region = regionFor(s.zone);
   const stats = enemyStats(s.zone);
-  const name = region.enemies[Math.floor(Math.random() * region.enemies.length)];
-  s.enemy = { name, hp: stats.hp, maxHp: stats.hp, dmg: stats.dmg, goldReward: stats.gold, xpReward: stats.xp };
+  if (isBossZone(s.zone)) {
+    const B = CONFIG.boss;
+    const hp = stats.hp * B.hpMult;
+    s.enemy = {
+      name: region.enemies[0] + " Boss", isBoss: true,
+      hp, maxHp: hp, dmg: stats.dmg,
+      goldReward: stats.gold * B.goldMult, xpReward: stats.xp * B.xpMult,
+    };
+  } else {
+    const name = region.enemies[Math.floor(Math.random() * region.enemies.length)];
+    s.enemy = { name, isBoss: false, hp: stats.hp, maxHp: stats.hp, dmg: stats.dmg, goldReward: stats.gold, xpReward: stats.xp };
+  }
   return s.enemy;
 }
 
 // --- Loot ---
-function rollRarity() {
-  const total = RARITIES.reduce((a, r) => a + r.weight, 0);
+// Sorteia uma rarity. Se minName for passado, só considera rarities >= a ela (Boss).
+function rollRarity(minName) {
+  let pool = RARITIES;
+  if (minName) {
+    const minIdx = RARITIES.findIndex(r => r.name === minName);
+    if (minIdx > 0) pool = RARITIES.slice(minIdx);
+  }
+  const total = pool.reduce((a, r) => a + r.weight, 0);
   let roll = Math.random() * total;
-  for (const r of RARITIES) { if (roll < r.weight) return r; roll -= r.weight; }
-  return RARITIES[0];
+  for (const r of pool) { if (roll < r.weight) return r; roll -= r.weight; }
+  return pool[0];
 }
-function generateItem(s) {
+function generateItem(s, minRarity) {
   const D = CONFIG.drops;
   const slot = SLOTS[Math.floor(Math.random() * SLOTS.length)];
-  const rarity = rollRarity();
+  const rarity = rollRarity(minRarity);
   const baseName = ITEM_NAMES[slot][Math.floor(Math.random() * ITEM_NAMES[slot].length)];
   const power = Math.round((D.powerBase + s.zone * D.powerPerZone) * rarity.mult * (0.8 + Math.random() * 0.4));
-  return { id: Math.random().toString(36).slice(2, 9), slot, rarity: rarity.name, name: baseName, power };
+  const item = { id: Math.random().toString(36).slice(2, 9), slot, rarity: rarity.name, name: baseName, power };
+  // Slot "surpresa": Amulet sorteia qual stat concede (Attack Speed ou Gold Find).
+  if (slot === "Amulet") item.stat = D.amuletStats[Math.floor(Math.random() * D.amuletStats.length)];
+  return item;
 }
 function maybeDrop(s) {
   const D = CONFIG.drops;
@@ -416,18 +475,27 @@ function registerKill(s) {
   s.gold += g;
   const leveled = gainXp(s, e.xpReward);
   s.totalKills++;
-  const drop = maybeDrop(s);
+  // Drop: Boss dá drop GARANTIDO de rarity >= boss.minRarity; inimigo normal usa maybeDrop.
+  let drop;
+  if (e.isBoss) {
+    drop = generateItem(s, CONFIG.boss.minRarity);
+    s.inventory.push(drop);
+    if (s.inventory.length > CONFIG.drops.inventoryMax) s.inventory.shift();
+  } else {
+    drop = maybeDrop(s);
+  }
   s.killsInZone++;
+  // Boss limpa a zone num único abate; zone normal precisa de killsToClear.
+  const needed = e.isBoss ? 1 : CONFIG.enemy.killsToClear;
   let advanced = false, walledCleared = false;
-  if (s.killsInZone >= CONFIG.enemy.killsToClear) {
+  if (s.killsInZone >= needed) {
     s.killsInZone = 0;
     if (s.zone > s.maxZone) { s.maxZone = s.zone; walledCleared = true; } // limpou a fronteira
-    // Próximo passo: tentar a fronteira seguinte automaticamente.
-    s.zone = s.maxZone + 1;
+    s.zone = s.maxZone + 1; // tenta a fronteira seguinte automaticamente
     advanced = true;
   }
   s.playerHp = playerMaxHp(s); // cura ao matar
-  return { type: "kill", name: e.name, gold: g, leveled, drop, advanced, walledCleared, zone: s.zone };
+  return { type: "kill", name: e.name, gold: g, leveled, drop, advanced, walledCleared, zone: s.zone, wasBoss: e.isBoss };
 }
 
 // Morte: sem punição. Recua para a profundidade segura (maxZone) e zera o contador.
@@ -459,11 +527,14 @@ function tick(s, dt) {
 }
 
 // --- Ascensão ---
+// Só desbloqueia ao limpar a Zone de unlockZone (25). Antes disso, não pode ascender.
+function canAscend(s) { return s.maxZone >= CONFIG.ascension.unlockZone; }
 function essenceOnAscend(s) {
   const A = CONFIG.ascension;
   return Math.floor(Math.pow(s.maxZone + 1, A.zoneExp) / A.zoneDiv + s.level / A.levelDiv);
 }
 function ascend(s) {
+  if (!canAscend(s)) return false;
   const gain = essenceOnAscend(s);
   if (gain <= 0) return false;
   const keepEssence = s.essence + gain;
@@ -487,8 +558,8 @@ function buyUpgrade(s, id) {
 if (typeof module !== "undefined") {
   module.exports = {
     defaultState, ascMultiplier, playerDamage, playerMaxHp, attackSpeed, playerDps, goldBonus,
-    enemyStats, regionFor, spawnEnemy, rollRarity, generateItem, maybeDrop, equipItem,
-    xpToNext, gainXp, registerKill, handleDeath, tick, essenceOnAscend, ascend, shopCost, buyUpgrade,
+    enemyStats, regionFor, isBossZone, spawnEnemy, rollRarity, generateItem, maybeDrop, equipItem,
+    xpToNext, gainXp, registerKill, handleDeath, tick, canAscend, essenceOnAscend, ascend, shopCost, buyUpgrade,
   };
 }
 ```
@@ -560,6 +631,9 @@ function renderNextGoal(s) {
 }
 ```
 - `itemLabel`/`renderGear`/`renderShop`/`renderAscend`: traduzir strings ("empty", "Backpack empty — defeat enemies to drop items.", "click to equip", "Nv"→"Lv", "Lv " + level).
+- **Amulet com stat:** em `itemLabel`, se `it.stat` existir (amuleto), mostrar o stat — ex.: `"Talisman · rare · +8 Attack Speed"`. Slots fixos (Weapon/Armor) mostram só `+power`.
+- **Boss na UI:** em `renderCombat`, se `s.enemy.isBoss`, destacar o nome (ex.: classe `.boss`/cor diferente) e a barra de vida — é o pico de tensão.
+- **Botão Ascend travado:** em `renderAscend`, se `!canAscend(s)`, desabilitar o `ascendBtn` e mostrar `Reach Zone ${CONFIG.ascension.unlockZone} to unlock Ascension` no lugar de "Essence on ascend now".
 - Classes de raridade: renomear `rar-comum`→`rar-common` etc. (combinar com `data.js` e `style.css`).
 - Adicionar `spawnFloatingDamage(amount)` que cria um `<span class="floating-dmg">` dentro de `#combatStage` e o remove após a animação (será usado na Task 7; por ora só definir e exportar via escopo global).
 

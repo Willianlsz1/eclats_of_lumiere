@@ -53,17 +53,32 @@ const CONFIG = {
     killsToClear: 10,               // abates para limpar uma zone
     damageFactor: 0.5,              // fração do dano do inimigo aplicada por segundo
   },
+  boss: {
+    everyZones: 10,                 // Boss Zone a cada N zones (10, 20, 30...)
+    hpMult: 8,                      // Health do Boss = Enemy normal × isto
+    minRarity: "rare",              // drop garantido de rarity >= isto
+    goldMult: 5, xpMult: 5,         // recompensa extra do Boss
+  },
   drops: {
-    baseChance: 0.22,               // chance de drop por abate
+    baseChance: 0.22,               // chance de drop por abate (inimigo normal)
     guaranteedFirstKills: 3,        // os primeiros N abates do save SEMPRE dropam
     powerBase: 3, powerPerZone: 1.5,
     inventoryMax: 24,
+    // Stats que o Amulet pode sortear (o slot "surpresa"):
+    amuletStats: ["Attack Speed", "Gold Find"],
   },
   xp: { base: 20, growth: 1.25 },   // xpToNext = base * growth^(level-1)
-  ascension: { perEssencePct: 0.10, zoneExp: 1.5, zoneDiv: 3, levelDiv: 5 },
+  ascension: { unlockZone: 25, perEssencePct: 0.10, zoneExp: 1.5, zoneDiv: 3, levelDiv: 5 },
   offline: {
     startEfficiency: 0.25, efficiencyMax: 0.60, // base + offlineEff*value, teto 0.60
     startCapHours: 2, capMaxHours: 8,           // base + offlineCap*value, teto 8h
+  },
+  // Como o Item Power vira bônus de cada stat:
+  itemStats: {
+    healthPerPower: 3,          // Armor: +power × 3 de Health
+    attackSpeedPerPower: 0.01,  // Amulet (Attack Speed): +power × 0.01 golpes/s
+    goldFindPerPower: 0.02,     // Amulet (Gold Find): +power × 0.02 (×2%/power) de ouro
+    // Weapon: Damage usa o power 1:1 (sem fator).
   },
   zonesPerRegion: 10, // muda a region cosmética a cada 10 zones
 };

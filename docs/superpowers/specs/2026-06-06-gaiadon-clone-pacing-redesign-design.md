@@ -46,14 +46,14 @@ Desenhar a curva da primeira sessão com marcos próximos e sempre visíveis:
 | Primeira compra na loja | ~5 segundos | Ensina o loop de upgrade cedo |
 | Primeiro drop de item | Garantido nos primeiros abates | Mostra o pilar de loot logo |
 | Avançar de profundidade | ~1-2 minutos | Progresso visível |
-| Primeira ascensão viável | **~20 minutos** | Nem instantânea (sem graça), nem arrastada |
+| Primeira ascensão viável | **~30-40 minutos** (desbloqueia ao limpar a Zone 25) | Primeira ascensão "merecida"; ver decisões de conteúdo |
 
 **Levers (alavancas) de balanceamento:**
 - Drops iniciais **garantidos** nos primeiros abates (em vez de 22% aleatório), para
   combater o azar que desanima no começo.
 - Curva de custo (loja) e de força dos inimigos re-balanceada: sem "parede"
   intransponível nem trivialidade.
-- Fórmula de ascensão ajustada para a primeira ascensão ser alcançável em ~20 min e
+- Fórmula de ascensão ajustada para a primeira ascensão ser alcançável em ~30-40 min e
   claramente valer a pena. **Nota de implementação:** a fórmula atual
   (`essenceOnAscend`) depende de `maxZoneReached`, que é removido no modelo de
   profundidade infinita; ela será redefinida com base na **profundidade máxima
@@ -160,6 +160,19 @@ Princípio pedagógico: **separar "o que o jogo É" (regras) de "como ele aparec
 - Resto (efeitos visuais, cliques, save/load) verificado jogando.
 - Objetivo: segurança ao mexer no balanceamento, sem virar fardo.
 
+## Decisões de conteúdo (sessão de grilling — ver `CONTEXT.md`)
+
+- **Stats do Hero (4):** Damage, Health, Attack Speed, Gold Find.
+- **Inimigos:** cosméticos dentro de uma Zone (mesma matemática, só o nome muda,
+  sorteado do pool da Region).
+- **Boss:** a cada 10 Zones (Boss Zone). Um único Boss com Health ~×8 substitui os 10
+  abates, limpa a Zone de uma vez e dá drop garantido de rarity `rare`+.
+- **Loot:** 3 slots — Weapon→Damage, Armor→Health, Amulet→**sorteia** Attack Speed _ou_
+  Gold Find (slot "surpresa"). Todas as rarities caem desde a Zone 1; o **Item Power**
+  escala com a Zone (re-loot conforme avança).
+- **Ascensão:** desbloqueia ao limpar a **Zone 25**; primeira ascensão "merecida"
+  (~30-40 min). Antes disso o botão fica travado.
+
 ## Fora de escopo (fases futuras)
 - Múltiplos heróis, expedições, crafting, skill books, fame trials, batalhas
   cronometradas.
@@ -167,7 +180,7 @@ Princípio pedagógico: **separar "o que o jogo É" (regras) de "como ele aparec
 
 ## Critérios de sucesso
 - Primeira sessão segue a curva de marcos da Seção 1 (objetivo sempre a ~30-60s).
-- Primeira ascensão alcançável em ~20 min e claramente vantajosa.
+- Primeira ascensão desbloqueia ao limpar a Zone 25 (~30-40 min) e é claramente vantajosa.
 - Progresso offline funciona, é melhorável por upgrade, e não quebra o jogo.
 - Morrer nunca pune além de "não avança"; a mensagem ensina a farmar.
 - Bugs do protótipo corrigidos; lógica crítica coberta por testes simples.
