@@ -121,7 +121,11 @@ function renderEquipment(s) {
       const ok = act === "level" ? levelUpItem(s, slot)
                : act === "max"   ? levelUpMax(s, slot) > 0
                : rarityUpItem(s, slot);
-      if (ok) { renderEquipment(s); renderResources(s); renderCombat(s); renderHero(s); }
+      if (ok) {
+        if (act === "rarity") logMsg(`⚔️ ${slot} is now ${RARITIES[s.equipped[slot].rarity].name}!`, "milestone");
+        renderEquipment(s); renderResources(s); renderCombat(s); renderHero(s);
+        if (act === "rarity") flashSlot(slot);
+      }
     };
   });
 }
@@ -159,15 +163,22 @@ function renderAscend(s) {
   });
 }
 
-// Número de dano que sobe e some — preenchido de verdade na Task 6 (game feel).
-function spawnFloatingDamage(amount) {
+// Número de dano que sobe e some sobre o palco de combate.
+function spawnFloatingDamage(amount, isBoss) {
   const stage = $("combatStage");
   if (!stage) return;
   const el = document.createElement("span");
-  el.className = "floating-dmg";
+  el.className = "floating-dmg" + (isBoss ? " boss" : "");
   el.textContent = "-" + fmt(amount);
+  el.style.left = (40 + Math.random() * 20) + "%"; // leve variação horizontal
   stage.appendChild(el);
   setTimeout(() => el.remove(), 800);
+}
+
+// Aplica um brilho rápido num slot de equipamento (ex.: ao subir raridade).
+function flashSlot(slotId) {
+  const el = [...document.querySelectorAll(".equip-slot")].find(d => d.querySelector("small") && d.innerText.startsWith(slotId));
+  if (el) { el.classList.add("flash"); setTimeout(() => el.classList.remove("flash"), 700); }
 }
 
 // "Bem-vindo de volta": mostra o resumo dos ganhos offline.

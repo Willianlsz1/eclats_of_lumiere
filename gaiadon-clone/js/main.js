@@ -64,9 +64,21 @@ function handleEvents(events) {
   }
 }
 
+let floatAccum = 0, floatTick = 0;
 function gameLoop() {
   const events = tick(state, 0.1); // 100ms por tick
   handleEvents(events);
+
+  // Game feel: acumula o dano e mostra um número flutuante a cada ~300ms.
+  for (const e of events) if (e.type === "hit") floatAccum += e.amount;
+  if (++floatTick >= 3) {
+    if (floatAccum > 0) {
+      spawnFloatingDamage(floatAccum, state.enemy && state.enemy.isBoss);
+      const nm = $("enemyName"); nm.classList.add("hit"); setTimeout(() => nm.classList.remove("hit"), 120);
+    }
+    floatAccum = 0; floatTick = 0;
+  }
+
   renderResources(state);
   renderCombat(state);
   renderHero(state);

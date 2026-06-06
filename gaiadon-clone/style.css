@@ -102,6 +102,30 @@ small { color: var(--muted); font-weight: normal; }
 .equip-actions .rarity-btn:hover:not(:disabled) { background: #c084fc; color: #1a1024; }
 .log.milestone { color: var(--gold); font-weight: bold; }
 
+/* ===== Game feel ===== */
+/* Números de dano que sobem e somem */
+.floating-dmg {
+  position: absolute; top: 4px; left: 50%;
+  font-weight: bold; font-size: 15px; color: var(--gold);
+  text-shadow: 0 1px 3px #000; pointer-events: none; white-space: nowrap;
+  animation: floatUp .8s ease-out forwards;
+}
+.floating-dmg.boss { color: var(--red); font-size: 18px; }
+@keyframes floatUp {
+  0%   { transform: translate(-50%, 0) scale(1); opacity: 1; }
+  100% { transform: translate(-50%, -34px) scale(1.1); opacity: 0; }
+}
+/* Brilho ao subir de raridade / marco no equipamento */
+.equip-slot.flash { animation: slotFlash .7s ease-out; }
+@keyframes slotFlash {
+  0%   { box-shadow: 0 0 0 0 var(--gold); }
+  30%  { box-shadow: 0 0 14px 4px var(--gold); }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+/* Pulso no nome do inimigo ao tomar dano (sutil) */
+.enemy-name.hit { animation: enemyHit .12s ease-out; }
+@keyframes enemyHit { 0% { transform: translateX(0); } 50% { transform: translateX(2px); } 100% { transform: translateX(0); } }
+
 /* Painel do Hero (ficha de stats) */
 #heroPanel { grid-column: 1 / 2; }
 .hero-level {
