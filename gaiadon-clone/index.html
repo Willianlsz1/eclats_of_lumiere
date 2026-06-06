@@ -11,9 +11,10 @@
     <h1>⚔️ Gaiadon — Eternal Quest <span class="tag">prototype</span></h1>
     <div id="resources">
       <span>💰 Gold: <b id="gold">0</b></span>
+      <span>💎 Shards: <b id="shards">0</b></span>
       <span>⭐ Level: <b id="level">1</b></span>
       <span>🔮 Essence: <b id="essence">0</b></span>
-      <span>📈 Multiplier: <b id="ascMult">x1.00</b></span>
+      <span>📈 Power: <b id="ascMult">x1.00</b></span>
     </div>
   </header>
 
@@ -25,6 +26,10 @@
         <div class="enemy-name" id="enemyName">Slime</div>
         <div class="hpbar"><div class="hpfill" id="enemyHpFill"></div><span id="enemyHpText">0/0</span></div>
         <div class="kills">Clear progress: <b id="kills">0</b>/<span id="killsNeeded">10</span></div>
+      </div>
+      <div class="your-hp">
+        <small>Your HP</small>
+        <div class="hpbar player"><div class="hpfill" id="playerHpFill"></div><span id="playerHpText">0/0</span></div>
       </div>
       <div class="next-goal" id="nextGoal"></div>
       <div class="combat-stage" id="combatStage"><p class="log" id="log">Adventure started...</p></div>
@@ -45,25 +50,19 @@
     </section>
 
     <!-- Equipment -->
-    <section id="gearPanel" class="panel">
+    <section id="equipPanel" class="panel">
       <h2>🛡️ Equipment</h2>
-      <div id="equipped" class="equipped"></div>
-      <h3>Backpack <small id="invCount"></small></h3>
-      <div id="inventory" class="inventory"></div>
-    </section>
-
-    <!-- Shop -->
-    <section id="shopPanel" class="panel">
-      <h2>🏪 Upgrade Shop</h2>
-      <div id="shop"></div>
+      <p class="panel-hint">Spend 💰 Gold to level up · 💎 Shards to raise rarity (unlocks higher level cap).</p>
+      <div id="equipment"></div>
     </section>
 
     <!-- Ascension -->
     <section id="ascPanel" class="panel">
       <h2>🔮 Ascension</h2>
-      <p>Reset your journey to gain <b>Essence</b>, a permanent multiplier to damage and gold.</p>
-      <p id="ascInfo">Essence on ascend now: <b id="essenceGain">0</b></p>
+      <p id="ascInfo"></p>
       <button id="ascendBtn">Ascend</button>
+      <h3>Permanent upgrades (spend Essence)</h3>
+      <div id="ascUpgrades"></div>
     </section>
   </main>
 

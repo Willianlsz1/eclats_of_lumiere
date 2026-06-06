@@ -2,15 +2,15 @@
 // A UI só LÊ o estado e desenha. Nunca decide regra de jogo.
 const $ = id => document.getElementById(id);
 
-// Formata números grandes: 1234 -> "1.2K", etc.
 const fmt = n => {
   n = Math.floor(n);
   if (n < 1000) return "" + n;
-  const units = ["", "K", "M", "B", "T"];
+  const units = ["", "K", "M", "B", "T", "Qa", "Qi"];
   let i = 0;
   while (n >= 1000 && i < units.length - 1) { n /= 1000; i++; }
   return n.toFixed(1) + units[i];
 };
+const fmtCap = cap => (cap === Infinity ? "∞" : fmt(cap));
 
 function logMsg(msg, cls) {
   const el = $("log");
@@ -20,6 +20,7 @@ function logMsg(msg, cls) {
 
 function renderResources(s) {
   $("gold").textContent = fmt(s.gold);
+  $("shards").textContent = fmt(s.shards);
   $("level").textContent = s.level;
   $("essence").textContent = fmt(s.essence);
   $("ascMult").textContent = "x" + ascMultiplier(s).toFixed(2);
@@ -36,13 +37,17 @@ function renderCombat(s) {
     $("enemyHpFill").className = "hpfill" + (s.enemy.isBoss ? " boss" : "");
     $("enemyHpText").textContent = fmt(Math.max(0, s.enemy.hp)) + "/" + fmt(s.enemy.maxHp);
   }
-  // Boss limpa em 1 abate; zone normal precisa de killsToClear.
   const needed = (s.enemy && s.enemy.isBoss) ? 1 : CONFIG.enemy.killsToClear;
   $("kills").textContent = s.killsInZone;
   $("killsNeeded").textContent = needed;
+
+  // Barra de HP do jogador (agora o dano dos inimigos é visível).
+  const maxHp = playerMaxHp(s);
+  const hp = Math.max(0, s.playerHp == null ? maxHp : s.playerHp);
+  $("playerHpFill").style.width = Math.max(0, (hp / maxHp) * 100) + "%";
+  $("playerHpText").textContent = fmt(hp) + "/" + fmt(maxHp);
 }
 
-// Painel do Hero: nível, XP e os 4 stats (+ DPS derivado).
 function renderHero(s) {
   $("heroLevel").textContent = s.level;
   const need = xpToNext(s);
@@ -57,7 +62,6 @@ function renderHero(s) {
   $("heroFoot").textContent = `Each level grants +${P.damagePerLevel} damage and +${P.hpPerLevel} health.`;
 }
 
-// Barra "próximo objetivo" — sempre algo à vista (pacing).
 function renderNextGoal(s) {
   const isBoss = s.enemy && s.enemy.isBoss;
   const needed = isBoss ? 1 : CONFIG.enemy.killsToClear;
@@ -69,70 +73,78 @@ function renderNextGoal(s) {
   $("nextGoal").textContent = `Next: ${target} — ${left} kill${left === 1 ? "" : "s"} left`;
 }
 
-function itemLabel(it) {
-  const stat = it.stat ? ` ${it.stat}` : "";
-  return `<span class="rar-${it.rarity}"><span class="item-name">${it.name}</span> · ${it.rarity} · +${it.power}${stat}</span>`;
-}
+// Painel de equipamento: 3 slots, cada um com level-up (gold) e rarity-up (shards).
+function renderEquipment(s) {
+  const el = $("equipment");
+  el.innerHTML = SLOTS.map(slot => {
+    const it = s.equipped[slot.id];
+    const rarity = RARITIES[it.rarity];
+    const cap = rarity.cap;
+    const atCap = it.level >= cap;
+    const lvCost = levelUpCost(s, slot.id);
+    const canLv = canLevelUp(s, slot.id);
+    const maxRarity = it.rarity >= RARITIES.length - 1;
+    const rCost = rarityUpCost(s, slot.id);
+    const canRr = canRarityUp(s, slot.id);
 
-function renderGear(s) {
-  const eq = $("equipped");
-  eq.innerHTML = SLOTS.map(slot => {
-    const it = s.equipped[slot];
-    return `<div class="slot"><small>${slot}</small><br>${it ? itemLabel(it) : "<i>empty</i>"}</div>`;
-  }).join("");
+    // Botão de nível: se no cap, vira o de raridade em destaque.
+    const lvBtn = atCap
+      ? `<button disabled title="Raise rarity to unlock more levels">Lv ${fmtCap(cap)} (cap)</button>`
+      : `<button data-act="level" data-slot="${slot.id}" ${canLv ? "" : "disabled"}>💰 ${fmt(lvCost)}</button>`;
+    const rrBtn = maxRarity
+      ? `<button disabled>Max rarity</button>`
+      : `<button class="rarity-btn" data-act="rarity" data-slot="${slot.id}" ${canRr ? "" : "disabled"}>💎 ${fmt(rCost)}${atCap ? "" : " (reach cap)"}</button>`;
 
-  $("invCount").textContent = `(${s.inventory.length}/${CONFIG.drops.inventoryMax})`;
-  const inv = $("inventory");
-  if (!s.inventory.length) {
-    inv.innerHTML = "<i style='color:var(--muted)'>Backpack empty — defeat enemies to drop items.</i>";
-    return;
-  }
-  inv.innerHTML = s.inventory.map(it =>
-    `<div class="inv-item" data-id="${it.id}"><small>${it.slot}</small>${itemLabel(it)}<small>click to equip</small></div>`
-  ).join("");
-  inv.querySelectorAll(".inv-item").forEach(el => {
-    el.onclick = () => {
-      equipItem(s, el.dataset.id);
-      renderGear(s); renderCombat(s); renderHero(s);
-    };
-  });
-}
-
-// Descreve o que cada nível de um upgrade concede ao Hero.
-function upgradeEffect(u) {
-  if (u.percent) return `+${Math.round(u.value * 100)}% ${u.unit} / level`;
-  if (u.suffix)  return `+${u.value}${u.suffix} ${u.unit} / level`;
-  return `+${u.value} ${u.unit} / level`;
-}
-
-function renderShop(s) {
-  $("shop").innerHTML = SHOP_UPGRADES.map(u => {
-    const maxed = u.maxLevel != null && s.shop[u.id] >= u.maxLevel;
-    const cost = shopCost(s, u.id);
-    const afford = s.gold >= cost;
-    const btn = maxed
-      ? `<button disabled class="maxed">MAX</button>`
-      : `<button data-id="${u.id}" ${afford ? "" : "disabled"}>💰 ${fmt(cost)}</button>`;
-    return `<div class="shop-item">
-      <span class="info"><b class="uname">${u.name}</b> <span class="lvl">Lv ${s.shop[u.id]}</span><br><small class="effect">${upgradeEffect(u)}</small></span>
-      ${btn}
+    return `<div class="equip-slot">
+      <div class="equip-head">
+        <span class="slot-name"><small>${slot.id}</small> <span class="rar-${rarity.name}">${slot.defaultName} · ${rarity.name}</span></span>
+        <span class="slot-power">⚙️ ${fmt(itemPower(it))}</span>
+      </div>
+      <div class="equip-sub">Level ${fmt(it.level)} / ${fmtCap(cap)} · gives ${slot.stats.join(" + ")}</div>
+      <div class="equip-actions">${lvBtn}${rrBtn}</div>
     </div>`;
   }).join("");
-  $("shop").querySelectorAll("button").forEach(b => {
+
+  el.querySelectorAll("button[data-act]").forEach(b => {
     b.onclick = () => {
-      if (buyUpgrade(s, b.dataset.id)) { renderShop(s); renderResources(s); renderCombat(s); renderHero(s); }
+      const slot = b.dataset.slot;
+      const ok = b.dataset.act === "level" ? levelUpItem(s, slot) : rarityUpItem(s, slot);
+      if (ok) { renderEquipment(s); renderResources(s); renderCombat(s); renderHero(s); }
     };
   });
 }
 
+// Painel de Ascensão: ascend + upgrades permanentes comprados com Essence.
 function renderAscend(s) {
   const unlocked = canAscend(s);
   $("ascendBtn").disabled = !unlocked;
   if (unlocked) {
-    $("ascInfo").innerHTML = `Essence on ascend now: <b id="essenceGain">${fmt(essenceOnAscend(s))}</b>`;
+    $("ascInfo").innerHTML = `Reset your run for <b>${fmt(essenceOnAscend(s))}</b> Essence (permanent). You keep Essence and these upgrades.`;
   } else {
     $("ascInfo").textContent = `Reach Zone ${CONFIG.ascension.unlockZone} to unlock Ascension (deepest: ${s.maxZone}).`;
   }
+
+  $("ascUpgrades").innerHTML = ASCENSION_UPGRADES.map(u => {
+    const maxed = u.maxLevel != null && s.asc[u.id] >= u.maxLevel;
+    const cost = ascUpgradeCost(s, u.id);
+    const afford = s.essence >= cost;
+    const effect = u.percent ? `+${Math.round(u.value * 100)}% ${u.unit}`
+                 : u.suffix  ? `+${u.value}${u.suffix} ${u.unit}`
+                 : `+${u.value} ${u.unit}`;
+    const btn = maxed
+      ? `<button disabled class="maxed">MAX</button>`
+      : `<button data-asc="${u.id}" ${afford ? "" : "disabled"}>🔮 ${fmt(cost)}</button>`;
+    return `<div class="shop-item">
+      <span class="info"><b>${u.name}</b> <span class="lvl">Lv ${s.asc[u.id]}</span><br><small class="effect">${effect} / level</small></span>
+      ${btn}
+    </div>`;
+  }).join("");
+
+  $("ascUpgrades").querySelectorAll("button[data-asc]").forEach(b => {
+    b.onclick = () => {
+      if (buyAscUpgrade(s, b.dataset.asc)) { renderAscend(s); renderResources(s); renderCombat(s); renderHero(s); }
+    };
+  });
 }
 
 // Número de dano que sobe e some — preenchido de verdade na Task 6 (game feel).
@@ -151,7 +163,6 @@ function renderAll(s) {
   renderCombat(s);
   renderHero(s);
   renderNextGoal(s);
-  renderGear(s);
-  renderShop(s);
+  renderEquipment(s);
   renderAscend(s);
 }
