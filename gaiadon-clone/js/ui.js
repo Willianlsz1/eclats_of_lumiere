@@ -81,13 +81,18 @@ function renderHero(s) {
   const t = TIERS[tier];
   const tierColor = ["common","uncommon","rare","epic","legendary"][tier];
   $("heroFoot").innerHTML =
-    `<div class="hero-foot-row">
-       <span class="hero-foot-label">Per level</span>
-       <span>+${f1(dpl)} dmg &nbsp;·&nbsp; +${f1(hpl)} hp</span>
+    `<div class="stats-header" style="margin-top:6px">GROWTH</div>
+     <div class="hero-foot-row">
+       <span class="hero-foot-label">Dmg / Level</span>
+       <span>+${f1(dpl)}</span>
+     </div>
+     <div class="hero-foot-row">
+       <span class="hero-foot-label">HP / Level</span>
+       <span>+${f1(hpl)}</span>
      </div>
      <div class="hero-foot-row">
        <span class="hero-foot-label">Per ascension</span>
-       <span class="rar-${tierColor}">×${t.mult.toFixed(2)} all stats <small>(${t.name})</small></span>
+       <span class="rar-${tierColor}">×${t.mult.toFixed(2)} &nbsp;<small>(${t.name})</small></span>
      </div>`;
 }
 
