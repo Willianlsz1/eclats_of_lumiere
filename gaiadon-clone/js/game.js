@@ -161,12 +161,25 @@ function registerKill(s) {
   let advanced = false, walledCleared = false;
   if (s.killsInZone >= needed) {
     s.killsInZone = 0;
-    if (s.zone > s.maxZone) { s.maxZone = s.zone; walledCleared = true; }
-    s.zone = s.maxZone + 1;
-    advanced = true;
+    if (s.zone > s.maxZone) {            // limpou uma FRONTEIRA nova
+      s.maxZone = s.zone; walledCleared = true;
+      s.zone = s.maxZone + 1; advanced = true; // segue empurrando
+    }
+    // farmando uma zone já limpa (zone <= maxZone): fica, não é empurrado.
   }
   s.playerHp = playerMaxHp(s); // cura ao matar
   return { type: "kill", name: e.name, gold: g, shards: sh, leveled, advanced, walledCleared, zone: s.zone, wasBoss: e.isBoss };
+}
+
+// Navegação manual de zone: entre a Zone 1 e a fronteira (maxZone + 1).
+function changeZone(s, dir) {
+  const target = s.zone + dir;
+  if (target < 1 || target > s.maxZone + 1) return false;
+  s.zone = target;
+  s.killsInZone = 0;
+  spawnEnemy(s);
+  s.playerHp = playerMaxHp(s);
+  return true;
 }
 
 // Morte: sem punição. Recua para a zone segura (maxZone) e zera o contador.
@@ -241,7 +254,7 @@ if (typeof module !== "undefined") {
     playerDamage, playerMaxHp, attackSpeed, playerDps, goldBonus,
     levelUpCost, canLevelUp, levelUpItem, rarityUpCost, canRarityUp, rarityUpItem,
     enemyStats, regionFor, isBossZone, spawnEnemy, shardsOnKill,
-    xpToNext, gainXp, registerKill, handleDeath, tick,
+    xpToNext, gainXp, registerKill, changeZone, handleDeath, tick,
     canAscend, essenceOnAscend, ascend, ascUpgradeCost, buyAscUpgrade, offlineConfig,
   };
 }

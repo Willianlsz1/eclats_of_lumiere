@@ -90,6 +90,29 @@ test("Boss dá mais shards e limpa a zone num abate", () => {
   assert(ev.shards > 0, "boss dá shards");
 });
 
+test("limpar a fronteira sobe maxZone e auto-avança", () => {
+  const s = game.defaultState(); s.zone = 1; game.spawnEnemy(s);
+  for (let i = 0; i < CONFIG.enemy.killsToClear; i++) game.registerKill(s);
+  assertEqual(s.maxZone, 1);
+  assertEqual(s.zone, 2); // auto-avança para a nova fronteira
+});
+
+test("farmar uma zone já limpa NÃO auto-avança", () => {
+  const s = game.defaultState(); s.maxZone = 5; s.zone = 3; game.spawnEnemy(s);
+  for (let i = 0; i < CONFIG.enemy.killsToClear; i++) game.registerKill(s);
+  assertEqual(s.zone, 3, "deveria ficar farmando a zone 3");
+  assertEqual(s.maxZone, 5, "maxZone inalterada");
+});
+
+test("changeZone respeita os limites [1, maxZone+1]", () => {
+  const s = game.defaultState(); s.maxZone = 4; s.zone = 2;
+  assert(game.changeZone(s, -1), "deveria voltar"); assertEqual(s.zone, 1);
+  assertEqual(game.changeZone(s, -1), false, "não vai abaixo de 1");
+  s.zone = 5; // fronteira = maxZone+1
+  assertEqual(game.changeZone(s, +1), false, "não passa da fronteira");
+  assert(game.changeZone(s, -1), "deveria avançar de volta"); assertEqual(s.zone, 4);
+});
+
 test("morte na fronteira não pune e recua", () => {
   const s = game.defaultState();
   s.maxZone = 3; s.zone = 4; s.gold = 100; s.shards = 50;

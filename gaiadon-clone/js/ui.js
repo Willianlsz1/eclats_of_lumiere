@@ -46,6 +46,10 @@ function renderCombat(s) {
   const hp = Math.max(0, s.playerHp == null ? maxHp : s.playerHp);
   $("playerHpFill").style.width = Math.max(0, (hp / maxHp) * 100) + "%";
   $("playerHpText").textContent = fmt(hp) + "/" + fmt(maxHp);
+
+  // Navegação de zone: entre 1 e a fronteira (maxZone+1).
+  $("prevZone").disabled = s.zone <= 1;
+  $("nextZone").disabled = s.zone >= s.maxZone + 1;
 }
 
 function renderHero(s) {
@@ -66,10 +70,11 @@ function renderNextGoal(s) {
   const isBoss = s.enemy && s.enemy.isBoss;
   const needed = isBoss ? 1 : CONFIG.enemy.killsToClear;
   const left = Math.max(0, needed - s.killsInZone);
-  let target;
-  if (isBoss) target = `Defeat the Zone ${s.zone} Boss`;
-  else if (s.zone > s.maxZone) target = `Break through Zone ${s.zone}`;
-  else target = `Clear Zone ${s.zone}`;
+  if (!isBoss && s.zone <= s.maxZone) {
+    $("nextGoal").textContent = `Farming Zone ${s.zone} (cleared) · deepest: ${s.maxZone}`;
+    return;
+  }
+  const target = isBoss ? `Defeat the Zone ${s.zone} Boss` : `Break through Zone ${s.zone}`;
   $("nextGoal").textContent = `Next: ${target} — ${left} kill${left === 1 ? "" : "s"} left`;
 }
 

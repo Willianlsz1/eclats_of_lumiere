@@ -62,6 +62,8 @@ function gameLoop() {
 }
 
 function bindButtons() {
+  $("prevZone").onclick = () => { if (changeZone(state, -1)) renderAll(state); };
+  $("nextZone").onclick = () => { if (changeZone(state, +1)) renderAll(state); };
   $("ascendBtn").onclick = () => {
     if (!canAscend(state)) return;
     if (confirm("Ascending resets your run (gold, zones, equipment). You keep Essence and permanent upgrades. Continue?")) {
