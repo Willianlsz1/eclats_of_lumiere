@@ -97,7 +97,13 @@ small { color: var(--muted); font-weight: normal; }
 
 /* Painel de equipamento (slots evoluíveis) */
 .panel-hint { font-size: 12px; color: var(--muted); margin: 0 0 12px; }
-.equip-slot { background: var(--panel2); border-radius: 8px; padding: 10px; margin-bottom: 10px; }
+.equip-slot { background: var(--panel2); border-radius: 8px; padding: 10px; margin-bottom: 10px; border-left: 4px solid #3a4660; }
+/* Borda colorida por raridade (distingue de relance) */
+.rar-edge-common    { border-left-color: #cbd5e1; }
+.rar-edge-uncommon  { border-left-color: var(--green); }
+.rar-edge-rare      { border-left-color: var(--accent); }
+.rar-edge-epic      { border-left-color: #c084fc; }
+.rar-edge-legendary { border-left-color: var(--gold); box-shadow: 0 0 10px rgba(255,209,102,.18); }
 .equip-head { display: flex; justify-content: space-between; align-items: center; }
 .equip-head .slot-name { font-size: 13px; }
 .equip-head .slot-power { font-size: 12px; color: var(--accent); font-weight: bold; }

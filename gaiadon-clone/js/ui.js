@@ -39,9 +39,10 @@ function renderCombat(s) {
     $("enemyHpFill").className = "hpfill" + (target.isBoss ? " boss" : "");
     $("enemyHpText").textContent = fmt(Math.max(0, target.hp)) + "/" + fmt(target.maxHp);
   }
-  // Pack: mini-barras dos demais inimigos (todos te atacam).
-  if (pack.length > 1) {
-    $("packInfo").innerHTML = `<small>👥 Pack of ${pack.length} — all attacking!</small>` +
+  // Pack: o espaço é reservado pelo TAMANHO da zona (não some ao matar até o último),
+  // evitando o "pula-pula" visual. Mini-barras só dos inimigos ainda vivos.
+  if (packSize(s.zone) > 1) {
+    $("packInfo").innerHTML = `<small>👥 Pack of ${packSize(s.zone)} — all attacking!</small>` +
       pack.map((e, i) => {
         const p = Math.max(0, (e.hp / e.maxHp) * 100);
         return `<div class="pack-mini${i === 0 ? " target" : ""}"><div style="width:${p}%"></div></div>`;
@@ -122,7 +123,7 @@ function renderEquipment(s) {
       ? `<button disabled>Max rarity</button>`
       : `<button class="rarity-btn" data-act="rarity" data-slot="${slot.id}" ${canRr ? "" : "disabled"}>💎 ${fmt(rCost)}${atCap ? "" : " (reach cap)"}</button>`;
 
-    return `<div class="equip-slot">
+    return `<div class="equip-slot rar-edge-${rarity.name}">
       <div class="equip-head">
         <span class="slot-name"><small>${slot.id}</small> <span class="rar-${rarity.name}">${slot.defaultName} · ${rarity.name}</span></span>
         <span class="slot-power">⚙️ ${fmt(itemPower(it))}</span>
@@ -136,19 +137,7 @@ function renderEquipment(s) {
     </div>`;
   }).join("");
 
-  el.querySelectorAll("button[data-act]").forEach(b => {
-    b.onclick = () => {
-      const slot = b.dataset.slot, act = b.dataset.act;
-      const ok = act === "level" ? levelUpItem(s, slot)
-               : act === "max"   ? levelUpMax(s, slot) > 0
-               : rarityUpItem(s, slot);
-      if (ok) {
-        if (act === "rarity") logMsg(`⚔️ ${slot} is now ${RARITIES[s.equipped[slot].rarity].name}!`, "milestone");
-        renderEquipment(s); renderResources(s); renderCombat(s); renderHero(s);
-        if (act === "rarity") flashSlot(slot);
-      }
-    };
-  });
+  // Cliques tratados por delegação (ver bindButtons) — robusto a re-renders.
 }
 
 // Painel de Ascensão: ascend + upgrades permanentes comprados com Essence.
@@ -178,11 +167,7 @@ function renderAscend(s) {
     </div>`;
   }).join("");
 
-  $("ascUpgrades").querySelectorAll("button[data-asc]").forEach(b => {
-    b.onclick = () => {
-      if (buyAscUpgrade(s, b.dataset.asc)) { renderAscend(s); renderResources(s); renderCombat(s); renderHero(s); }
-    };
-  });
+  // Cliques tratados por delegação (ver bindButtons).
 }
 
 // Número de dano que sobe e some sobre o palco de combate.

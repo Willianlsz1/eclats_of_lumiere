@@ -65,6 +65,7 @@ function handleEvents(events) {
 }
 
 let floatAccum = 0, floatTick = 0;
+let eqDirty = false, eqTick = 0;
 function gameLoop() {
   const events = tick(state, 0.1); // 100ms por tick
   handleEvents(events);
@@ -86,12 +87,36 @@ function gameLoop() {
   renderCombat(state);
   renderHero(state);
   renderNextGoal(state);
-  if (events.some(e => e.type === "kill")) { renderEquipment(state); renderAscend(state); }
+  // Equipamento/ascensão re-renderizam no máx a cada ~500ms (menos churn, clique estável).
+  if (events.some(e => e.type === "kill")) eqDirty = true;
+  if (eqDirty && ++eqTick >= 5) { renderEquipment(state); renderAscend(state); eqDirty = false; eqTick = 0; }
 }
 
 function bindButtons() {
   $("prevZone").onclick = () => { if (changeZone(state, -1)) renderAll(state); };
   $("nextZone").onclick = () => { if (changeZone(state, +1)) renderAll(state); };
+
+  // Cliques de equipamento por DELEGAÇÃO (listener fixo no container) — robusto
+  // mesmo com o painel re-renderizando durante o combate.
+  $("equipment").addEventListener("click", (e) => {
+    const b = e.target.closest("button[data-act]");
+    if (!b || b.disabled) return;
+    const slot = b.dataset.slot, act = b.dataset.act;
+    const ok = act === "level" ? levelUpItem(state, slot)
+             : act === "max"   ? levelUpMax(state, slot) > 0
+             : rarityUpItem(state, slot);
+    if (ok) {
+      if (act === "rarity") logMsg(`⚔️ ${slot} is now ${RARITIES[state.equipped[slot].rarity].name}!`, "milestone");
+      renderEquipment(state); renderResources(state); renderCombat(state); renderHero(state);
+      if (act === "rarity") flashSlot(slot);
+    }
+  });
+  // Cliques dos upgrades de ascensão, também por delegação.
+  $("ascUpgrades").addEventListener("click", (e) => {
+    const b = e.target.closest("button[data-asc]");
+    if (!b || b.disabled) return;
+    if (buyAscUpgrade(state, b.dataset.asc)) { renderAscend(state); renderResources(state); renderCombat(state); renderHero(state); }
+  });
   $("ascendBtn").onclick = () => {
     if (!canAscend(state)) return;
     if (confirm("Ascending resets your run (gold, zones, equipment). You keep Essence and permanent upgrades. Continue?")) {
