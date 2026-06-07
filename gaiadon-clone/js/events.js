@@ -1,7 +1,5 @@
 // ===== Event dispatch =====
 // Handles all events emitted by tick(). One place to add new event effects.
-// Callers (gameLoop) just pass the events array — no knowledge of handlers needed.
-//
 // Estado mutável (acumuladores de hit, surge anterior) é encapsulado num contexto
 // criado por createEventCtx(). main.js cria um; testes podem criar um fresh.
 
@@ -10,8 +8,7 @@ function createEventCtx() {
 }
 
 function dispatchEvents(events, state, ctx) {
-  // ── Synergy Surge notification ────────────────────────────────────────────
-  // Detecta quando o count de surges aumenta (ocorre após um level-up de equipamento).
+  // ── Synergy Surge notification ──
   const curSurge = synergySurgeCount(state);
   if (ctx.prevSurgeCount >= 0 && curSurge > ctx.prevSurgeCount) {
     logMsg(`⚡ Synergy Surge #${curSurge}! All stats ×${CONFIG.synergy.surgeMultiplier.toFixed(2)} · Total surge: ×${fmtMult(synergySurgeMult(state))}`, "milestone");
@@ -25,24 +22,36 @@ function dispatchEvents(events, state, ctx) {
       if (ev.leveled) msg += ` Level ${state.level}!`;
       const tierCls = ev.tier === "champion" ? "champion-kill" : ev.tier === "elite" ? "elite-kill" : "";
       logMsg(msg, tierCls || undefined);
-      if (ev.walledCleared) {
-        logMsg(`✨ Broke through to ${zoneName(ev.zone)}!`, "milestone");
-        // Flash dourado no badge de zona
-        const badge = $("zoneBadge");
-        if (badge) { badge.classList.add("breakthrough"); setTimeout(() => badge.classList.remove("breakthrough"), 1400); }
+
+      if (ev.difficultyCleared) {
+        const region = REGIONS[ev.region];
+        const diff   = DIFFICULTIES[ev.difficulty];
+        logMsg(`🏆 ${region.name} · ${diff.name} cleared! New paths open on the world map.`, "milestone");
+      }
+      if (ev.waveAdvanced) {
+        const total = totalWaves(state.difficulty);
+        const nextBoss = isBossWave(state.wave, state.difficulty);
+        if (nextBoss) {
+          logMsg(`⚠️ Boss incoming! Prepare yourself!`, "milestone");
+        }
       }
       if (ev.packIncreased) {
-        logMsg(`⚠️ Larger packs in ${zoneName(ev.zone)} — tougher fights ahead!`);
+        logMsg(`⚠️ Larger packs ahead — tougher fights!`);
       }
-      if (ev.justMastered) logMsg(`⭐ ${zoneName(ev.masteredZone)} Mastered! +0.5% gold/xp/shards forever.`, "mastered");
+      if (ev.justMastered) {
+        const rName = REGIONS[ev.masteredRegion].name;
+        logMsg(`⭐ ${rName} Mastered! +2% gold/xp/shards forever.`, "mastered");
+      }
     } else if (ev.type === "death") {
-      logMsg(`💀 ${zoneName(ev.wallZone)} is too strong — upgrade gear 🛡️ to push through!`);
+      const region = REGIONS[ev.region];
+      const diff   = DIFFICULTIES[ev.difficulty];
+      logMsg(`💀 Defeated on wave ${ev.diedOnWave}! Retreating to wave 1 — upgrade gear 🛡️ to push through!`);
     } else if (ev.type === "hit") {
       ctx.floatAccum += ev.amount;
     }
   }
 
-  // Flush the accumulated damage every 3 ticks (~300ms) for game-feel.
+  // Flush the accumulated damage every 3 ticks (~300ms).
   if (++ctx.floatTick >= 3) {
     if (ctx.floatAccum > 0) {
       const isBoss = state.enemies && state.enemies[0] && state.enemies[0].isBoss;
@@ -50,8 +59,7 @@ function dispatchEvents(events, state, ctx) {
       const shown = isCrit ? ctx.floatAccum * critMult(state) : ctx.floatAccum;
       spawnFloatingDamage(shown, isBoss, isCrit);
       const nm = $("enemyName");
-      nm.classList.add("hit");
-      setTimeout(() => nm.classList.remove("hit"), 120);
+      if (nm) { nm.classList.add("hit"); setTimeout(() => nm.classList.remove("hit"), 120); }
       const em = $("enemySprite");
       if (em) { em.classList.add("emoji-hit"); setTimeout(() => em.classList.remove("emoji-hit"), 220); }
     }

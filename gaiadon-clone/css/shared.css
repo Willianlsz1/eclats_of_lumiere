@@ -39,12 +39,13 @@ header h1 { margin: 0 0 var(--sp-2); font-size: var(--fs-2xl); }
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: var(--sp-1);
+  gap: var(--sp-3);
   padding: var(--sp-2) var(--sp-7);
   background: #0c1422;
   border-bottom: 2px solid var(--border-focus);
   position: sticky; top: 72px; z-index: 9;
 }
+.nav-views { display: flex; gap: var(--sp-1); }
 .nav-btn {
   width: 64px;
   height: 58px;
@@ -84,8 +85,8 @@ header h1 { margin: 0 0 var(--sp-2); font-size: var(--fs-2xl); }
 
 /* ── View system ────────────────────────────────────────────────────── */
 main {
-  padding: var(--sp-6) var(--sp-7);
-  max-width: 1000px;
+  padding: var(--sp-4) var(--sp-6);
+  max-width: 1400px;
   margin: 0 auto;
 }
 .view { display: none; }
@@ -96,7 +97,7 @@ main {
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: var(--sp-5);
+  padding: var(--sp-4);
 }
 h2 { margin: 0 0 var(--sp-3); font-size: var(--fs-xl); }
 h3 { font-size: var(--fs-base); color: var(--muted); margin: var(--sp-4) 0 var(--sp-2); }

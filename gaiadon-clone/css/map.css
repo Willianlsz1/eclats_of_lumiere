@@ -1,0 +1,132 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   World Map view — selectable regions with difficulty tiers
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.map-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+/* ── Region card ────────────────────────────────────────────────────── */
+.map-region {
+  background: var(--surface-card);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--sp-4);
+  transition: border-color .2s, box-shadow .2s;
+}
+.map-region.active {
+  border-color: var(--accent);
+  box-shadow: 0 0 16px rgba(108,198,255,.3);
+}
+.map-region.mastered {
+  border-color: var(--gold);
+  box-shadow: 0 0 12px rgba(255,209,102,.2);
+}
+.map-region.locked {
+  opacity: .45;
+  text-align: center;
+  padding: var(--sp-6);
+}
+.map-region.locked .map-region-icon { font-size: 48px; margin-bottom: var(--sp-2); }
+.map-region.locked .map-region-name {
+  font-family: var(--font-display); font-size: var(--fs-lg); color: var(--muted);
+}
+.map-region.locked .map-region-desc {
+  font-size: var(--fs-sm); color: var(--muted); margin-top: var(--sp-1);
+}
+
+/* ── Region header ──────────────────────────────────────────────────── */
+.map-region-header {
+  display: flex; align-items: center; gap: var(--sp-2); margin-bottom: var(--sp-1);
+}
+.map-region-icon { font-size: 28px; }
+.map-region-name {
+  font-family: var(--font-display); font-size: var(--fs-lg); font-weight: 700;
+  color: var(--text);
+}
+.map-mastered-badge {
+  font-size: var(--fs-xs); font-weight: 700; color: var(--gold);
+  background: rgba(255,209,102,.12); padding: 2px 8px;
+  border-radius: var(--radius-pill); margin-left: auto;
+}
+.map-region-desc {
+  font-size: var(--fs-sm); color: var(--muted); margin-bottom: var(--sp-2);
+  line-height: 1.5;
+}
+.map-region-stars {
+  font-size: var(--fs-lg); letter-spacing: 4px; margin-bottom: var(--sp-1);
+  color: var(--gold);
+}
+.map-region-power {
+  font-size: var(--fs-xs); color: var(--muted); font-family: var(--font-ui);
+  margin-bottom: var(--sp-2);
+}
+
+/* ── Difficulty buttons ─────────────────────────────────────────────── */
+.map-difficulties {
+  display: flex; gap: var(--sp-2); flex-wrap: wrap;
+}
+.map-diff-btn {
+  flex: 1; min-width: 100px;
+  padding: var(--sp-2) var(--sp-3);
+  font-size: var(--fs-sm); font-weight: 700; font-family: var(--font-ui);
+  border-radius: var(--radius-md);
+  border: 2px solid var(--border);
+  background: var(--panel2); color: var(--text);
+  cursor: pointer; transition: .15s;
+  text-transform: uppercase; letter-spacing: .5px;
+}
+.map-diff-btn:hover:not(:disabled) { transform: scale(1.04); }
+.map-diff-btn:disabled { opacity: .3; cursor: not-allowed; }
+
+/* Difficulty colors */
+.map-diff-btn.diff-normal  { border-color: var(--muted); }
+.map-diff-btn.diff-hard    { border-color: var(--orange); color: var(--orange); }
+.map-diff-btn.diff-nightmare { border-color: var(--red); color: var(--red); }
+
+.map-diff-btn.diff-normal:hover:not(:disabled) { background: rgba(148,163,184,.15); border-color: var(--text); }
+.map-diff-btn.diff-hard:hover:not(:disabled)   { background: rgba(251,146,60,.12); box-shadow: 0 0 10px rgba(251,146,60,.3); }
+.map-diff-btn.diff-nightmare:hover:not(:disabled) { background: rgba(248,113,113,.12); box-shadow: 0 0 12px rgba(248,113,113,.35); }
+
+/* Cleared state */
+.map-diff-btn.cleared {
+  opacity: .7;
+  background: rgba(74,222,128,.08);
+  border-color: var(--green);
+  color: var(--green);
+}
+/* Currently playing */
+.map-diff-btn.current {
+  background: rgba(108,198,255,.12);
+  border-color: var(--accent);
+  color: var(--accent);
+  box-shadow: 0 0 12px rgba(108,198,255,.3);
+  animation: currentPulse 2s ease-in-out infinite;
+}
+@keyframes currentPulse {
+  0%, 100% { box-shadow: 0 0 12px rgba(108,198,255,.3); }
+  50%      { box-shadow: 0 0 20px rgba(108,198,255,.5); }
+}
+
+/* ── Nav bar difficulty/wave display ────────────────────────────────── */
+.nav-difficulty {
+  font-family: var(--font-ui); font-size: var(--fs-sm); font-weight: 700;
+  padding: 2px 8px; border-radius: var(--radius-pill);
+  text-transform: uppercase; letter-spacing: .5px;
+}
+.nav-difficulty.diff-normal    { background: rgba(148,163,184,.15); color: var(--muted); }
+.nav-difficulty.diff-hard      { background: rgba(251,146,60,.15); color: var(--orange); }
+.nav-difficulty.diff-nightmare { background: rgba(248,113,113,.15); color: var(--red); }
+
+.nav-wave {
+  font-family: var(--font-ui); font-size: var(--fs-sm); font-weight: 600;
+  color: var(--muted);
+}
+
+/* ── Responsive ─────────────────────────────────────────────────────── */
+@media (max-width: 700px) {
+  .map-difficulties { flex-direction: column; }
+  .map-diff-btn { min-width: unset; }
+}

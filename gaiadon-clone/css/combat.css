@@ -1,250 +1,305 @@
 /* ═══════════════════════════════════════════════════════════════════════
-   Combat view — enemy card, HP bars, pack, mastery, kill-track,
-   danger, zone nav, next-goal, combat log, floating damage, animations.
-   Rendered by: renderCombat(), renderNextGoal(), renderMastery() in ui.js
+   Combat view — 2-panel Gaiadon layout: hero card (left) + enemy grid
+   (right), zone nav in top bar, combat log below.
    ═══════════════════════════════════════════════════════════════════════ */
 
-/* ── Region header ──────────────────────────────────────────────────── */
-.combat-header {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: var(--sp-4);
+/* ── Combat section — no panel wrapper ──────────────────────────────── */
+#combat { padding: 0; }
+
+/* ── Top bar region info ────────────────────────────────────────────── */
+.nav-zone {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-left: auto;
 }
-.combat-region-name {
+.nav-region-name {
   font-family: var(--font-display);
-  font-size: var(--fs-lg); font-weight: 700; color: var(--text);
-}
-.zone-badge {
-  background: var(--panel2); color: var(--accent);
-  border: 1px solid var(--border); border-radius: var(--radius-pill);
-  padding: var(--sp-1) var(--sp-3); font-size: var(--fs-sm); font-weight: 700; letter-spacing: .5px;
-  display: flex; align-items: center; gap: 6px;
-  transition: background .2s, box-shadow .2s;
-}
-.zone-badge.breakthrough {
-  animation: zoneBreach 1.4s ease-out forwards;
-}
-@keyframes zoneBreach {
-  0%   { background: var(--panel2); box-shadow: none; color: var(--accent); }
-  15%  { background: rgba(255,209,102,.25); box-shadow: 0 0 20px 5px rgba(255,209,102,.5); color: var(--gold); }
-  100% { background: var(--panel2); box-shadow: none; color: var(--accent); }
-}
-.zone-num {
-  font-size: var(--fs-xs); font-weight: 500; color: var(--muted);
-  font-family: var(--font-ui);
-  letter-spacing: 0;
+  font-size: var(--fs-base); font-weight: 700; color: var(--text);
 }
 
-/* ── Enemy card ─────────────────────────────────────────────────────── */
+/* ══════════════════════════════════════════════════════════════════════
+   Combat Scene — 2-panel layout
+   ══════════════════════════════════════════════════════════════════════ */
+.combat-scene {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-2);
+  min-height: 400px;
+}
+
+/* ── Hero Card (left panel) ─────────────────────────────────────────── */
+.hero-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--sp-3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-2);
+  align-self: start;
+  position: sticky;
+  top: 140px;
+}
+.hc-portrait {
+  width: 200px;
+  height: 260px;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  border: 3px solid var(--border);
+  filter: drop-shadow(0 4px 16px rgba(0,0,0,.5));
+}
+.hc-portrait.tier-common    { border-color: var(--rar-common); }
+.hc-portrait.tier-uncommon  { border-color: var(--rar-uncommon); box-shadow: 0 0 12px rgba(74,222,128,.25); }
+.hc-portrait.tier-rare      { border-color: var(--rar-rare); box-shadow: 0 0 14px rgba(108,198,255,.3); }
+.hc-portrait.tier-epic      { border-color: var(--rar-epic); box-shadow: 0 0 18px rgba(192,132,252,.35); }
+.hc-portrait.tier-legendary { border-color: var(--rar-legendary); box-shadow: 0 0 22px rgba(255,209,102,.4); }
+.hc-portrait-emoji {
+  width: 200px; height: 260px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 80px;
+  background: var(--surface-card);
+  border-radius: var(--radius-md);
+  border: 3px solid var(--border);
+}
+.hc-name {
+  font-family: var(--font-display);
+  font-size: var(--fs-lg); font-weight: 700;
+  text-align: center;
+}
+.hc-level {
+  font-family: var(--font-ui);
+  font-size: var(--fs-base); font-weight: 700;
+  color: var(--muted);
+}
+.hc-stats {
+  width: 100%;
+  display: flex; flex-direction: column; gap: var(--sp-1);
+}
+.hc-stat {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: var(--fs-sm); font-family: var(--font-ui);
+  color: var(--text);
+  padding: 2px var(--sp-1);
+  background: rgba(0,0,0,.15);
+  border-radius: var(--radius-sm);
+}
+.hc-stat-icon { font-size: 14px; }
+.hc-bar-group {
+  width: 100%;
+  display: flex; flex-direction: column; gap: 2px;
+}
+.hc-bar-label {
+  font-size: 10px; color: var(--muted); font-family: var(--font-ui);
+  font-weight: 600;
+}
+.hc-bar {
+  height: 12px; background: var(--surface-sunken);
+  border-radius: var(--radius-sm); overflow: hidden;
+}
+.hc-bar-fill {
+  height: 100%; border-radius: var(--radius-sm);
+  transition: width .15s linear;
+}
+.hc-bar-fill.hp { background: linear-gradient(90deg, var(--green), #22c55e); }
+.hc-bar-fill.xp { background: linear-gradient(90deg, var(--accent), #38bdf8); }
+
+/* ── Enemy Area (right panel) ───────────────────────────────────────── */
+.enemy-area {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  min-width: 0;
+}
+
 .enemy-card {
   background: var(--surface-card);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: var(--sp-6) var(--sp-5) var(--sp-4);
-  text-align: center;
-  margin-bottom: var(--sp-3);
+  padding: var(--sp-3);
   position: relative;
   transition: border-color .3s, box-shadow .3s;
+  overflow: hidden;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .enemy-card.boss-card {
   border-color: #a06010;
   box-shadow: 0 0 24px rgba(255,209,102,.18), inset 0 0 20px rgba(255,209,102,.04);
 }
-.enemy-card.elite-card {
-  border-color: var(--red);
-  box-shadow: 0 0 18px rgba(248,113,113,.22), inset 0 0 14px rgba(248,113,113,.05);
-}
-.enemy-card.champion-card {
-  border-color: var(--purple);
-  box-shadow: 0 0 28px rgba(192,132,252,.35), inset 0 0 20px rgba(192,132,252,.08),
-              0 0 8px rgba(255,209,102,.12);
-}
-.enemy-name.elite    { color: var(--red); text-shadow: 0 0 8px rgba(248,113,113,.5); }
-.enemy-name.champion { color: var(--purple); text-shadow: 0 0 12px rgba(192,132,252,.7); }
 
-/* Region color tints — fallback gradients when no background image */
+/* Region tints */
 .region-plains  { background: linear-gradient(160deg, #0d1e14 0%, var(--surface-card) 60%); }
 .region-forest  { background: linear-gradient(160deg, #0a1a10 0%, var(--surface-card) 60%); }
 .region-caverns { background: linear-gradient(160deg, #0a1620 0%, var(--surface-card) 60%); }
 .region-desert  { background: linear-gradient(160deg, #1d1508 0%, var(--surface-card) 60%); }
 .region-peak    { background: linear-gradient(160deg, #140820 0%, var(--surface-card) 60%); }
-/* Region background images — override gradient when asset exists */
 .region-bg {
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
+  background-size: cover; background-position: center; background-repeat: no-repeat;
 }
 .region-bg::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, rgba(0,0,0,.15) 0%, rgba(0,0,0,.65) 70%, rgba(0,0,0,.85) 100%);
-  border-radius: inherit;
-  z-index: 0;
-  pointer-events: none;
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(0,0,0,.15) 0%, rgba(0,0,0,.55) 50%, rgba(0,0,0,.85) 100%);
+  border-radius: inherit; z-index: 0; pointer-events: none;
 }
 .region-bg > * { position: relative; z-index: 1; }
 
-/* ── Enemy visual (emoji fallback + image) ──────────────────────────── */
-.enemy-visual {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-bottom: 10px;
-  min-height: 120px;
-}
-/* Emoji fallback — used when no image asset available */
-.enemy-emoji {
-  font-size: 72px; line-height: 1;
-  display: block;
-  filter: drop-shadow(0 4px 12px rgba(0,0,0,.5));
-  animation: enemyFloat 3.5s ease-in-out infinite;
-  transition: filter .2s;
-}
-/* Image asset — used when illustration exists */
-.enemy-img {
-  width: 140px;
-  height: 140px;
-  object-fit: contain;
-  filter: drop-shadow(0 4px 16px rgba(0,0,0,.6));
-  animation: enemyFloat 3.5s ease-in-out infinite;
-  transition: filter .2s, transform .2s;
-  image-rendering: auto;
-}
-.enemy-img.boss-img   { width: 170px; height: 170px; }
-.enemy-img.elite-img  { filter: drop-shadow(0 0 12px rgba(248,113,113,.4)); }
-.enemy-img.champion-img { filter: drop-shadow(0 0 16px rgba(192,132,252,.5)); }
-
-.enemy-emoji.emoji-hit,
-.enemy-img.emoji-hit {
-  animation: emojiHit .22s ease-out, enemyFloat 3.5s ease-in-out infinite 0.22s;
-  filter: drop-shadow(0 0 16px rgba(255,255,255,.6));
-}
-@keyframes enemyFloat {
-  0%, 100% { transform: translateY(0px); }
-  50%       { transform: translateY(-8px); }
-}
-@keyframes emojiHit {
-  0%   { transform: scale(1) translateY(0); }
-  25%  { transform: scale(0.82) translateY(4px); filter: brightness(2.5); }
-  100% { transform: scale(1) translateY(0); }
-}
-
-/* ── Enemy name & HP ────────────────────────────────────────────────── */
-.enemy-name {
-  font-size: var(--fs-xl); font-weight: bold; margin-bottom: var(--sp-3);
-  font-family: var(--font-body);
-}
-.enemy-name.boss { color: var(--gold); text-shadow: 0 0 10px rgba(255,209,102,.5); }
-.hpbar {
-  position: relative; height: 26px; background: var(--surface-sunken);
-  border-radius: var(--radius-md); overflow: hidden; margin-bottom: var(--sp-1);
-}
-.hpfill {
-  height: 100%; width: 100%;
-  background: linear-gradient(90deg, var(--red), var(--orange));
-  transition: width .12s linear;
-}
-.hpbar span {
-  position: absolute; inset: 0; display: flex; align-items: center;
-  justify-content: center; font-size: var(--fs-sm); font-weight: bold;
-  text-shadow: 0 1px 3px #000;
-}
-.hpfill.boss { background: linear-gradient(90deg, #a855f7, var(--gold)); }
-.enemy-hpbar { margin: 0 auto; max-width: 360px; }
-
-/* ── Pack mini-bars ─────────────────────────────────────────────────── */
-.pack-info { display: flex; flex-wrap: wrap; gap: var(--sp-1); align-items: center; margin: var(--sp-2) 0 0; justify-content: center; }
-.pack-info small { width: 100%; color: var(--red); font-weight: bold; font-size: var(--fs-sm); margin-bottom: var(--sp-1); }
-.pack-label        { color: var(--red); }
-.pack-label.large  { color: var(--orange); text-shadow: 0 0 6px rgba(251,146,60,.4); }
-.pack-label.horde  { color: var(--red); text-shadow: 0 0 10px rgba(248,113,113,.6); animation: hordeFlash 1.4s ease-in-out infinite; }
-@keyframes hordeFlash { 0%,100% { opacity:1; } 50% { opacity:.7; } }
-.pack-mini { width: 36px; height: 8px; background: var(--surface-sunken); border-radius: var(--radius-sm); overflow: hidden; }
-.pack-mini > div { height: 100%; background: var(--red); transition: width .12s linear; }
-.pack-mini.target > div { background: linear-gradient(90deg, var(--red), var(--orange)); }
-.pack-mini.elite > div   { background: var(--red); }
-.pack-mini.champion > div { background: linear-gradient(90deg, #a855f7, var(--purple)); }
-
-/* ── Zone Mastery tracker ───────────────────────────────────────────── */
-.mastery-track { margin-bottom: var(--sp-2); min-height: 0; }
-.mastery-row {
-  display: flex; align-items: center; gap: var(--sp-2);
-  font-size: var(--fs-sm); margin-bottom: var(--sp-1);
-}
-.mastery-label { font-weight: 700; color: #fde68a; min-width: 80px; }
-.mastery-count { font-family: var(--font-ui); color: var(--muted); }
-.mastery-total { font-size: var(--fs-xs); color: var(--muted); margin-left: auto; }
-.mastery-total.has-bonus { color: #fde68a; font-weight: 600; }
-.mastery-bar {
-  height: 6px; background: var(--surface-sunken); border-radius: var(--radius-sm); overflow: hidden;
-  margin-bottom: 2px;
-}
-.mastery-fill {
-  height: 100%; width: 0%;
-  background: linear-gradient(90deg, #92400e, #fde68a);
-  transition: width .3s ease;
+/* ── Zone progress bar (thin bar below enemy grid) ──────────────────── */
+.zone-progress-bar {
+  height: 18px;
+  background: var(--surface-sunken);
   border-radius: var(--radius-sm);
+  overflow: hidden;
+  position: relative;
 }
-
-/* ── Zone clear progress ────────────────────────────────────────────── */
-.kill-track { margin-bottom: var(--sp-3); }
-.kill-track-row {
-  display: flex; justify-content: space-between; align-items: center;
-  font-size: var(--fs-sm); color: var(--muted); margin-bottom: var(--sp-1);
-}
-.kill-track-label { font-weight: 700; letter-spacing: .5px; text-transform: uppercase; font-size: var(--fs-xs); }
-.kill-track-count { font-family: var(--font-ui); font-weight: 700; color: var(--text); }
-.kill-track-bar {
-  height: 10px; background: var(--surface-sunken); border-radius: var(--radius-sm); overflow: hidden;
-}
-.kill-track-fill {
-  height: 100%; width: 0%;
+.zone-progress-fill {
+  height: 100%;
   background: linear-gradient(90deg, var(--accent), var(--green));
   transition: width .2s ease;
   border-radius: var(--radius-sm);
 }
-
-/* ── Player HP ──────────────────────────────────────────────────────── */
-.your-hp { margin: 0 0 var(--sp-3); }
-.your-hp small { display: block; margin-bottom: var(--sp-1); font-size: var(--fs-sm); color: var(--muted); }
-.hpbar.player { height: 20px; }
-.hpbar.player .hpfill { background: linear-gradient(90deg, var(--green), #22c55e); }
-
-/* ── Zone danger indicator ──────────────────────────────────────────── */
-.zone-danger { margin-bottom: var(--sp-2); min-height: 24px; }
-.danger-badge {
-  display: inline-block; border-radius: var(--radius-pill);
-  padding: var(--sp-1) var(--sp-3); font-size: var(--fs-sm); font-weight: 700;
+.zone-progress-text {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: bold; font-family: var(--font-ui);
+  text-shadow: 0 1px 2px #000; color: var(--text);
 }
-.danger-lethal { background: rgba(248,113,113,.18); color: var(--red); border: 1px solid var(--red); }
-.danger-high   { background: rgba(251,146,60,.15);  color: var(--orange); border: 1px solid var(--orange); }
-.danger-mid    { background: rgba(250,204,21,.12);  color: #facc15; border: 1px solid #facc15; }
-.danger-low    { background: rgba(74,222,128,.10);  color: var(--green); border: 1px solid var(--green); }
 
-/* ── Zone navigation ────────────────────────────────────────────────── */
-.zone-controls { display: flex; gap: var(--sp-2); margin-bottom: var(--sp-3); }
+/* ══════════════════════════════════════════════════════════════════════
+   Enemy Grid — each pack member is an individual card
+   ══════════════════════════════════════════════════════════════════════ */
+.enemy-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+  gap: var(--sp-2);
+  width: 100%;
+}
 
-/* ── Next goal hint ─────────────────────────────────────────────────── */
-.next-goal {
-  background: var(--surface-inset); border-left: 3px solid var(--accent);
-  border-radius: var(--radius-md); padding: var(--sp-2) var(--sp-3); margin-bottom: var(--sp-3);
-  font-size: var(--fs-md); color: var(--accent);
+.enemy-unit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(0, 0, 0, .35);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--sp-2) var(--sp-2) var(--sp-1);
+  width: 160px;
+  transition: transform .2s, border-color .2s, box-shadow .2s, opacity .3s;
+}
+.enemy-unit.solo { width: 280px; }
+.enemy-unit.target {
+  border-color: var(--orange);
+  box-shadow: 0 0 14px rgba(251,146,60,.45), inset 0 0 8px rgba(251,146,60,.06);
+  transform: scale(1.04);
+  background: rgba(251,146,60,.06);
+}
+.enemy-unit.dead { opacity: .15; filter: grayscale(1); pointer-events: none; }
+
+/* Tier treatments */
+.enemy-unit.elite        { border-color: var(--red); box-shadow: 0 0 12px rgba(248,113,113,.3); }
+.enemy-unit.elite.target { box-shadow: 0 0 18px rgba(248,113,113,.5), inset 0 0 10px rgba(248,113,113,.06); }
+.enemy-unit.champion        { border-color: var(--purple); background: rgba(192,132,252,.08); box-shadow: 0 0 16px rgba(192,132,252,.35); }
+.enemy-unit.champion.target { box-shadow: 0 0 22px rgba(192,132,252,.55), inset 0 0 12px rgba(192,132,252,.08); }
+.enemy-unit.boss { border-color: var(--gold); background: rgba(255,209,102,.06); box-shadow: 0 0 18px rgba(255,209,102,.3); }
+
+/* Enemy image */
+.enemy-unit-visual { display: flex; align-items: center; justify-content: center; margin-bottom: var(--sp-1); }
+.enemy-unit-img {
+  width: 130px; height: 130px; object-fit: contain;
+  border-radius: var(--radius-sm);
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,.6));
+  animation: enemyFloat 3.5s ease-in-out infinite;
+  image-rendering: auto;
+}
+.solo .enemy-unit-img      { width: 240px; height: 240px; }
+.enemy-unit.boss .enemy-unit-img { width: 240px; height: 240px; }
+.enemy-unit.elite .enemy-unit-img    { filter: drop-shadow(0 0 14px rgba(248,113,113,.45)) drop-shadow(0 4px 12px rgba(0,0,0,.6)); }
+.enemy-unit.champion .enemy-unit-img { filter: drop-shadow(0 0 18px rgba(192,132,252,.55)) drop-shadow(0 4px 12px rgba(0,0,0,.6)); }
+
+/* Enemy emoji */
+.enemy-unit-emoji {
+  width: 130px; height: 130px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 64px;
+  animation: enemyFloat 3.5s ease-in-out infinite;
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,.5));
+}
+.solo .enemy-unit-emoji { width: 240px; height: 240px; font-size: 96px; }
+
+/* Enemy name */
+.enemy-unit-name {
+  font-family: var(--font-body); font-size: var(--fs-sm); font-weight: bold;
+  color: var(--text); text-align: center; margin-bottom: var(--sp-1);
+  line-height: 1.2; max-width: 100%;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.solo .enemy-unit-name { font-size: var(--fs-lg); }
+.enemy-unit.elite .enemy-unit-name    { color: var(--red); text-shadow: 0 0 6px rgba(248,113,113,.4); }
+.enemy-unit.champion .enemy-unit-name { color: var(--purple); text-shadow: 0 0 8px rgba(192,132,252,.5); }
+.enemy-unit.boss .enemy-unit-name     { color: var(--gold); text-shadow: 0 0 8px rgba(255,209,102,.5); }
+
+/* Enemy HP bar */
+.enemy-unit-hpbar {
+  width: 100%; height: 14px;
+  background: var(--surface-sunken); border-radius: var(--radius-sm);
+  overflow: hidden; position: relative;
+}
+.solo .enemy-unit-hpbar { height: 22px; }
+.enemy-unit-hpfill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--red), var(--orange));
+  transition: width .12s linear; border-radius: var(--radius-sm);
+}
+.enemy-unit-hpfill.boss { background: linear-gradient(90deg, #a855f7, var(--gold)); }
+.enemy-unit-hpbar span {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 9px; font-weight: bold; font-family: var(--font-ui);
+  text-shadow: 0 1px 2px #000; color: var(--text);
+}
+.solo .enemy-unit-hpbar span { font-size: var(--fs-sm); }
+
+/* ── Animations ─────────────────────────────────────────────────────── */
+@keyframes enemyFloat {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-6px); }
+}
+.emoji-hit {
+  animation: emojiHit .22s ease-out !important;
+  filter: drop-shadow(0 0 16px rgba(255,255,255,.7)) !important;
+}
+@keyframes emojiHit {
+  0%   { transform: scale(1) translateY(0); }
+  25%  { transform: scale(0.88) translateY(4px); filter: brightness(2.5); }
+  100% { transform: scale(1) translateY(0); }
+}
+.enemy-unit-name.hit { animation: enemyHit .12s ease-out; }
+@keyframes enemyHit { 0% { transform: translateX(0); } 50% { transform: translateX(2px); } 100% { transform: translateX(0); } }
+.enemy-unit-img.dying, .enemy-unit-emoji.dying {
+  opacity: 0; transform: scale(0.8) translateY(10px);
+  transition: opacity .35s ease-out, transform .35s ease-out;
 }
 
 /* ── Combat log ─────────────────────────────────────────────────────── */
 .combat-stage { position: relative; min-height: 44px; }
 .combat-log { display: flex; flex-direction: column; gap: var(--sp-1); }
 .log {
-  background: var(--surface-inset); border-radius: var(--radius-md); padding: var(--sp-2) var(--sp-3);
+  background: var(--surface-inset); border-radius: var(--radius-md);
+  padding: var(--sp-2) var(--sp-3);
   font-size: var(--fs-md); color: var(--muted); margin: 0;
-  transition: opacity .3s;
 }
 .log.milestone      { color: var(--gold); font-weight: bold; }
 .log.elite-kill     { color: var(--red); font-weight: 600; }
 .log.champion-kill  { color: var(--purple); font-weight: bold; }
 .log.mastered       { color: #fde68a; font-weight: bold; text-shadow: 0 0 8px rgba(253,230,138,.5); }
 
-/* ── Floating damage + animations ───────────────────────────────────── */
+/* ── Floating damage ────────────────────────────────────────────────── */
 .floating-dmg {
   position: absolute; top: 4px; left: 50%;
   font-weight: bold; font-size: var(--fs-base); color: var(--gold);
@@ -257,9 +312,29 @@
   0%   { transform: translate(-50%, 0) scale(1); opacity: 1; }
   100% { transform: translate(-50%, -34px) scale(1.1); opacity: 0; }
 }
-.enemy-name.hit { animation: enemyHit .12s ease-out; }
-@keyframes enemyHit { 0% { transform: translateX(0); } 50% { transform: translateX(2px); } 100% { transform: translateX(0); } }
 
+/* Player HP bars — used in stats view */
+.hpbar { position: relative; height: 26px; background: var(--surface-sunken); border-radius: var(--radius-md); overflow: hidden; margin-bottom: var(--sp-1); }
+.hpfill { height: 100%; width: 100%; background: linear-gradient(90deg, var(--red), var(--orange)); transition: width .12s linear; }
+.hpbar span { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: var(--fs-sm); font-weight: bold; text-shadow: 0 1px 3px #000; }
+.hpbar.player { height: 20px; }
+.hpbar.player .hpfill { background: linear-gradient(90deg, var(--green), #22c55e); }
+
+/* ── Responsive ─────────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .combat-scene { grid-template-columns: 1fr; }
+  .hero-card {
+    flex-direction: row; gap: var(--sp-3);
+    position: static;
+  }
+  .hc-portrait, .hc-portrait-emoji { width: 100px; height: 130px; }
+  .hc-portrait-emoji { font-size: 48px; }
+  .nav-zone { display: none; }
+}
 @media (max-width: 700px) {
-  .enemy-emoji { font-size: 56px; }
+  .enemy-unit { width: 120px; }
+  .enemy-unit-img { width: 90px; height: 90px; }
+  .enemy-unit-emoji { width: 90px; height: 90px; font-size: 48px; }
+  .enemy-unit.solo { width: 200px; }
+  .solo .enemy-unit-img { width: 160px; height: 160px; }
 }

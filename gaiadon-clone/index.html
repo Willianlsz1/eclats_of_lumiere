@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="css/tokens.css">
   <link rel="stylesheet" href="css/shared.css">
   <link rel="stylesheet" href="css/combat.css">
+  <link rel="stylesheet" href="css/map.css">
   <link rel="stylesheet" href="css/equipment.css">
   <link rel="stylesheet" href="css/stats.css">
   <link rel="stylesheet" href="css/ascension.css">
@@ -25,79 +26,56 @@
     </div>
   </header>
 
-  <!-- Icon navigation bar — always visible, switches the entire view -->
+  <!-- Top bar: view nav + current region info -->
   <nav id="mainNav">
-    <button class="nav-btn active" data-view="combat"    title="Combat">⚔️<small>Combat</small></button>
-    <button class="nav-btn"        data-view="stats"     title="Character">🗡️<small>Stats</small></button>
-    <button class="nav-btn"        data-view="ascension" title="Ascension">🔮<small>Ascend</small></button>
-    <button class="nav-btn"        data-view="equipment" title="Equipment">🛡️<small>Gear</small></button>
+    <div class="nav-views">
+      <button class="nav-btn active" data-view="combat"    title="Combat">⚔️<small>Combat</small></button>
+      <button class="nav-btn"        data-view="map"       title="World Map">🗺️<small>Map</small></button>
+      <button class="nav-btn"        data-view="stats"     title="Character">🗡️<small>Stats</small></button>
+      <button class="nav-btn"        data-view="ascension" title="Ascension">🔮<small>Ascend</small></button>
+      <button class="nav-btn"        data-view="equipment" title="Equipment">🛡️<small>Gear</small></button>
+    </div>
+    <div class="nav-zone" id="navZone">
+      <span class="nav-region-name" id="regionName">Plains of Aurin</span>
+      <span class="nav-difficulty diff-normal" id="navDifficulty">Normal</span>
+      <span class="nav-wave" id="navWave">Wave 1/5</span>
+    </div>
   </nav>
 
   <main>
 
     <!-- VIEW: Combat (default) -->
     <div id="view-combat" class="view active">
-      <section id="combat" class="panel">
-
-        <!-- Region & zone header -->
-        <div class="combat-header">
-          <span class="combat-region-name" id="regionName">Plains of Aurin</span>
-          <span class="zone-badge" id="zoneBadge">
-            <span id="zoneName">Muddy Hollow</span>
-            <small class="zone-num">#<span id="zone">1</span></small>
-          </span>
-        </div>
-
-        <!-- Enemy card: illustration (or emoji fallback) + name + HP -->
-        <div class="enemy-card" id="enemyCard">
-          <div class="enemy-visual" id="enemyVisual">
-            <div class="enemy-emoji" id="enemySprite">👾</div>
-          </div>
-          <div class="enemy-name" id="enemyName">Slime</div>
-          <div class="hpbar enemy-hpbar">
-            <div class="hpfill" id="enemyHpFill"></div>
-            <span id="enemyHpText">0/0</span>
-          </div>
-          <div id="packInfo" class="pack-info"></div>
-        </div>
-
-        <!-- Zone clear progress bar -->
-        <div class="kill-track">
-          <div class="kill-track-row">
-            <span class="kill-track-label">Zone Progress</span>
-            <span class="kill-track-count"><b id="kills">0</b> / <span id="killsNeeded">10</span></span>
-          </div>
-          <div class="kill-track-bar">
-            <div class="kill-track-fill" id="killProgressFill"></div>
+      <section id="combat">
+        <!-- 2-panel layout: hero card (left) + enemy grid (right) -->
+        <div class="combat-scene">
+          <!-- Hero card — portrait, stats, HP, XP -->
+          <div class="hero-card" id="heroCard"></div>
+          <!-- Enemy area — grid of individual enemy cards -->
+          <div class="enemy-area">
+            <div class="enemy-card" id="enemyCard">
+              <div class="enemy-grid" id="enemyGrid"></div>
+            </div>
+            <!-- Wave progress bar below enemies -->
+            <div class="zone-progress-bar">
+              <div class="zone-progress-fill" id="killProgressFill"></div>
+              <span class="zone-progress-text"><b id="kills">0</b>/<span id="killsNeeded">10</span></span>
+            </div>
           </div>
         </div>
-
-        <!-- Zone Mastery progress -->
-        <div class="mastery-track" id="masteryTrack"></div>
-
-        <!-- Player HP -->
-        <div class="your-hp">
-          <small>Your HP</small>
-          <div class="hpbar player"><div class="hpfill" id="playerHpFill"></div><span id="playerHpText">0/0</span></div>
-        </div>
-
-        <!-- Zone danger indicator -->
-        <div class="zone-danger" id="zoneDanger"></div>
-
-        <!-- Next goal hint -->
-        <div class="next-goal" id="nextGoal"></div>
-
-        <!-- Zone navigation -->
-        <div class="zone-controls">
-          <button id="prevZone">◀ Previous zone</button>
-          <button id="nextZone">Next zone ▶</button>
-        </div>
-
-        <!-- Multi-line combat log -->
+        <!-- Combat log — full width below -->
         <div class="combat-stage" id="combatStage">
           <div class="combat-log" id="combatLog"></div>
         </div>
+      </section>
+    </div>
 
+    <!-- VIEW: World Map -->
+    <div id="view-map" class="view">
+      <section class="panel">
+        <h2>🗺️ World Map</h2>
+        <p class="panel-hint">Select a region and difficulty to enter combat. Clear the boss to unlock new paths.</p>
+        <div class="map-grid" id="mapGrid"></div>
       </section>
     </div>
 
@@ -108,7 +86,6 @@
         <div id="heroPortrait"></div>
         <div class="xpbar"><div class="xpfill" id="xpFill"></div><span id="xpText">0/0 XP</span></div>
         <div class="hero-stats-grid">
-          <!-- OFFENSE -->
           <div class="stats-col">
             <div class="stats-header">OFFENSE</div>
             <div class="stat-row"><span>Attack</span><span id="statDamage">0</span></div>
@@ -117,7 +94,6 @@
             <div class="stat-row"><span>Crit Damage</span><span id="statCritDmg">×2.00</span></div>
             <div class="stat-row derived"><span>DPS</span><span id="statDps">0</span></div>
           </div>
-          <!-- DEFENSE / ECONOMY -->
           <div class="stats-col">
             <div class="stats-header">DEFENSE</div>
             <div class="stat-row"><span>Max Health</span><span id="statHealth">0</span></div>
@@ -163,7 +139,6 @@
               <span class="synergy-eyebrow">SURGES ACTIVE</span>
             </div>
           </div>
-
           <div class="synergy-stats-grid">
             <div class="synergy-stat-col">
               <div class="synergy-col-head">SYNERGY BONUS</div>
@@ -176,7 +151,6 @@
               <div class="synergy-stat-row"><span>Per surge</span><span>×1.10</span></div>
             </div>
           </div>
-
           <div class="synergy-progress-row">
             <div class="synergy-prog-track">
               <div class="synergy-prog-fill" id="synergyProgressFill"></div>
@@ -184,7 +158,6 @@
             <span class="synergy-next-label" id="synergyNextSurge">Next surge at level 25</span>
           </div>
         </div>
-
       </section>
     </div>
 
