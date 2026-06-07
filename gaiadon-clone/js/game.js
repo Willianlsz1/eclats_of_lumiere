@@ -5,14 +5,23 @@
 function defaultState() {
   return {
     gold: 0,
-    shards: 0,             // material que sobe a raridade do equipamento
+    shards: 0,
     level: 1,
     xp: 0,
-    ascensions: 0,         // nº de ascensões totais (define tier e multiplicador)
-    zone: 1,
-    maxZone: 0,
-    killsInZone: 0,
+    ascensions: 0,
     totalKills: 0,
+
+    // World Map state
+    region: 0,              // índice em REGIONS
+    difficulty: 0,          // índice em DIFFICULTIES
+    wave: 1,                // wave atual (1-based)
+    killsInWave: 0,         // kills na wave atual
+
+    // Progress: quais dificuldades foram limpas por região.
+    // Chave = índice da região. Valor = array de índices de dificuldade limpos.
+    // Região "desbloqueada" = tem uma entrada aqui. Plains começa desbloqueada.
+    regionProgress: { 0: [] },
+
     // Equipamento: cada slot guarda { rarity: índice, level }.
     equipped: {
       Weapon: { rarity: 0, level: 1 },
@@ -22,16 +31,13 @@ function defaultState() {
       Gloves: { rarity: 0, level: 1 },
       Helmet: { rarity: 0, level: 1 },
     },
-    enemies: [],           // pack de inimigos atual (você foca o [0]; todos atacam)
+
+    enemies: [],
     playerHp: null,
     lastSeen: null,
-    // Zone Mastery: kills acumulados POR ZONA — persiste entre ascensões.
-    // Chave: número da zona (como número). Valor: total de kills nessa zona.
-    zoneMastery: {},
-    // Zone Progress: kills de limpeza por zona NA RUN ATUAL.
-    // Persiste entre mortes e navegação (morte sem punição).
-    // Reseta na ascensão (nova run começa do zero).
-    zoneProgress: {},
+
+    // Region Mastery: kills acumulados POR REGIÃO — persiste entre ascensões.
+    regionMastery: {},
   };
 }
 
@@ -39,39 +45,34 @@ function defaultState() {
 function playerDamage(s) {
   const P = CONFIG.player;
   let base = P.baseDamage + (s.level - 1) * damagePerLevel(s);
-  base += slotPower(s, "Weapon"); // Weapon → Damage (1:1)
-  base *= (1 + affixTotals(s).dmgMult); // afixo Damage %
+  base += slotPower(s, "Weapon");
+  base *= (1 + affixTotals(s).dmgMult);
   return Math.round(base * totalPowerMult(s));
 }
 function playerMaxHp(s) {
   const P = CONFIG.player;
   let base = P.baseHp + (s.level - 1) * hpPerLevel(s);
-  base += slotPower(s, "Armor") * CONFIG.itemStats.healthPerPower; // Armor → Health
-  base *= (1 + affixTotals(s).hpMult); // afixo Health %
+  base += slotPower(s, "Armor") * CONFIG.itemStats.healthPerPower;
+  base *= (1 + affixTotals(s).hpMult);
   return Math.round(base * totalPowerMult(s));
 }
 function attackSpeed(s) {
-  // Amulet → Attack Speed (+ também Gold Find em goldBonus).
   return CONFIG.player.baseAttackSpeed + slotPower(s, "Amulet") * CONFIG.itemStats.attackSpeedPerPower;
 }
-// DPS efetivo inclui o crítico (valor esperado).
 function playerDps(s) { return playerDamage(s) * attackSpeed(s) * critExpectedMult(s); }
 function goldBonus(s) {
-  let b = 1 + slotPower(s, "Amulet") * CONFIG.itemStats.goldFindPerPower; // Amulet → Gold Find
-  b *= (1 + affixTotals(s).goldMult); // afixo Gold %
-  return b * totalPowerMult(s) * zoneMasteryBonus(s); // Zone Mastery bônus de farming
+  let b = 1 + slotPower(s, "Amulet") * CONFIG.itemStats.goldFindPerPower;
+  b *= (1 + affixTotals(s).goldMult);
+  return b * totalPowerMult(s) * regionMasteryBonus(s);
 }
-// Multiplicador de XP: o multiplicador do Power × afixo XP % × Zone Mastery.
 function xpMultiplier(s) {
-  return totalPowerMult(s) * (1 + affixTotals(s).xpMult) * zoneMasteryBonus(s);
+  return totalPowerMult(s) * (1 + affixTotals(s).xpMult) * regionMasteryBonus(s);
 }
-// Ring: Shard Find — multiplica shards de cada abate (base stat + afixos + poder total + mastery).
 function shardBonus(s) {
   let b = 1 + slotPower(s, "Ring") * CONFIG.itemStats.shardFindPerPower;
   b *= (1 + affixTotals(s).shardMult);
-  return b * totalPowerMult(s) * zoneMasteryBonus(s);
+  return b * totalPowerMult(s) * regionMasteryBonus(s);
 }
-// Helmet: Boss Damage — multiplicador de dano apenas contra bosses.
 function bossDmgMult(s) {
   return 1 + slotPower(s, "Helmet") * CONFIG.itemStats.bossDmgPerPower + affixTotals(s).bossDmg;
 }
@@ -85,66 +86,75 @@ function gainXp(s, amount) {
   return leveled;
 }
 
-// Registra um abate de UM inimigo: recompensas + progressão de zone. NÃO cura
-// (a cura acontece ao limpar o pack inteiro — packs maiores são mais perigosos).
+// --- Navegação do mapa ---
+// Entra numa região+dificuldade. Spawna o pack e cura o jogador.
+function enterRegion(s, regionIdx, diffIdx) {
+  s.region = regionIdx;
+  s.difficulty = diffIdx;
+  s.wave = 1;
+  s.killsInWave = 0;
+  s.enemies = [];
+  s.playerHp = playerMaxHp(s);
+  spawnPack(s);
+}
+
+// Registra o abate de UM inimigo: recompensas + progressão de wave.
 function registerKill(s, e) {
   e = e || s.enemies[0];
-  const zoneAtKill = s.zone; // captura antes de advanced mudar s.zone
+  const regionAtKill = s.region;
   const g = Math.round(e.goldReward * goldBonus(s));
   s.gold += g;
   const leveled = gainXp(s, e.xpReward * xpMultiplier(s));
   s.totalKills++;
-  const sh = Math.round(shardsOnKill(s.zone, e.isBoss) * shardBonus(s) * (e.shardMult || 1));
+  const sh = Math.round(shardsOnKill(s.region, s.difficulty, e.isBoss) * shardBonus(s) * (e.shardMult || 1));
   s.shards += sh;
-  s.killsInZone++;
+  s.killsInWave++;
 
-  // ── Zone Mastery: acumula kills permanentes nesta zona ───────────────────
-  const justMastered = recordMasteryKill(s, zoneAtKill);
+  // Region Mastery: acumula kills permanentes.
+  const justMastered = recordRegionMasteryKill(s, regionAtKill);
 
-  const needed = e.isBoss ? 1 : killsToClear(s.zone);
-  let advanced = false, walledCleared = false;
-  if (s.killsInZone >= needed) {
-    clearZoneProgress(s, zoneAtKill);
-    if (s.zone > s.maxZone) {            // limpou uma FRONTEIRA nova
-      s.maxZone = s.zone; walledCleared = true;
-      s.zone = s.maxZone + 1; advanced = true; // segue empurrando
-    }
-    // farmando uma zone já limpa (zone <= maxZone): fica, não é empurrado.
+  const result = {
+    type: "kill", name: e.name, tier: e.tier || "normal",
+    gold: g, shards: sh, leveled,
+    wasBoss: e.isBoss, justMastered,
+    masteredRegion: justMastered ? regionAtKill : null,
+    waveAdvanced: false, difficultyCleared: false,
+    region: s.region, difficulty: s.difficulty,
+  };
+
+  if (e.isBoss) {
+    // Boss derrotado → limpar dificuldade, desbloquear próximo conteúdo.
+    const wasCleared = isDifficultyCleared(s, s.region, s.difficulty);
+    clearCurrentDifficulty(s);
+    result.difficultyCleared = !wasCleared;
+    // Reset para wave 1 (modo farming).
+    s.wave = 1;
+    s.killsInWave = 0;
+  } else if (s.killsInWave >= killsPerWave()) {
+    // Wave limpa → avançar.
+    s.wave++;
+    s.killsInWave = 0;
+    result.waveAdvanced = true;
+    result.newWave = s.wave;
   }
-  // Avisa quando o tamanho do pack aumenta ao entrar em nova zona.
-  const packIncreased = advanced && packSize(s.zone) > packSize(zoneAtKill);
-  return { type: "kill", name: e.name, tier: e.tier || "normal", gold: g, shards: sh, leveled, advanced, walledCleared, packIncreased, zone: s.zone, wasBoss: e.isBoss, justMastered, masteredZone: justMastered ? zoneAtKill : null };
+  // Detecta aumento de pack na nova wave.
+  if (result.waveAdvanced) {
+    const oldPack = packSizeFor(s.difficulty, s.wave - 1, false);
+    const newPack = packSizeFor(s.difficulty, s.wave, isBossWave(s.wave, s.difficulty));
+    result.packIncreased = newPack > oldPack;
+  }
+  return result;
 }
 
-// Navegação manual de zone: entre a Zone 1 e a fronteira (accessibleDepth + 1).
-// accessibleDepth garante que o player possa navegar até sua fronteira real
-// mesmo que maxZone esteja baixo por bug de save.
-function changeZone(s, dir) {
-  const target = s.zone + dir;
-  if (target < 1 || target > accessibleDepth(s) + 1) return false;
-  saveZoneProgress(s);
-  s.zone = target;
-  restoreZoneProgress(s, target);
-  spawnPack(s);
-  s.playerHp = playerMaxHp(s);
-  return true;
-}
-
-// Morte: SEM PUNIÇÃO DE PROGRESSO. Recua para a zone segura mais próxima,
-// mas PRESERVA os kills acumulados em zoneProgress — o jogador retoma de onde parou.
-// Filosofia: morte é um "tente de novo", não uma punição que apaga esforço.
-// "Segura" = a zone anterior à parede. Se morrer de novo, recua mais 1.
-// Caso extremo (pós-ascensão em zona alta): recua até zone 1 se preciso.
+// Morte: SEM PUNIÇÃO. Recua para wave 1, cura, recomeça.
+// O jogador farma as waves fáceis e tenta de novo.
 function handleDeath(s) {
-  const wallZone = s.zone;
-  saveZoneProgress(s);
-  // Recua 1 zona abaixo da parede (não fica preso repetindo a mesma zona letal).
-  // Mínimo zone 1 para evitar ficar stuck quando o jogador está fraco demais.
-  s.zone = Math.max(1, s.zone - 1);
-  restoreZoneProgress(s, s.zone);
+  const diedOnWave = s.wave;
+  s.wave = 1;
+  s.killsInWave = 0;
   s.enemies = [];
   s.playerHp = playerMaxHp(s);
-  return { type: "death", wallZone, zone: s.zone };
+  return { type: "death", diedOnWave, region: s.region, difficulty: s.difficulty };
 }
 
 // Processa dt segundos de combate. Retorna lista de eventos para a UI.
@@ -153,15 +163,13 @@ function tick(s, dt) {
   if (s.playerHp === null) s.playerHp = playerMaxHp(s);
   const events = [];
 
-  // Você FOCA o inimigo da frente.
   const target = s.enemies[0];
-  // Helmet: Boss Damage multiplier applies only against boss enemies.
   let dmgToEnemy = playerDps(s) * dt;
   if (target.isBoss) dmgToEnemy *= bossDmgMult(s);
   target.hp -= dmgToEnemy;
   events.push({ type: "hit", amount: dmgToEnemy });
 
-  // TODOS os inimigos vivos do pack te atacam ao mesmo tempo.
+  // Todos os inimigos vivos atacam ao mesmo tempo.
   const incoming = s.enemies.reduce((a, e) => a + e.dmg, 0) * CONFIG.enemy.damageFactor * dt;
   s.playerHp -= incoming;
 
@@ -170,27 +178,25 @@ function tick(s, dt) {
   if (target.hp <= 0) {
     const ev = registerKill(s, target);
     events.push(ev);
-    s.enemies.shift(); // remove o morto
-    if (ev.advanced) s.enemies = []; // mudou de zone: descarta o pack antigo
-    if (s.enemies.length === 0) { s.playerHp = playerMaxHp(s); spawnPack(s); } // cura ao limpar o pack
+    s.enemies.shift();
+    if (s.enemies.length === 0) { s.playerHp = playerMaxHp(s); spawnPack(s); }
   }
   return events;
 }
 
 // --- Ascensão (prestígio) ---
 function canAscend(s) {
-  return s.level  >= CONFIG.ascension.firstReqLevel
-      && s.maxZone >= ascZoneReq(s);
+  return s.level >= CONFIG.ascension.firstReqLevel
+      && stagesCleared(s) >= ascStagesRequired(s);
 }
 
-// Snapshot de todo o status de ascensão — callers exibem, ninguém recalcula.
-// Centraliza a lógica que antes estava espalhada em main.js e ui.js.
 function getAscensionStatus(s) {
   const tier = heroTier(s);
   const t    = TIERS[tier];
   const nextT = tier + 1 < TIERS.length ? TIERS[tier + 1] : null;
-  const zoneReq = ascZoneReq(s);
   const isTierPromo = !!(nextT && s.ascensions + 1 === nextT.minAsc);
+  const reqStages = ascStagesRequired(s);
+  const cleared   = stagesCleared(s);
   return {
     tier,
     tierName: t.name,
@@ -199,49 +205,40 @@ function getAscensionStatus(s) {
     isTierPromo,
     canAscend: canAscend(s),
     ascensionNumber: s.ascensions + 1,
-    zoneReq,
+    stagesRequired: reqStages,
+    stagesCleared: cleared,
     levelReq: CONFIG.ascension.firstReqLevel,
     currentPowerMult: ascMultiplier(s),
-    compoundPreview: Math.pow(t.mult, 10), // ×X after 10 more
+    compoundPreview: Math.pow(t.mult, 10),
   };
 }
 
-// Ascender: incrementa ascensions, mantém equipamento e território limpo, reseta o resto.
-// maxZone é PRESERVADO — a calibração de fronteira só se aplica a zonas acima dele.
-// O jogador começa na zona 1: breezes pelas zonas triviais (power fantasy!)
-// e reconstrui nível/gold naturalmente. Padrão de idles como Clicker Heroes.
-// Retorna true em sucesso; false se os requisitos não foram atingidos.
 function ascend(s) {
   if (!canAscend(s)) return false;
-  const keepAscensions  = s.ascensions + 1;
-  const keepEquipped    = s.equipped;
-  const keepMaxZone     = s.maxZone;      // preserva território limpo
-  const keepZoneMastery = s.zoneMastery || {}; // kills permanentes — nunca resetam
+  const keepAscensions     = s.ascensions + 1;
+  const keepEquipped       = s.equipped;
+  const keepRegionProgress = s.regionProgress || { 0: [] };
+  const keepRegionMastery  = s.regionMastery  || {};
   Object.assign(s, defaultState());
-  s.ascensions  = keepAscensions;
-  s.equipped    = keepEquipped;
-  s.maxZone     = keepMaxZone;
-  s.zone        = 1;                   // recomeça do início — zonas triviais voam, fronteira = desafio
-  s.zoneMastery = keepZoneMastery;     // bônus de farming sobrevivem à ascensão
-  // zoneProgress NÃO é preservado — pertence à run atual, não ao progresso permanente
+  s.ascensions     = keepAscensions;
+  s.equipped       = keepEquipped;
+  s.regionProgress = keepRegionProgress;
+  s.regionMastery  = keepRegionMastery;
   return true;
 }
 
-// Estima os ganhos enquanto offline, de forma BARATA (fórmula, sem rodar ticks).
-// Farma na zone segura (onde o jogador estava, no máximo até a maxZone).
+// Estima os ganhos enquanto offline (fórmula barata, sem rodar ticks).
 function computeOfflineGains(s, elapsedSec) {
   const { efficiency, capHours } = offlineConfig(s);
   const seconds = Math.max(0, Math.min(elapsedSec, capHours * 3600));
-  const farmZone = Math.max(1, Math.min(s.zone, s.maxZone));
-  const st = enemyStats(farmZone);
-  // Inimigos offline também escalam com ascensões (mesma dificuldade do jogo ao vivo).
+  const stats = enemyStatsFor(s.region, s.difficulty, 1); // wave 1 do local atual
   const ascMult = Math.pow(CONFIG.enemy.ascGrowth, s.ascensions);
-  const killsPerSec = playerDps(s) / Math.max(1, st.hp * ascMult);
+  const killsPerSec = playerDps(s) / Math.max(1, stats.hp * ascMult);
   const kills = killsPerSec * seconds * efficiency;
-  const gold = Math.round(kills * st.gold * goldBonus(s));
-  const xp = Math.round(kills * st.xp * xpMultiplier(s));
-  const shards = Math.round(kills * shardsOnKill(farmZone, false) * shardBonus(s));
-  return { seconds, kills: Math.floor(kills), gold, xp, shards, farmZone };
+  const gold   = Math.round(kills * stats.gold * goldBonus(s));
+  const xp     = Math.round(kills * stats.xp * xpMultiplier(s));
+  const shards = Math.round(kills * shardsOnKill(s.region, s.difficulty, false) * shardBonus(s));
+  return { seconds, kills: Math.floor(kills), gold, xp, shards, region: s.region };
 }
 
 if (typeof module !== "undefined") {
@@ -250,7 +247,7 @@ if (typeof module !== "undefined") {
     playerDamage, playerMaxHp, attackSpeed, playerDps,
     goldBonus, xpMultiplier, shardBonus, bossDmgMult,
     xpToNext, gainXp,
-    registerKill, changeZone, handleDeath, tick,
+    enterRegion, registerKill, handleDeath, tick,
     canAscend, getAscensionStatus, ascend,
     computeOfflineGains,
   };

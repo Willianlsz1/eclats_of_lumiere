@@ -1,192 +1,173 @@
-// ===== Zones: inimigos, regiões, mastery, packs =====
+// ===== Regions: inimigos, waves, packs, mastery, desbloqueio =====
 // Tudo sobre o mundo e seus habitantes. Depende de data.js (CONFIG, REGIONS,
-// ZONE_NAMES) e progression.js (accessibleDepth para calibração de fronteira).
-// makeEnemy() também usa playerMaxHp() (de game.js) — resolvido em call-time
-// via scope global, sem dependência circular em load-time.
+// DIFFICULTIES) e progression.js (totalPowerMult para calibração).
 
-// --- Escala de inimigos (por zone — ver docs/adr/0001) ---
-function enemyStats(zone) {
-  const E = CONFIG.enemy;
-  const d = zone - 1;
-  // ── Portões de região (estilo Gaiadon) ────────────────────────────────────
-  // A cada CONFIG.zonesPerRegion zonas, todos os stats dos inimigos crescem
-  // regionPowerMult×, criando uma parede de progressão entre regiões.
-  // Recompensas (gold, xp) escalam proporcionalmente — regiões mais difíceis
-  // são mais lucrativas.
-  const regionIndex = Math.floor(d / CONFIG.zonesPerRegion);
-  const regionMult  = Math.pow(E.regionPowerMult, regionIndex);
+// --- Helpers de região/dificuldade ---
+function getRegion(s)     { return REGIONS[s.region]; }
+function getDifficulty(s) { return DIFFICULTIES[s.difficulty]; }
+function totalWaves(diffIdx) { return DIFFICULTIES[diffIdx].waves; }
+function isBossWave(wave, diffIdx) { return wave >= totalWaves(diffIdx); }
+
+// --- Escala de inimigos (por região + dificuldade + wave) ---
+function enemyStatsFor(regionIdx, diffIdx, wave) {
+  const region = REGIONS[regionIdx];
+  const diff   = DIFFICULTIES[diffIdx];
+  const E      = CONFIG.enemy;
+  const waveMult = Math.pow(E.waveGrowth, wave - 1);
+  const power    = region.basePower * waveMult;
   return {
-    hp:   Math.round(E.baseHp   * Math.pow(E.hpGrowth,  d) * regionMult),
-    dmg:  Math.round(E.baseDmg  * Math.pow(E.dmgGrowth, d) * regionMult),
-    gold: Math.round(E.baseGold * Math.pow(E.goldGrowth, d) * regionMult),
-    xp:   Math.round(E.baseXp   * Math.pow(E.xpGrowth,  d) * regionMult),
+    hp:   Math.round(power * E.hpFactor   * diff.statMult),
+    dmg:  Math.round(power * E.dmgFactor  * diff.statMult),
+    gold: Math.round(power * E.goldFactor * diff.dropMult),
+    xp:   Math.round(power * E.xpFactor   * diff.dropMult),
   };
 }
-function regionFor(zone) {
-  const i = Math.floor((zone - 1) / CONFIG.zonesPerRegion) % REGIONS.length;
-  return REGIONS[i];
-}
-function isBossZone(zone) { return zone % CONFIG.boss.everyZones === 0; }
-// Retorna o nome narrativo de uma zona (fallback: "Zone X" para zonas além do array).
-function zoneName(zone) {
-  const name = ZONE_NAMES[zone - 1];
-  return name ? name : `Zone ${zone}`;
-}
 
-// --- Zone Mastery ---
-// Kills necessários para masterizar a zona (cresce linearmente com a profundidade).
-function killsToMaster(zone) {
-  return CONFIG.mastery.killsBase + (zone - 1) * CONFIG.mastery.killsPerZone;
+// --- Kills por wave (flat) ---
+function killsPerWave() { return CONFIG.wave.killsPerWave; }
+
+// --- Region Mastery ---
+function killsToMasterRegion(regionIdx) {
+  return CONFIG.mastery.killsBase + regionIdx * CONFIG.mastery.killsPerRegion;
 }
-// Kills acumulados do jogador na zona (0 se nunca tocou).
-function masteryKills(s, zone) {
-  return (s.zoneMastery || {})[zone] || 0;
+function regionMasteryKills(s, regionIdx) {
+  return (s.regionMastery || {})[regionIdx] || 0;
 }
-// Verdadeiro se a zona já foi masterizada.
-function isZoneMastered(s, zone) {
-  return masteryKills(s, zone) >= killsToMaster(zone);
+function isRegionMastered(s, regionIdx) {
+  return regionMasteryKills(s, regionIdx) >= killsToMasterRegion(regionIdx);
 }
-// Número de zonas masterizadas (para calcular o bônus total).
-// Boss zones são excluídas — têm só 1 kill por visita e a UI não mostra mastery nelas.
-function masteredZoneCount(s) {
-  if (!s.zoneMastery) return 0;
+function masteredRegionCount(s) {
+  if (!s.regionMastery) return 0;
   let n = 0;
-  for (const [z, k] of Object.entries(s.zoneMastery)) {
-    const zone = Number(z);
-    if (!isBossZone(zone) && k >= killsToMaster(zone)) n++;
+  for (let i = 0; i < REGIONS.length; i++) {
+    if (isRegionMastered(s, i)) n++;
   }
   return n;
 }
-// Bônus de eficiência econômica: +0.5% de gold/xp/shard por zona masterizada.
-// NÃO entra em totalPowerMult (para não afetar calibração de fronteira nem custo de gear).
-function zoneMasteryBonus(s) {
-  return 1 + masteredZoneCount(s) * CONFIG.mastery.bonusPerZone;
-}
-
-// --- Zone Progress tracking ---
-// Centraliza save/restore de killsInZone no dict zoneProgress.
-// Antes isso era feito manualmente em changeZone(), handleDeath() e registerKill().
-function saveZoneProgress(s) {
-  if (!s.zoneProgress) s.zoneProgress = {};
-  s.zoneProgress[s.zone] = s.killsInZone;
-}
-function restoreZoneProgress(s, zone) {
-  s.killsInZone = (s.zoneProgress || {})[zone] || 0;
-}
-function clearZoneProgress(s, zone) {
-  if (!s.zoneProgress) s.zoneProgress = {};
-  s.zoneProgress[zone] = 0;
-  s.killsInZone = 0;
+// Bônus de eficiência econômica por regiões masterizadas.
+function regionMasteryBonus(s) {
+  return 1 + masteredRegionCount(s) * CONFIG.mastery.bonusPerRegion;
 }
 // Registra 1 kill no mastery permanente. Retorna true se ACABOU DE masterizar.
-function recordMasteryKill(s, zone) {
-  if (!s.zoneMastery) s.zoneMastery = {};
-  const wasMastered = isZoneMastered(s, zone);
-  s.zoneMastery[zone] = (s.zoneMastery[zone] || 0) + 1;
-  return !wasMastered && isZoneMastered(s, zone);
+function recordRegionMasteryKill(s, regionIdx) {
+  if (!s.regionMastery) s.regionMastery = {};
+  const wasMastered = isRegionMastered(s, regionIdx);
+  s.regionMastery[regionIdx] = (s.regionMastery[regionIdx] || 0) + 1;
+  return !wasMastered && isRegionMastered(s, regionIdx);
 }
-// Adiciona kills em bloco ao mastery (para offline gains).
-function addMasteryKills(s, zone, count) {
-  if (!s.zoneMastery) s.zoneMastery = {};
-  s.zoneMastery[zone] = (s.zoneMastery[zone] || 0) + count;
-}
-
-// --- Abates e packs ---
-// Abates para limpar uma zone — cresce com a profundidade.
-function killsToClear(zone) {
-  return CONFIG.enemy.killsBase + Math.floor((zone - 1) * CONFIG.enemy.killsPerZone);
+// Adiciona kills em bloco (para offline gains).
+function addRegionMasteryKills(s, regionIdx, count) {
+  if (!s.regionMastery) s.regionMastery = {};
+  s.regionMastery[regionIdx] = (s.regionMastery[regionIdx] || 0) + count;
 }
 
-// Quantos inimigos aparecem juntos numa zone (Boss vem sempre sozinho).
-function packSize(zone) {
-  if (isBossZone(zone)) return 1;
+// --- Region/Difficulty unlock & clear ---
+function isRegionUnlocked(s, regionIdx) {
+  return regionIdx.toString() in (s.regionProgress || {});
+}
+function isDifficultyUnlocked(s, regionIdx, diffIdx) {
+  if (!isRegionUnlocked(s, regionIdx)) return false;
+  if (diffIdx === 0) return true;
+  const cleared = s.regionProgress[regionIdx] || [];
+  return cleared.includes(diffIdx - 1);
+}
+function isDifficultyCleared(s, regionIdx, diffIdx) {
+  const cleared = (s.regionProgress || {})[regionIdx] || [];
+  return cleared.includes(diffIdx);
+}
+
+// Marca a dificuldade atual como limpa e desbloqueia o próximo conteúdo.
+function clearCurrentDifficulty(s) {
+  if (!s.regionProgress) s.regionProgress = { 0: [] };
+  const progress = s.regionProgress[s.region] || [];
+  if (!progress.includes(s.difficulty)) {
+    progress.push(s.difficulty);
+    s.regionProgress[s.region] = progress;
+  }
+  // Limpar Normal de uma região desbloqueia a próxima região.
+  if (s.difficulty === 0 && s.region + 1 < REGIONS.length) {
+    if (!((s.region + 1).toString() in s.regionProgress)) {
+      s.regionProgress[s.region + 1] = [];
+    }
+  }
+}
+
+// --- Pack size (baseado em dificuldade + wave) ---
+function packSizeFor(diffIdx, wave, isBoss) {
+  if (isBoss) return 1;
   const P = CONFIG.pack;
-  return Math.min(P.max, P.base + Math.floor((zone - 1) / P.perZones));
+  const base = P.baseByDifficulty[diffIdx] || 1;
+  const max  = P.maxByDifficulty[diffIdx]  || 3;
+  return Math.min(max, base + Math.floor((wave - 1) / P.growthPerWave));
 }
 
-// Sorteia o tier de um inimigo comum (normal / elite / champion).
-// Separado de makeEnemy para facilitar testes unitários.
-function getEnemyTier(zone) {
+// Sorteia o tier de um inimigo (normal / elite / champion).
+// Depende da dificuldade: Normal = sem especiais, Hard = elites, Nightmare = elites + champions.
+function getEnemyTier(diffIdx) {
   const E = CONFIG.elite;
-  if (zone >= E.championMinZone && Math.random() < E.championChance) return "champion";
-  if (zone >= E.eliteMinZone    && Math.random() < E.eliteChance)    return "elite";
+  if (diffIdx >= E.championMinDifficulty && Math.random() < E.championChance) return "champion";
+  if (diffIdx >= E.eliteMinDifficulty    && Math.random() < E.eliteChance)    return "elite";
   return "normal";
 }
 
-// Cria UM inimigo (ou Boss) da zone.
-// s (opcional): estado do jogador — ativa escala por ascensão e calibração de fronteira.
-function makeEnemy(zone, s) {
-  const region = regionFor(zone);
-  const stats  = enemyStats(zone);
+// Cria UM inimigo (ou Boss) para o estado atual do jogador.
+function makeEnemy(s) {
+  const region = REGIONS[s.region];
+  const stats  = enemyStatsFor(s.region, s.difficulty, s.wave);
   const E      = CONFIG.enemy;
 
-  // ── Escala com ascensões: HP e DMG crescem 6% por ascensão ──────────────
-  const asc     = s ? s.ascensions : 0;
-  const ascMult = Math.pow(E.ascGrowth, asc);
-  let hpFinal   = Math.round(stats.hp  * ascMult);
-  let dmgFinal  = Math.round(stats.dmg * ascMult);
+  // Escala com ascensões: HP e DMG crescem 6% por ascensão.
+  const ascMult  = Math.pow(E.ascGrowth, s.ascensions);
+  let hpFinal  = Math.round(stats.hp  * ascMult);
+  let dmgFinal = Math.round(stats.dmg * ascMult);
 
-  // ── Calibração de fronteira (só além da profundidade acessível) ──────────
-  // Usa accessibleDepth, NÃO s.maxZone, para suportar saves com maxZone
-  // resetado erroneamente — o histórico de ascensões recompõe a profundidade.
-  //
-  // SOMENTE O DANO é calibrado — HP usa escala natural.
-  // Por quê não calibrar HP? Se hpFinal = playerDps × K, upgrades de gear
-  // fazem os inimigos escalarem junto, tornando os upgrades inúteis para
-  // avançar zonas — um rubber-band que quebra o loop de progressão.
-  // Com HP natural, gear upgrades REDUZEM o tempo de kill → mais kills
-  // por "vida" → o jogador realmente rompe a parede com esforço.
-  // O dano calibrado previne morte instantânea (dá tempo de reagir).
-  if (s && zone > accessibleDepth(s)) {
-    const targetPackDps = playerMaxHp(s) / E.frontierDangerSec;
-    dmgFinal = Math.ceil(targetPackDps / (packSize(zone) * E.damageFactor));
-    // hpFinal: mantém escala natural (não substitui)
-  }
-
-  if (isBossZone(zone)) {
+  if (isBossWave(s.wave, s.difficulty)) {
     const B  = CONFIG.boss;
     const hp = hpFinal * B.hpMult;
-    return { name: region.enemies[0] + " Boss", isBoss: true, tier: "normal",
+    return { name: region.boss, isBoss: true, tier: "normal",
              hp, maxHp: hp, dmg: dmgFinal,
              goldReward: stats.gold * B.goldMult, xpReward: stats.xp * B.xpMult,
              shardMult: B.shardMult };
   }
 
-  // ── Elite & Champion spawn ────────────────────────────────────────────────
-  const tierKey = getEnemyTier(zone);
-  const tm      = CONFIG.elite.tiers[tierKey]; // { hp, dmg, reward }
-
-  const name = region.enemies[Math.floor(Math.random() * region.enemies.length)];
+  // Elite & Champion spawn.
+  const tierKey = getEnemyTier(s.difficulty);
+  const tm      = CONFIG.elite.tiers[tierKey];
+  const name    = region.enemies[Math.floor(Math.random() * region.enemies.length)];
   const finalHp  = Math.round(hpFinal  * tm.hp);
   const finalDmg = Math.round(dmgFinal * tm.dmg);
   return { name, isBoss: false, tier: tierKey,
            hp: finalHp, maxHp: finalHp, dmg: finalDmg,
            goldReward: Math.round(stats.gold * tm.reward),
            xpReward:   Math.round(stats.xp   * tm.reward),
-           shardMult:  tm.reward }; // usado em registerKill para escalar shards
+           shardMult:  tm.reward };
 }
 
-// Spawna um pack novo na zone atual.
+// Spawna um pack novo na wave atual.
 function spawnPack(s) {
-  const n = packSize(s.zone);
+  const boss = isBossWave(s.wave, s.difficulty);
+  const n = packSizeFor(s.difficulty, s.wave, boss);
   s.enemies = [];
-  for (let i = 0; i < n; i++) s.enemies.push(makeEnemy(s.zone, s));
+  for (let i = 0; i < n; i++) s.enemies.push(makeEnemy(s));
   return s.enemies;
 }
 
 // --- Shards (drop) ---
-function shardsOnKill(zone, isBoss) {
-  let n = Math.floor(CONFIG.shards.basePerKill + zone * CONFIG.shards.perZone);
-  if (isBoss) n *= CONFIG.shards.bossMult;
+function shardsOnKill(regionIdx, diffIdx, isBoss) {
+  let n = Math.floor(CONFIG.shards.basePerKill + regionIdx * CONFIG.shards.perRegion);
+  n = Math.round(n * DIFFICULTIES[diffIdx].dropMult);
+  if (isBoss) n *= CONFIG.boss.shardMult;
   return Math.max(1, n);
 }
 
 if (typeof module !== "undefined") {
   module.exports = {
-    enemyStats, regionFor, isBossZone, zoneName,
-    killsToClear, killsToMaster, masteryKills, isZoneMastered, masteredZoneCount, zoneMasteryBonus,
-    saveZoneProgress, restoreZoneProgress, clearZoneProgress, recordMasteryKill, addMasteryKills,
-    packSize, getEnemyTier, makeEnemy, spawnPack,
+    getRegion, getDifficulty, totalWaves, isBossWave,
+    enemyStatsFor, killsPerWave,
+    killsToMasterRegion, regionMasteryKills, isRegionMastered, masteredRegionCount,
+    regionMasteryBonus, recordRegionMasteryKill, addRegionMasteryKills,
+    isRegionUnlocked, isDifficultyUnlocked, isDifficultyCleared, clearCurrentDifficulty,
+    packSizeFor, getEnemyTier, makeEnemy, spawnPack,
     shardsOnKill,
   };
 }
