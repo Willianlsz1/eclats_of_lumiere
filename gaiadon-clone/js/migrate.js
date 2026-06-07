@@ -1,14 +1,9 @@
 // ===== Save migration chain =====
 // Each function upgrades the save state from one schema version to the next.
-// Applied in sequence on every load — all migrations must be idempotent
-// (safe to run on an already-migrated save).
-//
-// Adding a new migration: append one function to MIGRATIONS. load() never changes.
+// Applied in sequence on every load — all migrations must be idempotent.
 
 const MIGRATIONS = [
   // v0 → v1: normalise equipped shape.
-  // Old saves may have rarity as a string, item as an object, or missing fields.
-  // Discard anything invalid and fall back to { rarity: 0, level: 1 }.
   function normaliseEquipped(s) {
     const equipped = {};
     for (const slot of SLOTS) {
@@ -23,43 +18,81 @@ const MIGRATIONS = [
     return s;
   },
 
-  // v1 → v2: remove obsolete Essence fields from the early prototype.
+  // v1 → v2: remove obsolete Essence fields.
   function removeEssenceFields(s) {
     delete s.asc;
     delete s.essence;
     return s;
   },
 
-  // v2 → v3: restaura maxZone para jogadores presos após ascensão.
-  // Bug: ascend() resetava maxZone=0, fazendo a calibração de fronteira disparar em
-  // toda zona (incluindo zona 1) — inimigos com HP de quadrilhões logo no início.
-  // Se o player conseguiu avançar 1-2 zonas após o bug, maxZone pode ser 1 ou 2.
-  // A condição antiga (=== 0) não capturava esses casos.
-  // Fórmula: a ascensão N exigia ter limpado zona (firstReqZone + (N-1)*zoneIncrement).
-  // Com firstReqZone=5 e zoneIncrement=1: minZone esperado = 5 + (ascensions - 1).
-  // Condição corrigida: qualquer maxZone abaixo do mínimo esperado é tratado.
-  function restoreMaxZoneAfterAscension(s) {
-    const expectedMin = s.ascensions > 0 ? 5 + (s.ascensions - 1) : 0;
-    if (s.ascensions > 0 && s.maxZone < expectedMin) {
-      s.maxZone = expectedMin;
-      s.zone    = s.maxZone + 1; // coloca direto na fronteira
+  // v2 → v3: migra do sistema de zonas lineares para o mapa-mundo.
+  // Converte zone/maxZone em region/difficulty/wave + regionProgress.
+  function migrateToWorldMap(s) {
+    // Se já tem regionProgress, já está no novo formato.
+    if (s.regionProgress && s.region !== undefined && s.zone === undefined) return s;
+
+    // Só migra se tinha o campo zone do sistema antigo.
+    if (s.zone !== undefined || s.maxZone !== undefined) {
+      const oldMaxZone = s.maxZone || 0;
+
+      // Determina região e wave baseado na zona antiga.
+      const oldZone = s.zone || 1;
+      const regionIdx = Math.min(Math.floor((oldZone - 1) / 10), REGIONS.length - 1);
+
+      s.region = regionIdx;
+      s.difficulty = 0;
+      s.wave = 1;
+      s.killsInWave = 0;
+
+      // Reconstrói regionProgress a partir de maxZone.
+      // Cada 10 zonas = 1 região no Normal.
+      s.regionProgress = { 0: [] };
+      for (let r = 0; r < REGIONS.length; r++) {
+        const bossZone = (r + 1) * 10;
+        if (oldMaxZone >= bossZone) {
+          // Limpou o boss desta região no Normal.
+          s.regionProgress[r] = [0];
+          // Desbloqueia a próxima região.
+          if (r + 1 < REGIONS.length && !((r + 1).toString() in s.regionProgress)) {
+            s.regionProgress[r + 1] = [];
+          }
+        } else if (oldMaxZone >= r * 10 + 1) {
+          // Chegou nesta região mas não limpou o boss.
+          if (!(r.toString() in s.regionProgress)) {
+            s.regionProgress[r] = [];
+          }
+        }
+      }
+
+      // Converte zoneMastery (por zona) em regionMastery (por região).
+      s.regionMastery = {};
+      if (s.zoneMastery) {
+        for (const [z, k] of Object.entries(s.zoneMastery)) {
+          const rIdx = Math.floor((Number(z) - 1) / 10) % REGIONS.length;
+          s.regionMastery[rIdx] = (s.regionMastery[rIdx] || 0) + k;
+        }
+      }
+
+      // Remove campos obsoletos.
+      delete s.zone;
+      delete s.maxZone;
+      delete s.killsInZone;
+      delete s.zoneProgress;
+      delete s.zoneMastery;
     }
+
+    // Garante que os campos existem (para saves completamente novos).
+    if (!s.regionProgress) s.regionProgress = { 0: [] };
+    if (!s.regionMastery)  s.regionMastery  = {};
+    if (s.region === undefined)     s.region = 0;
+    if (s.difficulty === undefined) s.difficulty = 0;
+    if (s.wave === undefined)       s.wave = 1;
+    if (s.killsInWave === undefined) s.killsInWave = 0;
+
     return s;
   },
-
-  // v3 → v4: adiciona zoneMastery e zoneProgress para saves sem esses campos.
-  // zoneMastery: histórico permanente de kills por zona (inicia em {}).
-  // zoneProgress: progresso de limpeza por zona na run atual (inicia em {}).
-  function addZoneMastery(s) {
-    if (!s.zoneMastery)   s.zoneMastery   = {};
-    if (!s.zoneProgress)  s.zoneProgress  = {};
-    return s;
-  },
-
-  // Future migrations go here ↓
 ];
 
-// Apply every migration in sequence and return the upgraded state.
 function migrate(state) {
   return MIGRATIONS.reduce((s, fn) => fn(s), state);
 }
