@@ -40,7 +40,12 @@ function affixTotals(s) {
   }
   return t;
 }
-function critRate(s) { return Math.min(1, affixTotals(s).critRate); }
+function critRate(s) {
+  var base = affixTotals(s).critRate;
+  // LCK gold stat: +0.5% crit rate per level (goldStatBonus pode não existir no load)
+  if (typeof goldStatBonus === "function") base += goldStatBonus(s, "lck");
+  return Math.min(1, base);
+}
 // Gloves: base stat adds Crit Damage directly via itemPower conversion.
 function critMult(s) {
   return CONFIG.combat.baseCritMult + affixTotals(s).critDmg
@@ -49,7 +54,9 @@ function critMult(s) {
 // Crítico como valor esperado (sem RNG por tick): multiplicador médio do DPS.
 function critExpectedMult(s) {
   const t = affixTotals(s);
-  const rate = Math.min(1, t.critRate);
+  var baseRate = t.critRate;
+  if (typeof goldStatBonus === "function") baseRate += goldStatBonus(s, "lck");
+  const rate = Math.min(1, baseRate);
   const mult = CONFIG.combat.baseCritMult + t.critDmg
              + slotPower(s, "Gloves") * CONFIG.itemStats.critDmgPerPower;
   return 1 + rate * (mult - 1);

@@ -69,7 +69,7 @@ function bindButtons() {
       document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
       btn.classList.add("active");
       document.getElementById("view-" + btn.dataset.view).classList.add("active");
-      const VIEW_CAT = { stats: "hero", ascension: "ascension", equipment: "equipment", map: "map" };
+      const VIEW_CAT = { stats: "hero", ascension: "ascension", equipment: "equipment", map: "map", train: "goldStats" };
       const cat = VIEW_CAT[btn.dataset.view];
       if (cat) scheduleRender(new Set([cat]), state);
     });

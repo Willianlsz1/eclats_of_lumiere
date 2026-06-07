@@ -32,6 +32,9 @@ function defaultState() {
       Helmet: { rarity: 0, level: 1 },
     },
 
+    // Gold Stats: 6 stats compráveis com gold (resetam na ascensão).
+    goldStats: { str: 0, vit: 0, agi: 0, lck: 0, frt: 0, wis: 0 },
+
     enemies: [],
     playerHp: null,
     lastSeen: null,
@@ -41,11 +44,65 @@ function defaultState() {
   };
 }
 
-// --- Stats do jogador (combinam equipment + progression) ---
+// ═══════════════════════════════════════════════════════════════════════
+// Gold Stats — 6 stats compráveis com gold
+// ═══════════════════════════════════════════════════════════════════════
+// Custo: baseCost × (level+1)^exponent
+// Bônus: perLevel × level (aditivo, antes dos multiplicadores)
+// Resetam na ascensão; futuramente amplificados por Artifacts (Phase 6).
+
+function _goldStatDef(statId) {
+  return GOLD_STATS.find(function(g) { return g.id === statId; });
+}
+
+function goldStatCost(statId, level) {
+  var def = _goldStatDef(statId);
+  if (!def) return Infinity;
+  return Math.round(def.baseCost * Math.pow(level + 1, def.exponent));
+}
+
+function goldStatBonus(s, statId) {
+  var def = _goldStatDef(statId);
+  if (!def) return 0;
+  var level = (s.goldStats && s.goldStats[statId]) || 0;
+  return def.perLevel * level;
+}
+
+function buyGoldStat(s, statId) {
+  var level = (s.goldStats && s.goldStats[statId]) || 0;
+  var cost = goldStatCost(statId, level);
+  if (s.gold < cost) return false;
+  s.gold -= cost;
+  if (!s.goldStats) s.goldStats = {};
+  s.goldStats[statId] = level + 1;
+  return true;
+}
+
+function buyGoldStatMax(s, statId) {
+  var count = 0;
+  while (buyGoldStat(s, statId)) count++;
+  return count;
+}
+
+function buyGoldStatMaxPreview(s, statId) {
+  var level = (s.goldStats && s.goldStats[statId]) || 0;
+  var budget = s.gold;
+  var count = 0, spent = 0;
+  while (true) {
+    var cost = goldStatCost(statId, level + count);
+    if (spent + cost > budget) break;
+    spent += cost;
+    count++;
+  }
+  return { count: count, spent: spent };
+}
+
+// --- Stats do jogador (combinam goldStats + equipment + progression) ---
 function playerDamage(s) {
   const P = CONFIG.player;
   let base = P.baseDamage + (s.level - 1) * damagePerLevel(s);
   base += slotPower(s, "Weapon");
+  base += goldStatBonus(s, "str");            // STR: +2 dmg per level
   base *= (1 + affixTotals(s).dmgMult);
   return Math.round(base * totalPowerMult(s));
 }
@@ -53,20 +110,25 @@ function playerMaxHp(s) {
   const P = CONFIG.player;
   let base = P.baseHp + (s.level - 1) * hpPerLevel(s);
   base += slotPower(s, "Armor") * CONFIG.itemStats.healthPerPower;
+  base += goldStatBonus(s, "vit");            // VIT: +10 hp per level
   base *= (1 + affixTotals(s).hpMult);
   return Math.round(base * totalPowerMult(s));
 }
 function attackSpeed(s) {
-  return CONFIG.player.baseAttackSpeed + slotPower(s, "Amulet") * CONFIG.itemStats.attackSpeedPerPower;
+  return CONFIG.player.baseAttackSpeed
+    + slotPower(s, "Amulet") * CONFIG.itemStats.attackSpeedPerPower
+    + goldStatBonus(s, "agi");                // AGI: +0.03 atk speed per level
 }
 function playerDps(s) { return playerDamage(s) * attackSpeed(s) * critExpectedMult(s); }
 function goldBonus(s) {
   let b = 1 + slotPower(s, "Amulet") * CONFIG.itemStats.goldFindPerPower;
   b *= (1 + affixTotals(s).goldMult);
+  b *= (1 + goldStatBonus(s, "frt"));        // FRT: +5% gold per level
   return b * totalPowerMult(s) * regionMasteryBonus(s);
 }
 function xpMultiplier(s) {
-  return totalPowerMult(s) * (1 + affixTotals(s).xpMult) * regionMasteryBonus(s);
+  var base = totalPowerMult(s) * (1 + affixTotals(s).xpMult) * regionMasteryBonus(s);
+  return base * (1 + goldStatBonus(s, "wis")); // WIS: +5% xp per level
 }
 function shardBonus(s) {
   let b = 1 + slotPower(s, "Ring") * CONFIG.itemStats.shardFindPerPower;
@@ -244,6 +306,7 @@ function computeOfflineGains(s, elapsedSec) {
 if (typeof module !== "undefined") {
   module.exports = {
     defaultState,
+    goldStatCost, goldStatBonus, buyGoldStat, buyGoldStatMax, buyGoldStatMaxPreview,
     playerDamage, playerMaxHp, attackSpeed, playerDps,
     goldBonus, xpMultiplier, shardBonus, bossDmgMult,
     xpToNext, gainXp,

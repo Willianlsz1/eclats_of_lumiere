@@ -203,6 +203,56 @@ function renderMap(s) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════
+// Gold Stats View (Train)
+// ═══════════════════════════════════════════════════════════════════════
+function renderGoldStats(s) {
+  var el = $("goldStatsGrid");
+  if (!el) return;
+
+  el.innerHTML = GOLD_STATS.map(function(def) {
+    var level = (s.goldStats && s.goldStats[def.id]) || 0;
+    var cost = goldStatCost(def.id, level);
+    var canBuy = s.gold >= cost;
+    var bonus = goldStatBonus(s, def.id);
+    var preview = buyGoldStatMaxPreview(s, def.id);
+
+    // Formata o bônus conforme o tipo de stat.
+    var bonusStr;
+    if (def.stat === "critRate")   bonusStr = "+" + (bonus * 100).toFixed(1) + "% crit";
+    else if (def.stat === "goldMult" || def.stat === "xpMult")
+      bonusStr = "+" + (bonus * 100).toFixed(0) + "%";
+    else if (def.stat === "atkSpeed") bonusStr = "+" + bonus.toFixed(2) + " speed";
+    else bonusStr = "+" + fmt(bonus);
+
+    return '<div class="gs-card">'
+      + '<div class="gs-header">'
+      +   '<span class="gs-icon">' + def.icon + '</span>'
+      +   '<span class="gs-name">' + def.name + '</span>'
+      +   '<span class="gs-level">Lv. ' + level + '</span>'
+      + '</div>'
+      + '<div class="gs-desc">' + def.desc + '</div>'
+      + '<div class="gs-bonus">Current: ' + bonusStr + '</div>'
+      + '<div class="gs-actions">'
+      +   '<button class="gs-buy-btn" onclick="buyGoldStat(state,\'' + def.id + '\');renderAfterBuy()"'
+      +     (canBuy ? '' : ' disabled') + '>'
+      +     'Buy +1<span class="gs-cost">💰 ' + fmt(cost) + '</span>'
+      +   '</button>'
+      +   '<button class="gs-buy-btn" onclick="buyGoldStatMax(state,\'' + def.id + '\');renderAfterBuy()"'
+      +     (preview.count > 0 ? '' : ' disabled') + '>'
+      +     'Buy Max (' + preview.count + ')<span class="gs-cost">💰 ' + fmt(preview.spent) + '</span>'
+      +   '</button>'
+      + '</div>'
+      + '</div>';
+  }).join("");
+}
+
+// Helper: re-render tudo que importa após compra de gold stat.
+function renderAfterBuy() {
+  scheduleRender(new Set(["resources", "goldStats", "hero"]), state);
+}
+
+
+// ═══════════════════════════════════════════════════════════════════════
 // Stats View (Character)
 // ═══════════════════════════════════════════════════════════════════════
 function renderHero(s) {

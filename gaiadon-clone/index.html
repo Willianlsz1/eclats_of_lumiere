@@ -13,6 +13,7 @@
   <link rel="stylesheet" href="css/combat.css">
   <link rel="stylesheet" href="css/map.css">
   <link rel="stylesheet" href="css/equipment.css">
+  <link rel="stylesheet" href="css/gold-stats.css">
   <link rel="stylesheet" href="css/stats.css">
   <link rel="stylesheet" href="css/ascension.css">
 </head>
@@ -31,6 +32,7 @@
     <div class="nav-views">
       <button class="nav-btn active" data-view="combat"    title="Combat">⚔️<small>Combat</small></button>
       <button class="nav-btn"        data-view="map"       title="World Map">🗺️<small>Map</small></button>
+      <button class="nav-btn"        data-view="train"     title="Gold Stats">💪<small>Train</small></button>
       <button class="nav-btn"        data-view="stats"     title="Character">🗡️<small>Stats</small></button>
       <button class="nav-btn"        data-view="ascension" title="Ascension">🔮<small>Ascend</small></button>
       <button class="nav-btn"        data-view="equipment" title="Equipment">🛡️<small>Gear</small></button>
@@ -76,6 +78,15 @@
         <h2>🗺️ World Map</h2>
         <p class="panel-hint">Select a region and difficulty to enter combat. Clear the boss to unlock new paths.</p>
         <div class="map-grid" id="mapGrid"></div>
+      </section>
+    </div>
+
+    <!-- VIEW: Gold Stats (Train) -->
+    <div id="view-train" class="view">
+      <section class="panel">
+        <h2>💪 Training</h2>
+        <p class="panel-hint">Spend 💰 Gold to train your stats. These reset on Ascension but grow stronger each run.</p>
+        <div class="gold-stats-grid" id="goldStatsGrid"></div>
       </section>
     </div>
 

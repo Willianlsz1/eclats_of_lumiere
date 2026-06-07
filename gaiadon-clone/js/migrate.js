@@ -91,6 +91,18 @@ const MIGRATIONS = [
 
     return s;
   },
+  // v3 → v4: adiciona goldStats a saves antigos que não tinham.
+  function addGoldStats(s) {
+    if (!s.goldStats) {
+      s.goldStats = { str: 0, vit: 0, agi: 0, lck: 0, frt: 0, wis: 0 };
+    }
+    // Garante que todos os 6 stats existem (caso novos stats sejam adicionados).
+    for (var i = 0; i < GOLD_STATS.length; i++) {
+      var id = GOLD_STATS[i].id;
+      if (!(id in s.goldStats)) s.goldStats[id] = 0;
+    }
+    return s;
+  },
 ];
 
 function migrate(state) {
