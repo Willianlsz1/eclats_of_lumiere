@@ -26,7 +26,7 @@ function enemyStatsFor(regionIdx, diffIdx, wave) {
 
   const zoneStart  = region.startPower * diff.powerMult;
   const wavesTotal = diff.waves;
-  const progress   = (wave - 1) / Math.max(1, wavesTotal - 1); // 0 a 1
+  const progress   = Math.min(1, Math.max(0, (wave - 1) / Math.max(1, wavesTotal - 1))); // 0 a 1, clamped
 
   const hp = Math.round(zoneStart * Math.pow(E.internalScale, progress));
 
@@ -268,11 +268,12 @@ function spawnPack(s) {
 // ═══════════════════════════════════════════════════════════════════════
 // Shards (drop por kill)
 // ═══════════════════════════════════════════════════════════════════════
-// Escala com região e powerMult (substitui antigo dropMult).
+// Escala com região + dificuldade (shardMult: 1/2/3, não powerMult).
+// Plains Normal = 1, Peak Nightmare boss = 9×3×5 = 135 (não 4500!).
 
 function shardsOnKill(regionIdx, diffIdx, isBoss) {
   var n = Math.floor(CONFIG.shards.basePerKill + regionIdx * CONFIG.shards.perRegion);
-  n = Math.round(n * DIFFICULTIES[diffIdx].powerMult);
+  n = Math.round(n * DIFFICULTIES[diffIdx].shardMult);
   if (isBoss) n *= CONFIG.boss.shardMult;
   return Math.max(1, n);
 }

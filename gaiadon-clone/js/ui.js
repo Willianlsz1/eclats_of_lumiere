@@ -2,30 +2,27 @@
 // A UI só LÊ o estado e desenha. Nunca decide regra de jogo.
 const $ = id => document.getElementById(id);
 
-const fmt = n => {
-  n = Math.floor(n);
-  if (n < 1000) return "" + n;
-  const units = ["", "K", "M", "B", "T", "Qa", "Qi"];
-  let i = 0;
-  while (n >= 1000 && i < units.length - 1) { n /= 1000; i++; }
-  return n.toFixed(1) + units[i];
-};
+// fmt() e fmtMult() vêm de data.js (global). Usar aquelas versões.
 const fmtCap = cap => (cap === Infinity ? "∞" : fmt(cap));
-const fmtMult = x => x < 10 ? x.toFixed(2) : fmt(Math.round(x));
 
 // Helpers de acesso a assets — usam a região como objeto.
 function emojiFor(region, enemyName) {
-  return (region.emojis && region.emojis[enemyName]) || "👾";
+  // Procura o emoji na lista de inimigos da região.
+  var enemies = region.enemies || [];
+  for (var i = 0; i < enemies.length; i++) {
+    if (enemies[i].name === enemyName) return enemies[i].emoji;
+  }
+  // Fallback: boss
+  if (region.boss && region.boss.name === enemyName) return region.boss.emoji;
+  return "👾";
 }
 function cssFor(region) { return region.cssClass || ""; }
 function enemyAssetFor(region, enemyName) {
-  const regionKey = region.id || (region.cssClass || "").replace("region-", "");
-  const enemies = ASSETS.enemies[regionKey];
-  const path = enemies && enemies[enemyName];
+  const path = ASSETS.enemies[enemyName];
   return path && assetExists(path) ? path : null;
 }
 function regionBgFor(region) {
-  const path = ASSETS.regions[region.cssClass];
+  const path = ASSETS.backgrounds[region.id];
   return path && assetExists(path) ? path : null;
 }
 function equipAssetFor(slotId) {
@@ -199,7 +196,7 @@ function renderMap(s) {
       </div>
       <div class="map-region-desc">${region.description}</div>
       <div class="map-region-stars">${starStr}</div>
-      <div class="map-region-power">Base Power: ${fmt(region.basePower)}</div>
+      <div class="map-region-power">Base Power: ${fmt(region.startPower)}</div>
       <div class="map-difficulties">${diffBtns}</div>
     </div>`;
   }).join("");

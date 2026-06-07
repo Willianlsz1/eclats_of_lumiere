@@ -170,7 +170,11 @@ var s_p_boss = zones.shardsOnKill(0, 0, true);
 assert("Plains Normal boss = 5 shards (1 × 5)", s_p_boss === 5, "got " + s_p_boss);
 
 var s_p_h = zones.shardsOnKill(0, 1, false);
-assert("Plains Hard regular = 10 shards (1 × 10)", s_p_h === 10, "got " + s_p_h);
+assert("Plains Hard regular = 2 shards (1 × shardMult 2)", s_p_h === 2, "got " + s_p_h);
+
+// Peak Nightmare boss: (1 + 4×2)=9 × 3 × 5 = 135 (não 4500!)
+var s_peak_nm_boss = zones.shardsOnKill(4, 2, true);
+assert("Peak Nightmare boss = 135 shards (9 × 3 × 5)", s_peak_nm_boss === 135, "got " + s_peak_nm_boss);
 
 
 // ═══════════════════════════════════════════════════════════════

@@ -345,7 +345,7 @@ test("o primeiro abate acontece em menos de 3s (design: 1.5-3s)", () => {
 
 test("região difícil mata jogador fresco rapidamente", () => {
   const s = game.defaultState();
-  s.region = 4; // Peak (basePower 8100)
+  s.region = 4; // Peak (startPower 15e12)
   s.difficulty = 0;
   game.spawnPack(s); s.playerHp = game.playerMaxHp(s);
   let died = false, killed = false;

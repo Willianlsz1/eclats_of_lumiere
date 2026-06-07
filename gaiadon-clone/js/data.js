@@ -163,9 +163,9 @@ const REGIONS = [
 // powerMult substitui statMult/dropMult. HP do inimigo = startPower × powerMult × waveMult.
 // Recompensas escalam proporcionalmente ao HP (dmgRatio, goldRatio, xpRatio em CONFIG).
 const DIFFICULTIES = [
-  { id: "normal",    name: "Normal",    powerMult: 1,    waves: 30, cssClass: "diff-normal" },
-  { id: "hard",      name: "Hard",      powerMult: 10,   waves: 50, cssClass: "diff-hard" },
-  { id: "nightmare", name: "Nightmare", powerMult: 100,  waves: 75, cssClass: "diff-nightmare" },
+  { id: "normal",    name: "Normal",    powerMult: 1,    waves: 30, shardMult: 1, cssClass: "diff-normal" },
+  { id: "hard",      name: "Hard",      powerMult: 10,   waves: 50, shardMult: 2, cssClass: "diff-hard" },
+  { id: "nightmare", name: "Nightmare", powerMult: 100,  waves: 75, shardMult: 3, cssClass: "diff-nightmare" },
 ];
 
 
