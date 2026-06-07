@@ -331,11 +331,16 @@ test("ganhos offline > 0", () => {
 });
 
 console.log("== Balanceamento (sanidade) ==");
-test("o primeiro abate acontece em menos de 1s", () => {
+test("o primeiro abate acontece em menos de 3s (design: 1.5-3s)", () => {
   const s = game.defaultState();
   game.spawnPack(s); s.playerHp = game.playerMaxHp(s);
-  const evs = game.tick(s, 1.0);
-  assert(evs.some(e => e.type === "kill"), "deveria matar o 1º inimigo em ~1s");
+  // Com startPower=10, DPS~6 → kill em ~1.67s. Testa em 3s (margem).
+  let killed = false;
+  for (let i = 0; i < 30 && !killed; i++) {
+    const evs = game.tick(s, 0.1);
+    if (evs.some(e => e.type === "kill")) killed = true;
+  }
+  assert(killed, "deveria matar o 1º inimigo em ~3s");
 });
 
 test("região difícil mata jogador fresco rapidamente", () => {
@@ -365,18 +370,25 @@ test("isRegionUnlocked e isDifficultyUnlocked funcionam corretamente", () => {
   assert(isDifficultyUnlocked(s, 0, 1), "Hard desbloqueada após limpar Normal");
 });
 
-test("enemyStatsFor retorna stats consistentes", () => {
+test("enemyStatsFor retorna stats consistentes (contínuo)", () => {
   const plains = enemyStatsFor(0, 0, 1); // Plains Normal Wave 1
-  assertEqual(plains.hp, 4, "Plains Normal Wave 1 HP = 4");
-  assertEqual(plains.dmg, 3, "Plains Normal Wave 1 DMG = 3");
-  assertEqual(plains.gold, 6, "Plains Normal Wave 1 Gold = 6");
+  // Nova fórmula: startPower=10, progress=0 → HP=10, DMG=2 (10×0.15), Gold=5 (10×0.5)
+  assertEqual(plains.hp, 10, "Plains Normal Wave 1 HP = 10");
+  assertEqual(plains.dmg, 2, "Plains Normal Wave 1 DMG = 2");
+  assertEqual(plains.gold, 5, "Plains Normal Wave 1 Gold = 5");
 
   const forest = enemyStatsFor(1, 0, 1); // Forest Normal Wave 1
+  assertEqual(forest.hp, 15000, "Forest Normal Wave 1 HP = 15,000");
   assert(forest.hp > plains.hp, "Forest deve ser mais forte que Plains");
 
   const hard = enemyStatsFor(0, 1, 1); // Plains Hard Wave 1
+  assertEqual(hard.hp, 100, "Plains Hard Wave 1 HP = 100 (10 × powerMult 10)");
   assert(hard.hp > plains.hp, "Hard deve ter mais HP que Normal");
   assert(hard.gold > plains.gold, "Hard deve dar mais gold que Normal");
+
+  // Continuidade: Normal last = Hard first
+  const normalLast = enemyStatsFor(0, 0, 30);
+  assertEqual(normalLast.hp, hard.hp, "Normal w30 = Hard w1 (continuidade)");
 });
 
 report();
