@@ -186,6 +186,11 @@ function makeEnemy(s) {
   if (isBossWave(s.wave, s.difficulty)) {
     var B  = CONFIG.boss;
     var bossHp = Math.round(stats.hp * ascMult * B.hpMult);
+    // Weakened Void (passiva Fase 3): reduz HP do boss (máx 90%).
+    if (typeof passiveTotals === "function" && s.passives) {
+      var _wpReduct = passiveTotals(s).enemyHpReduct;
+      if (_wpReduct > 0) bossHp = Math.max(1, Math.round(bossHp * (1 - Math.min(0.9, _wpReduct))));
+    }
     // Crit chance do chefe: fixada no spawn (aleatória dentro do range).
     var bossCritChance = C.bossCritChanceMin
       + Math.random() * (C.bossCritChanceMax - C.bossCritChanceMin);
@@ -216,6 +221,12 @@ function makeEnemy(s) {
   // Stats finais: base × archetype × elite tier × ascension
   var finalHp  = Math.max(1, Math.round(stats.hp  * arch.hp  * tm.hp  * ascMult));
   var finalDmg = Math.max(1, Math.round(stats.dmg * arch.dmg * tm.dmg * ascMult));
+
+  // Weakened Void (passiva Fase 3): reduz HP do inimigo regular (máx 90%).
+  if (typeof passiveTotals === "function" && s.passives) {
+    var _wpReduct = passiveTotals(s).enemyHpReduct;
+    if (_wpReduct > 0) finalHp = Math.max(1, Math.round(finalHp * (1 - Math.min(0.9, _wpReduct))));
+  }
 
   // Reward: base × archetype × elite tier (sem ascMult na reward)
   var goldReward = Math.max(1, Math.round(stats.gold * arch.reward * tm.reward));

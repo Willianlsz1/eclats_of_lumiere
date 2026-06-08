@@ -3,11 +3,11 @@
 
 const data = require("../js/data.js");
 Object.assign(global, data);
-for (const f of ["../js/progression.js", "../js/loot.js", "../js/zones.js", "../js/game.js"]) {
+for (const f of ["../js/progression.js", "../js/passives.js", "../js/loot.js", "../js/zones.js", "../js/game.js"]) {
   Object.assign(global, require(f));
 }
 const game = {};
-for (const f of ["../js/progression.js", "../js/loot.js", "../js/zones.js", "../js/game.js"]) {
+for (const f of ["../js/progression.js", "../js/passives.js", "../js/loot.js", "../js/zones.js", "../js/game.js"]) {
   Object.assign(game, require(f));
 }
 

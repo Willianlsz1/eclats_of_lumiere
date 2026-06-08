@@ -45,8 +45,8 @@ function logMsg(msg, cls) {
 }
 
 function renderResources(s) {
-  $("lumens").textContent = fmt(s.lumens);
-  $("vestiges").textContent = fmt(s.vestiges);
+  $("gold").textContent = fmt(s.gold);
+  $("shards").textContent = fmt(s.shards);
   $("level").textContent = s.level;
 }
 
@@ -212,7 +212,7 @@ function renderGoldStats(s) {
   el.innerHTML = GOLD_STATS.map(function(def) {
     var level = (s.goldStats && s.goldStats[def.id]) || 0;
     var cost = goldStatCost(def.id, level);
-    var canBuy = s.lumens >= cost;
+    var canBuy = s.gold >= cost;
     var bonus = goldStatBonus(s, def.id);
     var preview = buyGoldStatMaxPreview(s, def.id);
 
@@ -311,7 +311,7 @@ function renderHero(s) {
 }
 
 // Nome amigável de cada afixo para a UI.
-const AFFIX_NAMES = { critRate: "Crit Rate", critDmg: "Crit Dmg", dmgMult: "Damage", hpMult: "Health", goldMult: "Lumens", xpMult: "XP", shardMult: "Vestige Find", bossDmg: "Boss Dmg" };
+const AFFIX_NAMES = { critRate: "Crit Rate", critDmg: "Crit Dmg", dmgMult: "Damage", hpMult: "Health", goldMult: "Gold", xpMult: "XP", shardMult: "Shard Find", bossDmg: "Boss Dmg" };
 function affixLabel(a, level) {
   const pct = affixValue(a, level) * 100;
   const shown = pct >= 1000 ? fmt(Math.round(pct)) : pct >= 100 ? Math.round(pct) : pct.toFixed(1);
@@ -434,21 +434,19 @@ function renderAscend(s) {
   if (asc.canAscend) {
     $("ascInfo").innerHTML = asc.isTierPromo
       ? `<b class="milestone-text">🎉 TIER UP! You're becoming ${asc.nextTier.name}! Spike ×${fmt(asc.nextTier.spike)} awaits!</b>`
-      : `<b>✓ KEEP</b> all equipment & map progress · <b>✗ RESET</b> Lumens, level &amp; wave · you'll rebuild faster!`;
+      : `<b>✓ KEEP</b> all equipment & map progress · <b>✗ RESET</b> gold, level &amp; wave · you'll rebuild faster!`;
   } else {
-    $("ascInfo").innerHTML = `Clear more stages on the 🗺️ Map and reach level ${asc.levelReq} to unlock Convergence #${asc.ascensionNumber}.`;
+    $("ascInfo").innerHTML = `Clear more stages on the 🗺️ Map and reach level ${asc.levelReq} to unlock ascension #${asc.ascensionNumber}.`;
   }
 }
 
 // Floating damage number.
-function spawnFloatingDamage(amount, isBoss, isCrit, isRadiant) {
+function spawnFloatingDamage(amount, isBoss, isCrit) {
   const stage = $("combatStage");
   if (!stage) return;
   const el = document.createElement("span");
-  el.className = "floating-dmg"
-    + (isBoss    ? " boss"    : "")
-    + (isRadiant ? " radiant" : isCrit ? " crit" : "");
-  el.textContent = (isRadiant ? "✨ " : isCrit ? "💥 " : "-") + fmt(amount);
+  el.className = "floating-dmg" + (isBoss ? " boss" : "") + (isCrit ? " crit" : "");
+  el.textContent = (isCrit ? "💥 " : "-") + fmt(amount);
   el.style.left = (40 + Math.random() * 20) + "%";
   stage.appendChild(el);
   setTimeout(() => el.remove(), 800);
@@ -486,9 +484,79 @@ function showOfflineSummary(g) {
   const time = h > 0 ? `${h}h ${m}m` : `${m}m`;
   $("offlineText").innerHTML =
     `While you were away (<b>${time}</b>):<br>` +
-    `💰 +${fmt(g.lumens)} Lumens · 💎 +${fmt(g.vestiges)} Vestiges · ⭐ +${fmt(g.xp)} XP<br>` +
+    `💰 +${fmt(g.gold)} gold · 💎 +${fmt(g.shards)} shards · ⭐ +${fmt(g.xp)} XP<br>` +
     `<small>(${fmt(g.kills)} kills simulated)</small>`;
   $("offlineModal").classList.remove("hidden");
 }
 
 // renderAll lives in render.js (render dispatch module).
+
+// ═══════════════════════════════════════════════════════════════════════
+// Passives View — 3 árvores permanentes
+// ═══════════════════════════════════════════════════════════════════════
+function renderPassives(s) {
+  var el = $("passivesPanel");
+  if (!el) return;
+
+  var TREE_META = {
+    eclat:    { name: "Éclat",   icon: "⚔️",  desc: "Combat — Absorbing fragments of Or Ein Sof" },
+    vestige:  { name: "Vestige", icon: "💜",  desc: "Economy — Power from defeated creatures" },
+    fracture: { name: "Fracture",icon: "🌑",  desc: "Utility — Understanding the nature of Nihel" },
+  };
+
+  var byTree = { eclat: [], vestige: [], fracture: [] };
+  PASSIVES.forEach(function(def) { if (byTree[def.tree]) byTree[def.tree].push(def); });
+
+  el.innerHTML = Object.keys(TREE_META).map(function(treeKey) {
+    var meta  = TREE_META[treeKey];
+    var nodes = byTree[treeKey];
+
+    var nodesHtml = nodes.map(function(def) {
+      var lv       = passiveLevel(s, def.id);
+      var unlocked = passiveUnlocked(s, def.id);
+      var maxed    = lv >= def.maxLevel;
+      var cost     = passiveCost(def.id, lv);
+      var canBuy   = canBuyPassive(s, def.id);
+
+      var reqParts = [];
+      if (!unlocked) {
+        if (def.mapReq > 1) reqParts.push('<span class="pn-req-tag">🗺️ Map ' + def.mapReq + '</span>');
+        if (def.killsReq > 0) reqParts.push('<span class="pn-req-tag">⚔️ ' + def.killsReq.toLocaleString('en-US') + ' kills</span>');
+      }
+      var reqHtml = reqParts.length ? '<div class="pn-reqs">' + reqParts.join("") + '</div>' : "";
+
+      var btnLabel = maxed
+        ? "Maxed"
+        : "Unlock +1 <span class='pn-cost'>💎 " + fmt(cost) + "</span>";
+      var btnCls = "pn-btn" + (canBuy ? " can-buy" : "") + (maxed ? " maxed" : "");
+
+      var nodeCls = "passive-node"
+        + (lv > 0    ? " owned"    : "")
+        + (!unlocked ? " locked"   : "")
+        + (maxed     ? " maxed"    : "");
+
+      return '<div class="' + nodeCls + '">'
+        + '<div class="pn-header">'
+        +   '<span class="pn-icon">'   + def.icon  + '</span>'
+        +   '<span class="pn-name">'   + def.name  + '</span>'
+        +   '<span class="pn-level">Lv ' + lv + '/' + def.maxLevel + '</span>'
+        + '</div>'
+        + '<div class="pn-desc">' + def.desc + '</div>'
+        + reqHtml
+        + '<button class="' + btnCls + '" data-passive-id="' + def.id + '"'
+        +   (canBuy && !maxed ? '' : ' disabled') + '>'
+        +   btnLabel
+        + '</button>'
+        + '</div>';
+    }).join("");
+
+    return '<div class="passive-tree">'
+      + '<div class="tree-header">'
+      +   '<span class="tree-icon">' + meta.icon + '</span>'
+      +   '<div class="tree-title">' + meta.name + '</div>'
+      +   '<div class="tree-desc">'  + meta.desc  + '</div>'
+      + '</div>'
+      + '<div class="tree-nodes">' + nodesHtml + '</div>'
+      + '</div>';
+  }).join("");
+}

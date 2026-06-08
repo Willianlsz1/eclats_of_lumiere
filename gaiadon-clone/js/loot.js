@@ -40,10 +40,12 @@ function affixTotals(s) {
   }
   return t;
 }
-// Taxa bruta antes de cap — pode passar de 1.0 (o excesso vira critDmg).
+// Taxa bruta antes de cap — pode passar de 1.0 (o excesso vira critDmg via overflow).
 function critRateRaw(s) {
   var base = affixTotals(s).critRate;
   if (typeof goldStatBonus === "function") base += goldStatBonus(s, "lck");
+  // Luminal Edge (passiva Fase 3): contribuição adicional de crit rate.
+  if (typeof passiveTotals === "function") base += passiveTotals(s).critRate;
   return base;
 }
 function critRate(s) { return Math.min(1, critRateRaw(s)); }
@@ -51,11 +53,17 @@ function critRate(s) { return Math.min(1, critRateRaw(s)); }
 function critOverflow(s) { return Math.max(0, critRateRaw(s) - 1.0); }
 
 // Gloves: itemPower contribui para Crit Damage. Overflow de crit rate também contribui.
+// Or Ein Sof's Touch amplifica o fator de overflow; Shattered Light adiciona bônus por tier de overflow.
 function critMult(s) {
+  const overflow = critOverflow(s);
+  const pt = typeof passiveTotals === "function" ? passiveTotals(s) : null;
+  const overflowFactor = CONFIG.combat.critOverflowToDmg + (pt ? pt.critOverflowFactor : 0);
+  const shatteredBonus = (pt && pt.shatteredLight > 0) ? Math.floor(overflow) * pt.shatteredLight : 0;
   return CONFIG.combat.baseCritMult
        + affixTotals(s).critDmg
        + slotPower(s, "Gloves") * CONFIG.itemStats.critDmgPerPower
-       + critOverflow(s) * CONFIG.combat.critOverflowToDmg;
+       + overflow * overflowFactor
+       + shatteredBonus;
 }
 // Crítico como valor esperado (sem RNG por tick): EV = 1 + rate × (mult − 1).
 function critExpectedMult(s) {

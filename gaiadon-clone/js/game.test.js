@@ -1,11 +1,11 @@
 // Carrega todos os módulos em ordem de dependência -> globalThis, depois roda os testes.
 const data = require("./data.js");
 Object.assign(globalThis, data);
-for (const f of ["./progression.js", "./loot.js", "./zones.js", "./game.js"]) {
+for (const f of ["./progression.js", "./passives.js", "./loot.js", "./zones.js", "./game.js"]) {
   Object.assign(globalThis, require(f));
 }
 const game = {};
-for (const f of ["./progression.js", "./loot.js", "./zones.js", "./game.js"]) {
+for (const f of ["./progression.js", "./passives.js", "./loot.js", "./zones.js", "./game.js"]) {
   Object.assign(game, require(f));
 }
 const { test, assert, assertEqual, report } = require("./_assert.js");
@@ -468,6 +468,98 @@ test("inimigos têm critChance após spawn", () => {
   s.enemies.forEach(e => {
     assert(typeof e.critChance === "number" && e.critChance >= 0, `${e.name} deve ter critChance`);
   });
+});
+
+// ══════════════════════════════════════════════════════════════════
+console.log("== Fase 3 — Passivas ==");
+
+test("passiveCost: lv0 = costBase, cresce exponencialmente", () => {
+  const def = PASSIVES.find(p => p.id === "radiantStrike");
+  assertEqual(game.passiveCost("radiantStrike", 0), def.costBase, "lv0 = costBase");
+  const lv1 = Math.round(def.costBase * Math.pow(def.costGrowth, 1));
+  assertEqual(game.passiveCost("radiantStrike", 1), lv1, "lv1 = costBase × growth");
+  assertEqual(game.passiveCost("radiantStrike", def.maxLevel), Infinity, "maxLevel = Infinity");
+});
+
+test("passiveUnlocked: mapReq 1 sempre disponível, mapReq 2 exige ascensão", () => {
+  const s = game.defaultState();
+  assert(game.passiveUnlocked(s, "radiantStrike"), "mapReq 1, kills 0: deve estar desbloqueado");
+  assert(!game.passiveUnlocked(s, "resonantForce"), "mapReq 2, 0 ascensões: deve estar bloqueado");
+  s.ascensions = 1; s.totalKills = 200;
+  assert(game.passiveUnlocked(s, "resonantForce"), "mapReq 2, 1 ascensão: deve estar desbloqueado");
+});
+
+test("passiveUnlocked: killsReq bloqueia com kills insuficientes", () => {
+  const s = game.defaultState();
+  assert(!game.passiveUnlocked(s, "luminalEdge"), "luminalEdge killsReq 100, totalKills 0: bloqueado");
+  s.totalKills = 100;
+  assert(game.passiveUnlocked(s, "luminalEdge"), "luminalEdge killsReq 100, totalKills 100: ok");
+});
+
+test("buyPassive: debita vestiges, incrementa nível, rastreia totalVestgesSpent", () => {
+  const s = game.defaultState();
+  s.vestiges = 1000; s.totalKills = 0;
+  assert(game.buyPassive(s, "radiantStrike"), "deve comprar");
+  assertEqual(game.passiveLevel(s, "radiantStrike"), 1, "lv deve ser 1");
+  const cost = PASSIVES.find(p => p.id === "radiantStrike").costBase;
+  assertEqual(s.vestiges, 1000 - cost, "vestiges devem ser debitados");
+  assertEqual(s.totalVestgesSpent, cost, "totalVestgesSpent deve rastrear");
+});
+
+test("buyPassive: retorna false sem vestiges suficientes", () => {
+  const s = game.defaultState();
+  s.vestiges = 1;
+  assertEqual(game.buyPassive(s, "radiantStrike"), false, "sem vestiges suficientes");
+  assertEqual(game.passiveLevel(s, "radiantStrike"), 0, "nível não deve mudar");
+});
+
+test("passiveTotals: Radiant Strike aumenta dmgMult", () => {
+  const s = game.defaultState();
+  const pt0 = game.passiveTotals(s);
+  assertEqual(pt0.dmgMult, 0, "sem passivas: dmgMult = 0");
+  s.passives.radiantStrike = 3;
+  const pt3 = game.passiveTotals(s);
+  assert(Math.abs(pt3.dmgMult - 3 * 0.08) < 0.001, "Radiant Strike lv3 = +0.24 dmgMult");
+});
+
+test("Radiant Strike aumenta playerDamage", () => {
+  const s = game.defaultState();
+  const dmg0 = game.playerDamage(s);
+  s.passives.radiantStrike = 5;
+  assert(game.playerDamage(s) > dmg0, "Radiant Strike lv5 deve aumentar dano");
+});
+
+test("Luminal Edge aumenta critRate via passiveTotals", () => {
+  const s = game.defaultState();
+  s.totalKills = 100;
+  s.vestiges = 500;
+  game.buyPassive(s, "luminalEdge");
+  const pt = game.passiveTotals(s);
+  assert(pt.critRate > 0, "Luminal Edge deve aumentar critRate no total");
+  assert(game.critRate(s) > 0, "critRate(s) deve refletir a passiva");
+});
+
+test("Weakened Void reduz HP do inimigo no spawn", () => {
+  const s = game.defaultState();
+  game.spawnPack(s);
+  const hpBase = s.enemies[0].hp;
+  s.passives.weakenedVoid = 5; // -25% HP
+  game.spawnPack(s);
+  const hpReduced = s.enemies[0].hp;
+  assert(hpReduced < hpBase, "Weakened Void deve reduzir HP do inimigo");
+});
+
+test("passivas persistem após ascend, bossKills reseta", () => {
+  const s = game.defaultState();
+  s.passives.radiantStrike = 3;
+  s.bossKills = 5;
+  s.totalVestgesSpent = 999;
+  s.level = 30;
+  s.regionProgress = { 0: [0] };
+  game.ascend(s);
+  assertEqual(s.passives.radiantStrike, 3, "passivas devem persistir");
+  assertEqual(s.bossKills, 0, "bossKills deve resetar");
+  assertEqual(s.totalVestgesSpent, 999, "totalVestgesSpent deve persistir");
 });
 
 report();

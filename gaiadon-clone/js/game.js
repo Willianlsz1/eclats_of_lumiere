@@ -35,6 +35,13 @@ function defaultState() {
     // Gold Stats: 6 stats compráveis com gold (resetam na ascensão).
     goldStats: { str: 0, vit: 0, agi: 0, lck: 0, frt: 0, wis: 0 },
 
+    // Passives (Fase 3): map de id → level (nunca reseta).
+    passives: {},
+    // Kills de boss neste ascend (reseta no ascend).
+    bossKills: 0,
+    // Total gasto em vestiges (persiste sempre).
+    totalVestgesSpent: 0,
+
     enemies: [],
     playerHp: null,
     lastSeen: null,
@@ -104,6 +111,7 @@ function playerDamage(s) {
   base += slotPower(s, "Weapon");
   base += goldStatBonus(s, "str");            // STR: +2 dmg per level
   base *= (1 + affixTotals(s).dmgMult);
+  if (typeof passiveTotals === "function") base *= (1 + passiveTotals(s).dmgMult);
   return Math.round(base * totalPowerMult(s));
 }
 function playerMaxHp(s) {
@@ -112,6 +120,8 @@ function playerMaxHp(s) {
   base += slotPower(s, "Armor") * CONFIG.itemStats.healthPerPower;
   base += goldStatBonus(s, "vit");            // VIT: +10 hp per level
   base *= (1 + affixTotals(s).hpMult);
+  const _pt = typeof passiveTotals === "function" ? passiveTotals(s) : null;
+  if (_pt && _pt.voidEnduranceBonus > 0) base *= (1 + _pt.voidEnduranceBonus);
   return Math.round(base * totalPowerMult(s));
 }
 // Stat bruto (soma linear de fontes). Entrada para a fórmula de atk speed.
@@ -126,9 +136,12 @@ function attackSpeed(s) {
   return Math.min(C.attackSpeedCap, Math.sqrt(atkSpeedRaw(s)) * C.attackSpeedFactor);
 }
 
-// ── Defesa & Regen (Fase 1) ──────────────────────────────────────────────
-// Defense = 0 até gear/passivas fornecerem o stat (Fases 3/5).
-function playerDefense(s) { return 0; }
+// ── Defesa & Regen ──────────────────────────────────────────────────────
+// playerDefense: voidEnduranceBonus × 100 (passiva Fase 3).
+function playerDefense(s) {
+  if (typeof passiveTotals !== "function") return 0;
+  return passiveTotals(s).voidEnduranceBonus * 100;
+}
 // Redução logarítmica: nunca chega a 100% (jogador nunca fica imortal).
 function defenseReduction(defense) {
   return Math.min(0.9, Math.log10(defense + 1) / 10);
@@ -142,16 +155,34 @@ function goldBonus(s) {
   let b = 1 + slotPower(s, "Amulet") * CONFIG.itemStats.goldFindPerPower;
   b *= (1 + affixTotals(s).goldMult);
   b *= (1 + goldStatBonus(s, "frt"));        // FRT: +5% gold per level
-  return b * totalPowerMult(s) * regionMasteryBonus(s);
+  b = b * totalPowerMult(s) * regionMasteryBonus(s);
+  if (typeof passiveTotals === "function") {
+    const _pt = passiveTotals(s);
+    b *= (1 + _pt.lumensMult);
+    b *= (1 + _pt.rewardMult);
+  }
+  return b;
 }
 function xpMultiplier(s) {
   var base = totalPowerMult(s) * (1 + affixTotals(s).xpMult) * regionMasteryBonus(s);
-  return base * (1 + goldStatBonus(s, "wis")); // WIS: +5% xp per level
+  base = base * (1 + goldStatBonus(s, "wis")); // WIS: +5% xp per level
+  if (typeof passiveTotals === "function") {
+    const _pt = passiveTotals(s);
+    base *= (1 + _pt.xpMult);
+    base *= (1 + _pt.rewardMult);
+  }
+  return base;
 }
 function shardBonus(s) {
   let b = 1 + slotPower(s, "Ring") * CONFIG.itemStats.shardFindPerPower;
   b *= (1 + affixTotals(s).shardMult);
-  return b * totalPowerMult(s) * regionMasteryBonus(s);
+  b = b * totalPowerMult(s) * regionMasteryBonus(s);
+  if (typeof passiveTotals === "function") {
+    const _pt = passiveTotals(s);
+    b *= (1 + _pt.vestigeMult);
+    b *= (1 + _pt.rewardMult);
+  }
+  return b;
 }
 function bossDmgMult(s) {
   return 1 + slotPower(s, "Helmet") * CONFIG.itemStats.bossDmgPerPower + affixTotals(s).bossDmg;
@@ -203,6 +234,7 @@ function registerKill(s, e) {
   };
 
   if (e.isBoss) {
+    s.bossKills = (s.bossKills || 0) + 1;
     // Boss derrotado → limpar dificuldade, desbloquear próximo conteúdo.
     const wasCleared = isDifficultyCleared(s, s.region, s.difficulty);
     clearCurrentDifficulty(s);
@@ -245,8 +277,13 @@ function tick(s, dt) {
 
   // ── Player ataca o alvo principal ──
   const target = s.enemies[0];
+  const _tickPt = typeof passiveTotals === "function" ? passiveTotals(s) : null;
   let dmgToEnemy = playerDps(s) * dt;
   if (target.isBoss) dmgToEnemy *= bossDmgMult(s);
+  // Last Light: bônus de dano quando HP < 30%.
+  if (_tickPt && _tickPt.lastLightDmg > 0 && s.playerHp != null && playerMaxHp(s) > 0) {
+    if (s.playerHp / playerMaxHp(s) < 0.30) dmgToEnemy *= (1 + _tickPt.lastLightDmg);
+  }
   target.hp -= dmgToEnemy;
 
   // Tier de crit para visual (normal / crit / radiant).
@@ -265,6 +302,8 @@ function tick(s, dt) {
     if (e.critChance > 0 && Math.random() < e.critChance) {
       dmg *= e.isBoss ? CONFIG.combat.bossCritMult : CONFIG.combat.enemyCritMult;
     }
+    // Nihel's Shadow: reduz dano recebido.
+    if (_tickPt && _tickPt.enemyDmgReduct > 0) dmg *= (1 - _tickPt.enemyDmgReduct);
     incoming += dmg * (1 - reduction);
   }
   s.playerHp -= incoming;
@@ -318,11 +357,16 @@ function ascend(s) {
   const keepEquipped       = s.equipped;
   const keepRegionProgress = s.regionProgress || { 0: [] };
   const keepRegionMastery  = s.regionMastery  || {};
+  const keepPassives       = s.passives || {};
+  const keepVestgesSpent   = s.totalVestgesSpent || 0;
   Object.assign(s, defaultState());
-  s.ascensions     = keepAscensions;
-  s.equipped       = keepEquipped;
-  s.regionProgress = keepRegionProgress;
-  s.regionMastery  = keepRegionMastery;
+  s.ascensions        = keepAscensions;
+  s.equipped          = keepEquipped;
+  s.regionProgress    = keepRegionProgress;
+  s.regionMastery     = keepRegionMastery;
+  s.passives          = keepPassives;
+  s.totalVestgesSpent = keepVestgesSpent;
+  // bossKills NÃO é preservado — reseta por mapa (defaultState já o zera)
   return true;
 }
 
@@ -333,7 +377,9 @@ function computeOfflineGains(s, elapsedSec) {
   const stats = enemyStatsFor(s.region, s.difficulty, 1); // wave 1 do local atual
   const ascMult = Math.pow(CONFIG.enemy.ascGrowth, s.ascensions);
   const killsPerSec = playerDps(s) / Math.max(1, stats.hp * ascMult);
-  const kills = killsPerSec * seconds * efficiency;
+  const passiveOfflineEff = typeof passiveTotals === "function" ? passiveTotals(s).offlineEff : 0;
+  const effectiveEfficiency = Math.min(1.0, efficiency + passiveOfflineEff);
+  const kills = killsPerSec * seconds * effectiveEfficiency;
   const lumens   = Math.round(kills * stats.gold * goldBonus(s));
   const xp       = Math.round(kills * stats.xp * xpMultiplier(s));
   const vestiges = Math.round(kills * shardsOnKill(s.region, s.difficulty, false) * shardBonus(s));
