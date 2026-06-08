@@ -73,19 +73,43 @@ test("nível trava no cap da raridade", () => {
   assertEqual(game.levelUpItem(s, "Weapon"), false, "não passa do cap sem subir raridade");
 });
 
-test("rarityUpItem exige estar no cap + vestiges e libera o próximo cap", () => {
+test("rarityUpItem exige estar no cap + materiais e libera o próximo cap", () => {
   const s = game.defaultState();
   s.equipped.Weapon.level = RARITIES[0].cap;
-  s.vestiges = 1e9; s.lumens = 1e9;
+  s.lumens = 1e9;
+  const need = game.rarityUpMaterial(s, "Weapon"); // common→uncommon = Dim Shard
+  assertEqual(need.id, "dimShard", "primeiro upgrade pede Dim Shard");
+  s.materials[need.id] = need.qty + 5;
   const r0 = s.equipped.Weapon.rarity;
   assert(game.rarityUpItem(s, "Weapon"), "deveria subir a raridade");
   assertEqual(s.equipped.Weapon.rarity, r0 + 1);
+  assertEqual(s.materials[need.id], 5, "consome a quantidade exata de material");
   assert(game.levelUpItem(s, "Weapon"), "após subir raridade, nível volta a subir");
+});
+
+test("não sobe raridade sem material suficiente (mesmo no cap)", () => {
+  const s = game.defaultState();
+  s.equipped.Weapon.level = RARITIES[0].cap;
+  const need = game.rarityUpMaterial(s, "Weapon");
+  s.materials[need.id] = need.qty - 1; // 1 a menos
+  assertEqual(game.rarityUpItem(s, "Weapon"), false, "material insuficiente bloqueia");
+});
+
+test("epic→legendary consome o material especial do mapa atual", () => {
+  const s = game.defaultState();
+  s.region = 4; // peak → Nil Essence
+  s.equipped.Weapon.rarity = 3; // epic
+  s.equipped.Weapon.level = RARITIES[3].cap;
+  const need = game.rarityUpMaterial(s, "Weapon");
+  assertEqual(need.id, "nilEssence", "epic→legendary no peak pede Nil Essence");
+  s.materials.nilEssence = need.qty;
+  assert(game.rarityUpItem(s, "Weapon"), "sobe para legendary com o material do mapa");
+  assertEqual(s.equipped.Weapon.rarity, 4);
 });
 
 test("não sobe raridade fora do cap", () => {
   const s = game.defaultState();
-  s.vestiges = 1e9;
+  s.materials = { dimShard: 1e9 };
   assertEqual(game.rarityUpItem(s, "Weapon"), false, "precisa estar no cap pra subir raridade");
 });
 
@@ -680,6 +704,51 @@ test("convergenceMult clampa em maxMult (sem Infinity)", () => {
   const m = game.convergenceMult(s);
   assert(Number.isFinite(m), "convergenceMult deve ser finito mesmo com convergences absurdo");
   assertEqual(m, CONFIG.convergence.maxMult, "deve clampar exatamente em maxMult");
+});
+
+console.log("\n== Fase 4: materiais (drop + inventário) ==");
+test("defaultState tem materials: {}", () => {
+  const s = game.defaultState();
+  assert(s.materials && typeof s.materials === "object", "materials deve existir");
+  assertEqual(Object.keys(s.materials).length, 0, "inventário começa vazio");
+});
+
+test("materialDropFor: tier de inimigo → material universal", () => {
+  assertEqual(game.materialDropFor({ tier: "normal" }, 0), "dimShard");
+  assertEqual(game.materialDropFor({ tier: "elite" }, 0), "paleFragment");
+  assertEqual(game.materialDropFor({ tier: "champion" }, 0), "voidDust");
+});
+
+test("materialDropFor: chefe → material especial do mapa (por região)", () => {
+  assertEqual(game.materialDropFor({ isBoss: true }, 0), "dreamspore");
+  assertEqual(game.materialDropFor({ isBoss: true }, 4), "nilEssence");
+});
+
+test("registerKill dropa 1 material conforme o tier", () => {
+  const s = game.defaultState();
+  game.registerKill(s, { name: "x", tier: "elite", goldReward: 1, xpReward: 1, isBoss: false });
+  assertEqual(s.materials.paleFragment, 1, "elite dropa Pale Fragment");
+  game.registerKill(s, { name: "x", tier: "normal", goldReward: 1, xpReward: 1, isBoss: false });
+  assertEqual(s.materials.dimShard, 1, "normal dropa Dim Shard");
+});
+
+test("registerKill de chefe dropa o material do mapa atual", () => {
+  const s = game.defaultState();
+  s.region = 0; // plains → Dreamspore
+  game.registerKill(s, { name: "boss", goldReward: 1, xpReward: 1, isBoss: true, shardMult: 1 });
+  assertEqual(s.materials.dreamspore, 1, "chefe de plains dropa Dreamspore");
+});
+
+test("materiais persistem após converge e ascend", () => {
+  const s = game.defaultState();
+  s.materials = { dimShard: 50, dreamspore: 3 };
+  s.level = 15;
+  game.converge(s);
+  assertEqual(s.materials.dimShard, 50, "materiais persistem no converge");
+  assertEqual(s.materials.dreamspore, 3, "material de mapa persiste no converge");
+  s.level = 30; s.regionProgress = { 0: [0] };
+  game.ascend(s);
+  assertEqual(s.materials.dimShard, 50, "materiais persistem no ascend");
 });
 
 console.log("\n== Fase 5: peças nomeadas (DESIGN §26) ==");

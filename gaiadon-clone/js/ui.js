@@ -331,7 +331,9 @@ function renderEquipment(s) {
     const lvCost = levelUpCost(s, slot.id);
     const canLv = canLevelUp(s, slot.id);
     const maxRarity = it.rarity >= RARITIES.length - 1;
-    const rCost = rarityUpCost(s, slot.id);
+    const rMat = maxRarity ? null : rarityUpMaterial(s, slot.id);
+    const rMatDef = rMat ? materialDef(rMat.id) : null;
+    const rHave = rMat ? ((s.materials || {})[rMat.id] || 0) : 0;
     const canRr = canRarityUp(s, slot.id);
     const power = itemPower(it);
     const pct = cap === Infinity ? 100 : Math.min(100, (it.level / cap) * 100);
@@ -346,7 +348,7 @@ function renderEquipment(s) {
 
     const rrBtn = maxRarity
       ? `<button disabled>Max rarity</button>`
-      : `<button class="rarity-btn" data-act="rarity" data-slot="${slot.id}" ${canRr ? "" : "disabled"}>💎 ${fmt(rCost)}${atCap ? "" : " (reach cap)"}</button>`;
+      : `<button class="rarity-btn" data-act="rarity" data-slot="${slot.id}" ${canRr ? "" : "disabled"} title="${rMatDef.name}">${rMatDef.icon} ${fmt(rHave)}/${fmt(rMat.qty)}${atCap ? "" : " (reach cap)"}</button>`;
 
     const affixes = getDisplayAffixes(slot.id, it.rarity, it.level);
     const affixHtml = affixes.length
@@ -507,6 +509,26 @@ function showOfflineSummary(g) {
 }
 
 // renderAll lives in render.js (render dispatch module).
+
+// ═══════════════════════════════════════════════════════════════════════
+// Materials inventory (Fase 4)
+// ═══════════════════════════════════════════════════════════════════════
+function renderMaterials(s) {
+  const panel = $("materialsPanel");
+  if (!panel) return;
+  const mats = s.materials || {};
+  // Ordem: universais (Dim/Pale/Void) depois especiais por mapa.
+  const all = MATERIALS.concat(MAP_MATERIALS);
+  panel.innerHTML = all.map(function (m) {
+    const qty = mats[m.id] || 0;
+    const dim = qty === 0 ? " mat-empty" : "";
+    return `<div class="mat-card rar-${m.rarity}${dim}">
+      <span class="mat-icon">${m.icon}</span>
+      <span class="mat-name">${m.name}</span>
+      <span class="mat-qty">${fmt(qty)}</span>
+    </div>`;
+  }).join("");
+}
 
 // ═══════════════════════════════════════════════════════════════════════
 // Passives View — 3 árvores permanentes

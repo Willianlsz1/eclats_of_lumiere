@@ -134,6 +134,12 @@ const MIGRATIONS = [
     if (s.convergences === undefined) s.convergences = 0;
     return s;
   },
+
+  // v7 → v8: adiciona inventário de materiais (Fase 4).
+  function addMaterialsState(s) {
+    if (!s.materials) s.materials = {};
+    return s;
+  },
 ];
 
 function migrate(state) {

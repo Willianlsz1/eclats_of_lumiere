@@ -1,6 +1,6 @@
 // ===== Loot: equipamento, afixos, crítico, level/rarity up =====
 // Tudo sobre itens e suas operações. Depende de data.js (CONFIG, SLOTS, RARITIES,
-// AFFIXES) e progression.js (totalPowerMult para rarityUpCost).
+// AFFIXES, MATERIALS/MAP_MATERIALS) e progression.js (totalPowerMult).
 
 // --- Item Power ---
 function itemPower(item) {
@@ -111,27 +111,35 @@ function levelUpItem(s, slotId) {
   s.lumens -= cost; item.level++;
   return true;
 }
-function rarityUpCost(s, slotId) {
+// Material necessário para subir a raridade ATUAL do item (DESIGN §37):
+// common→unc = Dim Shard · unc→rare = Pale Fragment · rare→epic = Void Dust ·
+// epic→legendary = material especial do mapa atual. Retorna { id, qty } ou null no topo.
+function rarityUpMaterial(s, slotId) {
   const item = s.equipped[slotId];
-  const base = CONFIG.gear.rarityCostBase * Math.pow(CONFIG.gear.rarityCostGrowth, item.rarity);
-  // Escala com totalPowerMult (mesma progressão da renda de shards via shardBonus).
-  // Resultado: "X kills para upar raridade" é CONSTANTE em qualquer estágio.
-  // Só o Ring (Shard Find) e afixos de shardMult reduzem esse X — incentivo correto.
-  return Math.round(base * totalPowerMult(s));
+  const r = item.rarity;
+  if (r >= RARITIES.length - 1) return null;
+  const qty = CONFIG.gear.rarityMaterialQty[r];
+  let id;
+  if (r === 0)      id = "dimShard";
+  else if (r === 1) id = "paleFragment";
+  else if (r === 2) id = "voidDust";
+  else              id = (MAP_MATERIALS[s.region] || MAP_MATERIALS[0]).id;
+  return { id: id, qty: qty };
 }
 function canRarityUp(s, slotId) {
   const item = s.equipped[slotId];
-  return item.rarity < RARITIES.length - 1
-      && item.level >= rarityCap(item)        // precisa estar no cap atual
-      && s.vestiges >= rarityUpCost(s, slotId);
+  if (item.rarity >= RARITIES.length - 1) return false;
+  if (item.level < rarityCap(item)) return false; // precisa estar no cap atual
+  const need = rarityUpMaterial(s, slotId);
+  return !!need && ((s.materials || {})[need.id] || 0) >= need.qty;
 }
 function rarityUpItem(s, slotId) {
   const item = s.equipped[slotId];
   if (item.rarity >= RARITIES.length - 1) return false;
   if (item.level < rarityCap(item)) return false; // precisa estar no cap
-  const cost = rarityUpCost(s, slotId);
-  if (s.vestiges < cost) return false;
-  s.vestiges -= cost; item.rarity++; // nível mantém; cap agora é maior
+  const need = rarityUpMaterial(s, slotId);
+  if (!need || ((s.materials || {})[need.id] || 0) < need.qty) return false;
+  s.materials[need.id] -= need.qty; item.rarity++; // nível mantém; cap agora é maior
   return true;
 }
 
@@ -141,6 +149,6 @@ if (typeof module !== "undefined") {
     itemAffixes, affixValue, getNewAffix, getDisplayAffixes, affixTotals,
     critRateRaw, critRate, critOverflow, critMult, critExpectedMult,
     levelCostAt, levelUpCost, levelUpMaxPreview, levelUpMax, canLevelUp, levelUpItem,
-    rarityUpCost, canRarityUp, rarityUpItem,
+    rarityUpMaterial, canRarityUp, rarityUpItem,
   };
 }
