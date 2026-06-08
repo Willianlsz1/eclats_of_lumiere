@@ -187,8 +187,8 @@ const WAVE_TIERS = {
 const SLOTS = [
   { id: "Weapon", stats: ["Damage"],                   defaultName: "Sword"   },
   { id: "Armor",  stats: ["Health"],                   defaultName: "Tunic"   },
-  { id: "Amulet", stats: ["Attack Speed", "Gold Find"], defaultName: "Pendant" },
-  { id: "Ring",   stats: ["Shard Find"],               defaultName: "Band"    },
+  { id: "Amulet", stats: ["Attack Speed", "Lumen Find"], defaultName: "Pendant" },
+  { id: "Ring",   stats: ["Vestige Find"],              defaultName: "Band"    },
   { id: "Gloves", stats: ["Crit Damage"],              defaultName: "Grips"   },
   { id: "Helmet", stats: ["Boss Damage"],              defaultName: "Crown"   },
 ];

@@ -93,12 +93,15 @@ const MIGRATIONS = [
   },
   // v3 → v4: adiciona goldStats a saves antigos que não tinham.
   // Fase 0: renomeia gold→lumens e shards→vestiges (idempotente).
+  // NB: load() faz Object.assign(defaultState(), parsed) ANTES de migrar, então
+  // lumens/vestiges já existem (=0) aqui. O gate é a PRESENÇA do campo antigo, não
+  // a ausência do novo — senão o save antigo seria descartado e o jogador perderia tudo.
   function renameCurrencyFields(s) {
-    if (s.gold !== undefined && s.lumens === undefined) {
+    if (s.gold !== undefined) {
       s.lumens = s.gold;
       delete s.gold;
     }
-    if (s.shards !== undefined && s.vestiges === undefined) {
+    if (s.shards !== undefined) {
       s.vestiges = s.shards;
       delete s.shards;
     }
