@@ -8,11 +8,11 @@
 // ═══════════════════════════════════════════════════════════════════════
 const ASSETS = {
   hero: {
-    0: "assets/heroes/seeker.jpg",        // Adventurer
-    1: "assets/heroes/illumine.jpg",      // Warrior
-    2: "assets/heroes/luminary.jpg",      // Champion
-    3: "assets/heroes/transcendent.jpg",  // Legend
-    4: "assets/heroes/transcendent.jpg",  // Mythic (reusa até termos asset próprio)
+    0: "assets/heroes/seeker.jpg",        // Seeker
+    1: "assets/heroes/illumine.jpg",      // Illuminate
+    2: "assets/heroes/luminary.jpg",      // Éclairé
+    3: "assets/heroes/transcendent.jpg",  // L'Éveillé
+    4: "assets/heroes/transcendent.jpg",  // Lumière (reusa até termos asset próprio)
   },
   backgrounds: {
     plains:  "assets/backgrounds/auroral-fields.jpg",
@@ -184,52 +184,59 @@ const WAVE_TIERS = {
 // ═══════════════════════════════════════════════════════════════════════
 // Equipment Slots + Affixes (mantém sistema existente do ADR-0002/0003)
 // ═══════════════════════════════════════════════════════════════════════
+// Nomes das peças — DESIGN §26 (As 6 Peças). Stats principais já alinhados.
 const SLOTS = [
-  { id: "Weapon", stats: ["Damage"],                   defaultName: "Sword"   },
-  { id: "Armor",  stats: ["Health"],                   defaultName: "Tunic"   },
-  { id: "Amulet", stats: ["Attack Speed", "Lumen Find"], defaultName: "Pendant" },
-  { id: "Ring",   stats: ["Vestige Find"],              defaultName: "Band"    },
-  { id: "Gloves", stats: ["Crit Damage"],              defaultName: "Grips"   },
-  { id: "Helmet", stats: ["Boss Damage"],              defaultName: "Crown"   },
+  { id: "Weapon", stats: ["Damage"],                     defaultName: "The Waning Edge"        },
+  { id: "Armor",  stats: ["Health"],                     defaultName: "Veil of Cinders"        },
+  { id: "Amulet", stats: ["Attack Speed", "Lumen Find"], defaultName: "The Last Resonance"     },
+  { id: "Ring",   stats: ["Vestige Find"],               defaultName: "Band of Dusk"           },
+  { id: "Gloves", stats: ["Crit Damage"],                defaultName: "Grasp of the Unnamed"   },
+  { id: "Helmet", stats: ["Boss Damage"],                defaultName: "Crown of Hollow Stars"  },
 ];
 
-// 25 afixos fixos (4 por slot, desbloqueados pela raridade: common=0, uncommon=1, etc.).
+// 30 afixos fixos (5 por slot). Ativados pela raridade (DESIGN §27): common=1 … legendary=5.
 const AFFIXES = {
   Weapon: [
     { stat: "critRate", base: 0.05, perLevel: 0.0003 },
     { stat: "critDmg",  base: 0.30, perLevel: 0.004  },
     { stat: "dmgMult",  base: 0.15, perLevel: 0.003  },
     { stat: "critDmg",  base: 0.60, perLevel: 0.006  },
+    { stat: "dmgMult",  base: 0.40, perLevel: 0.005  }, // §28 #5 (proxy de AoE Damage)
   ],
   Armor: [
     { stat: "hpMult",   base: 0.20, perLevel: 0.004  },
     { stat: "critRate", base: 0.05, perLevel: 0.0003 },
     { stat: "hpMult",   base: 0.35, perLevel: 0.006  },
     { stat: "dmgMult",  base: 0.20, perLevel: 0.003  },
+    { stat: "hpMult",   base: 0.45, perLevel: 0.007  }, // §28 #5 (proxy de Damage Reduction)
   ],
   Amulet: [
     { stat: "goldMult", base: 0.25, perLevel: 0.005  },
     { stat: "xpMult",   base: 0.25, perLevel: 0.005  },
     { stat: "goldMult", base: 0.50, perLevel: 0.007  },
     { stat: "xpMult",   base: 0.50, perLevel: 0.008  },
+    { stat: "goldMult", base: 0.70, perLevel: 0.009  }, // §28 #5 Lumens Multiplier
   ],
   Ring: [
     { stat: "shardMult", base: 0.20, perLevel: 0.004 },
     { stat: "xpMult",    base: 0.20, perLevel: 0.004 },
     { stat: "shardMult", base: 0.40, perLevel: 0.006 },
     { stat: "goldMult",  base: 0.30, perLevel: 0.005 },
+    { stat: "dmgMult",   base: 0.35, perLevel: 0.005 }, // §28 #5 (proxy de All Stats Bonus)
   ],
   Gloves: [
     { stat: "critDmg",  base: 0.20, perLevel: 0.003  },
     { stat: "critRate", base: 0.05, perLevel: 0.0003 },
     { stat: "dmgMult",  base: 0.15, perLevel: 0.003  },
     { stat: "critDmg",  base: 0.50, perLevel: 0.006  },
+    { stat: "critRate", base: 0.08, perLevel: 0.0004 }, // §28 #5 (proxy de Crit Cascade)
   ],
   Helmet: [
     { stat: "bossDmg", base: 0.15, perLevel: 0.003 },
     { stat: "hpMult",  base: 0.20, perLevel: 0.004 },
     { stat: "bossDmg", base: 0.30, perLevel: 0.005 },
     { stat: "dmgMult", base: 0.20, perLevel: 0.003 },
+    { stat: "bossDmg", base: 0.45, perLevel: 0.006 }, // §28 #5 Boss Damage Multiplier
   ],
 };
 
@@ -244,14 +251,17 @@ const RARITIES = [
 
 
 // ═══════════════════════════════════════════════════════════════════════
-// Tiers de classe do herói (Ascension Redesign spec)
+// Tiers de classe do herói — Ordre de Lumière (DESIGN §15).
+// Os 5 tiers mapeiam 1:1 aos 5 mapas: cada Ascensão de mapa avança a Ordre.
+// O nome é DERIVADO de s.ascensions (heroTier) — não persiste no save,
+// então renomear não exige migração. Limiares (minAsc) inalterados.
 // ═══════════════════════════════════════════════════════════════════════
 const TIERS = [
-  { name: "Adventurer", minAsc: 0,    mult: 1.06, spike: 1    },
-  { name: "Warrior",    minAsc: 50,   mult: 1.08, spike: 10   },
-  { name: "Champion",   minAsc: 200,  mult: 1.10, spike: 50   },
-  { name: "Legend",     minAsc: 500,  mult: 1.12, spike: 200  },
-  { name: "Mythic",     minAsc: 1000, mult: 1.15, spike: 1000 },
+  { name: "Seeker",      minAsc: 0,    mult: 1.06, spike: 1    },
+  { name: "Illuminate",  minAsc: 50,   mult: 1.08, spike: 10   },
+  { name: "Éclairé",     minAsc: 200,  mult: 1.10, spike: 50   },
+  { name: "L'Éveillé",   minAsc: 500,  mult: 1.12, spike: 200  },
+  { name: "Lumière",     minAsc: 1000, mult: 1.15, spike: 1000 },
 ];
 
 

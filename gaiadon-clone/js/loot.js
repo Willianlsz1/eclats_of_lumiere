@@ -11,15 +11,16 @@ function slotPower(s, slotId) { return itemPower(s.equipped[slotId]); }
 function rarityCap(item) { return RARITIES[item.rarity].cap; }
 
 // --- Afixos (sub-stats por raridade — ver docs/adr/0003) ---
-// Afixos ativos de um item = os primeiros `rarity` da lista do slot.
-function itemAffixes(slotId, rarity) { return AFFIXES[slotId].slice(0, rarity); }
+// Afixos ativos de um item (DESIGN §27): Common=1 … Legendary=5.
+// rarity é o índice (0=common … 4=legendary), então rarity+1 afixos ativos.
+function itemAffixes(slotId, rarity) { return AFFIXES[slotId].slice(0, rarity + 1); }
 // Valor de um afixo escala com o NÍVEL do item: base + perLevel × nível.
 function affixValue(a, level) { return a.base + a.perLevel * level; }
-// Retorna o afixo desbloqueado ao atingir a nova raridade, ou null se não houver.
-// Esconde a indexação rarity-1 do array AFFIXES — callers não precisam saber a convenção.
+// Retorna o afixo recém-revelado ao subir PARA newRarity (índice newRarity), ou null.
+// Com a convenção rarity+1, subir para a raridade R revela o afixo de índice R.
 function getNewAffix(slotId, newRarity) {
   const pool = AFFIXES[slotId];
-  return pool && pool[newRarity - 1] ? pool[newRarity - 1] : null;
+  return pool && pool[newRarity] ? pool[newRarity] : null;
 }
 // Retorna os afixos de um item com valores pré-calculados (para renderização).
 // Cada entrada: { stat, valuePct, raw } onde raw é o objeto afixo original.

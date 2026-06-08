@@ -90,10 +90,21 @@ test("não sobe raridade fora do cap", () => {
 });
 
 console.log("== Afixos / Crítico ==");
-test("itemAffixes ativa afixos conforme a raridade", () => {
-  assertEqual(game.itemAffixes("Weapon", 0).length, 0);
-  assertEqual(game.itemAffixes("Weapon", 1).length, 1);
-  assertEqual(game.itemAffixes("Weapon", 4).length, 4);
+test("itemAffixes ativa afixos conforme a raridade (DESIGN §27: 1→5)", () => {
+  assertEqual(game.itemAffixes("Weapon", 0).length, 1, "common = 1 afixo");
+  assertEqual(game.itemAffixes("Weapon", 1).length, 2, "uncommon = 2");
+  assertEqual(game.itemAffixes("Weapon", 4).length, 5, "legendary = 5");
+  // Todas as 6 peças têm 5 afixos definidos (para o legendary).
+  ["Weapon","Armor","Amulet","Ring","Gloves","Helmet"].forEach(function(slot) {
+    assertEqual(game.itemAffixes(slot, 4).length, 5, slot + " legendary = 5 afixos");
+  });
+});
+
+test("getNewAffix retorna o afixo correto ao subir raridade", () => {
+  // Subir para legendary (4) revela o 5º afixo (índice 4).
+  const a = game.getNewAffix("Weapon", 4);
+  assert(a && a.stat === "dmgMult", "5º afixo da Weapon = dmgMult");
+  assertEqual(game.getNewAffix("Weapon", 1).stat, AFFIXES.Weapon[1].stat, "subir p/ uncommon revela índice 1");
 });
 
 test("affixTotals soma os afixos dos itens equipados", () => {
@@ -669,6 +680,35 @@ test("convergenceMult clampa em maxMult (sem Infinity)", () => {
   const m = game.convergenceMult(s);
   assert(Number.isFinite(m), "convergenceMult deve ser finito mesmo com convergences absurdo");
   assertEqual(m, CONFIG.convergence.maxMult, "deve clampar exatamente em maxMult");
+});
+
+console.log("\n== Fase 5: peças nomeadas (DESIGN §26) ==");
+test("as 6 peças usam os nomes do DESIGN", () => {
+  const byId = {};
+  SLOTS.forEach(s => byId[s.id] = s.defaultName);
+  assertEqual(byId.Weapon, "The Waning Edge");
+  assertEqual(byId.Armor,  "Veil of Cinders");
+  assertEqual(byId.Amulet, "The Last Resonance");
+  assertEqual(byId.Ring,   "Band of Dusk");
+  assertEqual(byId.Gloves, "Grasp of the Unnamed");
+  assertEqual(byId.Helmet, "Crown of Hollow Stars");
+});
+
+console.log("\n== Fase 2: Ordre de Lumière (tiers) ==");
+test("tiers usam a Ordre de Lumière (Seeker→Lumière)", () => {
+  const names = TIERS.map(t => t.name);
+  assertEqual(names[0], "Seeker", "tier 0 = Seeker");
+  assertEqual(names[1], "Illuminate", "tier 1 = Illuminate");
+  assertEqual(names[2], "Éclairé", "tier 2 = Éclairé");
+  assertEqual(names[3], "L'Éveillé", "tier 3 = L'Éveillé");
+  assertEqual(names[4], "Lumière", "tier 4 = Lumière");
+});
+
+test("heroTier resolve o nome da Ordre conforme ascensões", () => {
+  const s = game.defaultState();
+  s.ascensions = 0;    assertEqual(TIERS[game.heroTier(s)].name, "Seeker");
+  s.ascensions = 50;   assertEqual(TIERS[game.heroTier(s)].name, "Illuminate");
+  s.ascensions = 1000; assertEqual(TIERS[game.heroTier(s)].name, "Lumière");
 });
 
 console.log("\n== Regressão: render robusto ==");

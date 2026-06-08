@@ -142,11 +142,15 @@ section("Integração — VIT aumenta playerMaxHp");
 s = game.defaultState();
 var hp0 = game.playerMaxHp(s);
 
-s.goldStats.vit = 5;  // +50 base HP (×synergy mult ≈ 50-51)
+s.goldStats.vit = 5;  // +50 base HP, amplificado pelos multiplicadores de HP
 var hp5 = game.playerMaxHp(s);
 assert("VIT 5 increases HP", hp5 > hp0, "hp0=" + hp0 + " hp5=" + hp5);
-assert("VIT 5 adds ~50 HP (±rounding)", hp5 - hp0 >= 49 && hp5 - hp0 <= 52,
-  "diff=" + (hp5 - hp0));
+// Delta esperado = 50 base × (1 + hpMult dos afixos) × totalPowerMult (fórmula de playerMaxHp).
+// Robusto à expansão de afixos da Fase 5 (Armor common agora tem afixo hpMult).
+var hpScale = (1 + game.affixTotals(s).hpMult) * game.totalPowerMult(s);
+var expectedDelta = game.goldStatBonus(s, "vit") * hpScale;
+assert("VIT 5 adds 50 base HP (×mults)", Math.abs((hp5 - hp0) - expectedDelta) <= 2,
+  "diff=" + (hp5 - hp0) + " expected≈" + expectedDelta.toFixed(1));
 
 s.goldStats.vit = 0;
 
