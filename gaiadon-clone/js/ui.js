@@ -29,8 +29,9 @@ function equipAssetFor(slotId) {
   const path = ASSETS.equipment[slotId];
   return path && assetExists(path) ? path : null;
 }
-function heroPortraitFor(tierColor) {
-  const path = ASSETS.hero[tierColor];
+// ASSETS.hero é indexado por tier (0–4), não por cor — recebe o índice.
+function heroPortraitFor(tier) {
+  const path = ASSETS.hero[tier];
   return path && assetExists(path) ? path : null;
 }
 
@@ -76,7 +77,7 @@ function renderCombat(s) {
   const hpPct = Math.max(0, (hp / maxHp) * 100);
   const need = xpToNext(s);
   const xpPct = Math.min(100, (s.xp / need) * 100);
-  const portraitPath = heroPortraitFor(tierColor);
+  const portraitPath = heroPortraitFor(tier);
   const portrait = portraitPath
     ? `<img class="hc-portrait tier-${tierColor}" src="${portraitPath}" alt="${t.name}">`
     : `<div class="hc-portrait-emoji">🦸</div>`;
@@ -278,7 +279,7 @@ function renderHero(s) {
   const t = TIERS[tier];
   const tierColor = ["common","uncommon","rare","epic","legendary"][tier];
 
-  const portraitPath = heroPortraitFor(tierColor);
+  const portraitPath = heroPortraitFor(tier);
   const portraitEl = $("heroPortrait");
   if (portraitEl) {
     portraitEl.innerHTML = `

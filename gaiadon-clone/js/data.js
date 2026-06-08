@@ -8,11 +8,11 @@
 // ═══════════════════════════════════════════════════════════════════════
 const ASSETS = {
   hero: {
-    0: "assets/heroes/seeker.jpg",        // Adventurer
-    1: "assets/heroes/illumine.jpg",      // Warrior
-    2: "assets/heroes/luminary.jpg",      // Champion
-    3: "assets/heroes/transcendent.jpg",  // Legend
-    4: "assets/heroes/transcendent.jpg",  // Mythic (reusa até termos asset próprio)
+    0: "assets/heroes/seeker.jpg",        // Seeker
+    1: "assets/heroes/illumine.jpg",      // Illuminate
+    2: "assets/heroes/luminary.jpg",      // Éclairé
+    3: "assets/heroes/transcendent.jpg",  // L'Éveillé
+    4: "assets/heroes/transcendent.jpg",  // Lumière (reusa até termos asset próprio)
   },
   backgrounds: {
     plains:  "assets/backgrounds/auroral-fields.jpg",
@@ -194,7 +194,7 @@ const SLOTS = [
   { id: "Helmet", stats: ["Boss Damage"],                defaultName: "Crown of Hollow Stars"  },
 ];
 
-// 25 afixos fixos (4 por slot, desbloqueados pela raridade: common=0, uncommon=1, etc.).
+// 30 afixos fixos (5 por slot). Ativados pela raridade (DESIGN §27): common=1 … legendary=5.
 const AFFIXES = {
   Weapon: [
     { stat: "critRate", base: 0.05, perLevel: 0.0003 },
