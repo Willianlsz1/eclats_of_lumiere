@@ -17,8 +17,8 @@ function load() {
         const elapsed = (Date.now() - state.lastSeen) / 1000;
         if (elapsed > 60) {
           const g = computeOfflineGains(state, elapsed);
-          if (g.gold > 0 || g.xp > 0 || g.shards > 0) {
-            state.gold += g.gold; state.shards += g.shards; gainXp(state, g.xp);
+          if (g.lumens > 0 || g.xp > 0 || g.vestiges > 0) {
+            state.lumens += g.lumens; state.vestiges += g.vestiges; gainXp(state, g.xp);
             // Acumula kills offline no Region Mastery.
             if (g.kills > 0) {
               addRegionMasteryKills(state, state.region, g.kills);
@@ -122,8 +122,8 @@ function bindButtons() {
     const asc = getAscensionStatus(state);
     if (!asc.canAscend) return;
     const msg = asc.isTierPromo
-      ? `🎉 TIER PROMOTION!\n${asc.tierName} → ${asc.nextTier.name}!\n\n✓ KEEP  — All Equipment & Map Progress\n✗ RESET — Gold, Level, Wave position\n\nPower Spike ×${fmt(asc.nextTier.spike)} will be applied!\n\nAscend?`
-      : `🎖️ Ascension #${asc.ascensionNumber}\n\n✓ KEEP  — All Equipment & Map Progress\n✗ RESET — Gold, Level, Wave position\n\nEach ascension: ×${asc.tierMult.toFixed(2)} to all stats (compounds!)\nYou'll rebuild much faster.\n\nAscend?`;
+      ? `🎉 TIER PROMOTION!\n${asc.tierName} → ${asc.nextTier.name}!\n\n✓ KEEP  — All Equipment & Map Progress\n✗ RESET — Lumens, Level, Wave position\n\nPower Spike ×${fmt(asc.nextTier.spike)} will be applied!\n\nAscend?`
+      : `🎖️ Ascension #${asc.ascensionNumber}\n\n✓ KEEP  — All Equipment & Map Progress\n✗ RESET — Lumens, Level, Wave position\n\nEach ascension: ×${asc.tierMult.toFixed(2)} to all stats (compounds!)\nYou'll rebuild much faster.\n\nAscend?`;
     if (confirm(msg)) {
       ascend(state);
       spawnPack(state); state.playerHp = playerMaxHp(state);
@@ -151,7 +151,7 @@ window.addEventListener("DOMContentLoaded", () => {
   renderAll(state);
   const region = REGIONS[state.region];
   const diff   = DIFFICULTIES[state.difficulty];
-  logMsg(`⚔️ Resuming in ${region.name} · ${diff.name}! Defeat enemies, collect 💰 Gold. Tap 🛡️ Gear to upgrade!`);
+  logMsg(`⚔️ Resuming in ${region.name} · ${diff.name}! Defeat enemies, collect 💰 Lumens. Tap 🛡️ Gear to upgrade!`);
   if (pendingOffline) showOfflineSummary(pendingOffline);
   setInterval(gameLoop, 100);
   setInterval(save, 15000);

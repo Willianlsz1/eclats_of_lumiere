@@ -1,6 +1,6 @@
 // ===== Static game data & balancing (single source of truth) =====
 // Todo texto visível ao jogador em inglês. Comentários podem ficar em português.
-// Fase 1 do plano de implementação: constantes para zonas contínuas, gold stats,
+// Éclats of Lumière — constantes para zonas contínuas, gold stats,
 // artifacts, essence, archetypes. Substitui o modelo antigo de basePower × factors.
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -376,7 +376,25 @@ const CONFIG = {
     damagePerLevel: 1.5, hpPerLevel: 8,
     baseAttackSpeed: 1.0,
   },
-  combat: { baseCritMult: 2.0 },
+  combat: {
+    baseCritMult: 2.0,
+    // Crit overflow: excess Crit Rate above 100% converts to Crit Damage at this ratio.
+    critOverflowToDmg: 1.0,
+  },
+
+  // ── Convergence (rebirth frequente) ───────────────────────────────────
+  // Milestones: ×spikeMultiplier a cada spikeInterval Convergences.
+  // Reutiliza tierSpikeMultiplier() de progression.js para o cálculo.
+  convergence: {
+    spikeMultiplier: 1.5,
+    spikeInterval:   5,
+  },
+
+  // ── Map progression ───────────────────────────────────────────────────
+  // Escala de HP entre mapas (~×1e12 por mapa — ver DESIGN.md §13).
+  map: {
+    hpScalePerMap: 1e12,
+  },
 
   // ── Zonas contínuas: escala de inimigos ────────────────────────────
   // HP do inimigo = interpolação geométrica dentro da zona.

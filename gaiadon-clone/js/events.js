@@ -18,7 +18,7 @@ function dispatchEvents(events, state, ctx) {
   for (const ev of events) {
     if (ev.type === "kill") {
       const tierPrefix = ev.tier === "champion" ? "💀 Champion " : ev.tier === "elite" ? "⚔️ Elite " : "";
-      let msg = `Defeated ${tierPrefix}${ev.name}! +${fmt(ev.gold)} gold, +${fmt(ev.shards)} shards.`;
+      let msg = `Defeated ${tierPrefix}${ev.name}! +${fmt(ev.lumens)} Lumens, +${fmt(ev.vestiges)} Vestiges.`;
       if (ev.leveled) msg += ` Level ${state.level}!`;
       const tierCls = ev.tier === "champion" ? "champion-kill" : ev.tier === "elite" ? "elite-kill" : "";
       logMsg(msg, tierCls || undefined);
@@ -40,7 +40,7 @@ function dispatchEvents(events, state, ctx) {
       }
       if (ev.justMastered) {
         const rName = REGIONS[ev.masteredRegion].name;
-        logMsg(`⭐ ${rName} Mastered! +2% gold/xp/shards forever.`, "mastered");
+        logMsg(`⭐ ${rName} Mastered! +2% Lumens/XP/Vestiges forever.`, "mastered");
       }
     } else if (ev.type === "death") {
       const region = REGIONS[ev.region];

@@ -92,6 +92,20 @@ const MIGRATIONS = [
     return s;
   },
   // v3 → v4: adiciona goldStats a saves antigos que não tinham.
+  // Fase 0: renomeia gold→lumens e shards→vestiges (idempotente).
+  function renameCurrencyFields(s) {
+    if (s.gold !== undefined && s.lumens === undefined) {
+      s.lumens = s.gold;
+      delete s.gold;
+    }
+    if (s.shards !== undefined && s.vestiges === undefined) {
+      s.vestiges = s.shards;
+      delete s.shards;
+    }
+    return s;
+  },
+
+  // v4 → v5: adiciona goldStats a saves antigos que não tinham.
   function addGoldStats(s) {
     if (!s.goldStats) {
       s.goldStats = { str: 0, vit: 0, agi: 0, lck: 0, frt: 0, wis: 0 };

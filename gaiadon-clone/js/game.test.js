@@ -16,7 +16,7 @@ test("defaultState: regionProgress com plains desbloqueada, equipamento common n
   assertEqual(s.region, 0);
   assertEqual(s.difficulty, 0);
   assertEqual(s.wave, 1);
-  assertEqual(s.shards, 0);
+  assertEqual(s.vestiges, 0);
   assertEqual(s.equipped.Weapon.rarity, 0);
   assertEqual(s.equipped.Weapon.level, 1);
   assertEqual(s.ascensions, 0);
@@ -32,18 +32,18 @@ test("itemPower cresce com nível e raridade", () => {
   assert(hiRarity > hiLevel, "mais raridade = mais power");
 });
 
-test("levelUpItem gasta gold e sobe o nível", () => {
+test("levelUpItem gasta lumens e sobe o nível", () => {
   const s = game.defaultState();
-  s.gold = 1000;
+  s.lumens = 1000;
   const before = s.equipped.Weapon.level;
   assert(game.levelUpItem(s, "Weapon"), "deveria comprar nível");
   assertEqual(s.equipped.Weapon.level, before + 1);
-  assert(s.gold < 1000, "deveria gastar gold");
+  assert(s.lumens < 1000, "deveria gastar lumens");
 });
 
 test("levelUpMax compra vários níveis de uma vez", () => {
   const s = game.defaultState();
-  s.gold = 1000;
+  s.lumens = 1000;
   const n = game.levelUpMax(s, "Weapon");
   assert(n > 1, "deveria comprar vários níveis");
   assertEqual(s.equipped.Weapon.level, 1 + n);
@@ -51,32 +51,32 @@ test("levelUpMax compra vários níveis de uma vez", () => {
 
 test("levelUpMax respeita o cap da raridade", () => {
   const s = game.defaultState();
-  s.gold = 1e12;
+  s.lumens = 1e12;
   game.levelUpMax(s, "Weapon");
   assertEqual(s.equipped.Weapon.level, RARITIES[0].cap, "para no cap da common");
 });
 
 test("levelUpMaxPreview bate com a compra real (count e custo)", () => {
   const s = game.defaultState();
-  s.gold = 800;
+  s.lumens = 800;
   const pre = game.levelUpMaxPreview(s, "Weapon");
-  const goldBefore = s.gold;
+  const lumensBefore = s.lumens;
   const n = game.levelUpMax(s, "Weapon");
   assertEqual(pre.count, n, "count previsto = comprado");
-  assertEqual(pre.spent, goldBefore - s.gold, "custo previsto = gasto");
+  assertEqual(pre.spent, lumensBefore - s.lumens, "custo previsto = gasto");
 });
 
 test("nível trava no cap da raridade", () => {
   const s = game.defaultState();
-  s.gold = 1e9;
+  s.lumens = 1e9;
   s.equipped.Weapon.level = RARITIES[0].cap;
   assertEqual(game.levelUpItem(s, "Weapon"), false, "não passa do cap sem subir raridade");
 });
 
-test("rarityUpItem exige estar no cap + shards e libera o próximo cap", () => {
+test("rarityUpItem exige estar no cap + vestiges e libera o próximo cap", () => {
   const s = game.defaultState();
   s.equipped.Weapon.level = RARITIES[0].cap;
-  s.shards = 1e9; s.gold = 1e9;
+  s.vestiges = 1e9; s.lumens = 1e9;
   const r0 = s.equipped.Weapon.rarity;
   assert(game.rarityUpItem(s, "Weapon"), "deveria subir a raridade");
   assertEqual(s.equipped.Weapon.rarity, r0 + 1);
@@ -85,7 +85,7 @@ test("rarityUpItem exige estar no cap + shards e libera o próximo cap", () => {
 
 test("não sobe raridade fora do cap", () => {
   const s = game.defaultState();
-  s.shards = 1e9;
+  s.vestiges = 1e9;
   assertEqual(game.rarityUpItem(s, "Weapon"), false, "precisa estar no cap pra subir raridade");
 });
 
@@ -144,11 +144,11 @@ test("Amulet dá Attack Speed E Gold Find", () => {
 });
 
 console.log("== Combate e regiões ==");
-test("registerKill dá shards", () => {
+test("registerKill dá vestiges", () => {
   const s = game.defaultState();
   game.spawnPack(s);
   const ev = game.registerKill(s);
-  assert(ev.shards > 0, "deveria ganhar shards");
+  assert(ev.vestiges > 0, "deveria ganhar vestiges");
 });
 
 test("Boss kill limpa a dificuldade e desbloqueia próximo conteúdo", () => {
@@ -186,10 +186,10 @@ test("wave avança ao atingir killsPerWave", () => {
 
 test("morte reseta para wave 1 sem punição", () => {
   const s = game.defaultState();
-  s.wave = 3; s.gold = 100; s.shards = 50;
+  s.wave = 3; s.lumens = 100; s.vestiges = 50;
   game.handleDeath(s);
-  assertEqual(s.gold, 100, "não perde gold");
-  assertEqual(s.shards, 50, "não perde shards");
+  assertEqual(s.lumens, 100, "não perde lumens");
+  assertEqual(s.vestiges, 50, "não perde vestiges");
   assertEqual(s.wave, 1, "recua para wave 1");
 });
 
@@ -279,15 +279,15 @@ test("ascender mantém EQUIPAMENTO e regionProgress, reseta recursos", () => {
   const s = game.defaultState();
   s.level = 30;
   s.regionProgress = { 0: [0], 1: [] };
-  s.gold = 999; s.shards = 500;
+  s.lumens = 999; s.vestiges = 500;
   s.equipped.Weapon.rarity = 3; s.equipped.Weapon.level = 120;
   const result = game.ascend(s);
   assertEqual(result, true);
   assertEqual(s.ascensions, 1);
   assertEqual(s.equipped.Weapon.rarity, 3, "equipamento persiste (raridade)");
   assertEqual(s.equipped.Weapon.level, 120, "equipamento persiste (nível)");
-  assertEqual(s.gold, 0, "reseta gold");
-  assertEqual(s.shards, 0, "reseta shards");
+  assertEqual(s.lumens, 0, "reseta lumens");
+  assertEqual(s.vestiges, 0, "reseta vestiges");
   assert("1" in s.regionProgress, "regionProgress persiste");
 });
 
@@ -327,7 +327,7 @@ test("offlineConfig respeita teto de 50% e 24h", () => {
 test("ganhos offline > 0", () => {
   const s = game.defaultState();
   const oneH = game.computeOfflineGains(s, 3600);
-  assert(oneH.gold > 0, "deveria render gold");
+  assert(oneH.lumens > 0, "deveria render lumens");
 });
 
 console.log("== Balanceamento (sanidade) ==");
