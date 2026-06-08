@@ -70,16 +70,16 @@ const ARCHETYPES = {
 
 
 // ═══════════════════════════════════════════════════════════════════════
-// Regions — 5 regiões com zonas contínuas (10 HP → 1.5e16 HP)
+// Regions — 5 mapas (DESIGN §16), escala ×1e12 por mapa (10 HP → ~1e60 HP)
 // ═══════════════════════════════════════════════════════════════════════
-// startPower = HP do 1º inimigo no Normal wave 1.
+// startPower = HP do 1º inimigo no Normal wave 1. Por mapa: 10, 1e12, 1e24, 1e36, 1e48.
 // Cada dificuldade multiplica por powerMult (1, 10, 100).
-// Dentro de cada zona, waves escalam geometricamente: wave 1 = start, última = start × internalScale.
+// Dentro de cada mapa, waves escalam geometricamente: wave 1 = start, última = start × internalScale (1e12).
 //
-// Escala total: Plains Normal wave 1 = 10 HP → Peak Nightmare wave 75 = ~1.5e16 HP
+// Escala total: Mapa 1 wave 1 = 10 HP → Nil Aeternum wave final ≈ 1e60 HP
 const REGIONS = [
   {
-    id: "plains", name: "Auroral Fields", icon: "✨",
+    id: "plains", name: "The Dreaming Wood", icon: "✨",
     cssClass: "region-plains",
     startPower: 10,
     description: "Ethereal meadows where light takes form and fledgling seekers awaken.",
@@ -95,9 +95,9 @@ const REGIONS = [
     boss: { name: "Auroral Sentinel", emoji: "👑" },
   },
   {
-    id: "forest", name: "Umbral Thicket", icon: "🌑",
+    id: "forest", name: "Cavernes Luminis", icon: "🌑",
     cssClass: "region-forest",
-    startPower: 15e3,
+    startPower: 1e12,
     description: "A canopy of living shadows where ancient predators stalk in silence.",
     background: "forest",
     enemies: [
@@ -110,9 +110,9 @@ const REGIONS = [
     boss: { name: "The Hollow Warden", emoji: "👑" },
   },
   {
-    id: "caverns", name: "Crystalline Depths", icon: "💠",
+    id: "caverns", name: "The Ashen Ruins", icon: "💠",
     cssClass: "region-caverns",
-    startPower: 15e6,
+    startPower: 1e24,
     description: "Frozen depths where crystalline formations pulse with forgotten power.",
     background: "caverns",
     enemies: [
@@ -125,9 +125,9 @@ const REGIONS = [
     boss: { name: "Prismatic Colossus", emoji: "👑" },
   },
   {
-    id: "desert", name: "Ashen Reach", icon: "🔥",
+    id: "desert", name: "The Fractured Peaks", icon: "🔥",
     cssClass: "region-desert",
-    startPower: 15e9,
+    startPower: 1e36,
     description: "A scorched wasteland where fire and ruin reign over the broken earth.",
     background: "desert",
     enemies: [
@@ -140,9 +140,9 @@ const REGIONS = [
     boss: { name: "The Scorched King", emoji: "👑" },
   },
   {
-    id: "peak", name: "The Pinnacle", icon: "⚡",
+    id: "peak", name: "Nil Aeternum", icon: "⚡",
     cssClass: "region-peak",
-    startPower: 15e12,
+    startPower: 1e48,
     description: "The summit beyond reality, where cosmic forces clash in eternal war.",
     background: "peak",
     enemies: [
@@ -608,7 +608,7 @@ const CONFIG = {
   //   onde zoneStart = region.startPower × diff.powerMult
   //   e progress = (wave-1) / (totalWaves-1)
   enemy: {
-    internalScale: 10,   // ×10 do início ao fim de cada zona
+    internalScale: 1e12, // HP cresce ×1e12 do início ao fim de cada mapa (DESIGN §16)
     dmgRatio:   0.15,    // enemy DMG = HP × dmgRatio
     goldRatio:  0.5,     // gold reward ≈ HP × goldRatio (ajustado pela escala)
     xpRatio:    0.3,     // xp reward ≈ HP × xpRatio
@@ -714,6 +714,8 @@ const CONFIG = {
 // 1,234 → "1,234" | 12,345 → "12.3K" | 1.5e12 → "1.50T"
 const NUMBER_SUFFIXES = [
   "", "K", "M", "B", "T", "Qa", "Qi", "Sx", "Sp", "Oc", "No", "Dc",
+  // Estendido para a escala dos mapas (DESIGN §16, até ~1e63). Além disso → científico.
+  "Ud", "Dd", "Td", "Qad", "Qid", "Sxd", "Spd", "Ocd", "Nod", "Vg",
 ];
 
 // Formata número grande com sufixo. Usado em toda a UI.
@@ -722,12 +724,14 @@ function fmt(n) {
   // Um único campo ausente não pode abortar todo o renderAll. Infinity vai pra fmtCap.
   if (typeof n !== "number" || Number.isNaN(n)) n = 0;
   if (n < 1e4) return Math.floor(n).toLocaleString("en-US");
+  const orig = n;
   let tier = 0;
   while (n >= 1e3 && tier < NUMBER_SUFFIXES.length - 1) {
     n /= 1e3;
     tier++;
   }
-  if (tier >= NUMBER_SUFFIXES.length) return n.toExponential(2);
+  // Esgotou a tabela de sufixos e ainda é grande → notação científica (ex. "1.00e+72").
+  if (n >= 1e3) return orig.toExponential(2);
   return (n >= 100 ? Math.floor(n) : n.toFixed(n >= 10 ? 1 : 2)) + NUMBER_SUFFIXES[tier];
 }
 

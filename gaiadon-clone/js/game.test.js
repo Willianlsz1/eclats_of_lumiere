@@ -380,7 +380,7 @@ test("o primeiro abate acontece em menos de 3s (design: 1.5-3s)", () => {
 
 test("região difícil mata jogador fresco rapidamente", () => {
   const s = game.defaultState();
-  s.region = 4; // Peak (startPower 15e12)
+  s.region = 4; // Nil Aeternum (startPower 1e48)
   s.difficulty = 0;
   game.spawnPack(s); s.playerHp = game.playerMaxHp(s);
   let died = false, killed = false;
@@ -405,25 +405,27 @@ test("isRegionUnlocked e isDifficultyUnlocked funcionam corretamente", () => {
   assert(isDifficultyUnlocked(s, 0, 1), "Hard desbloqueada após limpar Normal");
 });
 
-test("enemyStatsFor retorna stats consistentes (contínuo)", () => {
-  const plains = enemyStatsFor(0, 0, 1); // Plains Normal Wave 1
-  // Nova fórmula: startPower=10, progress=0 → HP=10, DMG=2 (10×0.15), Gold=5 (10×0.5)
-  assertEqual(plains.hp, 10, "Plains Normal Wave 1 HP = 10");
-  assertEqual(plains.dmg, 2, "Plains Normal Wave 1 DMG = 2");
-  assertEqual(plains.gold, 5, "Plains Normal Wave 1 Gold = 5");
+test("enemyStatsFor: escala de HP por mapa segue o DESIGN §16 (×1e12/mapa)", () => {
+  const m1 = enemyStatsFor(0, 0, 1); // The Dreaming Wood, Normal, Wave 1
+  assertEqual(m1.hp, 10, "Mapa 1 Wave 1 HP = 10");
+  assertEqual(m1.dmg, 2, "DMG = 2 (10×0.15)");
+  assertEqual(m1.gold, 5, "Gold = 5 (10×0.5)");
 
-  const forest = enemyStatsFor(1, 0, 1); // Forest Normal Wave 1
-  assertEqual(forest.hp, 15000, "Forest Normal Wave 1 HP = 15,000");
-  assert(forest.hp > plains.hp, "Forest deve ser mais forte que Plains");
+  // startPower por mapa: 10 → 1e12 → 1e24 → 1e36 → 1e48 (DESIGN §16).
+  assertEqual(enemyStatsFor(1, 0, 1).hp, 1e12, "Mapa 2 Wave 1 HP = 1e12");
+  assertEqual(enemyStatsFor(2, 0, 1).hp, 1e24, "Mapa 3 Wave 1 HP = 1e24");
+  assertEqual(enemyStatsFor(3, 0, 1).hp, 1e36, "Mapa 4 Wave 1 HP = 1e36");
+  assertEqual(enemyStatsFor(4, 0, 1).hp, 1e48, "Mapa 5 Wave 1 HP = 1e48");
 
-  const hard = enemyStatsFor(0, 1, 1); // Plains Hard Wave 1
-  assertEqual(hard.hp, 100, "Plains Hard Wave 1 HP = 100 (10 × powerMult 10)");
-  assert(hard.hp > plains.hp, "Hard deve ter mais HP que Normal");
-  assert(hard.gold > plains.gold, "Hard deve dar mais gold que Normal");
+  // Dentro de um mapa, HP cresce ×internalScale (1e12) da wave 1 à última (30 no Normal).
+  const last = enemyStatsFor(0, 0, 30);
+  assertEqual(last.hp, 1e13, "Mapa 1 wave 30 = 10 × 1e12 = 1e13");
+  assert(last.hp > m1.hp, "HP cresce ao longo das waves");
 
-  // Continuidade: Normal last = Hard first
-  const normalLast = enemyStatsFor(0, 0, 30);
-  assertEqual(normalLast.hp, hard.hp, "Normal w30 = Hard w1 (continuidade)");
+  // Dificuldade ainda multiplica o HP base.
+  const hard = enemyStatsFor(0, 1, 1); // Mapa 1 Hard Wave 1
+  assertEqual(hard.hp, 100, "Hard Wave 1 = 10 × powerMult 10");
+  assert(hard.gold > m1.gold, "Hard dá mais gold que Normal");
 });
 
 console.log("== Fase 1 — Combate Core ==");

@@ -1,6 +1,6 @@
 // ===== Zones: continuous scaling, archetypes, wave tiers, mastery =====
-// Phase 2 — zonas contínuas (10 HP → 1.5e16 HP).
-// Enemy HP = interpolação geométrica dentro de cada zona.
+// 5 mapas (DESIGN §16) — escala ×1e12 por mapa (10 HP → ~1e60 HP).
+// Enemy HP = interpolação geométrica dentro de cada mapa.
 // Depende de data.js (CONFIG, REGIONS, DIFFICULTIES, ARCHETYPES, WAVE_TIERS).
 
 // --- Helpers de região/dificuldade ---
@@ -17,7 +17,7 @@ function isBossWave(wave, diffIdx) { return wave >= totalWaves(diffIdx); }
 //   wave 1 = zoneStart, wave final = zoneStart × internalScale
 //   zoneStart = region.startPower × diff.powerMult
 //
-// Resultado: Plains Normal wave 1 = 10 HP → Peak Nightmare wave 75 ≈ 15 Qa HP
+// Resultado: Mapa 1 Normal wave 1 = 10 HP → Nil Aeternum wave final ≈ 1e60 HP
 
 function enemyStatsFor(regionIdx, diffIdx, wave) {
   const region = REGIONS[regionIdx];
