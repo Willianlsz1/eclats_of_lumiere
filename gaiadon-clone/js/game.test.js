@@ -90,10 +90,21 @@ test("não sobe raridade fora do cap", () => {
 });
 
 console.log("== Afixos / Crítico ==");
-test("itemAffixes ativa afixos conforme a raridade", () => {
-  assertEqual(game.itemAffixes("Weapon", 0).length, 0);
-  assertEqual(game.itemAffixes("Weapon", 1).length, 1);
-  assertEqual(game.itemAffixes("Weapon", 4).length, 4);
+test("itemAffixes ativa afixos conforme a raridade (DESIGN §27: 1→5)", () => {
+  assertEqual(game.itemAffixes("Weapon", 0).length, 1, "common = 1 afixo");
+  assertEqual(game.itemAffixes("Weapon", 1).length, 2, "uncommon = 2");
+  assertEqual(game.itemAffixes("Weapon", 4).length, 5, "legendary = 5");
+  // Todas as 6 peças têm 5 afixos definidos (para o legendary).
+  ["Weapon","Armor","Amulet","Ring","Gloves","Helmet"].forEach(function(slot) {
+    assertEqual(game.itemAffixes(slot, 4).length, 5, slot + " legendary = 5 afixos");
+  });
+});
+
+test("getNewAffix retorna o afixo correto ao subir raridade", () => {
+  // Subir para legendary (4) revela o 5º afixo (índice 4).
+  const a = game.getNewAffix("Weapon", 4);
+  assert(a && a.stat === "dmgMult", "5º afixo da Weapon = dmgMult");
+  assertEqual(game.getNewAffix("Weapon", 1).stat, AFFIXES.Weapon[1].stat, "subir p/ uncommon revela índice 1");
 });
 
 test("affixTotals soma os afixos dos itens equipados", () => {

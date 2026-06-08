@@ -201,36 +201,42 @@ const AFFIXES = {
     { stat: "critDmg",  base: 0.30, perLevel: 0.004  },
     { stat: "dmgMult",  base: 0.15, perLevel: 0.003  },
     { stat: "critDmg",  base: 0.60, perLevel: 0.006  },
+    { stat: "dmgMult",  base: 0.40, perLevel: 0.005  }, // §28 #5 (proxy de AoE Damage)
   ],
   Armor: [
     { stat: "hpMult",   base: 0.20, perLevel: 0.004  },
     { stat: "critRate", base: 0.05, perLevel: 0.0003 },
     { stat: "hpMult",   base: 0.35, perLevel: 0.006  },
     { stat: "dmgMult",  base: 0.20, perLevel: 0.003  },
+    { stat: "hpMult",   base: 0.45, perLevel: 0.007  }, // §28 #5 (proxy de Damage Reduction)
   ],
   Amulet: [
     { stat: "goldMult", base: 0.25, perLevel: 0.005  },
     { stat: "xpMult",   base: 0.25, perLevel: 0.005  },
     { stat: "goldMult", base: 0.50, perLevel: 0.007  },
     { stat: "xpMult",   base: 0.50, perLevel: 0.008  },
+    { stat: "goldMult", base: 0.70, perLevel: 0.009  }, // §28 #5 Lumens Multiplier
   ],
   Ring: [
     { stat: "shardMult", base: 0.20, perLevel: 0.004 },
     { stat: "xpMult",    base: 0.20, perLevel: 0.004 },
     { stat: "shardMult", base: 0.40, perLevel: 0.006 },
     { stat: "goldMult",  base: 0.30, perLevel: 0.005 },
+    { stat: "dmgMult",   base: 0.35, perLevel: 0.005 }, // §28 #5 (proxy de All Stats Bonus)
   ],
   Gloves: [
     { stat: "critDmg",  base: 0.20, perLevel: 0.003  },
     { stat: "critRate", base: 0.05, perLevel: 0.0003 },
     { stat: "dmgMult",  base: 0.15, perLevel: 0.003  },
     { stat: "critDmg",  base: 0.50, perLevel: 0.006  },
+    { stat: "critRate", base: 0.08, perLevel: 0.0004 }, // §28 #5 (proxy de Crit Cascade)
   ],
   Helmet: [
     { stat: "bossDmg", base: 0.15, perLevel: 0.003 },
     { stat: "hpMult",  base: 0.20, perLevel: 0.004 },
     { stat: "bossDmg", base: 0.30, perLevel: 0.005 },
     { stat: "dmgMult", base: 0.20, perLevel: 0.003 },
+    { stat: "bossDmg", base: 0.45, perLevel: 0.006 }, // §28 #5 Boss Damage Multiplier
   ],
 };
 
