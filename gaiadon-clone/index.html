@@ -130,6 +130,19 @@
         <p id="ascInfo"></p>
         <button id="ascendBtn">Ascend</button>
       </section>
+
+      <section class="panel convergence-panel">
+        <h2>🔄 Convergence <span id="cvCount" class="hero-level">0</span></h2>
+        <p class="panel-hint">Free rebirth — resets level &amp; gold, keeps gear, passives &amp; map progress.<br>
+          Each convergence stacks a permanent power multiplier.</p>
+        <div class="cv-stats">
+          <div class="cv-row"><span class="cv-label">Current mult</span><span id="cvCurrent" class="cv-value">×1</span></div>
+          <div class="cv-row"><span class="cv-label">After next</span><span id="cvNext" class="cv-value">×1.20</span></div>
+          <div class="cv-row"><span class="cv-label">Next spike in</span><span id="cvSpikeIn" class="cv-value">5 convergences</span></div>
+        </div>
+        <p id="cvHint" class="cv-hint">Converge any time to bank your current mult.</p>
+        <button id="convergeBtn" class="converge-btn">Converge</button>
+      </section>
     </div>
 
     <!-- VIEW: Equipment -->

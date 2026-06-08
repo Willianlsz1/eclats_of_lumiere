@@ -562,4 +562,87 @@ test("passivas persistem após ascend, bossKills reseta", () => {
   assertEqual(s.totalVestgesSpent, 999, "totalVestgesSpent deve persistir");
 });
 
+console.log("\n== Fase 2: Convergence ==");
+test("defaultState tem convergences: 0", () => {
+  const s = game.defaultState();
+  assertEqual(s.convergences, 0, "convergences deve iniciar em 0");
+});
+
+test("convergenceMult: 0 convergências = 1", () => {
+  const s = game.defaultState();
+  assertEqual(game.convergenceMult(s), 1, "sem convergências, mult deve ser 1");
+});
+
+test("convergenceMult: 1 convergência = 1.20", () => {
+  const s = game.defaultState();
+  s.convergences = 1;
+  const m = game.convergenceMult(s);
+  assert(Math.abs(m - 1.20) < 0.0001, `esperado 1.20, obtido ${m}`);
+});
+
+test("convergenceMult: 4 convergências = 1.20^4", () => {
+  const s = game.defaultState();
+  s.convergences = 4;
+  const expected = Math.pow(1.20, 4);
+  const m = game.convergenceMult(s);
+  assert(Math.abs(m - expected) < 0.001, `esperado ${expected.toFixed(4)}, obtido ${m.toFixed(4)}`);
+});
+
+test("convergenceMult: 5 convergências = 1.20^4 × 1.12 × spike(×1.5)", () => {
+  const s = game.defaultState();
+  s.convergences = 5;
+  const m = game.convergenceMult(s);
+  const expected = Math.pow(1.20, 4) * Math.pow(1.12, 1) * 1.5;
+  assert(Math.abs(m - expected) < 0.001, `esperado ${expected.toFixed(4)}, obtido ${m.toFixed(4)}`);
+});
+
+test("convergenceRecommended: true em 0 convergências (+20% ≥ 5%)", () => {
+  const s = game.defaultState();
+  assert(game.convergenceRecommended(s), "primeiro convergence sempre recommended (+20%)");
+});
+
+test("getConvergenceStatus: campos corretos", () => {
+  const s = game.defaultState();
+  s.convergences = 2;
+  const cv = game.getConvergenceStatus(s);
+  assertEqual(cv.convergences, 2, "convergences correto");
+  assert(cv.currentMult > 1, "currentMult > 1");
+  assert(cv.nextMult > cv.currentMult, "nextMult > currentMult");
+  assert(cv.gainPct > 0, "gainPct > 0");
+});
+
+test("converge: incrementa convergences, reseta level/lumens, preserva passivas e ascensions", () => {
+  const s = game.defaultState();
+  s.level = 20;
+  s.lumens = 500;
+  s.ascensions = 3;
+  s.passives.radiantStrike = 2;
+  s.convergences = 1;
+  game.converge(s);
+  assertEqual(s.convergences, 2, "convergences deve incrementar");
+  assertEqual(s.ascensions, 3, "ascensions deve ser preservado");
+  assertEqual(s.level, 1, "level deve resetar");
+  assertEqual(s.lumens, 0, "lumens deve resetar");
+  assertEqual(s.passives.radiantStrike, 2, "passivas devem persistir");
+});
+
+test("ascend preserva convergences", () => {
+  const s = game.defaultState();
+  s.convergences = 3;
+  s.level = 30;
+  s.regionProgress = { 0: [0] };
+  game.ascend(s);
+  assertEqual(s.convergences, 3, "convergences deve persistir após ascend");
+});
+
+test("convergenceMult integrado em totalPowerMult", () => {
+  const s0 = game.defaultState();
+  const s1 = game.defaultState();
+  s1.convergences = 1;
+  const p0 = game.totalPowerMult(s0);
+  const p1 = game.totalPowerMult(s1);
+  assert(p1 > p0, "totalPowerMult deve crescer com convergências");
+  assert(Math.abs(p1 / p0 - 1.20) < 0.001, "ganho de 1 convergência deve ser ×1.20 no totalPowerMult");
+});
+
 report();

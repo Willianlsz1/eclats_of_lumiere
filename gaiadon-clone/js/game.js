@@ -9,6 +9,7 @@ function defaultState() {
     level: 1,
     xp: 0,
     ascensions: 0,
+    convergences: 0,
     totalKills: 0,
 
     // World Map state
@@ -323,6 +324,49 @@ function tick(s, dt) {
 }
 
 // --- Ascensão (prestígio) ---
+// ═══════════════════════════════════════════════════════════════════════
+// Convergence — lightweight rebirth nested inside ascensions
+// ═══════════════════════════════════════════════════════════════════════
+// Free trigger (no gate). Resets level/xp/lumens; keeps everything else.
+// Each convergence compounds a permanent power multiplier via convergenceMult().
+
+function canConverge(s) {
+  return true;
+}
+
+function getConvergenceStatus(s) {
+  const n       = s.convergences || 0;
+  const current = convergenceMult(s);
+  const next    = convergenceMult({ convergences: n + 1 });
+  const gainPct = (next / current - 1) * 100;
+  return {
+    convergences: n,
+    currentMult:  current,
+    nextMult:     next,
+    gainPct,
+    recommended:  convergenceRecommended(s),
+  };
+}
+
+function converge(s) {
+  const keepConvergences   = (s.convergences || 0) + 1;
+  const keepAscensions     = s.ascensions;
+  const keepEquipped       = s.equipped;
+  const keepRegionProgress = s.regionProgress || { 0: [] };
+  const keepRegionMastery  = s.regionMastery  || {};
+  const keepPassives       = s.passives || {};
+  const keepVestgesSpent   = s.totalVestgesSpent || 0;
+  Object.assign(s, defaultState());
+  s.convergences      = keepConvergences;
+  s.ascensions        = keepAscensions;
+  s.equipped          = keepEquipped;
+  s.regionProgress    = keepRegionProgress;
+  s.regionMastery     = keepRegionMastery;
+  s.passives          = keepPassives;
+  s.totalVestgesSpent = keepVestgesSpent;
+  return true;
+}
+
 function canAscend(s) {
   return s.level >= CONFIG.ascension.firstReqLevel
       && stagesCleared(s) >= ascStagesRequired(s);
@@ -354,6 +398,7 @@ function getAscensionStatus(s) {
 function ascend(s) {
   if (!canAscend(s)) return false;
   const keepAscensions     = s.ascensions + 1;
+  const keepConvergences   = s.convergences || 0;
   const keepEquipped       = s.equipped;
   const keepRegionProgress = s.regionProgress || { 0: [] };
   const keepRegionMastery  = s.regionMastery  || {};
@@ -361,6 +406,7 @@ function ascend(s) {
   const keepVestgesSpent   = s.totalVestgesSpent || 0;
   Object.assign(s, defaultState());
   s.ascensions        = keepAscensions;
+  s.convergences      = keepConvergences;
   s.equipped          = keepEquipped;
   s.regionProgress    = keepRegionProgress;
   s.regionMastery     = keepRegionMastery;
@@ -395,6 +441,7 @@ if (typeof module !== "undefined") {
     goldBonus, xpMultiplier, shardBonus, bossDmgMult,
     xpToNext, gainXp,
     enterRegion, registerKill, handleDeath, tick,
+    canConverge, getConvergenceStatus, converge,
     canAscend, getAscensionStatus, ascend,
     computeOfflineGains,
   };

@@ -550,6 +550,11 @@ const CONFIG = {
   convergence: {
     spikeMultiplier: 1.5,
     spikeInterval:   5,
+    mult1:        1.20,  // convergences 1–4
+    mult2:        1.12,  // convergences 5–8
+    additive:     0.05,  // convergences 9+: +5% each (compounding via ×(1+n*0.05))
+    switchPoint1: 4,
+    switchPoint2: 8,
   },
 
   // ── Map progression ───────────────────────────────────────────────────

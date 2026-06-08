@@ -51,8 +51,43 @@ function synergySurgeMult(s) {
   const n = synergySurgeCount(s);
   return n > 0 ? Math.pow(CONFIG.synergy.surgeMultiplier, n) : 1;
 }
+function convergenceMult(s) {
+  const n = s.convergences || 0;
+  if (n === 0) return 1;
+  const C = CONFIG.convergence;
+  let mult = 1;
+
+  // Segment 1: convergences 1–switchPoint1 (×mult1 each)
+  const n1 = Math.min(n, C.switchPoint1);
+  if (n1 > 0) mult *= Math.pow(C.mult1, n1);
+
+  // Segment 2: convergences switchPoint1+1–switchPoint2 (×mult2 each)
+  if (n > C.switchPoint1) {
+    const n2 = Math.min(n - C.switchPoint1, C.switchPoint2 - C.switchPoint1);
+    mult *= Math.pow(C.mult2, n2);
+  }
+
+  // Segment 3: convergences switchPoint2+1+ (+additive% each, applied multiplicatively)
+  if (n > C.switchPoint2) {
+    mult *= 1 + (n - C.switchPoint2) * C.additive;
+  }
+
+  // Spike ×spikeMultiplier every spikeInterval convergences
+  const spikes = Math.floor(n / C.spikeInterval);
+  if (spikes > 0) mult *= Math.pow(C.spikeMultiplier, spikes);
+
+  return mult;
+}
+
+// Returns true if the next convergence yields ≥5% power gain.
+function convergenceRecommended(s) {
+  const current = convergenceMult(s);
+  const next    = convergenceMult({ convergences: (s.convergences || 0) + 1 });
+  return (next / current - 1) >= 0.05;
+}
+
 function totalPowerMult(s) {
-  return ascMultiplier(s) * synergyBonusMult(s) * synergySurgeMult(s);
+  return ascMultiplier(s) * convergenceMult(s) * synergyBonusMult(s) * synergySurgeMult(s);
 }
 
 // Stats POR NÍVEL crescem a cada ascensão.
@@ -91,6 +126,7 @@ function offlineConfig(s) {
 if (typeof module !== "undefined") {
   module.exports = {
     heroTier, tierSpikeMultiplier, ascMultiplier,
+    convergenceMult, convergenceRecommended,
     synergyLevel, synergyBonusMult, synergySurgeCount, synergySurgeMult, totalPowerMult,
     perLevelMult, damagePerLevel, hpPerLevel,
     totalStages, ascStagesRequired, stagesCleared,

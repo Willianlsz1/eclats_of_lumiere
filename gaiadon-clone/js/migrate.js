@@ -128,6 +128,12 @@ const MIGRATIONS = [
     if (s.totalVestgesSpent === undefined) s.totalVestgesSpent = 0;
     return s;
   },
+
+  // v6 → v7: adiciona convergences (Fase 2).
+  function addConvergencesField(s) {
+    if (s.convergences === undefined) s.convergences = 0;
+    return s;
+  },
 ];
 
 function migrate(state) {
