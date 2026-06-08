@@ -4,7 +4,7 @@
 // criado por createEventCtx(). main.js cria um; testes podem criar um fresh.
 
 function createEventCtx() {
-  return { floatAccum: 0, floatTick: 0, prevSurgeCount: -1 };
+  return { floatAccum: 0, floatTick: 0, prevSurgeCount: -1, floatCritTier: "normal" };
 }
 
 function dispatchEvents(events, state, ctx) {
@@ -48,21 +48,24 @@ function dispatchEvents(events, state, ctx) {
       logMsg(`💀 Defeated on wave ${ev.diedOnWave}! Retreating to wave 1 — upgrade gear 🛡️ to push through!`);
     } else if (ev.type === "hit") {
       ctx.floatAccum += ev.amount;
+      // Acumula o tier mais alto visto neste intervalo de flush.
+      if (ev.critTier === "radiant") ctx.floatCritTier = "radiant";
+      else if (ev.critTier === "crit" && ctx.floatCritTier === "normal") ctx.floatCritTier = "crit";
     }
   }
 
   // Flush the accumulated damage every 3 ticks (~300ms).
   if (++ctx.floatTick >= 3) {
     if (ctx.floatAccum > 0) {
-      const isBoss = state.enemies && state.enemies[0] && state.enemies[0].isBoss;
-      const isCrit = critRate(state) > 0 && Math.random() < critRate(state);
-      const shown = isCrit ? ctx.floatAccum * critMult(state) : ctx.floatAccum;
-      spawnFloatingDamage(shown, isBoss, isCrit);
+      const isBoss    = state.enemies && state.enemies[0] && state.enemies[0].isBoss;
+      const isCrit    = ctx.floatCritTier !== "normal";
+      const isRadiant = ctx.floatCritTier === "radiant";
+      spawnFloatingDamage(ctx.floatAccum, isBoss, isCrit, isRadiant);
       const nm = $("enemyName");
       if (nm) { nm.classList.add("hit"); setTimeout(() => nm.classList.remove("hit"), 120); }
       const em = $("enemySprite");
       if (em) { em.classList.add("emoji-hit"); setTimeout(() => em.classList.remove("emoji-hit"), 220); }
     }
-    ctx.floatAccum = 0; ctx.floatTick = 0;
+    ctx.floatAccum = 0; ctx.floatTick = 0; ctx.floatCritTier = "normal";
   }
 }

@@ -52,7 +52,7 @@ function gameLoop() {
   scheduleRender(new Set(["resources", "combat", "hero"]), state);
   if (events.some(e => e.type === "kill")) eqDirty = true;
   if (eqDirty && ++eqTick >= 5) {
-    scheduleRender(new Set(["equipment", "ascension"]), state);
+    scheduleRender(new Set(["equipment", "ascension", "passives"]), state);
     eqDirty = false; eqTick = 0;
   }
   // Re-render map when a difficulty is cleared (to show new unlocks).
@@ -69,7 +69,7 @@ function bindButtons() {
       document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
       btn.classList.add("active");
       document.getElementById("view-" + btn.dataset.view).classList.add("active");
-      const VIEW_CAT = { stats: "hero", ascension: "ascension", equipment: "equipment", map: "map", train: "goldStats" };
+      const VIEW_CAT = { stats: "hero", ascension: "ascension", equipment: "equipment", map: "map", train: "goldStats", passives: "passives" };
       const cat = VIEW_CAT[btn.dataset.view];
       if (cat) scheduleRender(new Set([cat]), state);
     });
@@ -117,13 +117,25 @@ function bindButtons() {
     }
   });
 
+  // ── Passivas (delegação) ──
+  $("passivesPanel").addEventListener("click", function(e) {
+    var btn = e.target.closest("button.pn-btn[data-passive-id]");
+    if (!btn || btn.disabled) return;
+    var id = btn.dataset.passiveId;
+    if (buyPassive(state, id)) {
+      var def = passiveDef(id);
+      logMsg("🌿 " + def.name + " Lv " + passiveLevel(state, id) + "!");
+      scheduleRender(new Set(["resources", "passives", "hero"]), state);
+    }
+  });
+
   // ── Ascensão ──
   $("ascendBtn").onclick = () => {
     const asc = getAscensionStatus(state);
     if (!asc.canAscend) return;
     const msg = asc.isTierPromo
-      ? `🎉 TIER PROMOTION!\n${asc.tierName} → ${asc.nextTier.name}!\n\n✓ KEEP  — All Equipment & Map Progress\n✗ RESET — Lumens, Level, Wave position\n\nPower Spike ×${fmt(asc.nextTier.spike)} will be applied!\n\nAscend?`
-      : `🎖️ Ascension #${asc.ascensionNumber}\n\n✓ KEEP  — All Equipment & Map Progress\n✗ RESET — Lumens, Level, Wave position\n\nEach ascension: ×${asc.tierMult.toFixed(2)} to all stats (compounds!)\nYou'll rebuild much faster.\n\nAscend?`;
+      ? `🎉 TIER PROMOTION!\n${asc.tierName} → ${asc.nextTier.name}!\n\n✓ KEEP  — All Equipment & Map Progress\n✗ RESET — Gold, Level, Wave position\n\nPower Spike ×${fmt(asc.nextTier.spike)} will be applied!\n\nAscend?`
+      : `🎖️ Ascension #${asc.ascensionNumber}\n\n✓ KEEP  — All Equipment & Map Progress\n✗ RESET — Gold, Level, Wave position\n\nEach ascension: ×${asc.tierMult.toFixed(2)} to all stats (compounds!)\nYou'll rebuild much faster.\n\nAscend?`;
     if (confirm(msg)) {
       ascend(state);
       spawnPack(state); state.playerHp = playerMaxHp(state);
@@ -151,7 +163,7 @@ window.addEventListener("DOMContentLoaded", () => {
   renderAll(state);
   const region = REGIONS[state.region];
   const diff   = DIFFICULTIES[state.difficulty];
-  logMsg(`⚔️ Resuming in ${region.name} · ${diff.name}! Defeat enemies, collect 💰 Lumens. Tap 🛡️ Gear to upgrade!`);
+  logMsg(`⚔️ Resuming in ${region.name} · ${diff.name}! Defeat enemies, collect 💰 Gold. Tap 🛡️ Gear to upgrade!`);
   if (pendingOffline) showOfflineSummary(pendingOffline);
   setInterval(gameLoop, 100);
   setInterval(save, 15000);

@@ -1,11 +1,11 @@
 // Carrega todos os módulos em ordem de dependência -> globalThis, depois roda os testes.
 const data = require("./data.js");
 Object.assign(globalThis, data);
-for (const f of ["./progression.js", "./loot.js", "./zones.js", "./game.js"]) {
+for (const f of ["./progression.js", "./passives.js", "./loot.js", "./zones.js", "./game.js"]) {
   Object.assign(globalThis, require(f));
 }
 const game = {};
-for (const f of ["./progression.js", "./loot.js", "./zones.js", "./game.js"]) {
+for (const f of ["./progression.js", "./passives.js", "./loot.js", "./zones.js", "./game.js"]) {
   Object.assign(game, require(f));
 }
 const { test, assert, assertEqual, report } = require("./_assert.js");
@@ -389,6 +389,177 @@ test("enemyStatsFor retorna stats consistentes (contínuo)", () => {
   // Continuidade: Normal last = Hard first
   const normalLast = enemyStatsFor(0, 0, 30);
   assertEqual(normalLast.hp, hard.hp, "Normal w30 = Hard w1 (continuidade)");
+});
+
+console.log("== Fase 1 — Combate Core ==");
+test("critMult inclui overflow: crit rate > 100% converte para crit damage", () => {
+  const s = game.defaultState();
+  const baseMult = game.critMult(s);
+  // lck=220 → 220 × 0.005 = 1.1 crit rate → overflow = 0.1
+  s.goldStats.lck = 220;
+  const overflow = game.critOverflow(s);
+  assert(overflow > 0, "deve haver overflow com lck 220 (1.1 crit rate > 1.0)");
+  assert(game.critMult(s) > baseMult, "overflow deve aumentar critMult");
+  // overflow × critOverflowToDmg deve ser exatamente o bônus adicionado
+  const expected = baseMult + overflow * CONFIG.combat.critOverflowToDmg;
+  assert(Math.abs(game.critMult(s) - expected) < 0.001, "critMult = base + overflow × fator");
+});
+
+test("critExpectedMult segue a fórmula EV = 1 + rate × (mult − 1)", () => {
+  const s = game.defaultState();
+  s.equipped.Weapon.rarity = 2;
+  const rate = game.critRate(s);
+  const mult = game.critMult(s);
+  const ev   = game.critExpectedMult(s);
+  const expected = 1 + rate * (mult - 1);
+  assert(Math.abs(ev - expected) < 0.001, `EV esperado ${expected.toFixed(4)}, obtido ${ev.toFixed(4)}`);
+});
+
+test("defenseReduction: 0=0%, 100≈20%, 1000≈30%, 10000=40%", () => {
+  assert(game.defenseReduction(0)     === 0,                    "0 def → 0% redução");
+  assert(Math.abs(game.defenseReduction(100)   - 0.2) < 0.001, "100 def → 20%");
+  assert(Math.abs(game.defenseReduction(1000)  - 0.3) < 0.001, "1.000 def → 30%");
+  assert(Math.abs(game.defenseReduction(10000) - 0.4) < 0.001, "10.000 def → 40%");
+});
+
+test("hpRegenPerSec: level × regenPerLevel", () => {
+  const s = game.defaultState();
+  s.level = 10;
+  const expected = 10 * CONFIG.combat.regenPerLevel;
+  assert(game.hpRegenPerSec(s) === expected, `esperado ${expected}, obtido ${game.hpRegenPerSec(s)}`);
+});
+
+test("HP regen é aplicado no tick (jogador cura ao longo do tempo)", () => {
+  const s = game.defaultState();
+  s.level = 30; // regen 3 HP/s
+  game.spawnPack(s);
+  s.enemies.forEach(e => { e.dmg = 0; }); // anula dano recebido
+  s.playerHp = 10; // HP baixo
+  game.tick(s, 1);  // 1 segundo
+  assert(s.playerHp > 10, "regen deve aumentar o HP");
+});
+
+test("attackSpeed usa fórmula √ — retornos decrescentes por investimento igual", () => {
+  const s = game.defaultState();
+  // Incrementos iguais de amulet level (200 níveis cada passo)
+  const spd1   = game.attackSpeed(s);               // level 1 (base)
+  s.equipped.Amulet.level = 200;
+  const spd200 = game.attackSpeed(s);               // raw ≈ 3.0
+  s.equipped.Amulet.level = 400;
+  const spd400 = game.attackSpeed(s);               // raw ≈ 5.0
+  const gain_1to200   = spd200 - spd1;
+  const gain_200to400 = spd400 - spd200;
+  assert(spd200 > spd1,   "mais amulet = mais speed");
+  assert(spd400 > spd200, "ainda mais = ainda mais speed");
+  // O SEGUNDO incremento de 200 levels deve render MENOS que o primeiro (retornos decrescentes)
+  assert(gain_200to400 < gain_1to200, "investimento igual → ganho decrescente (√ é côncava)");
+});
+
+test("attackSpeed nunca passa do cap de 20", () => {
+  const s = game.defaultState();
+  s.goldStats.agi = 10000; // valor absurdo
+  s.equipped.Amulet.level = 10000;
+  assert(game.attackSpeed(s) <= 20, "cap de 20 ataques/s respeitado");
+});
+
+test("inimigos têm critChance após spawn", () => {
+  const s = game.defaultState();
+  game.spawnPack(s);
+  s.enemies.forEach(e => {
+    assert(typeof e.critChance === "number" && e.critChance >= 0, `${e.name} deve ter critChance`);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════
+console.log("== Fase 3 — Passivas ==");
+
+test("passiveCost: lv0 = costBase, cresce exponencialmente", () => {
+  const def = PASSIVES.find(p => p.id === "radiantStrike");
+  assertEqual(game.passiveCost("radiantStrike", 0), def.costBase, "lv0 = costBase");
+  const lv1 = Math.round(def.costBase * Math.pow(def.costGrowth, 1));
+  assertEqual(game.passiveCost("radiantStrike", 1), lv1, "lv1 = costBase × growth");
+  assertEqual(game.passiveCost("radiantStrike", def.maxLevel), Infinity, "maxLevel = Infinity");
+});
+
+test("passiveUnlocked: mapReq 1 sempre disponível, mapReq 2 exige ascensão", () => {
+  const s = game.defaultState();
+  assert(game.passiveUnlocked(s, "radiantStrike"), "mapReq 1, kills 0: deve estar desbloqueado");
+  assert(!game.passiveUnlocked(s, "resonantForce"), "mapReq 2, 0 ascensões: deve estar bloqueado");
+  s.ascensions = 1; s.totalKills = 200;
+  assert(game.passiveUnlocked(s, "resonantForce"), "mapReq 2, 1 ascensão: deve estar desbloqueado");
+});
+
+test("passiveUnlocked: killsReq bloqueia com kills insuficientes", () => {
+  const s = game.defaultState();
+  assert(!game.passiveUnlocked(s, "luminalEdge"), "luminalEdge killsReq 100, totalKills 0: bloqueado");
+  s.totalKills = 100;
+  assert(game.passiveUnlocked(s, "luminalEdge"), "luminalEdge killsReq 100, totalKills 100: ok");
+});
+
+test("buyPassive: debita vestiges, incrementa nível, rastreia totalVestgesSpent", () => {
+  const s = game.defaultState();
+  s.vestiges = 1000; s.totalKills = 0;
+  assert(game.buyPassive(s, "radiantStrike"), "deve comprar");
+  assertEqual(game.passiveLevel(s, "radiantStrike"), 1, "lv deve ser 1");
+  const cost = PASSIVES.find(p => p.id === "radiantStrike").costBase;
+  assertEqual(s.vestiges, 1000 - cost, "vestiges devem ser debitados");
+  assertEqual(s.totalVestgesSpent, cost, "totalVestgesSpent deve rastrear");
+});
+
+test("buyPassive: retorna false sem vestiges suficientes", () => {
+  const s = game.defaultState();
+  s.vestiges = 1;
+  assertEqual(game.buyPassive(s, "radiantStrike"), false, "sem vestiges suficientes");
+  assertEqual(game.passiveLevel(s, "radiantStrike"), 0, "nível não deve mudar");
+});
+
+test("passiveTotals: Radiant Strike aumenta dmgMult", () => {
+  const s = game.defaultState();
+  const pt0 = game.passiveTotals(s);
+  assertEqual(pt0.dmgMult, 0, "sem passivas: dmgMult = 0");
+  s.passives.radiantStrike = 3;
+  const pt3 = game.passiveTotals(s);
+  assert(Math.abs(pt3.dmgMult - 3 * 0.08) < 0.001, "Radiant Strike lv3 = +0.24 dmgMult");
+});
+
+test("Radiant Strike aumenta playerDamage", () => {
+  const s = game.defaultState();
+  const dmg0 = game.playerDamage(s);
+  s.passives.radiantStrike = 5;
+  assert(game.playerDamage(s) > dmg0, "Radiant Strike lv5 deve aumentar dano");
+});
+
+test("Luminal Edge aumenta critRate via passiveTotals", () => {
+  const s = game.defaultState();
+  s.totalKills = 100;
+  s.vestiges = 500;
+  game.buyPassive(s, "luminalEdge");
+  const pt = game.passiveTotals(s);
+  assert(pt.critRate > 0, "Luminal Edge deve aumentar critRate no total");
+  assert(game.critRate(s) > 0, "critRate(s) deve refletir a passiva");
+});
+
+test("Weakened Void reduz HP do inimigo no spawn", () => {
+  const s = game.defaultState();
+  game.spawnPack(s);
+  const hpBase = s.enemies[0].hp;
+  s.passives.weakenedVoid = 5; // -25% HP
+  game.spawnPack(s);
+  const hpReduced = s.enemies[0].hp;
+  assert(hpReduced < hpBase, "Weakened Void deve reduzir HP do inimigo");
+});
+
+test("passivas persistem após ascend, bossKills reseta", () => {
+  const s = game.defaultState();
+  s.passives.radiantStrike = 3;
+  s.bossKills = 5;
+  s.totalVestgesSpent = 999;
+  s.level = 30;
+  s.regionProgress = { 0: [0] };
+  game.ascend(s);
+  assertEqual(s.passives.radiantStrike, 3, "passivas devem persistir");
+  assertEqual(s.bossKills, 0, "bossKills deve resetar");
+  assertEqual(s.totalVestgesSpent, 999, "totalVestgesSpent deve persistir");
 });
 
 report();

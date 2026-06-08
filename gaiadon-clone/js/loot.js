@@ -40,25 +40,35 @@ function affixTotals(s) {
   }
   return t;
 }
-function critRate(s) {
+// Taxa bruta antes de cap — pode passar de 1.0 (o excesso vira critDmg via overflow).
+function critRateRaw(s) {
   var base = affixTotals(s).critRate;
-  // LCK gold stat: +0.5% crit rate per level (goldStatBonus pode não existir no load)
   if (typeof goldStatBonus === "function") base += goldStatBonus(s, "lck");
-  return Math.min(1, base);
+  // Luminal Edge (passiva Fase 3): contribuição adicional de crit rate.
+  if (typeof passiveTotals === "function") base += passiveTotals(s).critRate;
+  return base;
 }
-// Gloves: base stat adds Crit Damage directly via itemPower conversion.
+function critRate(s) { return Math.min(1, critRateRaw(s)); }
+// Excesso de crit rate acima de 100% → bônus de Crit Damage (CRIT_OVERFLOW_TO_DMG = 1.0).
+function critOverflow(s) { return Math.max(0, critRateRaw(s) - 1.0); }
+
+// Gloves: itemPower contribui para Crit Damage. Overflow de crit rate também contribui.
+// Or Ein Sof's Touch amplifica o fator de overflow; Shattered Light adiciona bônus por tier de overflow.
 function critMult(s) {
-  return CONFIG.combat.baseCritMult + affixTotals(s).critDmg
-       + slotPower(s, "Gloves") * CONFIG.itemStats.critDmgPerPower;
+  const overflow = critOverflow(s);
+  const pt = typeof passiveTotals === "function" ? passiveTotals(s) : null;
+  const overflowFactor = CONFIG.combat.critOverflowToDmg + (pt ? pt.critOverflowFactor : 0);
+  const shatteredBonus = (pt && pt.shatteredLight > 0) ? Math.floor(overflow) * pt.shatteredLight : 0;
+  return CONFIG.combat.baseCritMult
+       + affixTotals(s).critDmg
+       + slotPower(s, "Gloves") * CONFIG.itemStats.critDmgPerPower
+       + overflow * overflowFactor
+       + shatteredBonus;
 }
-// Crítico como valor esperado (sem RNG por tick): multiplicador médio do DPS.
+// Crítico como valor esperado (sem RNG por tick): EV = 1 + rate × (mult − 1).
 function critExpectedMult(s) {
-  const t = affixTotals(s);
-  var baseRate = t.critRate;
-  if (typeof goldStatBonus === "function") baseRate += goldStatBonus(s, "lck");
-  const rate = Math.min(1, baseRate);
-  const mult = CONFIG.combat.baseCritMult + t.critDmg
-             + slotPower(s, "Gloves") * CONFIG.itemStats.critDmgPerPower;
+  const rate = critRate(s);
+  const mult = critMult(s);
   return 1 + rate * (mult - 1);
 }
 
@@ -128,7 +138,7 @@ if (typeof module !== "undefined") {
   module.exports = {
     itemPower, slotPower, rarityCap,
     itemAffixes, affixValue, getNewAffix, getDisplayAffixes, affixTotals,
-    critRate, critMult, critExpectedMult,
+    critRateRaw, critRate, critOverflow, critMult, critExpectedMult,
     levelCostAt, levelUpCost, levelUpMaxPreview, levelUpMax, canLevelUp, levelUpItem,
     rarityUpCost, canRarityUp, rarityUpItem,
   };

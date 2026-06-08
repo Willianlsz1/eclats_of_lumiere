@@ -120,6 +120,14 @@ const MIGRATIONS = [
     }
     return s;
   },
+
+  // v5 → v6: adiciona estado de passivas (Fase 3).
+  function addPassivesState(s) {
+    if (!s.passives) s.passives = {};
+    if (s.bossKills === undefined) s.bossKills = 0;
+    if (s.totalVestgesSpent === undefined) s.totalVestgesSpent = 0;
+    return s;
+  },
 ];
 
 function migrate(state) {

@@ -10,6 +10,7 @@ const RENDER_DISPATCH = {
   ascension:  [renderAscend],
   map:        [renderMap],
   goldStats:  [renderGoldStats],
+  passives:   [renderPassives],
 };
 
 function scheduleRender(dirty, state) {
@@ -21,5 +22,5 @@ function scheduleRender(dirty, state) {
 
 // Convenience: re-render everything (startup, reset, ascension).
 function renderAll(state) {
-  scheduleRender(new Set(["resources", "combat", "hero", "equipment", "ascension", "map", "goldStats"]), state);
+  scheduleRender(new Set(["resources", "combat", "hero", "equipment", "ascension", "map", "goldStats", "passives"]), state);
 }

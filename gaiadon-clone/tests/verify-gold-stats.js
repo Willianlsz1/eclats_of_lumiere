@@ -3,11 +3,11 @@
 
 const data = require("../js/data.js");
 Object.assign(global, data);
-for (const f of ["../js/progression.js", "../js/loot.js", "../js/zones.js", "../js/game.js"]) {
+for (const f of ["../js/progression.js", "../js/passives.js", "../js/loot.js", "../js/zones.js", "../js/game.js"]) {
   Object.assign(global, require(f));
 }
 const game = {};
-for (const f of ["../js/progression.js", "../js/loot.js", "../js/zones.js", "../js/game.js"]) {
+for (const f of ["../js/progression.js", "../js/passives.js", "../js/loot.js", "../js/zones.js", "../js/game.js"]) {
   Object.assign(game, require(f));
 }
 
@@ -156,12 +156,15 @@ section("Integração — AGI aumenta attackSpeed");
 
 s = game.defaultState();
 var spd0 = game.attackSpeed(s);
+var raw0 = game.atkSpeedRaw(s);
 
-s.goldStats.agi = 5;  // +0.15 attack speed
+s.goldStats.agi = 5;  // +0.15 ao raw stat (agi.perLevel × 5)
 var spd5 = game.attackSpeed(s);
+var raw5 = game.atkSpeedRaw(s);
 assert("AGI 5 increases speed", spd5 > spd0, "spd0=" + spd0 + " spd5=" + spd5);
-assert("AGI 5 adds 0.15 speed", Math.abs(spd5 - spd0 - 0.15) < 0.001,
-  "diff=" + (spd5 - spd0));
+// Com a fórmula √, spd = √raw. Verificamos que o raw aumentou 0.15 (e speed subiu).
+assert("AGI 5 adds 0.15 to raw stat", Math.abs(raw5 - raw0 - 0.15) < 0.001,
+  "diff_raw=" + (raw5 - raw0));
 
 s.goldStats.agi = 0;
 
