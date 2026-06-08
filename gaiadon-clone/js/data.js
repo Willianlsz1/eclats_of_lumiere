@@ -550,6 +550,13 @@ const CONFIG = {
   convergence: {
     spikeMultiplier: 1.5,
     spikeInterval:   5,
+    mult1:        1.20,  // convergences 1–4
+    mult2:        1.12,  // convergences 5–8
+    additive:     0.05,  // convergences 9+: +5% each (compounding via ×(1+n*0.05))
+    switchPoint1: 4,
+    switchPoint2: 8,
+    minLevel:     10,    // piso de nível para converger (evita spam grátis no piso)
+    maxMult:      1e100, // clamp de segurança (impede overflow → Infinity → save corrompido)
   },
 
   // ── Map progression ───────────────────────────────────────────────────

@@ -438,6 +438,22 @@ function renderAscend(s) {
   } else {
     $("ascInfo").innerHTML = `Clear more stages on the 🗺️ Map and reach level ${asc.levelReq} to unlock ascension #${asc.ascensionNumber}.`;
   }
+
+  // ── Convergence panel ──
+  const cv = getConvergenceStatus(s);
+  const cvGainStr = cv.gainPct >= 0.1 ? `+${cv.gainPct.toFixed(1)}%` : "<0.1%";
+  const nextSpike = CONFIG.convergence.spikeInterval - (cv.convergences % CONFIG.convergence.spikeInterval);
+  $("cvCount").textContent   = cv.convergences;
+  $("cvCurrent").textContent = "×" + fmt(cv.currentMult);
+  $("cvNext").textContent    = "×" + fmt(cv.nextMult) + " (" + cvGainStr + ")";
+  $("cvSpikeIn").textContent = nextSpike + (nextSpike === 1 ? " convergence" : " convergences");
+  $("convergeBtn").disabled  = !cv.canConverge;
+  $("convergeBtn").className  = (cv.recommended && cv.canConverge) ? "converge-btn converge-recommended" : "converge-btn";
+  $("cvHint").textContent    = !cv.canConverge
+    ? `Reach level ${cv.levelReq} to converge (currently ${s.level}).`
+    : cv.recommended
+      ? "⚡ Recommended — significant power spike incoming!"
+      : "Converge any time to bank your current mult.";
 }
 
 // Floating damage number.
