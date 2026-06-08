@@ -441,12 +441,14 @@ function renderAscend(s) {
 }
 
 // Floating damage number.
-function spawnFloatingDamage(amount, isBoss, isCrit) {
+function spawnFloatingDamage(amount, isBoss, isCrit, isRadiant) {
   const stage = $("combatStage");
   if (!stage) return;
   const el = document.createElement("span");
-  el.className = "floating-dmg" + (isBoss ? " boss" : "") + (isCrit ? " crit" : "");
-  el.textContent = (isCrit ? "💥 " : "-") + fmt(amount);
+  el.className = "floating-dmg"
+    + (isBoss    ? " boss"    : "")
+    + (isRadiant ? " radiant" : isCrit ? " crit" : "");
+  el.textContent = (isRadiant ? "✨ " : isCrit ? "💥 " : "-") + fmt(amount);
   el.style.left = (40 + Math.random() * 20) + "%";
   stage.appendChild(el);
   setTimeout(() => el.remove(), 800);

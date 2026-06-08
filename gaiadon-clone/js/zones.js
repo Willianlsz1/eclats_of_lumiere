@@ -180,10 +180,15 @@ function makeEnemy(s) {
   // Escala com ascensões: HP e DMG crescem ascGrowth por ascensão.
   var ascMult = Math.pow(E.ascGrowth, s.ascensions);
 
+  var C = CONFIG.combat;
+
   // --- BOSS ---
   if (isBossWave(s.wave, s.difficulty)) {
     var B  = CONFIG.boss;
     var bossHp = Math.round(stats.hp * ascMult * B.hpMult);
+    // Crit chance do chefe: fixada no spawn (aleatória dentro do range).
+    var bossCritChance = C.bossCritChanceMin
+      + Math.random() * (C.bossCritChanceMax - C.bossCritChanceMin);
     return {
       name: region.boss.name,
       emoji: region.boss.emoji,
@@ -195,6 +200,7 @@ function makeEnemy(s) {
       goldReward: Math.round(stats.gold * B.goldMult),
       xpReward:   Math.round(stats.xp   * B.xpMult),
       shardMult:  B.shardMult,
+      critChance: bossCritChance,
     };
   }
 
@@ -215,6 +221,10 @@ function makeEnemy(s) {
   var goldReward = Math.max(1, Math.round(stats.gold * arch.reward * tm.reward));
   var xpReward   = Math.max(1, Math.round(stats.xp   * arch.reward * tm.reward));
 
+  // Crit chance do inimigo: fixada no spawn (aleatória dentro do range).
+  var enemyCritChance = C.enemyCritChanceMin
+    + Math.random() * (C.enemyCritChanceMax - C.enemyCritChanceMin);
+
   return {
     name:  enemyDef.name,
     emoji: enemyDef.emoji,
@@ -226,6 +236,7 @@ function makeEnemy(s) {
     goldReward: goldReward,
     xpReward:   xpReward,
     shardMult:  tm.reward,
+    critChance: enemyCritChance,
   };
 }
 

@@ -114,10 +114,28 @@ function playerMaxHp(s) {
   base *= (1 + affixTotals(s).hpMult);
   return Math.round(base * totalPowerMult(s));
 }
-function attackSpeed(s) {
+// Stat bruto (soma linear de fontes). Entrada para a fórmula de atk speed.
+function atkSpeedRaw(s) {
   return CONFIG.player.baseAttackSpeed
     + slotPower(s, "Amulet") * CONFIG.itemStats.attackSpeedPerPower
-    + goldStatBonus(s, "agi");                // AGI: +0.03 atk speed per level
+    + goldStatBonus(s, "agi");
+}
+// Ataques por segundo: min(cap, √rawAtkSpeed × fator). Crescimento sublinear intencional.
+function attackSpeed(s) {
+  const C = CONFIG.combat;
+  return Math.min(C.attackSpeedCap, Math.sqrt(atkSpeedRaw(s)) * C.attackSpeedFactor);
+}
+
+// ── Defesa & Regen (Fase 1) ──────────────────────────────────────────────
+// Defense = 0 até gear/passivas fornecerem o stat (Fases 3/5).
+function playerDefense(s) { return 0; }
+// Redução logarítmica: nunca chega a 100% (jogador nunca fica imortal).
+function defenseReduction(defense) {
+  return Math.min(0.9, Math.log10(defense + 1) / 10);
+}
+// Regen base por segundo: level × regenPerLevel. Sempre ativo.
+function hpRegenPerSec(s) {
+  return s.level * CONFIG.combat.regenPerLevel;
 }
 function playerDps(s) { return playerDamage(s) * attackSpeed(s) * critExpectedMult(s); }
 function goldBonus(s) {
@@ -225,15 +243,34 @@ function tick(s, dt) {
   if (s.playerHp === null) s.playerHp = playerMaxHp(s);
   const events = [];
 
+  // ── Player ataca o alvo principal ──
   const target = s.enemies[0];
   let dmgToEnemy = playerDps(s) * dt;
   if (target.isBoss) dmgToEnemy *= bossDmgMult(s);
   target.hp -= dmgToEnemy;
-  events.push({ type: "hit", amount: dmgToEnemy });
 
-  // Todos os inimigos vivos atacam ao mesmo tempo.
-  const incoming = s.enemies.reduce((a, e) => a + e.dmg, 0) * CONFIG.enemy.damageFactor * dt;
+  // Tier de crit para visual (normal / crit / radiant).
+  const critR = critRate(s);
+  const didCrit = critR > 0 && Math.random() < critR;
+  const critTier = didCrit
+    ? (critMult(s) >= CONFIG.combat.radiantCritThreshold ? "radiant" : "crit")
+    : "normal";
+  events.push({ type: "hit", amount: dmgToEnemy, critTier });
+
+  // ── Inimigos atacam o jogador (com possível crit + redução de defesa) ──
+  const reduction = defenseReduction(playerDefense(s));
+  let incoming = 0;
+  for (const e of s.enemies) {
+    let dmg = e.dmg * CONFIG.enemy.damageFactor * dt;
+    if (e.critChance > 0 && Math.random() < e.critChance) {
+      dmg *= e.isBoss ? CONFIG.combat.bossCritMult : CONFIG.combat.enemyCritMult;
+    }
+    incoming += dmg * (1 - reduction);
+  }
   s.playerHp -= incoming;
+
+  // ── HP Regen — 3 fontes (base, amplifier, per-kill via afixos futuros) ──
+  s.playerHp = Math.min(playerMaxHp(s), s.playerHp + hpRegenPerSec(s) * dt);
 
   if (s.playerHp <= 0) { events.push(handleDeath(s)); spawnPack(s); return events; }
 
@@ -307,7 +344,8 @@ if (typeof module !== "undefined") {
   module.exports = {
     defaultState,
     goldStatCost, goldStatBonus, buyGoldStat, buyGoldStatMax, buyGoldStatMaxPreview,
-    playerDamage, playerMaxHp, attackSpeed, playerDps,
+    playerDamage, playerMaxHp, atkSpeedRaw, attackSpeed, playerDps,
+    playerDefense, defenseReduction, hpRegenPerSec,
     goldBonus, xpMultiplier, shardBonus, bossDmgMult,
     xpToNext, gainXp,
     enterRegion, registerKill, handleDeath, tick,

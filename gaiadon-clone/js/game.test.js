@@ -391,4 +391,83 @@ test("enemyStatsFor retorna stats consistentes (contínuo)", () => {
   assertEqual(normalLast.hp, hard.hp, "Normal w30 = Hard w1 (continuidade)");
 });
 
+console.log("== Fase 1 — Combate Core ==");
+test("critMult inclui overflow: crit rate > 100% converte para crit damage", () => {
+  const s = game.defaultState();
+  const baseMult = game.critMult(s);
+  // lck=220 → 220 × 0.005 = 1.1 crit rate → overflow = 0.1
+  s.goldStats.lck = 220;
+  const overflow = game.critOverflow(s);
+  assert(overflow > 0, "deve haver overflow com lck 220 (1.1 crit rate > 1.0)");
+  assert(game.critMult(s) > baseMult, "overflow deve aumentar critMult");
+  // overflow × critOverflowToDmg deve ser exatamente o bônus adicionado
+  const expected = baseMult + overflow * CONFIG.combat.critOverflowToDmg;
+  assert(Math.abs(game.critMult(s) - expected) < 0.001, "critMult = base + overflow × fator");
+});
+
+test("critExpectedMult segue a fórmula EV = 1 + rate × (mult − 1)", () => {
+  const s = game.defaultState();
+  s.equipped.Weapon.rarity = 2;
+  const rate = game.critRate(s);
+  const mult = game.critMult(s);
+  const ev   = game.critExpectedMult(s);
+  const expected = 1 + rate * (mult - 1);
+  assert(Math.abs(ev - expected) < 0.001, `EV esperado ${expected.toFixed(4)}, obtido ${ev.toFixed(4)}`);
+});
+
+test("defenseReduction: 0=0%, 100≈20%, 1000≈30%, 10000=40%", () => {
+  assert(game.defenseReduction(0)     === 0,                    "0 def → 0% redução");
+  assert(Math.abs(game.defenseReduction(100)   - 0.2) < 0.001, "100 def → 20%");
+  assert(Math.abs(game.defenseReduction(1000)  - 0.3) < 0.001, "1.000 def → 30%");
+  assert(Math.abs(game.defenseReduction(10000) - 0.4) < 0.001, "10.000 def → 40%");
+});
+
+test("hpRegenPerSec: level × regenPerLevel", () => {
+  const s = game.defaultState();
+  s.level = 10;
+  const expected = 10 * CONFIG.combat.regenPerLevel;
+  assert(game.hpRegenPerSec(s) === expected, `esperado ${expected}, obtido ${game.hpRegenPerSec(s)}`);
+});
+
+test("HP regen é aplicado no tick (jogador cura ao longo do tempo)", () => {
+  const s = game.defaultState();
+  s.level = 30; // regen 3 HP/s
+  game.spawnPack(s);
+  s.enemies.forEach(e => { e.dmg = 0; }); // anula dano recebido
+  s.playerHp = 10; // HP baixo
+  game.tick(s, 1);  // 1 segundo
+  assert(s.playerHp > 10, "regen deve aumentar o HP");
+});
+
+test("attackSpeed usa fórmula √ — retornos decrescentes por investimento igual", () => {
+  const s = game.defaultState();
+  // Incrementos iguais de amulet level (200 níveis cada passo)
+  const spd1   = game.attackSpeed(s);               // level 1 (base)
+  s.equipped.Amulet.level = 200;
+  const spd200 = game.attackSpeed(s);               // raw ≈ 3.0
+  s.equipped.Amulet.level = 400;
+  const spd400 = game.attackSpeed(s);               // raw ≈ 5.0
+  const gain_1to200   = spd200 - spd1;
+  const gain_200to400 = spd400 - spd200;
+  assert(spd200 > spd1,   "mais amulet = mais speed");
+  assert(spd400 > spd200, "ainda mais = ainda mais speed");
+  // O SEGUNDO incremento de 200 levels deve render MENOS que o primeiro (retornos decrescentes)
+  assert(gain_200to400 < gain_1to200, "investimento igual → ganho decrescente (√ é côncava)");
+});
+
+test("attackSpeed nunca passa do cap de 20", () => {
+  const s = game.defaultState();
+  s.goldStats.agi = 10000; // valor absurdo
+  s.equipped.Amulet.level = 10000;
+  assert(game.attackSpeed(s) <= 20, "cap de 20 ataques/s respeitado");
+});
+
+test("inimigos têm critChance após spawn", () => {
+  const s = game.defaultState();
+  game.spawnPack(s);
+  s.enemies.forEach(e => {
+    assert(typeof e.critChance === "number" && e.critChance >= 0, `${e.name} deve ter critChance`);
+  });
+});
+
 report();

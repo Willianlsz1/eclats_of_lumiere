@@ -40,25 +40,27 @@ function affixTotals(s) {
   }
   return t;
 }
-function critRate(s) {
+// Taxa bruta antes de cap — pode passar de 1.0 (o excesso vira critDmg).
+function critRateRaw(s) {
   var base = affixTotals(s).critRate;
-  // LCK gold stat: +0.5% crit rate per level (goldStatBonus pode não existir no load)
   if (typeof goldStatBonus === "function") base += goldStatBonus(s, "lck");
-  return Math.min(1, base);
+  return base;
 }
-// Gloves: base stat adds Crit Damage directly via itemPower conversion.
+function critRate(s) { return Math.min(1, critRateRaw(s)); }
+// Excesso de crit rate acima de 100% → bônus de Crit Damage (CRIT_OVERFLOW_TO_DMG = 1.0).
+function critOverflow(s) { return Math.max(0, critRateRaw(s) - 1.0); }
+
+// Gloves: itemPower contribui para Crit Damage. Overflow de crit rate também contribui.
 function critMult(s) {
-  return CONFIG.combat.baseCritMult + affixTotals(s).critDmg
-       + slotPower(s, "Gloves") * CONFIG.itemStats.critDmgPerPower;
+  return CONFIG.combat.baseCritMult
+       + affixTotals(s).critDmg
+       + slotPower(s, "Gloves") * CONFIG.itemStats.critDmgPerPower
+       + critOverflow(s) * CONFIG.combat.critOverflowToDmg;
 }
-// Crítico como valor esperado (sem RNG por tick): multiplicador médio do DPS.
+// Crítico como valor esperado (sem RNG por tick): EV = 1 + rate × (mult − 1).
 function critExpectedMult(s) {
-  const t = affixTotals(s);
-  var baseRate = t.critRate;
-  if (typeof goldStatBonus === "function") baseRate += goldStatBonus(s, "lck");
-  const rate = Math.min(1, baseRate);
-  const mult = CONFIG.combat.baseCritMult + t.critDmg
-             + slotPower(s, "Gloves") * CONFIG.itemStats.critDmgPerPower;
+  const rate = critRate(s);
+  const mult = critMult(s);
   return 1 + rate * (mult - 1);
 }
 
@@ -128,7 +130,7 @@ if (typeof module !== "undefined") {
   module.exports = {
     itemPower, slotPower, rarityCap,
     itemAffixes, affixValue, getNewAffix, getDisplayAffixes, affixTotals,
-    critRate, critMult, critExpectedMult,
+    critRateRaw, critRate, critOverflow, critMult, critExpectedMult,
     levelCostAt, levelUpCost, levelUpMaxPreview, levelUpMax, canLevelUp, levelUpItem,
     rarityUpCost, canRarityUp, rarityUpItem,
   };

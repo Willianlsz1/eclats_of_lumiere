@@ -306,8 +306,9 @@
   text-shadow: 0 1px 3px #000; pointer-events: none; white-space: nowrap;
   animation: floatUp .8s ease-out forwards;
 }
-.floating-dmg.boss { color: var(--red); font-size: var(--fs-lg); }
-.floating-dmg.crit { color: var(--gold); font-size: 21px; text-shadow: 0 0 8px rgba(255,209,102,.8); }
+.floating-dmg.boss    { color: var(--red); font-size: var(--fs-lg); }
+.floating-dmg.crit    { color: var(--gold); font-size: 21px; text-shadow: 0 0 8px rgba(255,209,102,.8); }
+.floating-dmg.radiant { color: #fff; font-size: 24px; text-shadow: 0 0 12px #7dd3fc, 0 0 4px rgba(255,209,102,.9); }
 @keyframes floatUp {
   0%   { transform: translate(-50%, 0) scale(1); opacity: 1; }
   100% { transform: translate(-50%, -34px) scale(1.1); opacity: 0; }

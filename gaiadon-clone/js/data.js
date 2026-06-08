@@ -380,6 +380,21 @@ const CONFIG = {
     baseCritMult: 2.0,
     // Crit overflow: excess Crit Rate above 100% converts to Crit Damage at this ratio.
     critOverflowToDmg: 1.0,
+    // Attack Speed: ataques/s = min(cap, √rawAtkSpeed × fator)
+    attackSpeedCap:    20,
+    attackSpeedFactor: 1.0,
+    // HP Regen base: level × regenPerLevel HP/s
+    regenPerLevel: 0.1,
+    // Crit visual: critMult ≥ threshold → tier "radiant" (cosmético)
+    radiantCritThreshold: 5.0,
+    // Crit dos inimigos regulares
+    enemyCritChanceMin: 0.03,
+    enemyCritChanceMax: 0.08,
+    enemyCritMult: 2.5,
+    // Crit dos chefes
+    bossCritChanceMin: 0.15,
+    bossCritChanceMax: 0.25,
+    bossCritMult: 3.0,
   },
 
   // ── Convergence (rebirth frequente) ───────────────────────────────────
