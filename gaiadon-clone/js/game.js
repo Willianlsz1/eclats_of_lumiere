@@ -36,6 +36,9 @@ function defaultState() {
     // Gold Stats: 6 stats compráveis com gold (resetam na ascensão).
     goldStats: { str: 0, vit: 0, agi: 0, lck: 0, frt: 0, wis: 0 },
 
+    // Materiais (Fase 4): map de id → quantidade. Insumo de craft/upgrade.
+    materials: {},
+
     // Passives (Fase 3): map de id → level (nunca reseta).
     passives: {},
     // Kills de boss neste ascend (reseta no ascend).
@@ -211,6 +214,24 @@ function enterRegion(s, regionIdx, diffIdx) {
 }
 
 // Registra o abate de UM inimigo: recompensas + progressão de wave.
+// Materiais (Fase 4): adiciona quantidade ao inventário.
+function addMaterial(s, id, qty) {
+  if (!id) return;
+  if (!s.materials) s.materials = {};
+  s.materials[id] = (s.materials[id] || 0) + qty;
+}
+
+// Qual material um inimigo dropa: chefe → material do mapa; senão pelo tier.
+function materialDropFor(e, regionIdx) {
+  if (e.isBoss) {
+    const m = MAP_MATERIALS[regionIdx];
+    return m ? m.id : null;
+  }
+  if (e.tier === "champion") return "voidDust";
+  if (e.tier === "elite")    return "paleFragment";
+  return "dimShard";
+}
+
 function registerKill(s, e) {
   e = e || s.enemies[0];
   const regionAtKill = s.region;
@@ -222,12 +243,16 @@ function registerKill(s, e) {
   s.vestiges += sh;
   s.killsInWave++;
 
+  // Materiais (Fase 4): drop conforme tier do inimigo / chefe.
+  const matId = materialDropFor(e, regionAtKill);
+  addMaterial(s, matId, 1);
+
   // Region Mastery: acumula kills permanentes.
   const justMastered = recordRegionMasteryKill(s, regionAtKill);
 
   const result = {
     type: "kill", name: e.name, tier: e.tier || "normal",
-    lumens: g, vestiges: sh, leveled,
+    lumens: g, vestiges: sh, material: matId, leveled,
     wasBoss: e.isBoss, justMastered,
     masteredRegion: justMastered ? regionAtKill : null,
     waveAdvanced: false, difficultyCleared: false,
@@ -365,6 +390,7 @@ function converge(s) {
   const keepRegionMastery  = s.regionMastery  || {};
   const keepPassives       = s.passives || {};
   const keepVestgesSpent   = s.totalVestgesSpent || 0;
+  const keepMaterials      = s.materials || {};
   Object.assign(s, defaultState());
   s.convergences      = keepConvergences;
   s.ascensions        = keepAscensions;
@@ -373,6 +399,7 @@ function converge(s) {
   s.regionMastery     = keepRegionMastery;
   s.passives          = keepPassives;
   s.totalVestgesSpent = keepVestgesSpent;
+  s.materials         = keepMaterials;
   return true;
 }
 
@@ -413,6 +440,7 @@ function ascend(s) {
   const keepRegionMastery  = s.regionMastery  || {};
   const keepPassives       = s.passives || {};
   const keepVestgesSpent   = s.totalVestgesSpent || 0;
+  const keepMaterials      = s.materials || {};
   Object.assign(s, defaultState());
   s.ascensions        = keepAscensions;
   s.convergences      = keepConvergences;
@@ -421,6 +449,7 @@ function ascend(s) {
   s.regionMastery     = keepRegionMastery;
   s.passives          = keepPassives;
   s.totalVestgesSpent = keepVestgesSpent;
+  s.materials         = keepMaterials;
   // bossKills NÃO é preservado — reseta por mapa (defaultState já o zera)
   return true;
 }
@@ -450,6 +479,7 @@ if (typeof module !== "undefined") {
     goldBonus, xpMultiplier, shardBonus, bossDmgMult,
     xpToNext, gainXp,
     enterRegion, registerKill, handleDeath, tick,
+    addMaterial, materialDropFor,
     canConverge, getConvergenceStatus, converge,
     canAscend, getAscensionStatus, ascend,
     computeOfflineGains,

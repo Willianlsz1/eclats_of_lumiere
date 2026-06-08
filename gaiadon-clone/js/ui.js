@@ -509,6 +509,26 @@ function showOfflineSummary(g) {
 // renderAll lives in render.js (render dispatch module).
 
 // ═══════════════════════════════════════════════════════════════════════
+// Materials inventory (Fase 4)
+// ═══════════════════════════════════════════════════════════════════════
+function renderMaterials(s) {
+  const panel = $("materialsPanel");
+  if (!panel) return;
+  const mats = s.materials || {};
+  // Ordem: universais (Dim/Pale/Void) depois especiais por mapa.
+  const all = MATERIALS.concat(MAP_MATERIALS);
+  panel.innerHTML = all.map(function (m) {
+    const qty = mats[m.id] || 0;
+    const dim = qty === 0 ? " mat-empty" : "";
+    return `<div class="mat-card rar-${m.rarity}${dim}">
+      <span class="mat-icon">${m.icon}</span>
+      <span class="mat-name">${m.name}</span>
+      <span class="mat-qty">${fmt(qty)}</span>
+    </div>`;
+  }).join("");
+}
+
+// ═══════════════════════════════════════════════════════════════════════
 // Passives View — 3 árvores permanentes
 // ═══════════════════════════════════════════════════════════════════════
 function renderPassives(s) {

@@ -682,6 +682,51 @@ test("convergenceMult clampa em maxMult (sem Infinity)", () => {
   assertEqual(m, CONFIG.convergence.maxMult, "deve clampar exatamente em maxMult");
 });
 
+console.log("\n== Fase 4: materiais (drop + inventário) ==");
+test("defaultState tem materials: {}", () => {
+  const s = game.defaultState();
+  assert(s.materials && typeof s.materials === "object", "materials deve existir");
+  assertEqual(Object.keys(s.materials).length, 0, "inventário começa vazio");
+});
+
+test("materialDropFor: tier de inimigo → material universal", () => {
+  assertEqual(game.materialDropFor({ tier: "normal" }, 0), "dimShard");
+  assertEqual(game.materialDropFor({ tier: "elite" }, 0), "paleFragment");
+  assertEqual(game.materialDropFor({ tier: "champion" }, 0), "voidDust");
+});
+
+test("materialDropFor: chefe → material especial do mapa (por região)", () => {
+  assertEqual(game.materialDropFor({ isBoss: true }, 0), "dreamspore");
+  assertEqual(game.materialDropFor({ isBoss: true }, 4), "nilEssence");
+});
+
+test("registerKill dropa 1 material conforme o tier", () => {
+  const s = game.defaultState();
+  game.registerKill(s, { name: "x", tier: "elite", goldReward: 1, xpReward: 1, isBoss: false });
+  assertEqual(s.materials.paleFragment, 1, "elite dropa Pale Fragment");
+  game.registerKill(s, { name: "x", tier: "normal", goldReward: 1, xpReward: 1, isBoss: false });
+  assertEqual(s.materials.dimShard, 1, "normal dropa Dim Shard");
+});
+
+test("registerKill de chefe dropa o material do mapa atual", () => {
+  const s = game.defaultState();
+  s.region = 0; // plains → Dreamspore
+  game.registerKill(s, { name: "boss", goldReward: 1, xpReward: 1, isBoss: true, shardMult: 1 });
+  assertEqual(s.materials.dreamspore, 1, "chefe de plains dropa Dreamspore");
+});
+
+test("materiais persistem após converge e ascend", () => {
+  const s = game.defaultState();
+  s.materials = { dimShard: 50, dreamspore: 3 };
+  s.level = 15;
+  game.converge(s);
+  assertEqual(s.materials.dimShard, 50, "materiais persistem no converge");
+  assertEqual(s.materials.dreamspore, 3, "material de mapa persiste no converge");
+  s.level = 30; s.regionProgress = { 0: [0] };
+  game.ascend(s);
+  assertEqual(s.materials.dimShard, 50, "materiais persistem no ascend");
+});
+
 console.log("\n== Fase 5: peças nomeadas (DESIGN §26) ==");
 test("as 6 peças usam os nomes do DESIGN", () => {
   const byId = {};

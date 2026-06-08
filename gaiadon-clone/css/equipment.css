@@ -294,3 +294,23 @@
   .synergy-stats-grid { grid-template-columns: 1fr; }
   .synergy-stat-col-right { border-left: none; border-top: 1px solid var(--border-focus); }
 }
+
+/* ── Materials inventory (Fase 4) ── */
+.materials-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: var(--sp-2);
+}
+.mat-card {
+  display: flex; align-items: center; gap: var(--sp-2);
+  background: var(--surface-inset); border: 1px solid var(--border);
+  border-radius: var(--radius-md); padding: var(--sp-2) var(--sp-3);
+}
+.mat-card.mat-empty { opacity: 0.45; }
+.mat-icon { font-size: 1.3em; }
+.mat-name { flex: 1; font-size: var(--fs-sm); font-weight: 600; }
+.mat-qty { font-variant-numeric: tabular-nums; font-weight: bold; color: var(--text); }
+.mat-card.rar-common    { border-left: 3px solid var(--rar-common); }
+.mat-card.rar-uncommon  { border-left: 3px solid var(--rar-uncommon); }
+.mat-card.rar-rare      { border-left: 3px solid var(--rar-rare); }
+.mat-card.rar-epic      { border-left: 3px solid var(--rar-epic); }
+.mat-card.rar-legendary { border-left: 3px solid var(--rar-legendary); }

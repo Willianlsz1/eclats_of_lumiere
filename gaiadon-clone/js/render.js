@@ -6,7 +6,7 @@ const RENDER_DISPATCH = {
   resources:  [renderResources],
   combat:     [renderCombat],
   hero:       [renderHero],
-  equipment:  [renderEquipment, renderSynergy],
+  equipment:  [renderEquipment, renderSynergy, renderMaterials],
   ascension:  [renderAscend],
   map:        [renderMap],
   goldStats:  [renderGoldStats],

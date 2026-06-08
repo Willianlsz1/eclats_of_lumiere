@@ -266,6 +266,33 @@ const TIERS = [
 
 
 // ═══════════════════════════════════════════════════════════════════════
+// Materiais (PARTE VII do DESIGN) — insumos de craft/upgrade.
+// Universais: dropam por TIER de inimigo (normal/elite/champion).
+// Especiais por mapa: dropam do CHEFE da região correspondente.
+// ═══════════════════════════════════════════════════════════════════════
+const MATERIALS = [
+  { id: "dimShard",     name: "Dim Shard",     icon: "🔹", rarity: "common",   source: "normal"    },
+  { id: "paleFragment", name: "Pale Fragment", icon: "🔸", rarity: "uncommon", source: "elite"     },
+  { id: "voidDust",     name: "Void Dust",     icon: "🟣", rarity: "rare",     source: "champion"  },
+];
+
+// Material especial por região (índice = índice da REGION). Drop do chefe.
+const MAP_MATERIALS = [
+  { id: "dreamspore",   name: "Dreamspore",    icon: "🌱", rarity: "rare"      }, // plains
+  { id: "crystalTear",  name: "Crystal Tear",  icon: "💧", rarity: "rare"      }, // forest
+  { id: "cinderShard",  name: "Cinder Shard",  icon: "🔥", rarity: "epic"      }, // caverns
+  { id: "riftFragment", name: "Rift Fragment", icon: "🌀", rarity: "epic"      }, // desert
+  { id: "nilEssence",   name: "Nil Essence",   icon: "🌌", rarity: "legendary" }, // peak
+];
+
+// Lookup por id (universais + de mapa) — para exibição e validação.
+const MATERIALS_BY_ID = {};
+MATERIALS.forEach(function (m) { MATERIALS_BY_ID[m.id] = m; });
+MAP_MATERIALS.forEach(function (m) { MATERIALS_BY_ID[m.id] = m; });
+function materialDef(id) { return MATERIALS_BY_ID[id] || null; }
+
+
+// ═══════════════════════════════════════════════════════════════════════
 // Gold Stats — 6 stats compráveis com Gold (resetam na ascensão)
 // ═══════════════════════════════════════════════════════════════════════
 // Custo polynomial: baseCost × (level+1)^exponent
@@ -716,6 +743,7 @@ if (typeof module !== "undefined") {
   module.exports = {
     ASSETS, ARCHETYPES, REGIONS, DIFFICULTIES, WAVE_TIERS,
     SLOTS, AFFIXES, RARITIES, TIERS,
+    MATERIALS, MAP_MATERIALS, MATERIALS_BY_ID, materialDef,
     GOLD_STATS, PASSIVES, ARTIFACTS, ARTIFACT_COST_EXPONENT, ESSENCE,
     CONFIG, NUMBER_SUFFIXES,
     fmt, fmtMult, fmtPct,
