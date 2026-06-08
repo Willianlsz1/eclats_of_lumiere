@@ -671,4 +671,14 @@ test("convergenceMult clampa em maxMult (sem Infinity)", () => {
   assertEqual(m, CONFIG.convergence.maxMult, "deve clampar exatamente em maxMult");
 });
 
+console.log("\n== Regressão: render robusto ==");
+test("fmt não lança em entrada inválida (undefined/null/NaN)", () => {
+  // Regressão: s.gold virou undefined após o rename da Fase 0 e fmt(undefined)
+  // lançava TypeError, abortando renderAll → tela branca.
+  assertEqual(fmt(undefined), "0", "fmt(undefined) deve virar 0, não lançar");
+  assertEqual(fmt(null), "0", "fmt(null) deve virar 0");
+  assertEqual(fmt(NaN), "0", "fmt(NaN) deve virar 0");
+  assertEqual(fmt(0), "0", "fmt(0) continua 0");
+});
+
 report();

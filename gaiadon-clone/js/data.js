@@ -679,6 +679,9 @@ const NUMBER_SUFFIXES = [
 
 // Formata número grande com sufixo. Usado em toda a UI.
 function fmt(n) {
+  // Defensivo: nunca lança em entrada inválida (undefined/null/NaN/string).
+  // Um único campo ausente não pode abortar todo o renderAll. Infinity vai pra fmtCap.
+  if (typeof n !== "number" || Number.isNaN(n)) n = 0;
   if (n < 1e4) return Math.floor(n).toLocaleString("en-US");
   let tier = 0;
   while (n >= 1e3 && tier < NUMBER_SUFFIXES.length - 1) {

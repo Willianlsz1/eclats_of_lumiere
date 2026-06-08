@@ -45,8 +45,8 @@ function logMsg(msg, cls) {
 }
 
 function renderResources(s) {
-  $("gold").textContent = fmt(s.gold);
-  $("shards").textContent = fmt(s.shards);
+  $("lumens").textContent = fmt(s.lumens);
+  $("vestiges").textContent = fmt(s.vestiges);
   $("level").textContent = s.level;
 }
 
@@ -212,7 +212,7 @@ function renderGoldStats(s) {
   el.innerHTML = GOLD_STATS.map(function(def) {
     var level = (s.goldStats && s.goldStats[def.id]) || 0;
     var cost = goldStatCost(def.id, level);
-    var canBuy = s.gold >= cost;
+    var canBuy = s.lumens >= cost;
     var bonus = goldStatBonus(s, def.id);
     var preview = buyGoldStatMaxPreview(s, def.id);
 
@@ -434,7 +434,7 @@ function renderAscend(s) {
   if (asc.canAscend) {
     $("ascInfo").innerHTML = asc.isTierPromo
       ? `<b class="milestone-text">🎉 TIER UP! You're becoming ${asc.nextTier.name}! Spike ×${fmt(asc.nextTier.spike)} awaits!</b>`
-      : `<b>✓ KEEP</b> all equipment & map progress · <b>✗ RESET</b> gold, level &amp; wave · you'll rebuild faster!`;
+      : `<b>✓ KEEP</b> all equipment & map progress · <b>✗ RESET</b> lumens, level &amp; wave · you'll rebuild faster!`;
   } else {
     $("ascInfo").innerHTML = `Clear more stages on the 🗺️ Map and reach level ${asc.levelReq} to unlock ascension #${asc.ascensionNumber}.`;
   }
