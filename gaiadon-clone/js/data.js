@@ -244,14 +244,17 @@ const RARITIES = [
 
 
 // ═══════════════════════════════════════════════════════════════════════
-// Tiers de classe do herói (Ascension Redesign spec)
+// Tiers de classe do herói — Ordre de Lumière (DESIGN §15).
+// Os 5 tiers mapeiam 1:1 aos 5 mapas: cada Ascensão de mapa avança a Ordre.
+// O nome é DERIVADO de s.ascensions (heroTier) — não persiste no save,
+// então renomear não exige migração. Limiares (minAsc) inalterados.
 // ═══════════════════════════════════════════════════════════════════════
 const TIERS = [
-  { name: "Adventurer", minAsc: 0,    mult: 1.06, spike: 1    },
-  { name: "Warrior",    minAsc: 50,   mult: 1.08, spike: 10   },
-  { name: "Champion",   minAsc: 200,  mult: 1.10, spike: 50   },
-  { name: "Legend",     minAsc: 500,  mult: 1.12, spike: 200  },
-  { name: "Mythic",     minAsc: 1000, mult: 1.15, spike: 1000 },
+  { name: "Seeker",      minAsc: 0,    mult: 1.06, spike: 1    },
+  { name: "Illuminate",  minAsc: 50,   mult: 1.08, spike: 10   },
+  { name: "Éclairé",     minAsc: 200,  mult: 1.10, spike: 50   },
+  { name: "L'Éveillé",   minAsc: 500,  mult: 1.12, spike: 200  },
+  { name: "Lumière",     minAsc: 1000, mult: 1.15, spike: 1000 },
 ];
 
 

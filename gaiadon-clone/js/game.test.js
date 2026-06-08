@@ -671,6 +671,23 @@ test("convergenceMult clampa em maxMult (sem Infinity)", () => {
   assertEqual(m, CONFIG.convergence.maxMult, "deve clampar exatamente em maxMult");
 });
 
+console.log("\n== Fase 2: Ordre de Lumière (tiers) ==");
+test("tiers usam a Ordre de Lumière (Seeker→Lumière)", () => {
+  const names = TIERS.map(t => t.name);
+  assertEqual(names[0], "Seeker", "tier 0 = Seeker");
+  assertEqual(names[1], "Illuminate", "tier 1 = Illuminate");
+  assertEqual(names[2], "Éclairé", "tier 2 = Éclairé");
+  assertEqual(names[3], "L'Éveillé", "tier 3 = L'Éveillé");
+  assertEqual(names[4], "Lumière", "tier 4 = Lumière");
+});
+
+test("heroTier resolve o nome da Ordre conforme ascensões", () => {
+  const s = game.defaultState();
+  s.ascensions = 0;    assertEqual(TIERS[game.heroTier(s)].name, "Seeker");
+  s.ascensions = 50;   assertEqual(TIERS[game.heroTier(s)].name, "Illuminate");
+  s.ascensions = 1000; assertEqual(TIERS[game.heroTier(s)].name, "Lumière");
+});
+
 console.log("\n== Regressão: render robusto ==");
 test("fmt não lança em entrada inválida (undefined/null/NaN)", () => {
   // Regressão: s.gold virou undefined após o rename da Fase 0 e fmt(undefined)
