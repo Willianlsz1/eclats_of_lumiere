@@ -11,16 +11,17 @@ for (const f of ["./progression.js", "./passives.js", "./loot.js", "./zones.js",
 const { test, assert, assertEqual, report } = require("./_assert.js");
 
 console.log("== Estado base ==");
-test("defaultState: regionProgress com plains desbloqueada, equipamento common nível 1", () => {
+test("defaultState: mapa 0 / subárea 0, equipamento common nível 1", () => {
   const s = game.defaultState();
-  assertEqual(s.region, 0);
-  assertEqual(s.difficulty, 0);
-  assertEqual(s.wave, 1);
+  assertEqual(s.map, 0);
+  assertEqual(s.subarea, 0);
+  assertEqual(s.killsInSub, 0);
   assertEqual(s.vestiges, 0);
   assertEqual(s.equipped.Weapon.rarity, 0);
   assertEqual(s.equipped.Weapon.level, 1);
   assertEqual(s.ascensions, 0);
-  assert("0" in s.regionProgress, "Plains deve estar desbloqueada");
+  assert(game.isMapUnlocked(s, 0), "Mapa 1 deve estar desbloqueado");
+  assert(!game.isMapUnlocked(s, 1), "Mapa 2 começa bloqueado");
 });
 
 console.log("== Equipamento ==");
@@ -97,7 +98,7 @@ test("não sobe raridade sem material suficiente (mesmo no cap)", () => {
 
 test("epic→legendary consome o material especial do mapa atual", () => {
   const s = game.defaultState();
-  s.region = 4; // peak → Nil Essence
+  s.map = 4; // Nil Aeternum → Nil Essence
   s.equipped.Weapon.rarity = 3; // epic
   s.equipped.Weapon.level = RARITIES[3].cap;
   const need = game.rarityUpMaterial(s, "Weapon");
@@ -186,144 +187,108 @@ test("registerKill dá vestiges", () => {
   assert(ev.vestiges > 0, "deveria ganhar vestiges");
 });
 
-test("Boss kill limpa a dificuldade e desbloqueia próximo conteúdo", () => {
+test("chefe da subárea aparece após killsToBoss e avança a subárea ao morrer", () => {
   const s = game.defaultState();
-  // Avança até a boss wave
-  s.wave = totalWaves(0); // boss wave
+  s.killsInSub = CONFIG.map.killsToBoss; // trigger oculto atingido
   game.spawnPack(s);
-  assert(s.enemies[0].isBoss, "última wave deve ter Boss");
+  assert(s.enemies[0].isBoss, "deve spawnar o chefe da subárea");
   const ev = game.registerKill(s);
-  assert(ev.wasBoss, "deveria ser kill de boss");
-  assert(ev.difficultyCleared, "deveria marcar dificuldade como limpa");
-  // Verifica que Plains Normal está limpa
-  assert(isDifficultyCleared(s, 0, 0), "Plains Normal deveria estar limpa");
-  // Verifica que Forest está desbloqueada
-  assert(isRegionUnlocked(s, 1), "Forest deveria estar desbloqueada");
-  // Verifica que Plains Hard está desbloqueada
-  assert(isDifficultyUnlocked(s, 0, 1), "Plains Hard deveria estar desbloqueada");
+  assert(ev.wasBoss, "kill de chefe");
+  assert(ev.subareaAdvanced, "avança para a próxima subárea (não é a final)");
+  assertEqual(s.subarea, 1, "agora na Subárea 2");
+  assertEqual(s.killsInSub, 0, "kills da subárea zeram");
 });
 
-test("wave avança ao atingir killsPerWave", () => {
+test("chefe final do mapa (Subárea 5) marca mapCleared e libera ascensão", () => {
   const s = game.defaultState();
-  game.spawnPack(s); s.playerHp = game.playerMaxHp(s);
-  const kpw = killsPerWave();
-  let advanced = false;
-  for (let i = 0; i < kpw + 5; i++) {
-    if (s.enemies.length === 0) game.spawnPack(s);
-    const ev = game.registerKill(s);
-    s.enemies.shift();
-    if (s.enemies.length === 0) { s.playerHp = game.playerMaxHp(s); game.spawnPack(s); }
-    if (ev.waveAdvanced) { advanced = true; break; }
-  }
-  assert(advanced, "deveria avançar de wave após killsPerWave kills");
-  assertEqual(s.wave, 2, "deveria estar na wave 2");
+  s.subarea = game.lastSubarea();
+  s.killsInSub = CONFIG.map.killsToBoss;
+  game.spawnPack(s);
+  assert(s.enemies[0].isFinalBoss, "deve ser o chefe final do mapa");
+  const ev = game.registerKill(s);
+  assert(ev.mapCleared, "mapa limpo");
+  assert(game.canAscend(s), "ascensão liberada após o chefe final");
 });
 
-test("morte reseta para wave 1 sem punição", () => {
+test("morte zera killsInSub sem punição de recursos", () => {
   const s = game.defaultState();
-  s.wave = 3; s.lumens = 100; s.vestiges = 50;
+  s.subarea = 2; s.killsInSub = 20; s.lumens = 100; s.vestiges = 50;
   game.handleDeath(s);
   assertEqual(s.lumens, 100, "não perde lumens");
   assertEqual(s.vestiges, 50, "não perde vestiges");
-  assertEqual(s.wave, 1, "recua para wave 1");
+  assertEqual(s.killsInSub, 0, "zera o progresso da subárea");
+  assertEqual(s.subarea, 2, "permanece na subárea atual");
 });
 
-test("packSize cresce com dificuldade (boss vem sozinho)", () => {
-  const p1 = packSizeFor(0, 1, false); // Normal wave 1
-  const p2 = packSizeFor(1, 1, false); // Hard wave 1
-  const p3 = packSizeFor(2, 1, false); // Nightmare wave 1
-  assert(p2 > p1, "Hard deve ter mais inimigos que Normal");
-  assert(p3 > p2, "Nightmare deve ter mais que Hard");
-  assertEqual(packSizeFor(0, 1, true), 1, "Boss vem sozinho");
+test("packSize cresce com a subárea (boss vem sozinho)", () => {
+  const p0 = game.packSizeFor(0, false);
+  const p4 = game.packSizeFor(4, false);
+  assert(p4 >= p0, "subáreas avançadas têm packs maiores ou iguais");
+  assertEqual(game.packSizeFor(0, true), 1, "Boss vem sozinho");
 });
 
-test("enterRegion configura o estado corretamente", () => {
+test("enterMap configura o estado corretamente", () => {
   const s = game.defaultState();
-  s.regionProgress = { 0: [0], 1: [] }; // Forest desbloqueada
-  game.enterRegion(s, 1, 0); // Forest Normal
-  assertEqual(s.region, 1);
-  assertEqual(s.difficulty, 0);
-  assertEqual(s.wave, 1);
-  assertEqual(s.killsInWave, 0);
+  s.mapProgress = { 0: game.lastSubarea() }; // mapa 1 limpo → mapa 2 desbloqueado
+  game.enterMap(s, 1, 0);
+  assertEqual(s.map, 1);
+  assertEqual(s.subarea, 0);
+  assertEqual(s.killsInSub, 0);
   assert(s.enemies.length > 0, "deveria ter inimigos spawnados");
 });
 
 test("ascensões e afixo de XP aumentam o multiplicador de XP", () => {
   const s = game.defaultState();
   const base = game.xpMultiplier(s);
-  s.ascensions = 4;
+  s.ascensions = 2;
   assert(game.xpMultiplier(s) > base, "ascensões devem aumentar o XP mult");
   const withAsc = game.xpMultiplier(s);
   s.equipped.Amulet.rarity = 2;
   assert(game.xpMultiplier(s) > withAsc, "afixo de XP deveria somar ainda mais");
 });
 
-console.log("== Ascensão (prestígio) ==");
-test("heroTier retorna o tier correto conforme o número de ascensões", () => {
+console.log("== Ascensão (5 mapas, DESIGN §15) ==");
+test("heroTier = nº da ascensão (0-4), clampado", () => {
   const s = game.defaultState();
   assertEqual(game.heroTier(s), 0);
-  s.ascensions = 49;
-  assertEqual(game.heroTier(s), 0);
-  s.ascensions = 50;
-  assertEqual(game.heroTier(s), 1);
-  s.ascensions = 200;
-  assertEqual(game.heroTier(s), 2);
-  s.ascensions = 500;
-  assertEqual(game.heroTier(s), 3);
-  s.ascensions = 1000;
-  assertEqual(game.heroTier(s), 4);
+  s.ascensions = 1; assertEqual(game.heroTier(s), 1);
+  s.ascensions = 4; assertEqual(game.heroTier(s), 4);
+  assertEqual(TIERS[game.heroTier(s)].name, "Lumière");
 });
 
-test("tierSpikeMultiplier acumula corretamente nos limiares", () => {
-  assertEqual(game.tierSpikeMultiplier(0),   1);
-  assertEqual(game.tierSpikeMultiplier(49),  1);
-  assertEqual(game.tierSpikeMultiplier(50),  10);
-  assertEqual(game.tierSpikeMultiplier(200), 10 * 50);
-  assertEqual(game.tierSpikeMultiplier(500), 10 * 50 * 200);
+test("ascMultiplier = spikePerTier ^ ascensions", () => {
+  const sp = CONFIG.ascension.spikePerTier;
+  assertEqual(game.ascMultiplier({ ascensions: 0 }), 1);
+  assertEqual(game.ascMultiplier({ ascensions: 1 }), sp);
+  assertEqual(game.ascMultiplier({ ascensions: 3 }), Math.pow(sp, 3));
 });
 
-test("ascensões aumentam o multiplicador automaticamente", () => {
+test("canAscend: só após o chefe final do mapa, e não no último mapa", () => {
   const s = game.defaultState();
-  const m0 = game.ascMultiplier(s);
-  s.ascensions = 5;
-  assert(game.ascMultiplier(s) > m0, "ascensões devem aumentar o mult");
-  const m5 = game.ascMultiplier(s);
-  s.ascensions = 10;
-  assert(game.ascMultiplier(s) > m5, "mais ascensões = mult maior");
+  assertEqual(game.canAscend(s), false, "sem limpar o mapa");
+  s.mapProgress = { 0: game.lastSubarea() };
+  assertEqual(game.canAscend(s), true, "mapa 1 limpo → pode ascender");
+  // No último mapa, não há mais ascensão.
+  s.map = REGIONS.length - 1;
+  s.mapProgress = {}; s.mapProgress[s.map] = game.lastSubarea();
+  assertEqual(game.canAscend(s), false, "último mapa não ascende");
 });
 
-test("ascensão requer nível + stages limpos", () => {
+test("ascender vai para o próximo mapa, mantém gear/mapProgress, reseta recursos", () => {
   const s = game.defaultState();
-  // Sem stages limpos e sem nível: não pode ascender.
-  assertEqual(game.canAscend(s), false);
-  // Limpa 1 stage mas sem nível.
-  s.regionProgress = { 0: [0] };
-  s.level = 10;
-  assertEqual(game.canAscend(s), false, "sem nível suficiente");
-  // Com nível mas sem stages.
-  s.regionProgress = { 0: [] };
-  s.level = 30;
-  assertEqual(game.canAscend(s), false, "sem stages suficientes");
-  // Com ambos.
-  s.regionProgress = { 0: [0] };
-  s.level = 30;
-  assertEqual(game.canAscend(s), true, "deveria poder ascender");
-});
-
-test("ascender mantém EQUIPAMENTO e regionProgress, reseta recursos", () => {
-  const s = game.defaultState();
-  s.level = 30;
-  s.regionProgress = { 0: [0], 1: [] };
-  s.lumens = 999; s.vestiges = 500;
+  s.mapProgress = { 0: game.lastSubarea() };
+  s.lumens = 999; s.vestiges = 500; s.level = 40;
   s.equipped.Weapon.rarity = 3; s.equipped.Weapon.level = 120;
   const result = game.ascend(s);
   assertEqual(result, true);
-  assertEqual(s.ascensions, 1);
-  assertEqual(s.equipped.Weapon.rarity, 3, "equipamento persiste (raridade)");
-  assertEqual(s.equipped.Weapon.level, 120, "equipamento persiste (nível)");
+  assertEqual(s.ascensions, 1, "ascensão incrementa");
+  assertEqual(s.map, 1, "vai para o mapa 2");
+  assertEqual(s.subarea, 0, "começa na subárea 1");
+  assertEqual(s.equipped.Weapon.rarity, 3, "gear persiste (raridade)");
+  assertEqual(s.equipped.Weapon.level, 120, "gear persiste (nível)");
   assertEqual(s.lumens, 0, "reseta lumens");
-  assertEqual(s.vestiges, 0, "reseta vestiges");
-  assert("1" in s.regionProgress, "regionProgress persiste");
+  assertEqual(s.level, 1, "reseta nível");
+  assertEqual(s.mapProgress[0], game.lastSubarea(), "mapProgress persiste");
 });
 
 test("stats por nível crescem a cada ascensão", () => {
@@ -366,10 +331,12 @@ test("ganhos offline > 0", () => {
 });
 
 console.log("== Balanceamento (sanidade) ==");
-test("o primeiro abate acontece em menos de 3s (design: 1.5-3s)", () => {
+test("o primeiro abate acontece rápido no início (open-zone, qualquer arquétipo)", () => {
   const s = game.defaultState();
-  game.spawnPack(s); s.playerHp = game.playerMaxHp(s);
-  // Com startPower=10, DPS~6 → kill em ~1.67s. Testa em 3s (margem).
+  // Inimigo determinístico (standard, HP base) para evitar variância de arquétipo/sorteio.
+  const st = game.enemyStatsFor(0, 0);
+  s.enemies = [{ hp: st.hp, maxHp: st.hp, dmg: st.dmg, isBoss: false, tier: "normal", archetype: "standard", critChance: 0 }];
+  s.playerHp = game.playerMaxHp(s);
   let killed = false;
   for (let i = 0; i < 30 && !killed; i++) {
     const evs = game.tick(s, 0.1);
@@ -378,10 +345,9 @@ test("o primeiro abate acontece em menos de 3s (design: 1.5-3s)", () => {
   assert(killed, "deveria matar o 1º inimigo em ~3s");
 });
 
-test("região difícil mata jogador fresco rapidamente", () => {
+test("mapa avançado mata jogador fresco rapidamente", () => {
   const s = game.defaultState();
-  s.region = 4; // Nil Aeternum (startPower 1e48)
-  s.difficulty = 0;
+  s.map = 4; s.subarea = 4; // Nil Aeternum, Subárea 5 (HP ~1e12)
   game.spawnPack(s); s.playerHp = game.playerMaxHp(s);
   let died = false, killed = false;
   for (let i = 0; i < 100 && !died && !killed; i++) {
@@ -389,43 +355,30 @@ test("região difícil mata jogador fresco rapidamente", () => {
     if (evs.some(e => e.type === "death")) died = true;
     if (evs.some(e => e.type === "kill")) killed = true;
   }
-  assert(died && !killed, "jogador fresco deveria MORRER em região difícil");
+  assert(died && !killed, "jogador fresco deveria MORRER num mapa avançado");
 });
 
-console.log("== Region unlock/clear ==");
-test("isRegionUnlocked e isDifficultyUnlocked funcionam corretamente", () => {
+console.log("== Map unlock/progresso ==");
+test("isMapUnlocked depende de limpar o mapa anterior", () => {
   const s = game.defaultState();
-  assert(isRegionUnlocked(s, 0), "Plains está desbloqueada");
-  assert(!isRegionUnlocked(s, 1), "Forest não está desbloqueada inicialmente");
-  assert(isDifficultyUnlocked(s, 0, 0), "Normal sempre desbloqueada");
-  assert(!isDifficultyUnlocked(s, 0, 1), "Hard não desbloqueada sem limpar Normal");
-
-  // Limpa Normal
-  s.regionProgress[0] = [0];
-  assert(isDifficultyUnlocked(s, 0, 1), "Hard desbloqueada após limpar Normal");
+  assert(game.isMapUnlocked(s, 0), "Mapa 1 sempre desbloqueado");
+  assert(!game.isMapUnlocked(s, 1), "Mapa 2 bloqueado inicialmente");
+  s.mapProgress = { 0: game.lastSubarea() }; // limpa chefe final do mapa 1
+  assert(game.isMapUnlocked(s, 1), "Mapa 2 desbloqueado após limpar o mapa 1");
 });
 
-test("enemyStatsFor: escala de HP por mapa segue o DESIGN §16 (×1e12/mapa)", () => {
-  const m1 = enemyStatsFor(0, 0, 1); // The Dreaming Wood, Normal, Wave 1
-  assertEqual(m1.hp, 10, "Mapa 1 Wave 1 HP = 10");
-  assertEqual(m1.dmg, 2, "DMG = 2 (10×0.15)");
-  assertEqual(m1.gold, 5, "Gold = 5 (10×0.5)");
+test("enemyStatsFor: escala geométrica por subárea (DESIGN §16)", () => {
+  const m1 = enemyStatsFor(0, 0); // Mapa 1, Subárea 1
+  assertEqual(m1.hp, CONFIG.map.baseHp, "Mapa 1 Subárea 1 HP = baseHp");
+  assertEqual(m1.dmg, Math.max(1, Math.round(m1.hp * 0.15)), "DMG = HP × 0.15");
+  assertEqual(m1.gold, Math.max(1, Math.round(m1.hp * 0.5)), "Gold = HP × 0.5");
 
-  // startPower por mapa: 10 → 1e12 → 1e24 → 1e36 → 1e48 (DESIGN §16).
-  assertEqual(enemyStatsFor(1, 0, 1).hp, 1e12, "Mapa 2 Wave 1 HP = 1e12");
-  assertEqual(enemyStatsFor(2, 0, 1).hp, 1e24, "Mapa 3 Wave 1 HP = 1e24");
-  assertEqual(enemyStatsFor(3, 0, 1).hp, 1e36, "Mapa 4 Wave 1 HP = 1e36");
-  assertEqual(enemyStatsFor(4, 0, 1).hp, 1e48, "Mapa 5 Wave 1 HP = 1e48");
-
-  // Dentro de um mapa, HP cresce ×internalScale (1e12) da wave 1 à última (30 no Normal).
-  const last = enemyStatsFor(0, 0, 30);
-  assertEqual(last.hp, 1e13, "Mapa 1 wave 30 = 10 × 1e12 = 1e13");
-  assert(last.hp > m1.hp, "HP cresce ao longo das waves");
-
-  // Dificuldade ainda multiplica o HP base.
-  const hard = enemyStatsFor(0, 1, 1); // Mapa 1 Hard Wave 1
-  assertEqual(hard.hp, 100, "Hard Wave 1 = 10 × powerMult 10");
-  assert(hard.gold > m1.gold, "Hard dá mais gold que Normal");
+  // HP cresce por subárea (índice global = map×5 + sub).
+  const ramp = CONFIG.map.subareaRamp;
+  assertEqual(enemyStatsFor(0, 4).hp, Math.round(CONFIG.map.baseHp * Math.pow(ramp, 4)), "Subárea 5 do mapa 1");
+  assertEqual(enemyStatsFor(1, 0).hp, Math.round(CONFIG.map.baseHp * Math.pow(ramp, 5)), "Mapa 2 Subárea 1 = passo 5");
+  assert(enemyStatsFor(1, 0).hp > enemyStatsFor(0, 4).hp, "mapa seguinte é mais forte");
+  assert(enemyStatsFor(0, 4).hp > m1.hp, "HP cresce ao longo das subáreas");
 });
 
 console.log("== Fase 1 — Combate Core ==");
@@ -577,13 +530,17 @@ test("Luminal Edge aumenta critRate via passiveTotals", () => {
 });
 
 test("Weakened Void reduz HP do inimigo no spawn", () => {
-  const s = game.defaultState();
-  game.spawnPack(s);
-  const hpBase = s.enemies[0].hp;
-  s.passives.weakenedVoid = 5; // -25% HP
-  game.spawnPack(s);
-  const hpReduced = s.enemies[0].hp;
-  assert(hpReduced < hpBase, "Weakened Void deve reduzir HP do inimigo");
+  // Determinístico: Math.random=0 → pickEnemy índice 0 (standard) e tier normal.
+  const _r = Math.random; Math.random = function () { return 0; };
+  try {
+    const s = game.defaultState();
+    game.spawnPack(s);
+    const hpBase = s.enemies[0].hp;
+    s.passives.weakenedVoid = 5; // -25% HP
+    game.spawnPack(s);
+    const hpReduced = s.enemies[0].hp;
+    assert(hpReduced < hpBase, "Weakened Void deve reduzir HP do inimigo");
+  } finally { Math.random = _r; }
 });
 
 test("passivas persistem após ascend, bossKills reseta", () => {
@@ -592,7 +549,7 @@ test("passivas persistem após ascend, bossKills reseta", () => {
   s.bossKills = 5;
   s.totalVestgesSpent = 999;
   s.level = 30;
-  s.regionProgress = { 0: [0] };
+  s.mapProgress = { 0: game.lastSubarea() };
   game.ascend(s);
   assertEqual(s.passives.radiantStrike, 3, "passivas devem persistir");
   assertEqual(s.bossKills, 0, "bossKills deve resetar");
@@ -667,7 +624,7 @@ test("ascend preserva convergences", () => {
   const s = game.defaultState();
   s.convergences = 3;
   s.level = 30;
-  s.regionProgress = { 0: [0] };
+  s.mapProgress = { 0: game.lastSubarea() };
   game.ascend(s);
   assertEqual(s.convergences, 3, "convergences deve persistir após ascend");
 });
@@ -736,7 +693,7 @@ test("registerKill dropa 1 material conforme o tier", () => {
 
 test("registerKill de chefe dropa o material do mapa atual", () => {
   const s = game.defaultState();
-  s.region = 0; // plains → Dreamspore
+  s.map = 0; // The Dreaming Wood → Dreamspore
   game.registerKill(s, { name: "boss", goldReward: 1, xpReward: 1, isBoss: true, shardMult: 1 });
   assertEqual(s.materials.dreamspore, 1, "chefe de plains dropa Dreamspore");
 });
@@ -748,7 +705,7 @@ test("materiais persistem após converge e ascend", () => {
   game.converge(s);
   assertEqual(s.materials.dimShard, 50, "materiais persistem no converge");
   assertEqual(s.materials.dreamspore, 3, "material de mapa persiste no converge");
-  s.level = 30; s.regionProgress = { 0: [0] };
+  s.level = 30; s.mapProgress = { 0: game.lastSubarea() };
   game.ascend(s);
   assertEqual(s.materials.dimShard, 50, "materiais persistem no ascend");
 });
@@ -777,9 +734,9 @@ test("tiers usam a Ordre de Lumière (Seeker→Lumière)", () => {
 
 test("heroTier resolve o nome da Ordre conforme ascensões", () => {
   const s = game.defaultState();
-  s.ascensions = 0;    assertEqual(TIERS[game.heroTier(s)].name, "Seeker");
-  s.ascensions = 50;   assertEqual(TIERS[game.heroTier(s)].name, "Illuminate");
-  s.ascensions = 1000; assertEqual(TIERS[game.heroTier(s)].name, "Lumière");
+  s.ascensions = 0; assertEqual(TIERS[game.heroTier(s)].name, "Seeker");
+  s.ascensions = 1; assertEqual(TIERS[game.heroTier(s)].name, "Illuminate");
+  s.ascensions = 4; assertEqual(TIERS[game.heroTier(s)].name, "Lumière");
 });
 
 console.log("\n== Regressão: render robusto ==");

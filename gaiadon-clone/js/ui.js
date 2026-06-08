@@ -55,18 +55,17 @@ function renderResources(s) {
 // Combat View — 2-panel layout: hero card + enemy grid + wave progress
 // ═══════════════════════════════════════════════════════════════════════
 function renderCombat(s) {
-  const region = REGIONS[s.region];
-  const diff   = DIFFICULTIES[s.difficulty];
+  const region = REGIONS[s.map];
+  const sub    = SUBAREAS[s.subarea];
   const pack   = s.enemies || [];
   const target = pack[0];
-  const waves  = totalWaves(s.difficulty);
-  const boss   = isBossWave(s.wave, s.difficulty);
+  const boss   = isBossReady(s);
 
-  // ── Top bar: region + difficulty + wave ──
+  // ── Top bar: mapa + subárea ──
   $("regionName").textContent = region.name;
-  $("navDifficulty").textContent = diff.name;
-  $("navDifficulty").className = "nav-difficulty " + diff.cssClass;
-  $("navWave").textContent = boss ? `Boss Wave` : `Wave ${s.wave}/${waves}`;
+  $("navDifficulty").textContent = sub.name;
+  $("navDifficulty").className = "nav-difficulty " + region.cssClass;
+  $("navWave").textContent = boss ? "⚔️ Boss" : `Subárea ${s.subarea + 1}/${subareasPerMap()}`;
 
   // ── Hero card (left panel) ──
   const tier = heroTier(s);
@@ -141,10 +140,10 @@ function renderCombat(s) {
     $("enemyGrid").innerHTML = gridHtml;
   }
 
-  // ── Wave progress bar ──
-  const needed = boss ? 1 : killsPerWave();
-  const killPct = needed > 0 ? Math.min(100, (s.killsInWave / needed) * 100) : 0;
-  $("kills").textContent = s.killsInWave;
+  // ── Barra de progresso da subárea (kills até o chefe; trigger oculto) ──
+  const needed = CONFIG.map.killsToBoss;
+  const killPct = boss ? 100 : Math.min(100, (s.killsInSub / needed) * 100);
+  $("kills").textContent = boss ? "BOSS" : s.killsInSub;
   $("killsNeeded").textContent = needed;
   $("killProgressFill").style.width = killPct + "%";
 }
@@ -155,39 +154,35 @@ function renderCombat(s) {
 function renderMap(s) {
   const grid = $("mapGrid");
   if (!grid) return;
+  const lastSub = lastSubarea();
 
   grid.innerHTML = REGIONS.map((region, idx) => {
-    const unlocked = isRegionUnlocked(s, idx);
-    const active   = s.region === idx;
-    const mastered = isRegionMastered(s, idx);
+    const unlocked = isMapUnlocked(s, idx);
+    const active   = s.map === idx;
+    const mastered = isMapMastered(s, idx);
 
     if (!unlocked) {
       const prevName = idx > 0 ? REGIONS[idx - 1].name : "";
       return `<div class="map-region locked">
         <div class="map-region-icon">🔒</div>
         <div class="map-region-name">${region.name}</div>
-        <div class="map-region-desc">Clear ${prevName} to unlock</div>
+        <div class="map-region-desc">Defeat the final boss of ${prevName} to unlock</div>
       </div>`;
     }
 
-    const diffBtns = DIFFICULTIES.map((d, di) => {
-      const isUnlocked = isDifficultyUnlocked(s, idx, di);
-      const isCleared  = isDifficultyCleared(s, idx, di);
-      const isCurrent  = active && s.difficulty === di;
-      const cls = "map-diff-btn " + d.cssClass
-        + (isCleared ? " cleared" : "")
-        + (isCurrent ? " current" : "");
-      return `<button class="${cls}"
-        data-region="${idx}" data-diff="${di}"
-        ${isUnlocked ? "" : "disabled"}>
-        ${d.name} ${isCleared ? "✓" : isUnlocked ? "" : "🔒"}
-      </button>`;
-    }).join("");
+    // Estrelas das subáreas: cheia = chefe derrotado, vazia = disponível.
+    const cleared = maxSubareaCleared(s, idx);
+    const starStr = SUBAREAS.map((sa, si) => {
+      if (cleared >= si) return "★";
+      if (active && s.subarea === si) return "◉"; // subárea atual
+      return "☆";
+    }).join(" ");
 
-    const clearedCount = (s.regionProgress[idx] || []).length;
-    const starStr = DIFFICULTIES.map((d, di) =>
-      isDifficultyCleared(s, idx, di) ? "★" : isDifficultyUnlocked(s, idx, di) ? "☆" : "·"
-    ).join(" ");
+    // Viaja para a subárea atual de progresso (ou onde parou).
+    const resumeSub = Math.min(cleared + 1, lastSub);
+    const travelBtn = `<button class="map-diff-btn ${region.cssClass}${active ? " current" : ""}"
+      data-map="${idx}" data-sub="${active ? s.subarea : resumeSub}">
+      ${active ? "▶ Aqui" : "Viajar"}</button>`;
 
     return `<div class="map-region ${active ? "active" : ""} ${mastered ? "mastered" : ""}">
       <div class="map-region-header">
@@ -197,8 +192,8 @@ function renderMap(s) {
       </div>
       <div class="map-region-desc">${region.description}</div>
       <div class="map-region-stars">${starStr}</div>
-      <div class="map-region-power">Base Power: ${fmt(region.startPower)}</div>
-      <div class="map-difficulties">${diffBtns}</div>
+      <div class="map-region-power">Subáreas limpas: ${cleared + 1 < 0 ? 0 : cleared + 1}/${SUBAREAS.length}</div>
+      <div class="map-difficulties">${travelBtn}</div>
     </div>`;
   }).join("");
 }
@@ -290,7 +285,7 @@ function renderHero(s) {
         <div class="hero-portrait-info">
           <div class="hero-portrait-name">${t.name}</div>
           <div class="hero-portrait-tier rar-${tierColor}">${tierColor.toUpperCase()} TIER</div>
-          <div class="hero-portrait-mult">Ascension bonus: ×${t.mult.toFixed(2)}</div>
+          <div class="hero-portrait-mult">Ascensão: ×${fmt(CONFIG.ascension.spikePerTier)} por mapa</div>
         </div>
       </div>`;
   }
@@ -307,7 +302,7 @@ function renderHero(s) {
      </div>
      <div class="hero-foot-row">
        <span class="hero-foot-label">Per ascension</span>
-       <span class="rar-${tierColor}">×${t.mult.toFixed(2)} &nbsp;<small>(${t.name})</small></span>
+       <span class="rar-${tierColor}">×${fmt(CONFIG.ascension.spikePerTier)} &nbsp;<small>(${t.name})</small></span>
      </div>`;
 }
 
@@ -383,63 +378,43 @@ function renderEquipment(s) {
 
 function renderAscend(s) {
   const asc = getAscensionStatus(s);
-  const t = TIERS[asc.tier];
-  $("ascCount").textContent = "×" + s.ascensions;
+  $("ascCount").textContent = asc.ascensionNumber + "/" + (REGIONS.length - 1);
 
-  const inTier   = s.ascensions - t.minAsc;
-  const tierSize = asc.nextTier ? asc.nextTier.minAsc - t.minAsc : null;
-  const pct      = tierSize ? Math.min(100, (inTier / tierSize) * 100) : 100;
   const tierColor = ["common", "uncommon", "rare", "epic", "legendary"][asc.tier];
+  // Barra: progresso de subáreas no mapa atual (até o chefe final → Ascensão).
+  const pct = asc.isMaxTier && asc.finalBossCleared ? 100
+            : Math.min(100, ((asc.subarea + (asc.finalBossCleared ? 1 : 0)) / (asc.lastSubarea + 1)) * 100);
 
   let html = `
     <div class="asc-tier-name rar-${tierColor}">${asc.tierName}</div>
+    <div class="asc-sub-map">🗺️ ${asc.mapName} · Subárea ${asc.subarea + 1}/${asc.lastSubarea + 1}</div>
     <div class="asc-bar-wrap">
       <div class="asc-bar-fill rarity-fill-${tierColor}" style="width:${pct.toFixed(1)}%"></div>
-      <span class="asc-bar-text">
-        ${asc.nextTier ? `${inTier} / ${tierSize} ascensions` : `${inTier} ascensions — MAX TIER`}
-      </span>
+      <span class="asc-bar-text">${asc.finalBossCleared ? "Chefe final derrotado!" : "Avance até o chefe da Subárea " + (asc.lastSubarea + 1)}</span>
     </div>`;
 
   if (asc.nextTier) {
     html += `<div class="asc-next-tier">
-      Next tier: <b class="rar-${["common","uncommon","rare","epic","legendary"][asc.tier+1]}">${asc.nextTier.name}</b>
-      at ${fmt(asc.nextTier.minAsc)} ascensions
-      <span class="asc-spike">→ Power Spike ×${fmt(asc.nextTier.spike)}</span>
+      Próxima Ordre: <b class="rar-${["common","uncommon","rare","epic","legendary"][asc.tier+1]}">${asc.nextTierName}</b>
+      <span class="asc-spike">→ Power Spike ×${fmt(CONFIG.ascension.spikePerTier)}</span>
     </div>`;
+  } else {
+    html += `<div class="asc-next-tier">Ordre máxima — <b class="rar-legendary">Lumière</b></div>`;
   }
 
   html += `<div class="asc-mult-info">
-    Each ascension: <b>×${asc.tierMult.toFixed(2)}</b> to all stats ·
-    Current power: <b>×${fmt(asc.currentPowerMult)}</b>
-    <small class="asc-compound-hint">(×${asc.compoundPreview.toFixed(1)} after 10 more)</small>
-  </div>`;
-
-  // Requisitos: nível + stages
-  const levelOk  = s.level >= asc.levelReq;
-  const stageOk  = asc.stagesCleared >= asc.stagesRequired;
-  const levelGap = asc.levelReq - s.level;
-  const stageGap = asc.stagesRequired - asc.stagesCleared;
-
-  html += `<div class="asc-req-row">
-    <span class="asc-req ${levelOk ? 'req-ok' : 'req-missing'}">
-      ⭐ Level ${asc.levelReq}
-      &nbsp;${levelOk ? '✓' : `— ${levelGap} level${levelGap > 1 ? 's' : ''} to go`}
-    </span>
-    <span class="asc-req ${stageOk ? 'req-ok' : 'req-missing'}">
-      🗺️ ${asc.stagesCleared}/${asc.stagesRequired} stages cleared
-      &nbsp;${stageOk ? '✓' : `— ${stageGap} more to clear`}
-    </span>
+    Poder de Ascensão atual: <b>×${fmt(asc.currentPowerMult)}</b>${asc.nextTier ? ` · próxima: <b>×${fmt(asc.nextPowerMult)}</b>` : ""}
   </div>`;
 
   $("ascTierDisplay").innerHTML = html;
   $("ascendBtn").disabled = !asc.canAscend;
 
   if (asc.canAscend) {
-    $("ascInfo").innerHTML = asc.isTierPromo
-      ? `<b class="milestone-text">🎉 TIER UP! You're becoming ${asc.nextTier.name}! Spike ×${fmt(asc.nextTier.spike)} awaits!</b>`
-      : `<b>✓ KEEP</b> all equipment & map progress · <b>✗ RESET</b> lumens, level &amp; wave · you'll rebuild faster!`;
+    $("ascInfo").innerHTML = `<b class="milestone-text">🎉 Ascender para ${asc.nextTierName}!</b><br><b>✓ MANTÉM</b> gear, passivas, materiais e progresso · <b>✗ RESETA</b> lumens, nível e gold stats. Próximo mapa desbloqueado!`;
+  } else if (asc.isMaxTier) {
+    $("ascInfo").innerHTML = `Você alcançou <b>Nil Aeternum</b>, o último mapa. Não há mais Ascensões.`;
   } else {
-    $("ascInfo").innerHTML = `Clear more stages on the 🗺️ Map and reach level ${asc.levelReq} to unlock ascension #${asc.ascensionNumber}.`;
+    $("ascInfo").innerHTML = `Derrote o chefe final (Subárea ${asc.lastSubarea + 1}) de <b>${asc.mapName}</b> para ascender à próxima Ordre.`;
   }
 
   // ── Convergence panel ──

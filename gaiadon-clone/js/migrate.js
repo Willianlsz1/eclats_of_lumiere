@@ -140,6 +140,25 @@ const MIGRATIONS = [
     if (!s.materials) s.materials = {};
     return s;
   },
+
+  // v8 → v9: realinha ao modelo do DESIGN — region/difficulty/wave → map/subarea,
+  // ascensões agora 0-4 (1 por mapa). Converte saves antigos (migração com perda
+  // controlada do progresso de subárea, preservando mastery e moedas).
+  function migrateToSubareas(s) {
+    const maxMap = REGIONS.length - 1;
+    if (s.map === undefined) s.map = Math.min(s.region || 0, maxMap);
+    if (s.subarea === undefined) s.subarea = 0;
+    if (s.killsInSub === undefined) s.killsInSub = (s.killsInWave || 0);
+    if (!s.mapProgress) s.mapProgress = {};
+    if (!s.mapMastery)  s.mapMastery  = s.regionMastery || {};
+    // Ascensões: clamp ao novo teto (5 mapas). map acompanha o tier.
+    if (typeof s.ascensions === "number") s.ascensions = Math.max(0, Math.min(s.ascensions, maxMap));
+    s.map = Math.min(s.map, maxMap);
+    // Remove campos do modelo antigo.
+    delete s.region; delete s.difficulty; delete s.wave;
+    delete s.killsInWave; delete s.regionProgress; delete s.regionMastery;
+    return s;
+  },
 ];
 
 function migrate(state) {

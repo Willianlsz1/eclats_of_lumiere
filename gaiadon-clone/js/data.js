@@ -158,27 +158,17 @@ const REGIONS = [
 
 
 // ═══════════════════════════════════════════════════════════════════════
-// Difficulties — waves por dificuldade + powerMult
+// Subáreas (DESIGN §16) — 5 por mapa, open-zone, chefe com trigger oculto
 // ═══════════════════════════════════════════════════════════════════════
-// powerMult substitui statMult/dropMult. HP do inimigo = startPower × powerMult × waveMult.
-// Recompensas escalam proporcionalmente ao HP (dmgRatio, goldRatio, xpRatio em CONFIG).
-const DIFFICULTIES = [
-  { id: "normal",    name: "Normal",    powerMult: 1,    waves: 30, shardMult: 1, cssClass: "diff-normal" },
-  { id: "hard",      name: "Hard",      powerMult: 10,   waves: 50, shardMult: 2, cssClass: "diff-hard" },
-  { id: "nightmare", name: "Nightmare", powerMult: 100,  waves: 75, shardMult: 3, cssClass: "diff-nightmare" },
+// Faixas de nível de referência (Mapa 1). Cada subárea tem um chefe gatekeeper;
+// o da Subárea 5 é o chefe final do mapa → Ascensão.
+const SUBAREAS = [
+  { idx: 0, name: "Subárea I",   levelRange: [1, 50] },
+  { idx: 1, name: "Subárea II",  levelRange: [50, 200] },
+  { idx: 2, name: "Subárea III", levelRange: [200, 1000] },
+  { idx: 3, name: "Subárea IV",  levelRange: [1000, 10000] },
+  { idx: 4, name: "Subárea V",   levelRange: [10000, 100000] }, // chefe final → Ascensão
 ];
-
-
-// ═══════════════════════════════════════════════════════════════════════
-// Wave Tiers — quando cada inimigo desbloqueia dentro da zona
-// ═══════════════════════════════════════════════════════════════════════
-// Frações das waves em que cada enemy index (0-4) aparece pela primeira vez.
-// Normal: gradual (tutorial). Nightmare: todos desde wave 1.
-const WAVE_TIERS = {
-  normal:    [0, 0.20, 0.40, 0.60, 0.80],  // enemy 0 em wave 1, enemy 4 em wave 25
-  hard:      [0, 0.15, 0.30, 0.50, 0.70],  // um pouco mais cedo
-  nightmare: [0, 0,    0,    0,    0],      // todos desde wave 1
-};
 
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -251,17 +241,15 @@ const RARITIES = [
 
 
 // ═══════════════════════════════════════════════════════════════════════
-// Tiers de classe do herói — Ordre de Lumière (DESIGN §15).
-// Os 5 tiers mapeiam 1:1 aos 5 mapas: cada Ascensão de mapa avança a Ordre.
-// O nome é DERIVADO de s.ascensions (heroTier) — não persiste no save,
-// então renomear não exige migração. Limiares (minAsc) inalterados.
+// Tiers da Ordre de Lumière (DESIGN §15) — 1 por mapa, 5 ascensões totais.
+// tier = nº da ascensão = índice do mapa (0→4). minAsc = quantas ascensões para o tier.
 // ═══════════════════════════════════════════════════════════════════════
 const TIERS = [
-  { name: "Seeker",      minAsc: 0,    mult: 1.06, spike: 1    },
-  { name: "Illuminate",  minAsc: 50,   mult: 1.08, spike: 10   },
-  { name: "Éclairé",     minAsc: 200,  mult: 1.10, spike: 50   },
-  { name: "L'Éveillé",   minAsc: 500,  mult: 1.12, spike: 200  },
-  { name: "Lumière",     minAsc: 1000, mult: 1.15, spike: 1000 },
+  { name: "Seeker",      minAsc: 0, map: 0 },
+  { name: "Illuminate",  minAsc: 1, map: 1 },
+  { name: "Éclairé",     minAsc: 2, map: 2 },
+  { name: "L'Éveillé",   minAsc: 3, map: 3 },
+  { name: "Lumière",     minAsc: 4, map: 4 },
 ];
 
 
@@ -583,7 +571,7 @@ const CONFIG = {
 
   // ── Convergence (rebirth frequente) ───────────────────────────────────
   // Milestones: ×spikeMultiplier a cada spikeInterval Convergences.
-  // Reutiliza tierSpikeMultiplier() de progression.js para o cálculo.
+  // Spike por marco; o multiplicador de Convergence é calculado em progression.js.
   convergence: {
     spikeMultiplier: 1.5,
     spikeInterval:   5,
@@ -596,24 +584,26 @@ const CONFIG = {
     maxMult:      1e100, // clamp de segurança (impede overflow → Infinity → save corrompido)
   },
 
-  // ── Map progression ───────────────────────────────────────────────────
-  // Escala de HP entre mapas (~×1e12 por mapa — ver DESIGN.md §13).
+  // ── Map / Subárea progression (DESIGN §16) ────────────────────────────
+  // 5 mapas × 5 subáreas = 25 passos. HP do inimigo cresce geometricamente
+  // por subárea: hp(map, sub) = baseHp × subareaRamp^(map×subareasPerMap + sub).
+  // Open-zone: spawn contínuo; o chefe da subárea aparece após killsToBoss kills.
   map: {
-    hpScalePerMap: 1e12,
+    baseHp:         10,    // HP do 1º inimigo (Mapa 1, Subárea 1)
+    subareaRamp:    2.87,  // ×HP por subárea (curva global atravessável: 10 → ~1e12 no jogo todo).
+                           // ALVO DESIGN §16 = ~251 (×1e12 POR mapa); cranear quando os Echoes
+                           // e a economia de poder completa existirem.
+    subareasPerMap: 5,
+    killsToBoss:    30,    // kills na subárea até o chefe (trigger oculto)
   },
 
-  // ── Zonas contínuas: escala de inimigos ────────────────────────────
-  // HP do inimigo = interpolação geométrica dentro da zona.
-  // enemyHP(region, diff, wave) = zoneStart × (internalScale ^ progress)
-  //   onde zoneStart = region.startPower × diff.powerMult
-  //   e progress = (wave-1) / (totalWaves-1)
+  // ── Escala de recompensa do inimigo (derivada do HP) ───────────────────
   enemy: {
-    internalScale: 1e12, // HP cresce ×1e12 do início ao fim de cada mapa (DESIGN §16)
     dmgRatio:   0.15,    // enemy DMG = HP × dmgRatio
-    goldRatio:  0.5,     // gold reward ≈ HP × goldRatio (ajustado pela escala)
+    goldRatio:  0.5,     // lumens reward ≈ HP × goldRatio
     xpRatio:    0.3,     // xp reward ≈ HP × xpRatio
     damageFactor: 0.3,   // fração do DMG aplicada por segundo ao player
-    ascGrowth: 1.06,     // HP e DMG × 1.06 por ascensão do jogador
+    ascGrowth: 1.06,     // HP e DMG × 1.06 por ascensão (0-4)
     // Cursed archetype debuff
     cursedAtkSpeedReduction: 0.20,
   },
@@ -625,10 +615,10 @@ const CONFIG = {
     shardMult: 5,        // boss dá 5× mais shards
   },
 
-  // ── Elites e Champions (dentro das waves) ──────────────────────────
+  // ── Elites e Champions (chance escala com a subárea) ───────────────────
   elite: {
-    eliteMinDifficulty:    1,    // Hard+
-    championMinDifficulty: 2,    // Nightmare only
+    eliteMinSubarea:    1,    // a partir da Subárea 2
+    championMinSubarea: 3,    // a partir da Subárea 4
     eliteChance:     0.15,
     championChance:  0.04,
     tiers: {
@@ -638,16 +628,10 @@ const CONFIG = {
     },
   },
 
-  // ── Pack size ──────────────────────────────────────────────────────
+  // ── Pack size (cresce com a subárea) ───────────────────────────────────
   pack: {
-    baseByDifficulty: [1, 2, 3],
-    maxByDifficulty:  [3, 5, 8],
-    growthPerWave: 3,
-  },
-
-  // ── Waves ──────────────────────────────────────────────────────────
-  wave: {
-    killsPerWave: 10,
+    baseBySubarea: [1, 2, 2, 3, 3],
+    maxBySubarea:  [3, 4, 5, 6, 8],
   },
 
   // ── Equipment (mantém ADR-0002) ────────────────────────────────────
@@ -659,10 +643,11 @@ const CONFIG = {
     rarityMaterialQty: [10, 8, 6, 5],
   },
 
-  // ── Shards ─────────────────────────────────────────────────────────
+  // ── Vestiges (drop por kill) ───────────────────────────────────────
   shards: {
     basePerKill: 1,
-    perRegion: 2,
+    perMap: 2,
+    perSubarea: 1,
   },
 
   // ── Item stat conversions ──────────────────────────────────────────
@@ -678,10 +663,13 @@ const CONFIG = {
   // ── XP / Hero level ────────────────────────────────────────────────
   xp: { base: 20, growth: 1.10 },
 
-  // ── Ascensão ───────────────────────────────────────────────────────
+  // ── Ascensão (5 totais, 1 por mapa — DESIGN §15) ───────────────────────
+  // Gatilho: derrotar o chefe da Subárea 5 do mapa atual → próximo mapa + tier.
+  // Cada ascensão dá um spike de poder (≈ salto de HP por mapa) p/ começar o próximo.
   ascension: {
-    firstReqLevel: 30,
+    firstReqLevel:  30,
     perLevelGrowth: 1.03,
+    spikePerTier:   200,   // ascMultiplier = spikePerTier ^ ascensions (0-4)
   },
 
   // ── Offline (melhora automaticamente com ascensões) ────────────────
@@ -692,11 +680,11 @@ const CONFIG = {
     capHoursPerStep: 0.25,
   },
 
-  // ── Region Mastery ─────────────────────────────────────────────────
+  // ── Map Mastery (permanente entre ascensões) ───────────────────────
   mastery: {
     killsBase: 200,
-    killsPerRegion: 50,
-    bonusPerRegion: 0.02,
+    killsPerMap: 50,
+    bonusPerMap: 0.02,
   },
 
   // ── Synergy (soma de equip levels) ─────────────────────────────────
@@ -747,7 +735,7 @@ function fmtPct(n) { return (n >= 0 ? "+" : "") + (n * 100).toFixed(1) + "%"; }
 // ═══════════════════════════════════════════════════════════════════════
 if (typeof module !== "undefined") {
   module.exports = {
-    ASSETS, ARCHETYPES, REGIONS, DIFFICULTIES, WAVE_TIERS,
+    ASSETS, ARCHETYPES, REGIONS, SUBAREAS,
     SLOTS, AFFIXES, RARITIES, TIERS,
     MATERIALS, MAP_MATERIALS, MATERIALS_BY_ID, materialDef,
     GOLD_STATS, PASSIVES, ARTIFACTS, ARTIFACT_COST_EXPONENT, ESSENCE,

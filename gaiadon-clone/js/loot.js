@@ -123,7 +123,7 @@ function rarityUpMaterial(s, slotId) {
   if (r === 0)      id = "dimShard";
   else if (r === 1) id = "paleFragment";
   else if (r === 2) id = "voidDust";
-  else              id = (MAP_MATERIALS[s.region] || MAP_MATERIALS[0]).id;
+  else              id = (MAP_MATERIALS[s.map] || MAP_MATERIALS[0]).id;
   return { id: id, qty: qty };
 }
 function canRarityUp(s, slotId) {

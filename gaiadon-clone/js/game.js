@@ -8,20 +8,18 @@ function defaultState() {
     vestiges: 0,
     level: 1,
     xp: 0,
-    ascensions: 0,
+    ascensions: 0,         // 0-4: mapas completados = tier (DESIGN §15)
     convergences: 0,
     totalKills: 0,
 
-    // World Map state
-    region: 0,              // índice em REGIONS
-    difficulty: 0,          // índice em DIFFICULTIES
-    wave: 1,                // wave atual (1-based)
-    killsInWave: 0,         // kills na wave atual
+    // Map/Subárea state (DESIGN §16)
+    map: 0,                 // índice em REGIONS (mapa atual)
+    subarea: 0,             // 0-4: subárea atual dentro do mapa
+    killsInSub: 0,          // kills na subárea atual (trigger oculto do chefe)
 
-    // Progress: quais dificuldades foram limpas por região.
-    // Chave = índice da região. Valor = array de índices de dificuldade limpos.
-    // Região "desbloqueada" = tem uma entrada aqui. Plains começa desbloqueada.
-    regionProgress: { 0: [] },
+    // Progresso: maior subárea cujo chefe foi derrotado, por mapa.
+    // Chave = índice do mapa. Valor = índice da subárea (-1 = nenhuma; ausente = idem).
+    mapProgress: {},
 
     // Equipamento: cada slot guarda { rarity: índice, level }.
     equipped: {
@@ -50,8 +48,8 @@ function defaultState() {
     playerHp: null,
     lastSeen: null,
 
-    // Region Mastery: kills acumulados POR REGIÃO — persiste entre ascensões.
-    regionMastery: {},
+    // Map Mastery: kills acumulados POR MAPA — persiste entre ascensões.
+    mapMastery: {},
   };
 }
 
@@ -159,7 +157,7 @@ function goldBonus(s) {
   let b = 1 + slotPower(s, "Amulet") * CONFIG.itemStats.goldFindPerPower;
   b *= (1 + affixTotals(s).goldMult);
   b *= (1 + goldStatBonus(s, "frt"));        // FRT: +5% gold per level
-  b = b * totalPowerMult(s) * regionMasteryBonus(s);
+  b = b * totalPowerMult(s) * mapMasteryBonus(s);
   if (typeof passiveTotals === "function") {
     const _pt = passiveTotals(s);
     b *= (1 + _pt.lumensMult);
@@ -168,7 +166,7 @@ function goldBonus(s) {
   return b;
 }
 function xpMultiplier(s) {
-  var base = totalPowerMult(s) * (1 + affixTotals(s).xpMult) * regionMasteryBonus(s);
+  var base = totalPowerMult(s) * (1 + affixTotals(s).xpMult) * mapMasteryBonus(s);
   base = base * (1 + goldStatBonus(s, "wis")); // WIS: +5% xp per level
   if (typeof passiveTotals === "function") {
     const _pt = passiveTotals(s);
@@ -180,7 +178,7 @@ function xpMultiplier(s) {
 function shardBonus(s) {
   let b = 1 + slotPower(s, "Ring") * CONFIG.itemStats.shardFindPerPower;
   b *= (1 + affixTotals(s).shardMult);
-  b = b * totalPowerMult(s) * regionMasteryBonus(s);
+  b = b * totalPowerMult(s) * mapMasteryBonus(s);
   if (typeof passiveTotals === "function") {
     const _pt = passiveTotals(s);
     b *= (1 + _pt.vestigeMult);
@@ -202,12 +200,11 @@ function gainXp(s, amount) {
 }
 
 // --- Navegação do mapa ---
-// Entra numa região+dificuldade. Spawna o pack e cura o jogador.
-function enterRegion(s, regionIdx, diffIdx) {
-  s.region = regionIdx;
-  s.difficulty = diffIdx;
-  s.wave = 1;
-  s.killsInWave = 0;
+// Entra num mapa+subárea. Spawna o pack e cura o jogador.
+function enterMap(s, mapIdx, subIdx) {
+  s.map = mapIdx;
+  s.subarea = subIdx || 0;
+  s.killsInSub = 0;
   s.enemies = [];
   s.playerHp = playerMaxHp(s);
   spawnPack(s);
@@ -222,9 +219,9 @@ function addMaterial(s, id, qty) {
 }
 
 // Qual material um inimigo dropa: chefe → material do mapa; senão pelo tier.
-function materialDropFor(e, regionIdx) {
+function materialDropFor(e, mapIdx) {
   if (e.isBoss) {
-    const m = MAP_MATERIALS[regionIdx];
+    const m = MAP_MATERIALS[mapIdx];
     return m ? m.id : null;
   }
   if (e.tier === "champion") return "voidDust";
@@ -234,65 +231,51 @@ function materialDropFor(e, regionIdx) {
 
 function registerKill(s, e) {
   e = e || s.enemies[0];
-  const regionAtKill = s.region;
+  const mapAtKill = s.map;
   const g = Math.round(e.goldReward * goldBonus(s));
   s.lumens += g;
   const leveled = gainXp(s, e.xpReward * xpMultiplier(s));
   s.totalKills++;
-  const sh = Math.round(shardsOnKill(s.region, s.difficulty, e.isBoss) * shardBonus(s) * (e.shardMult || 1));
+  const sh = Math.round(shardsOnKill(s.map, s.subarea, e.isBoss) * shardBonus(s) * (e.shardMult || 1));
   s.vestiges += sh;
-  s.killsInWave++;
+  s.killsInSub++;
 
   // Materiais (Fase 4): drop conforme tier do inimigo / chefe.
-  const matId = materialDropFor(e, regionAtKill);
+  const matId = materialDropFor(e, mapAtKill);
   addMaterial(s, matId, 1);
 
-  // Region Mastery: acumula kills permanentes.
-  const justMastered = recordRegionMasteryKill(s, regionAtKill);
+  // Map Mastery: acumula kills permanentes.
+  const justMastered = recordMapMasteryKill(s, mapAtKill);
 
   const result = {
     type: "kill", name: e.name, tier: e.tier || "normal",
     lumens: g, vestiges: sh, material: matId, leveled,
-    wasBoss: e.isBoss, justMastered,
-    masteredRegion: justMastered ? regionAtKill : null,
-    waveAdvanced: false, difficultyCleared: false,
-    region: s.region, difficulty: s.difficulty,
+    wasBoss: e.isBoss, isFinalBoss: !!e.isFinalBoss, justMastered,
+    masteredMap: justMastered ? mapAtKill : null,
+    subareaAdvanced: false, mapCleared: false,
+    map: s.map, subarea: s.subarea,
   };
 
   if (e.isBoss) {
     s.bossKills = (s.bossKills || 0) + 1;
-    // Boss derrotado → limpar dificuldade, desbloquear próximo conteúdo.
-    const wasCleared = isDifficultyCleared(s, s.region, s.difficulty);
-    clearCurrentDifficulty(s);
-    result.difficultyCleared = !wasCleared;
-    // Reset para wave 1 (modo farming).
-    s.wave = 1;
-    s.killsInWave = 0;
-  } else if (s.killsInWave >= killsPerWave()) {
-    // Wave limpa → avançar.
-    s.wave++;
-    s.killsInWave = 0;
-    result.waveAdvanced = true;
-    result.newWave = s.wave;
-  }
-  // Detecta aumento de pack na nova wave.
-  if (result.waveAdvanced) {
-    const oldPack = packSizeFor(s.difficulty, s.wave - 1, false);
-    const newPack = packSizeFor(s.difficulty, s.wave, isBossWave(s.wave, s.difficulty));
-    result.packIncreased = newPack > oldPack;
+    const wasFinal = e.isFinalBoss; // chefe da Subárea 5 → habilita Ascensão
+    const fromSub = s.subarea;
+    clearCurrentSubarea(s);          // marca progresso e avança a subárea
+    result.subareaAdvanced = !wasFinal;
+    result.mapCleared = wasFinal;    // mapa limpo → canAscend libera
+    result.newSubarea = s.subarea;
+    result.clearedSubarea = fromSub;
   }
   return result;
 }
 
-// Morte: SEM PUNIÇÃO. Recua para wave 1, cura, recomeça.
-// O jogador farma as waves fáceis e tenta de novo.
+// Morte: SEM PUNIÇÃO. Zera o progresso de kills da subárea, cura, recomeça.
 function handleDeath(s) {
-  const diedOnWave = s.wave;
-  s.wave = 1;
-  s.killsInWave = 0;
+  const diedOnSubarea = s.subarea;
+  s.killsInSub = 0;
   s.enemies = [];
   s.playerHp = playerMaxHp(s);
-  return { type: "death", diedOnWave, region: s.region, difficulty: s.difficulty };
+  return { type: "death", diedOnSubarea, map: s.map, subarea: s.subarea };
 }
 
 // Processa dt segundos de combate. Retorna lista de eventos para a UI.
@@ -352,14 +335,11 @@ function tick(s, dt) {
 // ═══════════════════════════════════════════════════════════════════════
 // Convergence — lightweight rebirth nested inside ascensions
 // ═══════════════════════════════════════════════════════════════════════
-// Soft trigger: livre a qualquer momento acima de CONFIG.convergence.minLevel
-// (sem gate de boss/recurso, mas exige progresso de nível a sacrificar — senão
-// converger no piso seria grátis e renderia poder infinito por spam).
-// Reseta: level, xp, lumens, goldStats, totalKills, bossKills e posição no mapa
-// (region/difficulty/wave/killsInWave).
-// Mantém: equipped, regionProgress, regionMastery, passives, totalVestgesSpent,
-// ascensions e convergences. Cada convergência compõe um multiplicador
-// permanente de poder via convergenceMult().
+// Soft trigger: livre acima de CONFIG.convergence.minLevel (exige nível a sacrificar).
+// Reseta: level, xp, lumens, goldStats, totalKills, bossKills, killsInSub.
+// Mantém: equipped, mapProgress, mapMastery, posição no mapa (map/subarea),
+// passives, materials, totalVestgesSpent, ascensions e convergences (DESIGN §14:
+// "progresso de mapa permanece"). Cada convergência compõe o multiplicador permanente.
 
 function canConverge(s) {
   return s.level >= CONFIG.convergence.minLevel;
@@ -383,74 +363,67 @@ function getConvergenceStatus(s) {
 
 function converge(s) {
   if (!canConverge(s)) return false;
-  const keepConvergences   = (s.convergences || 0) + 1;
-  const keepAscensions     = s.ascensions;
-  const keepEquipped       = s.equipped;
-  const keepRegionProgress = s.regionProgress || { 0: [] };
-  const keepRegionMastery  = s.regionMastery  || {};
-  const keepPassives       = s.passives || {};
-  const keepVestgesSpent   = s.totalVestgesSpent || 0;
-  const keepMaterials      = s.materials || {};
+  const keep = {
+    convergences:      (s.convergences || 0) + 1,
+    ascensions:        s.ascensions,
+    map:               s.map,
+    subarea:           s.subarea,
+    mapProgress:       s.mapProgress || {},
+    mapMastery:        s.mapMastery  || {},
+    equipped:          s.equipped,
+    passives:          s.passives || {},
+    materials:         s.materials || {},
+    totalVestgesSpent: s.totalVestgesSpent || 0,
+  };
   Object.assign(s, defaultState());
-  s.convergences      = keepConvergences;
-  s.ascensions        = keepAscensions;
-  s.equipped          = keepEquipped;
-  s.regionProgress    = keepRegionProgress;
-  s.regionMastery     = keepRegionMastery;
-  s.passives          = keepPassives;
-  s.totalVestgesSpent = keepVestgesSpent;
-  s.materials         = keepMaterials;
+  Object.assign(s, keep);
   return true;
 }
 
+// Ascensão (DESIGN §15): derrotar o chefe da Subárea 5 do mapa atual.
+// Não é o último mapa, e o chefe final do mapa atual já foi derrotado.
 function canAscend(s) {
-  return s.level >= CONFIG.ascension.firstReqLevel
-      && stagesCleared(s) >= ascStagesRequired(s);
+  return s.map < REGIONS.length - 1
+      && maxSubareaCleared(s, s.map) >= lastSubarea();
 }
 
 function getAscensionStatus(s) {
-  const tier = heroTier(s);
-  const t    = TIERS[tier];
+  const tier  = heroTier(s);
+  const t     = TIERS[tier];
   const nextT = tier + 1 < TIERS.length ? TIERS[tier + 1] : null;
-  const isTierPromo = !!(nextT && s.ascensions + 1 === nextT.minAsc);
-  const reqStages = ascStagesRequired(s);
-  const cleared   = stagesCleared(s);
+  const finalCleared = maxSubareaCleared(s, s.map) >= lastSubarea();
   return {
     tier,
     tierName: t.name,
-    tierMult: t.mult,
     nextTier: nextT,
-    isTierPromo,
+    nextTierName: nextT ? nextT.name : null,
+    isMaxTier: !nextT,
     canAscend: canAscend(s),
-    ascensionNumber: s.ascensions + 1,
-    stagesRequired: reqStages,
-    stagesCleared: cleared,
-    levelReq: CONFIG.ascension.firstReqLevel,
+    ascensionNumber: s.ascensions,        // mapas completados
+    map: s.map, mapName: REGIONS[s.map].name,
+    subarea: s.subarea, lastSubarea: lastSubarea(),
+    finalBossCleared: finalCleared,
     currentPowerMult: ascMultiplier(s),
-    compoundPreview: Math.pow(t.mult, 10),
+    nextPowerMult: Math.pow(CONFIG.ascension.spikePerTier, s.ascensions + 1),
   };
 }
 
 function ascend(s) {
   if (!canAscend(s)) return false;
-  const keepAscensions     = s.ascensions + 1;
-  const keepConvergences   = s.convergences || 0;
-  const keepEquipped       = s.equipped;
-  const keepRegionProgress = s.regionProgress || { 0: [] };
-  const keepRegionMastery  = s.regionMastery  || {};
-  const keepPassives       = s.passives || {};
-  const keepVestgesSpent   = s.totalVestgesSpent || 0;
-  const keepMaterials      = s.materials || {};
+  const keep = {
+    ascensions:        s.ascensions + 1,
+    convergences:      s.convergences || 0,
+    map:               s.map + 1,         // próximo mapa
+    mapProgress:       s.mapProgress || {},
+    mapMastery:        s.mapMastery  || {},
+    equipped:          s.equipped,
+    passives:          s.passives || {},
+    materials:         s.materials || {},
+    totalVestgesSpent: s.totalVestgesSpent || 0,
+  };
   Object.assign(s, defaultState());
-  s.ascensions        = keepAscensions;
-  s.convergences      = keepConvergences;
-  s.equipped          = keepEquipped;
-  s.regionProgress    = keepRegionProgress;
-  s.regionMastery     = keepRegionMastery;
-  s.passives          = keepPassives;
-  s.totalVestgesSpent = keepVestgesSpent;
-  s.materials         = keepMaterials;
-  // bossKills NÃO é preservado — reseta por mapa (defaultState já o zera)
+  Object.assign(s, keep);
+  // subarea/killsInSub/level/lumens/goldStats/bossKills resetam (defaultState)
   return true;
 }
 
@@ -458,7 +431,7 @@ function ascend(s) {
 function computeOfflineGains(s, elapsedSec) {
   const { efficiency, capHours } = offlineConfig(s);
   const seconds = Math.max(0, Math.min(elapsedSec, capHours * 3600));
-  const stats = enemyStatsFor(s.region, s.difficulty, 1); // wave 1 do local atual
+  const stats = enemyStatsFor(s.map, s.subarea); // subárea atual
   const ascMult = Math.pow(CONFIG.enemy.ascGrowth, s.ascensions);
   const killsPerSec = playerDps(s) / Math.max(1, stats.hp * ascMult);
   const passiveOfflineEff = typeof passiveTotals === "function" ? passiveTotals(s).offlineEff : 0;
@@ -466,8 +439,8 @@ function computeOfflineGains(s, elapsedSec) {
   const kills = killsPerSec * seconds * effectiveEfficiency;
   const lumens   = Math.round(kills * stats.gold * goldBonus(s));
   const xp       = Math.round(kills * stats.xp * xpMultiplier(s));
-  const vestiges = Math.round(kills * shardsOnKill(s.region, s.difficulty, false) * shardBonus(s));
-  return { seconds, kills: Math.floor(kills), lumens, xp, vestiges, region: s.region };
+  const vestiges = Math.round(kills * shardsOnKill(s.map, s.subarea, false) * shardBonus(s));
+  return { seconds, kills: Math.floor(kills), lumens, xp, vestiges, map: s.map };
 }
 
 if (typeof module !== "undefined") {
@@ -478,7 +451,7 @@ if (typeof module !== "undefined") {
     playerDefense, defenseReduction, hpRegenPerSec,
     goldBonus, xpMultiplier, shardBonus, bossDmgMult,
     xpToNext, gainXp,
-    enterRegion, registerKill, handleDeath, tick,
+    enterMap, registerKill, handleDeath, tick,
     addMaterial, materialDropFor,
     canConverge, getConvergenceStatus, converge,
     canAscend, getAscensionStatus, ascend,
