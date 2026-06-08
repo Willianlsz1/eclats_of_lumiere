@@ -76,7 +76,8 @@ function convergenceMult(s) {
   const spikes = Math.floor(n / C.spikeInterval);
   if (spikes > 0) mult *= Math.pow(C.spikeMultiplier, spikes);
 
-  return mult;
+  // Clamp de segurança: impede overflow → Infinity (que serializa como null no save).
+  return Math.min(mult, C.maxMult);
 }
 
 // Returns true if the next convergence yields ≥5% power gain.

@@ -327,11 +327,17 @@ function tick(s, dt) {
 // ═══════════════════════════════════════════════════════════════════════
 // Convergence — lightweight rebirth nested inside ascensions
 // ═══════════════════════════════════════════════════════════════════════
-// Free trigger (no gate). Resets level/xp/lumens; keeps everything else.
-// Each convergence compounds a permanent power multiplier via convergenceMult().
+// Soft trigger: livre a qualquer momento acima de CONFIG.convergence.minLevel
+// (sem gate de boss/recurso, mas exige progresso de nível a sacrificar — senão
+// converger no piso seria grátis e renderia poder infinito por spam).
+// Reseta: level, xp, lumens, goldStats, totalKills, bossKills e posição no mapa
+// (region/difficulty/wave/killsInWave).
+// Mantém: equipped, regionProgress, regionMastery, passives, totalVestgesSpent,
+// ascensions e convergences. Cada convergência compõe um multiplicador
+// permanente de poder via convergenceMult().
 
 function canConverge(s) {
-  return true;
+  return s.level >= CONFIG.convergence.minLevel;
 }
 
 function getConvergenceStatus(s) {
@@ -345,10 +351,13 @@ function getConvergenceStatus(s) {
     nextMult:     next,
     gainPct,
     recommended:  convergenceRecommended(s),
+    canConverge:  canConverge(s),
+    levelReq:     CONFIG.convergence.minLevel,
   };
 }
 
 function converge(s) {
+  if (!canConverge(s)) return false;
   const keepConvergences   = (s.convergences || 0) + 1;
   const keepAscensions     = s.ascensions;
   const keepEquipped       = s.equipped;

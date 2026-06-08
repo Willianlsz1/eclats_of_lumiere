@@ -645,4 +645,30 @@ test("convergenceMult integrado em totalPowerMult", () => {
   assert(Math.abs(p1 / p0 - 1.20) < 0.001, "ganho de 1 convergência deve ser ×1.20 no totalPowerMult");
 });
 
+test("canConverge: bloqueado abaixo de minLevel, liberado em/acima", () => {
+  const s = game.defaultState();
+  s.level = CONFIG.convergence.minLevel - 1;
+  assert(!game.canConverge(s), "abaixo de minLevel deve bloquear");
+  s.level = CONFIG.convergence.minLevel;
+  assert(game.canConverge(s), "em minLevel deve liberar");
+  s.level = CONFIG.convergence.minLevel + 5;
+  assert(game.canConverge(s), "acima de minLevel deve liberar");
+});
+
+test("converge abaixo de minLevel não faz nada (anti-exploit)", () => {
+  const s = game.defaultState();
+  s.level = 1; // piso: sem nada a sacrificar
+  const ok = game.converge(s);
+  assertEqual(ok, false, "converge deve retornar false abaixo do gate");
+  assertEqual(s.convergences, 0, "convergences NÃO deve incrementar no piso");
+});
+
+test("convergenceMult clampa em maxMult (sem Infinity)", () => {
+  const s = game.defaultState();
+  s.convergences = 10000; // 1.5^2000 estouraria para Infinity sem o clamp
+  const m = game.convergenceMult(s);
+  assert(Number.isFinite(m), "convergenceMult deve ser finito mesmo com convergences absurdo");
+  assertEqual(m, CONFIG.convergence.maxMult, "deve clampar exatamente em maxMult");
+});
+
 report();

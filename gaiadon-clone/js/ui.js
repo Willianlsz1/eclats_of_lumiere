@@ -447,10 +447,13 @@ function renderAscend(s) {
   $("cvCurrent").textContent = "×" + fmt(cv.currentMult);
   $("cvNext").textContent    = "×" + fmt(cv.nextMult) + " (" + cvGainStr + ")";
   $("cvSpikeIn").textContent = nextSpike + (nextSpike === 1 ? " convergence" : " convergences");
-  $("convergeBtn").className = cv.recommended ? "converge-btn converge-recommended" : "converge-btn";
-  $("cvHint").textContent    = cv.recommended
-    ? "⚡ Recommended — significant power spike incoming!"
-    : "Converge any time to bank your current mult.";
+  $("convergeBtn").disabled  = !cv.canConverge;
+  $("convergeBtn").className  = (cv.recommended && cv.canConverge) ? "converge-btn converge-recommended" : "converge-btn";
+  $("cvHint").textContent    = !cv.canConverge
+    ? `Reach level ${cv.levelReq} to converge (currently ${s.level}).`
+    : cv.recommended
+      ? "⚡ Recommended — significant power spike incoming!"
+      : "Converge any time to bank your current mult.";
 }
 
 // Floating damage number.

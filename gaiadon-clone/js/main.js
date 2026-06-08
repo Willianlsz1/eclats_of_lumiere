@@ -147,6 +147,7 @@ function bindButtons() {
 
   $("convergeBtn").onclick = () => {
     const cv = getConvergenceStatus(state);
+    if (!cv.canConverge) return;
     const msg = `🔄 Convergence #${cv.convergences + 1}\n\n✓ KEEP — Equipment, Passives, Map Progress, Ascensions\n✗ RESET — Gold, Level, Wave position\n\nPower: ×${fmt(cv.currentMult)} → ×${fmt(cv.nextMult)} (+${cv.gainPct.toFixed(1)}%)\n\nConverge?`;
     if (confirm(msg)) {
       converge(state);
