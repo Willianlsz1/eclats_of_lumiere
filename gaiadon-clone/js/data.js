@@ -654,7 +654,9 @@ const CONFIG = {
   gear: {
     powerPerLevel: 1,
     levelCostBase: 5, levelCostGrowth: 1.15,
-    rarityCostBase: 50, rarityCostGrowth: 20,
+    // Upgrade de raridade consome MATERIAIS (DESIGN §37), não Vestiges.
+    // qty para subir DE cada raridade: common→unc, unc→rare, rare→epic, epic→leg.
+    rarityMaterialQty: [10, 8, 6, 5],
   },
 
   // ── Shards ─────────────────────────────────────────────────────────

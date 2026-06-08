@@ -73,19 +73,43 @@ test("nível trava no cap da raridade", () => {
   assertEqual(game.levelUpItem(s, "Weapon"), false, "não passa do cap sem subir raridade");
 });
 
-test("rarityUpItem exige estar no cap + vestiges e libera o próximo cap", () => {
+test("rarityUpItem exige estar no cap + materiais e libera o próximo cap", () => {
   const s = game.defaultState();
   s.equipped.Weapon.level = RARITIES[0].cap;
-  s.vestiges = 1e9; s.lumens = 1e9;
+  s.lumens = 1e9;
+  const need = game.rarityUpMaterial(s, "Weapon"); // common→uncommon = Dim Shard
+  assertEqual(need.id, "dimShard", "primeiro upgrade pede Dim Shard");
+  s.materials[need.id] = need.qty + 5;
   const r0 = s.equipped.Weapon.rarity;
   assert(game.rarityUpItem(s, "Weapon"), "deveria subir a raridade");
   assertEqual(s.equipped.Weapon.rarity, r0 + 1);
+  assertEqual(s.materials[need.id], 5, "consome a quantidade exata de material");
   assert(game.levelUpItem(s, "Weapon"), "após subir raridade, nível volta a subir");
+});
+
+test("não sobe raridade sem material suficiente (mesmo no cap)", () => {
+  const s = game.defaultState();
+  s.equipped.Weapon.level = RARITIES[0].cap;
+  const need = game.rarityUpMaterial(s, "Weapon");
+  s.materials[need.id] = need.qty - 1; // 1 a menos
+  assertEqual(game.rarityUpItem(s, "Weapon"), false, "material insuficiente bloqueia");
+});
+
+test("epic→legendary consome o material especial do mapa atual", () => {
+  const s = game.defaultState();
+  s.region = 4; // peak → Nil Essence
+  s.equipped.Weapon.rarity = 3; // epic
+  s.equipped.Weapon.level = RARITIES[3].cap;
+  const need = game.rarityUpMaterial(s, "Weapon");
+  assertEqual(need.id, "nilEssence", "epic→legendary no peak pede Nil Essence");
+  s.materials.nilEssence = need.qty;
+  assert(game.rarityUpItem(s, "Weapon"), "sobe para legendary com o material do mapa");
+  assertEqual(s.equipped.Weapon.rarity, 4);
 });
 
 test("não sobe raridade fora do cap", () => {
   const s = game.defaultState();
-  s.vestiges = 1e9;
+  s.materials = { dimShard: 1e9 };
   assertEqual(game.rarityUpItem(s, "Weapon"), false, "precisa estar no cap pra subir raridade");
 });
 
