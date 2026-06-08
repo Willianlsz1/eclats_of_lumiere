@@ -78,22 +78,22 @@ assert("FRT bonus at lv6 = 0.30 (6 × 0.05)", Math.abs(frtBonus - 0.30) < 0.001,
 section("buyGoldStat — Compra individual");
 
 s = game.defaultState();
-s.gold = 100;
+s.lumens = 100;
 
 assert("Buy STR with 100 gold succeeds", game.buyGoldStat(s, "str") === true);
 assert("STR is now lv1", s.goldStats.str === 1);
-assert("Gold reduced by 10", s.gold === 90, "got " + s.gold);
+assert("Gold reduced by 10", s.lumens === 90, "got " + s.lumens);
 
 // Buy again (cost = round(10 × 2^1.8) = 35)
 assert("Buy STR lv2 succeeds", game.buyGoldStat(s, "str") === true);
 assert("STR is now lv2", s.goldStats.str === 2);
-assert("Gold reduced by 35 more", s.gold === 55, "got " + s.gold);
+assert("Gold reduced by 35 more", s.lumens === 55, "got " + s.lumens);
 
 // Can't afford VIT lv0 (cost=12) with remaining 55? Yes can.
 assert("Buy VIT with 55 gold succeeds", game.buyGoldStat(s, "vit") === true);
 
 // Not enough for FRT (cost=25) after spending
-s.gold = 10;
+s.lumens = 10;
 assert("Can't buy FRT with 10 gold (cost 25)", game.buyGoldStat(s, "frt") === false);
 
 
@@ -101,23 +101,23 @@ assert("Can't buy FRT with 10 gold (cost 25)", game.buyGoldStat(s, "frt") === fa
 section("buyGoldStatMax — Compra em bulk");
 
 s = game.defaultState();
-s.gold = 1000;
+s.lumens = 1000;
 
 var bought = game.buyGoldStatMax(s, "str");
 assert("buyGoldStatMax buys multiple", bought > 1, "bought " + bought);
 assert("STR level matches bought count", s.goldStats.str === bought);
-assert("Gold is reduced", s.gold < 1000, "remaining " + s.gold);
+assert("Gold is reduced", s.lumens < 1000, "remaining " + s.lumens);
 
 // Preview should match
 s = game.defaultState();
-s.gold = 500;
+s.lumens = 500;
 var preview = game.buyGoldStatMaxPreview(s, "str");
-var goldBefore = s.gold;
+var lumensBefore = s.lumens;
 var actualBought = game.buyGoldStatMax(s, "str");
 assert("Preview count matches actual (" + preview.count + " vs " + actualBought + ")",
   preview.count === actualBought);
-assert("Preview cost matches actual spent (" + preview.spent + " vs " + (goldBefore - s.gold) + ")",
-  preview.spent === goldBefore - s.gold);
+assert("Preview cost matches actual spent (" + preview.spent + " vs " + (lumensBefore - s.lumens) + ")",
+  preview.spent === lumensBefore - s.lumens);
 
 
 // ═══════════════════════════════════════════════════════════════

@@ -73,11 +73,11 @@ function levelUpCost(s, slotId) {
 function levelUpMaxPreview(s, slotId) {
   const item = s.equipped[slotId];
   const cap = rarityCap(item);
-  let gold = s.gold, level = item.level, count = 0, spent = 0;
+  let lumens = s.lumens, level = item.level, count = 0, spent = 0;
   while (level < cap) {
     const cost = levelCostAt(level);
-    if (gold < cost) break;
-    gold -= cost; level++; count++; spent += cost;
+    if (lumens < cost) break;
+    lumens -= cost; level++; count++; spent += cost;
     if (count > 1e6) break; // guard: impede loop infinito se levelCost retornar 0
   }
   return { count, spent };
@@ -90,14 +90,14 @@ function levelUpMax(s, slotId) {
 }
 function canLevelUp(s, slotId) {
   const item = s.equipped[slotId];
-  return item.level < rarityCap(item) && s.gold >= levelUpCost(s, slotId);
+  return item.level < rarityCap(item) && s.lumens >= levelUpCost(s, slotId);
 }
 function levelUpItem(s, slotId) {
   const item = s.equipped[slotId];
   if (item.level >= rarityCap(item)) return false; // travado no cap
   const cost = levelUpCost(s, slotId);
-  if (s.gold < cost) return false;
-  s.gold -= cost; item.level++;
+  if (s.lumens < cost) return false;
+  s.lumens -= cost; item.level++;
   return true;
 }
 function rarityUpCost(s, slotId) {
@@ -112,15 +112,15 @@ function canRarityUp(s, slotId) {
   const item = s.equipped[slotId];
   return item.rarity < RARITIES.length - 1
       && item.level >= rarityCap(item)        // precisa estar no cap atual
-      && s.shards >= rarityUpCost(s, slotId);
+      && s.vestiges >= rarityUpCost(s, slotId);
 }
 function rarityUpItem(s, slotId) {
   const item = s.equipped[slotId];
   if (item.rarity >= RARITIES.length - 1) return false;
   if (item.level < rarityCap(item)) return false; // precisa estar no cap
   const cost = rarityUpCost(s, slotId);
-  if (s.shards < cost) return false;
-  s.shards -= cost; item.rarity++; // nível mantém; cap agora é maior
+  if (s.vestiges < cost) return false;
+  s.vestiges -= cost; item.rarity++; // nível mantém; cap agora é maior
   return true;
 }
 

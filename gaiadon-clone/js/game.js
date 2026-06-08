@@ -4,8 +4,8 @@
 
 function defaultState() {
   return {
-    gold: 0,
-    shards: 0,
+    lumens: 0,
+    vestiges: 0,
     level: 1,
     xp: 0,
     ascensions: 0,
@@ -71,8 +71,8 @@ function goldStatBonus(s, statId) {
 function buyGoldStat(s, statId) {
   var level = (s.goldStats && s.goldStats[statId]) || 0;
   var cost = goldStatCost(statId, level);
-  if (s.gold < cost) return false;
-  s.gold -= cost;
+  if (s.lumens < cost) return false;
+  s.lumens -= cost;
   if (!s.goldStats) s.goldStats = {};
   s.goldStats[statId] = level + 1;
   return true;
@@ -86,7 +86,7 @@ function buyGoldStatMax(s, statId) {
 
 function buyGoldStatMaxPreview(s, statId) {
   var level = (s.goldStats && s.goldStats[statId]) || 0;
-  var budget = s.gold;
+  var budget = s.lumens;
   var count = 0, spent = 0;
   while (true) {
     var cost = goldStatCost(statId, level + count);
@@ -165,11 +165,11 @@ function registerKill(s, e) {
   e = e || s.enemies[0];
   const regionAtKill = s.region;
   const g = Math.round(e.goldReward * goldBonus(s));
-  s.gold += g;
+  s.lumens += g;
   const leveled = gainXp(s, e.xpReward * xpMultiplier(s));
   s.totalKills++;
   const sh = Math.round(shardsOnKill(s.region, s.difficulty, e.isBoss) * shardBonus(s) * (e.shardMult || 1));
-  s.shards += sh;
+  s.vestiges += sh;
   s.killsInWave++;
 
   // Region Mastery: acumula kills permanentes.
@@ -177,7 +177,7 @@ function registerKill(s, e) {
 
   const result = {
     type: "kill", name: e.name, tier: e.tier || "normal",
-    gold: g, shards: sh, leveled,
+    lumens: g, vestiges: sh, leveled,
     wasBoss: e.isBoss, justMastered,
     masteredRegion: justMastered ? regionAtKill : null,
     waveAdvanced: false, difficultyCleared: false,
@@ -297,10 +297,10 @@ function computeOfflineGains(s, elapsedSec) {
   const ascMult = Math.pow(CONFIG.enemy.ascGrowth, s.ascensions);
   const killsPerSec = playerDps(s) / Math.max(1, stats.hp * ascMult);
   const kills = killsPerSec * seconds * efficiency;
-  const gold   = Math.round(kills * stats.gold * goldBonus(s));
-  const xp     = Math.round(kills * stats.xp * xpMultiplier(s));
-  const shards = Math.round(kills * shardsOnKill(s.region, s.difficulty, false) * shardBonus(s));
-  return { seconds, kills: Math.floor(kills), gold, xp, shards, region: s.region };
+  const lumens   = Math.round(kills * stats.gold * goldBonus(s));
+  const xp       = Math.round(kills * stats.xp * xpMultiplier(s));
+  const vestiges = Math.round(kills * shardsOnKill(s.region, s.difficulty, false) * shardBonus(s));
+  return { seconds, kills: Math.floor(kills), lumens, xp, vestiges, region: s.region };
 }
 
 if (typeof module !== "undefined") {

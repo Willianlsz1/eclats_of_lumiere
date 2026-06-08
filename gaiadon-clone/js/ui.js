@@ -45,8 +45,8 @@ function logMsg(msg, cls) {
 }
 
 function renderResources(s) {
-  $("gold").textContent = fmt(s.gold);
-  $("shards").textContent = fmt(s.shards);
+  $("lumens").textContent = fmt(s.lumens);
+  $("vestiges").textContent = fmt(s.vestiges);
   $("level").textContent = s.level;
 }
 
@@ -212,7 +212,7 @@ function renderGoldStats(s) {
   el.innerHTML = GOLD_STATS.map(function(def) {
     var level = (s.goldStats && s.goldStats[def.id]) || 0;
     var cost = goldStatCost(def.id, level);
-    var canBuy = s.gold >= cost;
+    var canBuy = s.lumens >= cost;
     var bonus = goldStatBonus(s, def.id);
     var preview = buyGoldStatMaxPreview(s, def.id);
 
@@ -311,7 +311,7 @@ function renderHero(s) {
 }
 
 // Nome amigável de cada afixo para a UI.
-const AFFIX_NAMES = { critRate: "Crit Rate", critDmg: "Crit Dmg", dmgMult: "Damage", hpMult: "Health", goldMult: "Gold", xpMult: "XP", shardMult: "Shard Find", bossDmg: "Boss Dmg" };
+const AFFIX_NAMES = { critRate: "Crit Rate", critDmg: "Crit Dmg", dmgMult: "Damage", hpMult: "Health", goldMult: "Lumens", xpMult: "XP", shardMult: "Vestige Find", bossDmg: "Boss Dmg" };
 function affixLabel(a, level) {
   const pct = affixValue(a, level) * 100;
   const shown = pct >= 1000 ? fmt(Math.round(pct)) : pct >= 100 ? Math.round(pct) : pct.toFixed(1);
@@ -434,9 +434,9 @@ function renderAscend(s) {
   if (asc.canAscend) {
     $("ascInfo").innerHTML = asc.isTierPromo
       ? `<b class="milestone-text">🎉 TIER UP! You're becoming ${asc.nextTier.name}! Spike ×${fmt(asc.nextTier.spike)} awaits!</b>`
-      : `<b>✓ KEEP</b> all equipment & map progress · <b>✗ RESET</b> gold, level &amp; wave · you'll rebuild faster!`;
+      : `<b>✓ KEEP</b> all equipment & map progress · <b>✗ RESET</b> Lumens, level &amp; wave · you'll rebuild faster!`;
   } else {
-    $("ascInfo").innerHTML = `Clear more stages on the 🗺️ Map and reach level ${asc.levelReq} to unlock ascension #${asc.ascensionNumber}.`;
+    $("ascInfo").innerHTML = `Clear more stages on the 🗺️ Map and reach level ${asc.levelReq} to unlock Convergence #${asc.ascensionNumber}.`;
   }
 }
 
@@ -484,7 +484,7 @@ function showOfflineSummary(g) {
   const time = h > 0 ? `${h}h ${m}m` : `${m}m`;
   $("offlineText").innerHTML =
     `While you were away (<b>${time}</b>):<br>` +
-    `💰 +${fmt(g.gold)} gold · 💎 +${fmt(g.shards)} shards · ⭐ +${fmt(g.xp)} XP<br>` +
+    `💰 +${fmt(g.lumens)} Lumens · 💎 +${fmt(g.vestiges)} Vestiges · ⭐ +${fmt(g.xp)} XP<br>` +
     `<small>(${fmt(g.kills)} kills simulated)</small>`;
   $("offlineModal").classList.remove("hidden");
 }

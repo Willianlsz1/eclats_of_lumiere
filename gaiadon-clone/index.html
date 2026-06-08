@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gaiadon Clone — Eternal Quest (prototype)</title>
+  <title>Éclats of Lumière (prototype)</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cinzel+Decorative:wght@400;700&display=swap" rel="stylesheet">
@@ -19,10 +19,10 @@
 </head>
 <body>
   <header>
-    <h1>⚔️ Gaiadon — Eternal Quest <span class="tag">prototype</span></h1>
+    <h1>✨ Éclats of Lumière <span class="tag">prototype</span></h1>
     <div id="resources">
-      <span>💰 Gold: <b id="gold">0</b></span>
-      <span>💎 Shards: <b id="shards">0</b></span>
+      <span>💰 Lumens: <b id="lumens">0</b></span>
+      <span>💎 Vestiges: <b id="vestiges">0</b></span>
       <span>⭐ Level: <b id="level">1</b></span>
     </div>
   </header>
@@ -76,7 +76,7 @@
     <div id="view-map" class="view">
       <section class="panel">
         <h2>🗺️ World Map</h2>
-        <p class="panel-hint">Select a region and difficulty to enter combat. Clear the boss to unlock new paths.</p>
+        <p class="panel-hint">Select a map to enter combat. Clear the boss to unlock new paths.</p>
         <div class="map-grid" id="mapGrid"></div>
       </section>
     </div>
@@ -85,7 +85,7 @@
     <div id="view-train" class="view">
       <section class="panel">
         <h2>💪 Training</h2>
-        <p class="panel-hint">Spend 💰 Gold to train your stats. These reset on Ascension but grow stronger each run.</p>
+        <p class="panel-hint">Spend 💰 Lumens to train your stats. These reset on Ascension but grow stronger each run.</p>
         <div class="gold-stats-grid" id="goldStatsGrid"></div>
       </section>
     </div>
@@ -109,8 +109,8 @@
             <div class="stats-header">DEFENSE</div>
             <div class="stat-row"><span>Max Health</span><span id="statHealth">0</span></div>
             <div class="stats-header" style="margin-top:8px">ECONOMY</div>
-            <div class="stat-row"><span>Gold ×</span><span id="statGold">×1.00</span></div>
-            <div class="stat-row"><span>Shards ×</span><span id="statShardFind">×1.00</span></div>
+            <div class="stat-row"><span>Lumens ×</span><span id="statGold">×1.00</span></div>
+            <div class="stat-row"><span>Vestiges ×</span><span id="statShardFind">×1.00</span></div>
             <div class="stat-row"><span>XP ×</span><span id="statXp">×1.00</span></div>
             <div class="stats-header" style="margin-top:8px">BOSS</div>
             <div class="stat-row"><span>Boss Damage</span><span id="statBossDmg">+0%</span></div>
@@ -134,7 +134,7 @@
     <div id="view-equipment" class="view">
       <section class="panel">
         <h2>🛡️ Equipment</h2>
-        <p class="panel-hint">Spend 💰 Gold to level up · 💎 Shards to raise rarity (unlocks higher level cap).</p>
+        <p class="panel-hint">Spend 💰 Lumens to level up · 💎 Vestiges to raise rarity (unlocks higher level cap).</p>
         <div id="equipment"></div>
 
         <!-- Synergy Panel -->
