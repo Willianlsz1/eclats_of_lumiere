@@ -226,7 +226,7 @@ s = game.defaultState();
 s.goldStats.str = 20;
 s.goldStats.vit = 15;
 s.level = 30;
-s.regionProgress = { 0: [0] };
+s.mapProgress = { 0: game.lastSubarea() }; // chefe final do mapa 1 → habilita ascensão
 
 game.ascend(s);
 assert("After ascend, STR = 0", s.goldStats.str === 0);

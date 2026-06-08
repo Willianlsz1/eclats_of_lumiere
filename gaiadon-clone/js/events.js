@@ -23,29 +23,18 @@ function dispatchEvents(events, state, ctx) {
       const tierCls = ev.tier === "champion" ? "champion-kill" : ev.tier === "elite" ? "elite-kill" : "";
       logMsg(msg, tierCls || undefined);
 
-      if (ev.difficultyCleared) {
-        const region = REGIONS[ev.region];
-        const diff   = DIFFICULTIES[ev.difficulty];
-        logMsg(`🏆 ${region.name} · ${diff.name} cleared! New paths open on the world map.`, "milestone");
-      }
-      if (ev.waveAdvanced) {
-        const total = totalWaves(state.difficulty);
-        const nextBoss = isBossWave(state.wave, state.difficulty);
-        if (nextBoss) {
-          logMsg(`⚠️ Boss incoming! Prepare yourself!`, "milestone");
-        }
-      }
-      if (ev.packIncreased) {
-        logMsg(`⚠️ Larger packs ahead — tougher fights!`);
+      if (ev.mapCleared) {
+        const region = REGIONS[ev.map];
+        logMsg(`🏆 ${region.name} concluído! Chefe final derrotado — Ascensão liberada! 🔮`, "milestone");
+      } else if (ev.subareaAdvanced) {
+        logMsg(`✅ Subárea ${ (ev.clearedSubarea || 0) + 1 } limpa! Avançando para a Subárea ${ ev.newSubarea + 1 }.`, "milestone");
       }
       if (ev.justMastered) {
-        const rName = REGIONS[ev.masteredRegion].name;
-        logMsg(`⭐ ${rName} Mastered! +2% Lumens/XP/Vestiges forever.`, "mastered");
+        const rName = REGIONS[ev.masteredMap].name;
+        logMsg(`⭐ ${rName} Dominado! +2% Lumens/XP/Vestiges para sempre.`, "mastered");
       }
     } else if (ev.type === "death") {
-      const region = REGIONS[ev.region];
-      const diff   = DIFFICULTIES[ev.difficulty];
-      logMsg(`💀 Defeated on wave ${ev.diedOnWave}! Retreating to wave 1 — upgrade gear 🛡️ to push through!`);
+      logMsg(`💀 Derrotado na Subárea ${ev.diedOnSubarea + 1}! Progresso da subárea zerado — evolua o gear 🛡️ para avançar!`);
     } else if (ev.type === "hit") {
       ctx.floatAccum += ev.amount;
       // Acumula o tier mais alto visto neste intervalo de flush.

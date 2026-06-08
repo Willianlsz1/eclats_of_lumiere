@@ -1,35 +1,34 @@
-// ===== Zones: continuous scaling, archetypes, wave tiers, mastery =====
-// 5 mapas (DESIGN §16) — escala ×1e12 por mapa (10 HP → ~1e60 HP).
-// Enemy HP = interpolação geométrica dentro de cada mapa.
-// Depende de data.js (CONFIG, REGIONS, DIFFICULTIES, ARCHETYPES, WAVE_TIERS).
+// ===== Maps & Subáreas: escala de inimigos, archetypes, mastery (DESIGN §16) =====
+// 5 mapas × 5 subáreas, open-zone (spawn contínuo). HP cresce por subárea:
+//   hp(map, sub) = baseHp × subareaRamp^(map×subareasPerMap + sub)
+// O chefe da subárea aparece após killsToBoss kills (trigger oculto); derrotá-lo
+// avança a subárea. O chefe da Subárea 5 é o chefe final do mapa → Ascensão.
+// Depende de data.js (CONFIG, REGIONS, SUBAREAS, ARCHETYPES).
 
-// --- Helpers de região/dificuldade ---
-function getRegion(s)     { return REGIONS[s.region]; }
-function getDifficulty(s) { return DIFFICULTIES[s.difficulty]; }
-function totalWaves(diffIdx) { return DIFFICULTIES[diffIdx].waves; }
-function isBossWave(wave, diffIdx) { return wave >= totalWaves(diffIdx); }
+// --- Helpers de mapa/subárea ---
+function getMap(s)     { return REGIONS[s.map]; }
+function getSubarea(s) { return SUBAREAS[s.subarea]; }
+function subareasPerMap() { return CONFIG.map.subareasPerMap; }
+function lastSubarea() { return CONFIG.map.subareasPerMap - 1; }
+
+// Índice global da subárea (0..24) — define a posição na curva de HP.
+function subareaGlobalIndex(mapIdx, subIdx) {
+  return mapIdx * CONFIG.map.subareasPerMap + subIdx;
+}
+
+// O chefe da subárea está disponível? (após killsToBoss kills nela)
+function isBossReady(s) {
+  return (s.killsInSub || 0) >= CONFIG.map.killsToBoss;
+}
 
 
 // ═══════════════════════════════════════════════════════════════════════
-// Enemy Stats — Continuous Zone Scaling
+// Enemy Stats — escala geométrica por subárea
 // ═══════════════════════════════════════════════════════════════════════
-// HP cresce geometricamente de zoneStart até zoneStart × internalScale.
-//   wave 1 = zoneStart, wave final = zoneStart × internalScale
-//   zoneStart = region.startPower × diff.powerMult
-//
-// Resultado: Mapa 1 Normal wave 1 = 10 HP → Nil Aeternum wave final ≈ 1e60 HP
-
-function enemyStatsFor(regionIdx, diffIdx, wave) {
-  const region = REGIONS[regionIdx];
-  const diff   = DIFFICULTIES[diffIdx];
-  const E      = CONFIG.enemy;
-
-  const zoneStart  = region.startPower * diff.powerMult;
-  const wavesTotal = diff.waves;
-  const progress   = Math.min(1, Math.max(0, (wave - 1) / Math.max(1, wavesTotal - 1))); // 0 a 1, clamped
-
-  const hp = Math.round(zoneStart * Math.pow(E.internalScale, progress));
-
+function enemyStatsFor(mapIdx, subIdx) {
+  const M = CONFIG.map;
+  const E = CONFIG.enemy;
+  const hp = Math.round(M.baseHp * Math.pow(M.subareaRamp, subareaGlobalIndex(mapIdx, subIdx)));
   return {
     hp:   hp,
     dmg:  Math.max(1, Math.round(hp * E.dmgRatio)),
@@ -40,262 +39,192 @@ function enemyStatsFor(regionIdx, diffIdx, wave) {
 
 
 // ═══════════════════════════════════════════════════════════════════════
-// Wave Tiers — quais inimigos estão disponíveis em cada wave
+// Inimigos disponíveis — open-zone: todos do mapa, sorteio uniforme
 // ═══════════════════════════════════════════════════════════════════════
-// Normal: inimigos novos a cada ~20% das waves (gradual, tutorial).
-// Nightmare: todos desde wave 1.
-
-function availableEnemies(regionIdx, diffIdx, wave) {
-  const region = REGIONS[regionIdx];
-  const diff   = DIFFICULTIES[diffIdx];
-  const tiers  = WAVE_TIERS[diff.id] || WAVE_TIERS.normal;
-  const wavesTotal = diff.waves;
-
-  return region.enemies.filter(function(_, i) {
-    if (i >= tiers.length) return true; // fallback: disponível
-    var unlockWave = Math.floor(tiers[i] * wavesTotal) + 1;
-    return wave >= unlockWave;
-  });
-}
-
-// Sorteia um inimigo dentre os disponíveis na wave atual.
-function pickEnemy(regionIdx, diffIdx, wave) {
-  var pool = availableEnemies(regionIdx, diffIdx, wave);
-  if (pool.length === 0) pool = [REGIONS[regionIdx].enemies[0]]; // fallback
+function pickEnemy(mapIdx) {
+  var pool = REGIONS[mapIdx].enemies;
+  if (!pool || pool.length === 0) pool = [{ name: "Eidolon", archetype: "standard", emoji: "👤" }];
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
 
 // ═══════════════════════════════════════════════════════════════════════
-// Kills por wave
+// Map Mastery (permanente entre ascensões)
 // ═══════════════════════════════════════════════════════════════════════
-
-function killsPerWave() { return CONFIG.wave.killsPerWave; }
-
-
-// ═══════════════════════════════════════════════════════════════════════
-// Region Mastery (permanente entre ascensões)
-// ═══════════════════════════════════════════════════════════════════════
-
-function killsToMasterRegion(regionIdx) {
-  return CONFIG.mastery.killsBase + regionIdx * CONFIG.mastery.killsPerRegion;
+function killsToMasterMap(mapIdx) {
+  return CONFIG.mastery.killsBase + mapIdx * CONFIG.mastery.killsPerMap;
 }
-function regionMasteryKills(s, regionIdx) {
-  return (s.regionMastery || {})[regionIdx] || 0;
+function mapMasteryKills(s, mapIdx) {
+  return (s.mapMastery || {})[mapIdx] || 0;
 }
-function isRegionMastered(s, regionIdx) {
-  return regionMasteryKills(s, regionIdx) >= killsToMasterRegion(regionIdx);
+function isMapMastered(s, mapIdx) {
+  return mapMasteryKills(s, mapIdx) >= killsToMasterMap(mapIdx);
 }
-function masteredRegionCount(s) {
-  if (!s.regionMastery) return 0;
+function masteredMapCount(s) {
+  if (!s.mapMastery) return 0;
   var n = 0;
-  for (var i = 0; i < REGIONS.length; i++) {
-    if (isRegionMastered(s, i)) n++;
-  }
+  for (var i = 0; i < REGIONS.length; i++) if (isMapMastered(s, i)) n++;
   return n;
 }
-function regionMasteryBonus(s) {
-  return 1 + masteredRegionCount(s) * CONFIG.mastery.bonusPerRegion;
+function mapMasteryBonus(s) {
+  return 1 + masteredMapCount(s) * CONFIG.mastery.bonusPerMap;
 }
-function recordRegionMasteryKill(s, regionIdx) {
-  if (!s.regionMastery) s.regionMastery = {};
-  var wasMastered = isRegionMastered(s, regionIdx);
-  s.regionMastery[regionIdx] = (s.regionMastery[regionIdx] || 0) + 1;
-  return !wasMastered && isRegionMastered(s, regionIdx);
+function recordMapMasteryKill(s, mapIdx) {
+  if (!s.mapMastery) s.mapMastery = {};
+  var wasMastered = isMapMastered(s, mapIdx);
+  s.mapMastery[mapIdx] = (s.mapMastery[mapIdx] || 0) + 1;
+  return !wasMastered && isMapMastered(s, mapIdx);
 }
-function addRegionMasteryKills(s, regionIdx, count) {
-  if (!s.regionMastery) s.regionMastery = {};
-  s.regionMastery[regionIdx] = (s.regionMastery[regionIdx] || 0) + count;
+function addMapMasteryKills(s, mapIdx, count) {
+  if (!s.mapMastery) s.mapMastery = {};
+  s.mapMastery[mapIdx] = (s.mapMastery[mapIdx] || 0) + count;
 }
 
 
 // ═══════════════════════════════════════════════════════════════════════
-// Region/Difficulty unlock & clear
+// Unlock & progresso de mapa/subárea (linear)
 // ═══════════════════════════════════════════════════════════════════════
-
-function isRegionUnlocked(s, regionIdx) {
-  return regionIdx.toString() in (s.regionProgress || {});
+// s.mapProgress[mapIdx] = maior subárea cujo chefe foi derrotado (-1 = nenhuma).
+function maxSubareaCleared(s, mapIdx) {
+  var p = (s.mapProgress || {})[mapIdx];
+  return p === undefined ? -1 : p;
 }
-function isDifficultyUnlocked(s, regionIdx, diffIdx) {
-  if (!isRegionUnlocked(s, regionIdx)) return false;
-  if (diffIdx === 0) return true;
-  var cleared = s.regionProgress[regionIdx] || [];
-  return cleared.includes(diffIdx - 1);
+function isSubareaCleared(s, mapIdx, subIdx) {
+  return maxSubareaCleared(s, mapIdx) >= subIdx;
 }
-function isDifficultyCleared(s, regionIdx, diffIdx) {
-  var cleared = (s.regionProgress || {})[regionIdx] || [];
-  return cleared.includes(diffIdx);
+// Mapa desbloqueado = mapa 0 sempre, ou o chefe final do mapa anterior derrotado.
+function isMapUnlocked(s, mapIdx) {
+  if (mapIdx === 0) return true;
+  return maxSubareaCleared(s, mapIdx - 1) >= lastSubarea();
 }
-
-function clearCurrentDifficulty(s) {
-  if (!s.regionProgress) s.regionProgress = { 0: [] };
-  var progress = s.regionProgress[s.region] || [];
-  if (!progress.includes(s.difficulty)) {
-    progress.push(s.difficulty);
-    s.regionProgress[s.region] = progress;
+// Marca o chefe da subárea atual como derrotado e avança a posição.
+function clearCurrentSubarea(s) {
+  if (!s.mapProgress) s.mapProgress = {};
+  if (maxSubareaCleared(s, s.map) < s.subarea) s.mapProgress[s.map] = s.subarea;
+  s.killsInSub = 0;
+  if (s.subarea < lastSubarea()) {
+    s.subarea++;            // avança dentro do mapa
   }
-  // Limpar Normal de uma região desbloqueia a próxima região.
-  if (s.difficulty === 0 && s.region + 1 < REGIONS.length) {
-    if (!((s.region + 1).toString() in s.regionProgress)) {
-      s.regionProgress[s.region + 1] = [];
-    }
-  }
+  // Se era a Subárea 5, o mapa fica "limpo" → canAscend libera (game.js).
 }
 
 
 // ═══════════════════════════════════════════════════════════════════════
-// Pack size (inimigos simultâneos)
+// Pack size (cresce com a subárea)
 // ═══════════════════════════════════════════════════════════════════════
-
-function packSizeFor(diffIdx, wave, isBoss) {
+function packSizeFor(subIdx, isBoss) {
   if (isBoss) return 1;
   var P = CONFIG.pack;
-  var base = P.baseByDifficulty[diffIdx] || 1;
-  var max  = P.maxByDifficulty[diffIdx]  || 3;
-  return Math.min(max, base + Math.floor((wave - 1) / P.growthPerWave));
+  return P.maxBySubarea[subIdx] ? P.baseBySubarea[subIdx] : (P.baseBySubarea[0] || 1);
 }
 
 
 // ═══════════════════════════════════════════════════════════════════════
-// Enemy tier (normal / elite / champion)
+// Enemy tier (normal / elite / champion) — chance escala com a subárea
 // ═══════════════════════════════════════════════════════════════════════
-
-function getEnemyTier(diffIdx) {
+function getEnemyTier(subIdx) {
   var E = CONFIG.elite;
-  if (diffIdx >= E.championMinDifficulty && Math.random() < E.championChance) return "champion";
-  if (diffIdx >= E.eliteMinDifficulty    && Math.random() < E.eliteChance)    return "elite";
+  if (subIdx >= E.championMinSubarea && Math.random() < E.championChance) return "champion";
+  if (subIdx >= E.eliteMinSubarea    && Math.random() < E.eliteChance)    return "elite";
   return "normal";
 }
 
 
 // ═══════════════════════════════════════════════════════════════════════
-// makeEnemy — cria UM inimigo com archetype + tier + ascension scaling
+// makeEnemy — cria UM inimigo (boss da subárea ou regular)
 // ═══════════════════════════════════════════════════════════════════════
-
 function makeEnemy(s) {
-  var region = REGIONS[s.region];
-  var stats  = enemyStatsFor(s.region, s.difficulty, s.wave);
-  var E      = CONFIG.enemy;
+  var map   = REGIONS[s.map];
+  var stats = enemyStatsFor(s.map, s.subarea);
+  var E     = CONFIG.enemy;
+  var C     = CONFIG.combat;
 
-  // Escala com ascensões: HP e DMG crescem ascGrowth por ascensão.
+  // Escala com ascensões (0-4): HP e DMG × ascGrowth por ascensão.
   var ascMult = Math.pow(E.ascGrowth, s.ascensions);
 
-  var C = CONFIG.combat;
-
-  // --- BOSS ---
-  if (isBossWave(s.wave, s.difficulty)) {
+  // --- CHEFE DA SUBÁREA ---
+  if (isBossReady(s)) {
     var B  = CONFIG.boss;
+    var isFinal = s.subarea >= lastSubarea();
+    var bossName = isFinal && map.boss ? map.boss.name : (map.name + " Warden " + (s.subarea + 1));
+    var bossEmoji = isFinal && map.boss ? map.boss.emoji : "👑";
     var bossHp = Math.round(stats.hp * ascMult * B.hpMult);
-    // Weakened Void (passiva Fase 3): reduz HP do boss (máx 90%).
     if (typeof passiveTotals === "function" && s.passives) {
-      var _wpReduct = passiveTotals(s).enemyHpReduct;
-      if (_wpReduct > 0) bossHp = Math.max(1, Math.round(bossHp * (1 - Math.min(0.9, _wpReduct))));
+      var _wpr = passiveTotals(s).enemyHpReduct;
+      if (_wpr > 0) bossHp = Math.max(1, Math.round(bossHp * (1 - Math.min(0.9, _wpr))));
     }
-    // Crit chance do chefe: fixada no spawn (aleatória dentro do range).
-    var bossCritChance = C.bossCritChanceMin
-      + Math.random() * (C.bossCritChanceMax - C.bossCritChanceMin);
+    var bossCrit = C.bossCritChanceMin + Math.random() * (C.bossCritChanceMax - C.bossCritChanceMin);
     return {
-      name: region.boss.name,
-      emoji: region.boss.emoji,
-      isBoss: true,
-      tier: "normal",
-      archetype: "standard",
+      name: bossName, emoji: bossEmoji,
+      isBoss: true, isFinalBoss: isFinal,
+      tier: "normal", archetype: "standard",
       hp: bossHp, maxHp: bossHp,
       dmg: Math.round(stats.dmg * ascMult),
       goldReward: Math.round(stats.gold * B.goldMult),
       xpReward:   Math.round(stats.xp   * B.xpMult),
       shardMult:  B.shardMult,
-      critChance: bossCritChance,
+      critChance: bossCrit,
     };
   }
 
-  // --- REGULAR ENEMY ---
-  // Sorteia um inimigo disponível nesta wave (wave tier system).
-  var enemyDef = pickEnemy(s.region, s.difficulty, s.wave);
+  // --- INIMIGO REGULAR ---
+  var enemyDef = pickEnemy(s.map);
   var arch     = ARCHETYPES[enemyDef.archetype] || ARCHETYPES.standard;
+  var tierKey  = getEnemyTier(s.subarea);
+  var tm       = CONFIG.elite.tiers[tierKey];
 
-  // Elite/Champion tier
-  var tierKey = getEnemyTier(s.difficulty);
-  var tm      = CONFIG.elite.tiers[tierKey];
-
-  // Stats finais: base × archetype × elite tier × ascension
   var finalHp  = Math.max(1, Math.round(stats.hp  * arch.hp  * tm.hp  * ascMult));
   var finalDmg = Math.max(1, Math.round(stats.dmg * arch.dmg * tm.dmg * ascMult));
 
-  // Weakened Void (passiva Fase 3): reduz HP do inimigo regular (máx 90%).
   if (typeof passiveTotals === "function" && s.passives) {
-    var _wpReduct = passiveTotals(s).enemyHpReduct;
-    if (_wpReduct > 0) finalHp = Math.max(1, Math.round(finalHp * (1 - Math.min(0.9, _wpReduct))));
+    var _wpr2 = passiveTotals(s).enemyHpReduct;
+    if (_wpr2 > 0) finalHp = Math.max(1, Math.round(finalHp * (1 - Math.min(0.9, _wpr2))));
   }
 
-  // Reward: base × archetype × elite tier (sem ascMult na reward)
   var goldReward = Math.max(1, Math.round(stats.gold * arch.reward * tm.reward));
   var xpReward   = Math.max(1, Math.round(stats.xp   * arch.reward * tm.reward));
-
-  // Crit chance do inimigo: fixada no spawn (aleatória dentro do range).
-  var enemyCritChance = C.enemyCritChanceMin
-    + Math.random() * (C.enemyCritChanceMax - C.enemyCritChanceMin);
+  var enemyCrit  = C.enemyCritChanceMin + Math.random() * (C.enemyCritChanceMax - C.enemyCritChanceMin);
 
   return {
-    name:  enemyDef.name,
-    emoji: enemyDef.emoji,
-    isBoss: false,
-    tier: tierKey,
-    archetype: enemyDef.archetype,
+    name: enemyDef.name, emoji: enemyDef.emoji,
+    isBoss: false, tier: tierKey, archetype: enemyDef.archetype,
     hp: finalHp, maxHp: finalHp,
     dmg: finalDmg,
-    goldReward: goldReward,
-    xpReward:   xpReward,
-    shardMult:  tm.reward,
-    critChance: enemyCritChance,
+    goldReward: goldReward, xpReward: xpReward,
+    shardMult: tm.reward,
+    critChance: enemyCrit,
   };
 }
 
 
 // ═══════════════════════════════════════════════════════════════════════
-// spawnPack — gera o grupo de inimigos da wave atual
+// spawnPack — grupo de inimigos atual
 // ═══════════════════════════════════════════════════════════════════════
-
 function spawnPack(s) {
-  var boss = isBossWave(s.wave, s.difficulty);
-  var n    = packSizeFor(s.difficulty, s.wave, boss);
-
+  var boss = isBossReady(s);
+  var n    = packSizeFor(s.subarea, boss);
   s.enemies = [];
 
-  if (boss) {
-    // Boss é sempre sozinho.
-    s.enemies.push(makeEnemy(s));
-    return s.enemies;
-  }
+  if (boss) { s.enemies.push(makeEnemy(s)); return s.enemies; }
 
-  // Gera o pack base.
   for (var i = 0; i < n; i++) {
     var enemy = makeEnemy(s);
     s.enemies.push(enemy);
-
-    // Swarm archetype: adiciona membros extras ao pack (capped pelo max).
     var arch = ARCHETYPES[enemy.archetype];
     if (arch && arch.packBonus > 0) {
-      var max = CONFIG.pack.maxByDifficulty[s.difficulty] || 3;
-      for (var j = 0; j < arch.packBonus && s.enemies.length < max; j++) {
-        s.enemies.push(makeEnemy(s));
-      }
+      var max = CONFIG.pack.maxBySubarea[s.subarea] || 3;
+      for (var j = 0; j < arch.packBonus && s.enemies.length < max; j++) s.enemies.push(makeEnemy(s));
     }
   }
-
   return s.enemies;
 }
 
 
 // ═══════════════════════════════════════════════════════════════════════
-// Shards (drop por kill)
+// Vestiges (drop por kill) — escala com mapa + subárea
 // ═══════════════════════════════════════════════════════════════════════
-// Escala com região + dificuldade (shardMult: 1/2/3, não powerMult).
-// Plains Normal = 1, Peak Nightmare boss = 9×3×5 = 135 (não 4500!).
-
-function shardsOnKill(regionIdx, diffIdx, isBoss) {
-  var n = Math.floor(CONFIG.shards.basePerKill + regionIdx * CONFIG.shards.perRegion);
-  n = Math.round(n * DIFFICULTIES[diffIdx].shardMult);
+function shardsOnKill(mapIdx, subIdx, isBoss) {
+  var n = Math.floor(CONFIG.shards.basePerKill + mapIdx * CONFIG.shards.perMap + subIdx * CONFIG.shards.perSubarea);
   if (isBoss) n *= CONFIG.boss.shardMult;
   return Math.max(1, n);
 }
@@ -304,15 +233,13 @@ function shardsOnKill(regionIdx, diffIdx, isBoss) {
 // ═══════════════════════════════════════════════════════════════════════
 // Exports
 // ═══════════════════════════════════════════════════════════════════════
-
 if (typeof module !== "undefined") {
   module.exports = {
-    getRegion, getDifficulty, totalWaves, isBossWave,
-    enemyStatsFor, availableEnemies, pickEnemy,
-    killsPerWave,
-    killsToMasterRegion, regionMasteryKills, isRegionMastered, masteredRegionCount,
-    regionMasteryBonus, recordRegionMasteryKill, addRegionMasteryKills,
-    isRegionUnlocked, isDifficultyUnlocked, isDifficultyCleared, clearCurrentDifficulty,
+    getMap, getSubarea, subareasPerMap, lastSubarea, subareaGlobalIndex, isBossReady,
+    enemyStatsFor, pickEnemy,
+    killsToMasterMap, mapMasteryKills, isMapMastered, masteredMapCount,
+    mapMasteryBonus, recordMapMasteryKill, addMapMasteryKills,
+    maxSubareaCleared, isSubareaCleared, isMapUnlocked, clearCurrentSubarea,
     packSizeFor, getEnemyTier, makeEnemy, spawnPack,
     shardsOnKill,
   };

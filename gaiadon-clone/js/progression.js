@@ -2,39 +2,16 @@
 // Funções puras que calculam multiplicadores a partir de s.ascensions e s.equipped.
 // Sem dependências de combate ou região — só CONFIG e TIERS de data.js.
 
-// --- Tiers de classe ---
+// --- Tiers da Ordre (DESIGN §15) — tier = nº da ascensão (0-4) ---
 function heroTier(s) {
-  for (let i = TIERS.length - 1; i >= 0; i--) {
-    if (s.ascensions >= TIERS[i].minAsc) return i;
-  }
-  return 0;
+  return Math.max(0, Math.min(s.ascensions, TIERS.length - 1));
 }
 
-function tierSpikeMultiplier(totalAscensions) {
-  let spike = 1;
-  for (let i = 1; i < TIERS.length; i++) {
-    if (totalAscensions >= TIERS[i].minAsc) spike *= TIERS[i].spike;
-  }
-  return spike;
-}
-
+// Multiplicador de Ascensão: cada ascensão (mapa completado) dá um spike de poder
+// (≈ salto de HP por mapa) para começar o próximo. ascMult = spikePerTier ^ ascensions.
+// O prestígio FREQUENTE que compõe é a Convergence; a Ascensão são 5 marcos grandes.
 function ascMultiplier(s) {
-  const n = s.ascensions;
-  if (n === 0) return 1;
-  let mult = 1;
-  for (let i = 0; i < TIERS.length; i++) {
-    const t = TIERS[i];
-    const nextMin = i + 1 < TIERS.length ? TIERS[i + 1].minAsc : Infinity;
-    let exp;
-    if (i === 0) {
-      exp = Math.min(n, nextMin - 1);
-    } else {
-      const tierCap = nextMin === Infinity ? n - t.minAsc : nextMin - t.minAsc;
-      exp = Math.max(0, Math.min(n - t.minAsc, tierCap));
-    }
-    if (exp > 0) mult *= Math.pow(t.mult, exp);
-  }
-  return mult * tierSpikeMultiplier(n);
+  return Math.pow(CONFIG.ascension.spikePerTier, s.ascensions || 0);
 }
 
 // --- Synergy (soma de todos os níveis de equipamento) ---
@@ -96,25 +73,6 @@ function perLevelMult(s) { return Math.pow(CONFIG.ascension.perLevelGrowth, s.as
 function damagePerLevel(s) { return CONFIG.player.damagePerLevel * perLevelMult(s); }
 function hpPerLevel(s) { return CONFIG.player.hpPerLevel * perLevelMult(s); }
 
-// --- Requisitos de ascensão (sistema de mapa-mundo) ---
-// Total de "stages" existentes (região × dificuldade).
-function totalStages() { return REGIONS.length * DIFFICULTIES.length; }
-
-// Quantos stages o jogador precisa ter limpado para a próxima ascensão.
-// Cresce +1 por ascensão até o teto de totalStages(). Depois, só nível é gate.
-function ascStagesRequired(s) {
-  return Math.min(s.ascensions + 1, totalStages());
-}
-
-// Conta quantos stages o jogador já limpou (boss derrotado).
-function stagesCleared(s) {
-  let count = 0;
-  for (const key of Object.keys(s.regionProgress || {})) {
-    count += (s.regionProgress[key] || []).length;
-  }
-  return count;
-}
-
 // Config de offline: melhora automaticamente a cada CONFIG.offline.ascPerStep ascensões.
 function offlineConfig(s) {
   const O = CONFIG.offline;
@@ -126,11 +84,10 @@ function offlineConfig(s) {
 
 if (typeof module !== "undefined") {
   module.exports = {
-    heroTier, tierSpikeMultiplier, ascMultiplier,
+    heroTier, ascMultiplier,
     convergenceMult, convergenceRecommended,
     synergyLevel, synergyBonusMult, synergySurgeCount, synergySurgeMult, totalPowerMult,
     perLevelMult, damagePerLevel, hpPerLevel,
-    totalStages, ascStagesRequired, stagesCleared,
     offlineConfig,
   };
 }

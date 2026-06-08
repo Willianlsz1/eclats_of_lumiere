@@ -19,9 +19,9 @@ function load() {
           const g = computeOfflineGains(state, elapsed);
           if (g.lumens > 0 || g.xp > 0 || g.vestiges > 0) {
             state.lumens += g.lumens; state.vestiges += g.vestiges; gainXp(state, g.xp);
-            // Acumula kills offline no Region Mastery.
+            // Acumula kills offline no Map Mastery.
             if (g.kills > 0) {
-              addRegionMasteryKills(state, state.region, g.kills);
+              addMapMasteryKills(state, state.map, g.kills);
             }
             pendingOffline = g;
           }
@@ -75,20 +75,20 @@ function bindButtons() {
     });
   });
 
-  // ── Map: clique em botão de dificuldade → entra na região ──
+  // ── Map: clique em "Viajar" → entra no mapa/subárea ──
   $("mapGrid").addEventListener("click", (e) => {
     const btn = e.target.closest("button.map-diff-btn");
     if (!btn || btn.disabled) return;
-    const regionIdx = parseInt(btn.dataset.region, 10);
-    const diffIdx   = parseInt(btn.dataset.diff, 10);
-    enterRegion(state, regionIdx, diffIdx);
+    const mapIdx = parseInt(btn.dataset.map, 10);
+    const subIdx = parseInt(btn.dataset.sub, 10) || 0;
+    enterMap(state, mapIdx, subIdx);
     // Muda para a view de combate.
     document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
     document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
     document.querySelector('.nav-btn[data-view="combat"]').classList.add("active");
     document.getElementById("view-combat").classList.add("active");
     renderAll(state);
-    logMsg(`⚔️ Entering ${REGIONS[regionIdx].name} · ${DIFFICULTIES[diffIdx].name}!`);
+    logMsg(`⚔️ Viajando para ${REGIONS[mapIdx].name} · Subárea ${subIdx + 1}!`);
   });
 
   // ── Equipamento (delegação) ──
@@ -133,14 +133,15 @@ function bindButtons() {
   $("ascendBtn").onclick = () => {
     const asc = getAscensionStatus(state);
     if (!asc.canAscend) return;
-    const msg = asc.isTierPromo
-      ? `🎉 TIER PROMOTION!\n${asc.tierName} → ${asc.nextTier.name}!\n\n✓ KEEP  — All Equipment & Map Progress\n✗ RESET — Gold, Level, Wave position\n\nPower Spike ×${fmt(asc.nextTier.spike)} will be applied!\n\nAscend?`
-      : `🎖️ Ascension #${asc.ascensionNumber}\n\n✓ KEEP  — All Equipment & Map Progress\n✗ RESET — Gold, Level, Wave position\n\nEach ascension: ×${asc.tierMult.toFixed(2)} to all stats (compounds!)\nYou'll rebuild much faster.\n\nAscend?`;
+    const msg = `🔮 Ascensão — ${asc.tierName} → ${asc.nextTierName}!\n\n`
+      + `✓ MANTÉM — Equipamento, Passivas, Materiais e Progresso de Mapa\n`
+      + `✗ RESETA — Lumens, Nível e Gold Stats\n\n`
+      + `Desbloqueia o próximo mapa. Power Spike ×${fmt(CONFIG.ascension.spikePerTier)}.\n\nAscender?`;
     if (confirm(msg)) {
       ascend(state);
       spawnPack(state); state.playerHp = playerMaxHp(state);
       const postAsc = getAscensionStatus(state);
-      logMsg(asc.isTierPromo ? `🎉 TIER UP! Welcome, ${postAsc.tierName}!` : `✨ Ascension #${state.ascensions}! Keep pushing, ${postAsc.tierName}!`, "milestone");
+      logMsg(`🎉 Ascensão! Bem-vindo a ${postAsc.mapName}, ${postAsc.tierName}!`, "milestone");
       renderAll(state);
     }
   };
@@ -173,9 +174,8 @@ window.addEventListener("DOMContentLoaded", () => {
   load();
   bindButtons();
   renderAll(state);
-  const region = REGIONS[state.region];
-  const diff   = DIFFICULTIES[state.difficulty];
-  logMsg(`⚔️ Resuming in ${region.name} · ${diff.name}! Defeat enemies, collect 💰 Gold. Tap 🛡️ Gear to upgrade!`);
+  const region = REGIONS[state.map];
+  logMsg(`⚔️ Retomando em ${region.name} · Subárea ${state.subarea + 1}! Derrote inimigos, colete 💰 Lumens. Toque 🛡️ Gear para evoluir!`);
   if (pendingOffline) showOfflineSummary(pendingOffline);
   setInterval(gameLoop, 100);
   setInterval(save, 15000);
