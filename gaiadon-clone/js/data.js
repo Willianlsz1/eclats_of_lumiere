@@ -184,13 +184,14 @@ const WAVE_TIERS = {
 // ═══════════════════════════════════════════════════════════════════════
 // Equipment Slots + Affixes (mantém sistema existente do ADR-0002/0003)
 // ═══════════════════════════════════════════════════════════════════════
+// Nomes das peças — DESIGN §26 (As 6 Peças). Stats principais já alinhados.
 const SLOTS = [
-  { id: "Weapon", stats: ["Damage"],                   defaultName: "Sword"   },
-  { id: "Armor",  stats: ["Health"],                   defaultName: "Tunic"   },
-  { id: "Amulet", stats: ["Attack Speed", "Lumen Find"], defaultName: "Pendant" },
-  { id: "Ring",   stats: ["Vestige Find"],              defaultName: "Band"    },
-  { id: "Gloves", stats: ["Crit Damage"],              defaultName: "Grips"   },
-  { id: "Helmet", stats: ["Boss Damage"],              defaultName: "Crown"   },
+  { id: "Weapon", stats: ["Damage"],                     defaultName: "The Waning Edge"        },
+  { id: "Armor",  stats: ["Health"],                     defaultName: "Veil of Cinders"        },
+  { id: "Amulet", stats: ["Attack Speed", "Lumen Find"], defaultName: "The Last Resonance"     },
+  { id: "Ring",   stats: ["Vestige Find"],               defaultName: "Band of Dusk"           },
+  { id: "Gloves", stats: ["Crit Damage"],                defaultName: "Grasp of the Unnamed"   },
+  { id: "Helmet", stats: ["Boss Damage"],                defaultName: "Crown of Hollow Stars"  },
 ];
 
 // 25 afixos fixos (4 por slot, desbloqueados pela raridade: common=0, uncommon=1, etc.).

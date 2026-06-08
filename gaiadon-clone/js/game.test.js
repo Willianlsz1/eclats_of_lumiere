@@ -671,6 +671,18 @@ test("convergenceMult clampa em maxMult (sem Infinity)", () => {
   assertEqual(m, CONFIG.convergence.maxMult, "deve clampar exatamente em maxMult");
 });
 
+console.log("\n== Fase 5: peças nomeadas (DESIGN §26) ==");
+test("as 6 peças usam os nomes do DESIGN", () => {
+  const byId = {};
+  SLOTS.forEach(s => byId[s.id] = s.defaultName);
+  assertEqual(byId.Weapon, "The Waning Edge");
+  assertEqual(byId.Armor,  "Veil of Cinders");
+  assertEqual(byId.Amulet, "The Last Resonance");
+  assertEqual(byId.Ring,   "Band of Dusk");
+  assertEqual(byId.Gloves, "Grasp of the Unnamed");
+  assertEqual(byId.Helmet, "Crown of Hollow Stars");
+});
+
 console.log("\n== Fase 2: Ordre de Lumière (tiers) ==");
 test("tiers usam a Ordre de Lumière (Seeker→Lumière)", () => {
   const names = TIERS.map(t => t.name);
