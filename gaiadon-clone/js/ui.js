@@ -484,7 +484,7 @@ function showOfflineSummary(g) {
   const time = h > 0 ? `${h}h ${m}m` : `${m}m`;
   $("offlineText").innerHTML =
     `While you were away (<b>${time}</b>):<br>` +
-    `💰 +${fmt(g.gold)} gold · 💎 +${fmt(g.shards)} shards · ⭐ +${fmt(g.xp)} XP<br>` +
+    `💰 +${fmt(g.lumens)} Lumens · 💎 +${fmt(g.vestiges)} Vestiges · ⭐ +${fmt(g.xp)} XP<br>` +
     `<small>(${fmt(g.kills)} kills simulated)</small>`;
   $("offlineModal").classList.remove("hidden");
 }

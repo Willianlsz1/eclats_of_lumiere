@@ -17,8 +17,8 @@ function load() {
         const elapsed = (Date.now() - state.lastSeen) / 1000;
         if (elapsed > 60) {
           const g = computeOfflineGains(state, elapsed);
-          if (g.gold > 0 || g.xp > 0 || g.shards > 0) {
-            state.gold += g.gold; state.shards += g.shards; gainXp(state, g.xp);
+          if (g.lumens > 0 || g.xp > 0 || g.vestiges > 0) {
+            state.lumens += g.lumens; state.vestiges += g.vestiges; gainXp(state, g.xp);
             // Acumula kills offline no Region Mastery.
             if (g.kills > 0) {
               addRegionMasteryKills(state, state.region, g.kills);
