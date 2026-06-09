@@ -14,8 +14,9 @@ function rarityCap(item) { return RARITIES[item.rarity].cap; }
 // Afixos ativos de um item (DESIGN §27): Common=1 … Legendary=5.
 // rarity é o índice (0=common … 4=legendary), então rarity+1 afixos ativos.
 function itemAffixes(slotId, rarity) { return AFFIXES[slotId].slice(0, rarity + 1); }
-// Valor de um afixo escala com o NÍVEL do item: base + perLevel × nível.
-function affixValue(a, level) { return a.base + a.perLevel * level; }
+// Valor de um afixo escala com o NÍVEL do item: (base + perLevel × nível) × affixScale.
+// affixScale (CONFIG.gear) deixa os afixos fracos-mas-úteis (filosofia de balanceamento).
+function affixValue(a, level) { return (a.base + a.perLevel * level) * CONFIG.gear.affixScale; }
 // Retorna o afixo recém-revelado ao subir PARA newRarity (índice newRarity), ou null.
 // Com a convenção rarity+1, subir para a raridade R revela o afixo de índice R.
 function getNewAffix(slotId, newRarity) {

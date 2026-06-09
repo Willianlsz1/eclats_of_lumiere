@@ -240,9 +240,12 @@ function registerKill(s, e) {
   s.vestiges += sh;
   s.killsInSub++;
 
-  // Materiais (Fase 4): drop conforme tier do inimigo / chefe.
-  const matId = materialDropFor(e, mapAtKill);
-  addMaterial(s, matId, 1);
+  // Materiais (Fase 4): drop ESCASSO — chefe sempre dropa; kill regular por chance.
+  let matId = null;
+  if (e.isBoss || Math.random() < CONFIG.map.materialDropChance) {
+    matId = materialDropFor(e, mapAtKill);
+    addMaterial(s, matId, 1);
+  }
 
   // Map Mastery: acumula kills permanentes.
   const justMastered = recordMapMasteryKill(s, mapAtKill);

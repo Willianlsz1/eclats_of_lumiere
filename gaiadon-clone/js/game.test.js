@@ -370,8 +370,8 @@ test("isMapUnlocked depende de limpar o mapa anterior", () => {
 test("enemyStatsFor: escala geométrica por subárea (DESIGN §16)", () => {
   const m1 = enemyStatsFor(0, 0); // Mapa 1, Subárea 1
   assertEqual(m1.hp, CONFIG.map.baseHp, "Mapa 1 Subárea 1 HP = baseHp");
-  assertEqual(m1.dmg, Math.max(1, Math.round(m1.hp * 0.15)), "DMG = HP × 0.15");
-  assertEqual(m1.gold, Math.max(1, Math.round(m1.hp * 0.5)), "Gold = HP × 0.5");
+  assertEqual(m1.dmg, Math.max(1, Math.round(m1.hp * CONFIG.enemy.dmgRatio)), "DMG = HP × dmgRatio");
+  assertEqual(m1.gold, Math.max(1, Math.round(m1.hp * CONFIG.enemy.goldRatio)), "Gold = HP × goldRatio");
 
   // HP cresce por subárea (índice global = map×5 + sub).
   const ramp = CONFIG.map.subareaRamp;
@@ -567,32 +567,31 @@ test("convergenceMult: 0 convergências = 1", () => {
   assertEqual(game.convergenceMult(s), 1, "sem convergências, mult deve ser 1");
 });
 
-test("convergenceMult: 1 convergência = 1.20", () => {
+test("convergenceMult: early multiplicativo (earlyMult^n)", () => {
+  const C = CONFIG.convergence;
   const s = game.defaultState();
   s.convergences = 1;
-  const m = game.convergenceMult(s);
-  assert(Math.abs(m - 1.20) < 0.0001, `esperado 1.20, obtido ${m}`);
+  assert(Math.abs(game.convergenceMult(s) - C.earlyMult) < 1e-9, "1 conv = earlyMult");
+  s.convergences = C.earlyCount;
+  const expected = Math.pow(C.earlyMult, C.earlyCount);
+  assert(Math.abs(game.convergenceMult(s) - expected) < 1e-6, `${C.earlyCount} conv = earlyMult^earlyCount`);
 });
 
-test("convergenceMult: 4 convergências = 1.20^4", () => {
-  const s = game.defaultState();
-  s.convergences = 4;
-  const expected = Math.pow(1.20, 4);
-  const m = game.convergenceMult(s);
-  assert(Math.abs(m - expected) < 0.001, `esperado ${expected.toFixed(4)}, obtido ${m.toFixed(4)}`);
+test("convergenceMult: retornos decrescentes (√) no late game", () => {
+  const C = CONFIG.convergence;
+  const m = (n) => game.convergenceMult({ convergences: n });
+  // Late: ×(1 + lateCoef·√(n-earlyCount)) sobre o early.
+  const n = 1000;
+  const expected = Math.pow(C.earlyMult, C.earlyCount) * (1 + C.lateCoef * Math.sqrt(n - C.earlyCount));
+  assert(Math.abs(m(n) - expected) < 1e-6, `n=1000 segue a curva √`);
+  // Crescimento SUB-linear: dobrar n não dobra o mult (retornos decrescentes).
+  assert(m(2000) / m(1000) < 1.5, "milhares de conv: ganho marginal pequeno");
+  assert(m(1000) > m(100), "ainda cresce monotonicamente");
 });
 
-test("convergenceMult: 5 convergências = 1.20^4 × 1.12 × spike(×1.5)", () => {
+test("convergenceRecommended: true cedo, satura com o tempo", () => {
   const s = game.defaultState();
-  s.convergences = 5;
-  const m = game.convergenceMult(s);
-  const expected = Math.pow(1.20, 4) * Math.pow(1.12, 1) * 1.5;
-  assert(Math.abs(m - expected) < 0.001, `esperado ${expected.toFixed(4)}, obtido ${m.toFixed(4)}`);
-});
-
-test("convergenceRecommended: true em 0 convergências (+20% ≥ 5%)", () => {
-  const s = game.defaultState();
-  assert(game.convergenceRecommended(s), "primeiro convergence sempre recommended (+20%)");
+  assert(game.convergenceRecommended(s), "primeiras convergences recomendadas");
 });
 
 test("getConvergenceStatus: campos corretos", () => {
@@ -636,7 +635,7 @@ test("convergenceMult integrado em totalPowerMult", () => {
   const p0 = game.totalPowerMult(s0);
   const p1 = game.totalPowerMult(s1);
   assert(p1 > p0, "totalPowerMult deve crescer com convergências");
-  assert(Math.abs(p1 / p0 - 1.20) < 0.001, "ganho de 1 convergência deve ser ×1.20 no totalPowerMult");
+  assert(Math.abs(p1 / p0 - CONFIG.convergence.earlyMult) < 0.001, "1 convergência = ×earlyMult no totalPowerMult");
 });
 
 test("canConverge: bloqueado abaixo de minLevel, liberado em/acima", () => {
@@ -657,12 +656,14 @@ test("converge abaixo de minLevel não faz nada (anti-exploit)", () => {
   assertEqual(s.convergences, 0, "convergences NÃO deve incrementar no piso");
 });
 
-test("convergenceMult clampa em maxMult (sem Infinity)", () => {
+test("convergenceMult: finito e modesto mesmo com convergences absurdo", () => {
   const s = game.defaultState();
-  s.convergences = 10000; // 1.5^2000 estouraria para Infinity sem o clamp
+  s.convergences = 1e6;
   const m = game.convergenceMult(s);
-  assert(Number.isFinite(m), "convergenceMult deve ser finito mesmo com convergences absurdo");
-  assertEqual(m, CONFIG.convergence.maxMult, "deve clampar exatamente em maxMult");
+  assert(Number.isFinite(m), "deve ser finito");
+  assert(m <= CONFIG.convergence.maxMult, "respeita o teto de segurança");
+  // Filosofia: nem 1 milhão de convergences vira astronômico (retornos decrescentes).
+  assert(m < 1e6, "com √, 1M de conv ainda é « 1e6 (não trivializa)");
 });
 
 console.log("\n== Fase 4: materiais (drop + inventário) ==");
@@ -683,12 +684,16 @@ test("materialDropFor: chefe → material especial do mapa (por região)", () =>
   assertEqual(game.materialDropFor({ isBoss: true }, 4), "nilEssence");
 });
 
-test("registerKill dropa 1 material conforme o tier", () => {
-  const s = game.defaultState();
-  game.registerKill(s, { name: "x", tier: "elite", goldReward: 1, xpReward: 1, isBoss: false });
-  assertEqual(s.materials.paleFragment, 1, "elite dropa Pale Fragment");
-  game.registerKill(s, { name: "x", tier: "normal", goldReward: 1, xpReward: 1, isBoss: false });
-  assertEqual(s.materials.dimShard, 1, "normal dropa Dim Shard");
+test("registerKill dropa material conforme o tier (drop forçado)", () => {
+  // Drop regular é por chance; força com Math.random=0.
+  const _r = Math.random; Math.random = function () { return 0; };
+  try {
+    const s = game.defaultState();
+    game.registerKill(s, { name: "x", tier: "elite", goldReward: 1, xpReward: 1, isBoss: false });
+    assertEqual(s.materials.paleFragment, 1, "elite dropa Pale Fragment");
+    game.registerKill(s, { name: "x", tier: "normal", goldReward: 1, xpReward: 1, isBoss: false });
+    assertEqual(s.materials.dimShard, 1, "normal dropa Dim Shard");
+  } finally { Math.random = _r; }
 });
 
 test("registerKill de chefe dropa o material do mapa atual", () => {

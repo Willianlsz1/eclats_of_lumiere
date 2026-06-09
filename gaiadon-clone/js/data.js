@@ -572,16 +572,17 @@ const CONFIG = {
   // ── Convergence (rebirth frequente) ───────────────────────────────────
   // Milestones: ×spikeMultiplier a cada spikeInterval Convergences.
   // Spike por marco; o multiplicador de Convergence é calculado em progression.js.
+  // Retornos DECRESCENTES (filosofia: convergence ajuda sempre, mas nunca trivializa —
+  // mesmo milhares de convergences exigem gear/nível para vencer o chefe do mapa).
+  //   conv 1..earlyCount   → ×earlyMult cada (multiplicativo, "feels good" no começo)
+  //   conv >earlyCount     → ×(1 + lateCoef·√(n − earlyCount))  (saturação √)
+  // Ex.: n=8 → ×3.1 · n=100 → ×18 · n=1000 → ×51 · n=10000 → ×156
   convergence: {
-    spikeMultiplier: 1.5,
-    spikeInterval:   5,
-    mult1:        1.20,  // convergences 1–4
-    mult2:        1.12,  // convergences 5–8
-    additive:     0.05,  // convergences 9+: +5% each (compounding via ×(1+n*0.05))
-    switchPoint1: 4,
-    switchPoint2: 8,
-    minLevel:     10,    // piso de nível para converger (evita spam grátis no piso)
-    maxMult:      1e100, // clamp de segurança (impede overflow → Infinity → save corrompido)
+    earlyMult:  1.15,
+    earlyCount: 8,
+    lateCoef:   0.5,
+    minLevel:   10,    // piso de nível para converger (evita spam grátis no piso)
+    maxMult:    1e9,   // teto de segurança
   },
 
   // ── Map / Subárea progression (DESIGN §16) ────────────────────────────
@@ -590,29 +591,32 @@ const CONFIG = {
   // Open-zone: spawn contínuo; o chefe da subárea aparece após killsToBoss kills.
   map: {
     baseHp:         10,    // HP do 1º inimigo (Mapa 1, Subárea 1)
-    subareaRamp:    2.87,  // ×HP por subárea (curva global atravessável: 10 → ~1e12 no jogo todo).
-                           // ALVO DESIGN §16 = ~251 (×1e12 POR mapa); cranear quando os Echoes
-                           // e a economia de poder completa existirem.
+    subareaRamp:    8,     // ×HP por subárea. Subárea 1 gentil (10), Subárea 5 vira MURO
+                           // (×8^4 = 4096 → chefe ~1e6): convergence sozinha não basta, exige gear.
+                           // ALVO DESIGN §16 = curva ainda mais íngreme (×1e12/mapa) no late.
     subareasPerMap: 5,
     killsToBoss:    30,    // kills na subárea até o chefe (trigger oculto)
+    materialDropChance: 0.20, // chance de drop de material por kill regular (chefe sempre dropa)
   },
 
   // ── Escala de recompensa do inimigo (derivada do HP) ───────────────────
+  // Economia LENTA (filosofia: começar devagar, poucos Lumens/XP).
   enemy: {
     dmgRatio:   0.15,    // enemy DMG = HP × dmgRatio
-    goldRatio:  0.5,     // lumens reward ≈ HP × goldRatio
-    xpRatio:    0.3,     // xp reward ≈ HP × xpRatio
+    goldRatio:  0.10,    // lumens reward ≈ HP × goldRatio (lento)
+    xpRatio:    0.12,    // xp reward ≈ HP × xpRatio (lento)
     damageFactor: 0.3,   // fração do DMG aplicada por segundo ao player
     ascGrowth: 1.06,     // HP e DMG × 1.06 por ascensão (0-4)
     // Cursed archetype debuff
     cursedAtkSpeedReduction: 0.20,
   },
 
+  // Chefe = MURO real (filosofia: chefe do mapa exige gear+nível, não só convergence).
   boss: {
-    hpMult: 5,           // boss HP = última wave regular × 5
-    goldMult: 8,         // boss dá 8× mais gold
+    hpMult: 25,          // boss HP = HP da subárea × 25
+    goldMult: 8,         // boss dá 8× mais lumens
     xpMult: 5,           // boss dá 5× mais XP
-    shardMult: 5,        // boss dá 5× mais shards
+    shardMult: 5,        // boss dá 5× mais vestiges
   },
 
   // ── Elites e Champions (chance escala com a subárea) ───────────────────
@@ -638,9 +642,10 @@ const CONFIG = {
   gear: {
     powerPerLevel: 1,
     levelCostBase: 5, levelCostGrowth: 1.15,
-    // Upgrade de raridade consome MATERIAIS (DESIGN §37), não Vestiges.
-    // qty para subir DE cada raridade: common→unc, unc→rare, rare→epic, epic→leg.
-    rarityMaterialQty: [10, 8, 6, 5],
+    // Upgrade de raridade consome MATERIAIS (DESIGN §37), não Vestiges. Caro (filosofia:
+    // dificuldade para subir raridade). qty para subir DE cada raridade.
+    rarityMaterialQty: [20, 30, 45, 60],
+    affixScale: 0.6,     // afixos FRACOS mas não inúteis (escala global)
   },
 
   // ── Vestiges (drop por kill) ───────────────────────────────────────
@@ -661,7 +666,8 @@ const CONFIG = {
   },
 
   // ── XP / Hero level ────────────────────────────────────────────────
-  xp: { base: 20, growth: 1.10 },
+  // Leveling mais lento (filosofia: começar devagar).
+  xp: { base: 20, growth: 1.13 },
 
   // ── Ascensão (5 totais, 1 por mapa — DESIGN §15) ───────────────────────
   // Gatilho: derrotar o chefe da Subárea 5 do mapa atual → próximo mapa + tier.
