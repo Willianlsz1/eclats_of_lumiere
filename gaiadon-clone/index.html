@@ -110,6 +110,13 @@
   <!-- ══ RIGHT: CONVERGENCE + TABS ═══════════════════════════════════════ -->
   <aside class="panel" id="panel-right">
 
+    <!-- Mobile sub-tabs (upgrades only) -->
+    <div id="mobile-subtabs">
+      <button class="mobile-subtab-btn active" data-subtab="passives">⚡ Passivas</button>
+      <button class="mobile-subtab-btn" data-subtab="memoires">✦ Mémoires</button>
+      <button class="mobile-subtab-btn" data-subtab="gear">🛡 Gear</button>
+    </div>
+
     <!-- Convergence strip (always visible) -->
     <div id="convergence-strip">
       <div class="panel-title">Convergence</div>
@@ -194,6 +201,26 @@
 
     </div><!-- /right-tab-content -->
   </aside>
+
+  <!-- ══ MOBILE BOTTOM NAV ══════════════════════════════════════════════ -->
+  <nav id="mobile-nav">
+    <button class="mobile-nav-btn active" data-mobile="combat">
+      <span class="mnav-icon">⚔</span>
+      <span>Combate</span>
+    </button>
+    <button class="mobile-nav-btn" data-mobile="stats">
+      <span class="mnav-icon">📊</span>
+      <span>Stats</span>
+    </button>
+    <button class="mobile-nav-btn" data-mobile="info">
+      <span class="mnav-icon">🔄</span>
+      <span>Progresso</span>
+    </button>
+    <button class="mobile-nav-btn" data-mobile="upgrades">
+      <span class="mnav-icon">⬆</span>
+      <span>Upgrades</span>
+    </button>
+  </nav>
 
 </div><!-- /app -->
 

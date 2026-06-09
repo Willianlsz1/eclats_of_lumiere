@@ -11,6 +11,14 @@
   gap: 12px;
 }
 
+@media (max-width: 768px) {
+  #panel-combat {
+    border-left: none;
+    border-right: none;
+    padding: 12px;
+  }
+}
+
 .combat-header {
   display: flex;
   justify-content: space-between;

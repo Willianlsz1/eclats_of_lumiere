@@ -53,9 +53,19 @@ function _bindButtons() {
     }
   });
 
-  // Tab buttons
+  // Desktop tab buttons
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+  });
+
+  // Mobile bottom nav
+  document.querySelectorAll('.mobile-nav-btn').forEach(btn => {
+    btn.addEventListener('click', () => switchMobilePanel(btn.dataset.mobile));
+  });
+
+  // Mobile sub-tab buttons
+  document.querySelectorAll('.mobile-subtab-btn').forEach(btn => {
+    btn.addEventListener('click', () => _switchMobileSubtab(btn.dataset.subtab));
   });
 
   // Hard reset button (hold Shift + click)
