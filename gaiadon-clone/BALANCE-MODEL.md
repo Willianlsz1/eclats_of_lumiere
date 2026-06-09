@@ -494,10 +494,85 @@ Mesmo expoente dos Gold Stats — familiar para o player.
 
 ---
 
-## 15. A Definir (próximos passos em ordem)
+## 15. Ascension
 
-- [ ] **Ascension** — custo em Vestiges, o que reseta, power-up resultante
-- [ ] `baseHp` absoluto — calibrar com loop completo rodando
+### Custo
+```
+custo(n) = 50.000 × 1.4^(n-1)    // Vestiges
+```
+
+| Ascension | Custo | Vestiges acumulados necessários |
+|-----------|-------|---------------------------------|
+| 1ª | 50k | 50k |
+| 3ª | 98k | ~220k |
+| 5ª | 192k | ~580k |
+| 10ª | 1.49M | ~5.6M |
+
+### Reset vs. Preserva
+
+| Item | Ascension |
+|------|-----------|
+| Gold Stats + Lumens + map progress | ❌ reset |
+| `convergence_mult` | ❌ **reset** — sacrifício real |
+| Hero level | ❌ reset |
+| Gear (rarity + item levels) | ✅ preservado |
+| Vestiges (saldo após custo) | ✅ preservado |
+| `ascension_mult` acumulado | ✅ cresce permanentemente |
+
+Perder `convergence_mult` é o custo real: o player sacrifica o trabalho de 50+ convergences, recupera em ~15 convergences pós-Ascension e depois supera o patamar anterior.
+
+### Ganho: `ascension_mult`
+```
+ascension_mult = ascension_mult × 5     // ×5 por Ascension, multiplicativo
+```
+
+| Ascensions | ascension_mult |
+|-----------|----------------|
+| 1 | ×5 |
+| 5 | ×3.125 |
+| 10 | ×9.77M |
+
+Aplica-se a dano e HP máximo:
+```
+dano_por_hit = baseDmg × str_total × level_bonus × gear_bonus
+             × convergence_mult × ascension_mult
+
+hp_max = playerBaseHp × vit_total × level_bonus × ascension_mult
+```
+
+### Mob HP escala com Ascension (`ascMult`, já no código)
+```
+mob_hp_efetivo = mob_hp × ascGrowth ^ ascensions
+ascGrowth = 2.0    // mob HP dobra por Ascension
+```
+Player damage +×5, mob HP +×2 → **net ×2.5 por Ascension** relativo aos mobs.
+Garante que cada Ascension desafia o player a empurrar para zonas mais profundas.
+
+### Vestiges por kill também escalam
+```
+vestiges_por_kill = floor(globalSubIdx × 0.5) × (1 + ascensions)
+vestiges_por_boss = max(1, vestiges_por_kill) × 10
+```
+Após A5: Map 5 Sub 5 dá 12 × 6 = **72 vestiges/kill** (vs 12 na A0).
+O loop de Ascension acelera naturalmente — cada ciclo é mais rápido que o anterior.
+
+### Fórmula de dano completa (todos os multiplicadores)
+```
+dano_por_hit = baseDmg
+             × str_total           // Gold Stat — reseta na Convergence
+             × level_bonus         // hero level — reseta na Ascension
+             × gear_bonus          // Weapon atkMult — permanente
+             × convergence_mult    // reseta na Ascension
+             × ascension_mult      // permanente, nunca reseta
+```
+
+---
+
+## 16. Calibração Pendente
+
+- [ ] `baseHp` absoluto — validar com loop completo rodando (kill time, income, custo de upgrade)
+- [ ] Playtesting das primeiras 3 Convergences — confirmar pacing do early game
+- [ ] Playtesting da 1ª Ascension — confirmar sacrifício vs. recuperação em ~15 convergences
 
 ---
 
