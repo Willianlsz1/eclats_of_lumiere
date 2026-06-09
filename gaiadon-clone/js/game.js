@@ -48,9 +48,6 @@ function defaultState() {
     enemies: [],
     playerHp: null,
     lastSeen: null,
-
-    // Map Mastery: kills acumulados POR MAPA — persiste entre ascensões.
-    mapMastery: {},
   };
 }
 
@@ -160,7 +157,6 @@ function goldBonus(s) {
   let b = 1 + slotPower(s, "Amulet") * CONFIG.itemStats.goldFindPerPower;
   b *= (1 + affixTotals(s).lumensMult);
   b *= (1 + goldStatBonus(s, "frt"));
-  b = b * mapMasteryBonus(s);
   if (typeof passiveTotals === "function") {
     const _pt = passiveTotals(s);
     b *= (1 + _pt.lumensMult);
@@ -169,7 +165,7 @@ function goldBonus(s) {
   return b;
 }
 function xpMultiplier(s) {
-  var base = (1 + affixTotals(s).xpBonus) * mapMasteryBonus(s);
+  var base = 1 + affixTotals(s).xpBonus;
   base = base * (1 + goldStatBonus(s, "wis"));
   if (typeof passiveTotals === "function") {
     const _pt = passiveTotals(s);
@@ -181,7 +177,6 @@ function xpMultiplier(s) {
 function shardBonus(s) {
   let b = 1 + slotPower(s, "Ring") * CONFIG.itemStats.shardFindPerPower;
   b *= (1 + affixTotals(s).vestigeBonus);
-  b = b * mapMasteryBonus(s);
   if (typeof passiveTotals === "function") {
     const _pt = passiveTotals(s);
     b *= (1 + _pt.vestigeMult);
@@ -250,14 +245,10 @@ function registerKill(s, e) {
     addMaterial(s, matId, 1);
   }
 
-  // Map Mastery: acumula kills permanentes.
-  const justMastered = recordMapMasteryKill(s, mapAtKill);
-
   const result = {
     type: "kill", name: e.name, tier: e.tier || "normal",
     lumens: g, vestiges: sh, material: matId, leveled,
-    wasBoss: e.isBoss, isFinalBoss: !!e.isFinalBoss, justMastered,
-    masteredMap: justMastered ? mapAtKill : null,
+    wasBoss: e.isBoss, isFinalBoss: !!e.isFinalBoss,
     subareaAdvanced: false, mapCleared: false,
     map: s.map, subarea: s.subarea,
   };
@@ -345,7 +336,7 @@ function tick(s, dt) {
 // ═══════════════════════════════════════════════════════════════════════
 // Soft trigger: livre acima de CONFIG.convergence.minLevel (exige nível a sacrificar).
 // Reseta: level, xp, lumens, goldStats, totalKills, bossKills, killsInSub.
-// Mantém: equipped, mapProgress, mapMastery, posição no mapa (map/subarea),
+// Mantém: equipped, mapProgress, posição no mapa (map/subarea),
 // passives, materials, totalVestgesSpent, ascensions e convergences (DESIGN §14:
 // "progresso de mapa permanece"). Cada convergência compõe o multiplicador permanente.
 
@@ -378,7 +369,6 @@ function converge(s) {
     map:               s.map,
     subarea:           s.subarea,
     mapProgress:       s.mapProgress || {},
-    mapMastery:        s.mapMastery  || {},
     equipped:          s.equipped,
     passives:          s.passives || {},
     materials:         s.materials || {},

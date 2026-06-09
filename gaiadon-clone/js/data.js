@@ -559,11 +559,6 @@ const CONFIG = {
     ascPerStep: 1,      effPerStep: 0,
     capHoursPerStep: 0,
   },
-  mastery: {
-    killsBase: 1,
-    killsPerMap: 0,
-    bonusPerMap: 0,
-  },
   synergy: {
     bonusPerLevel: 0,
   },

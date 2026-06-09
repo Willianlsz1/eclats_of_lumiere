@@ -48,38 +48,6 @@ function pickEnemy(mapIdx) {
 }
 
 
-// ═══════════════════════════════════════════════════════════════════════
-// Map Mastery (permanente entre ascensões)
-// ═══════════════════════════════════════════════════════════════════════
-function killsToMasterMap(mapIdx) {
-  return CONFIG.mastery.killsBase + mapIdx * CONFIG.mastery.killsPerMap;
-}
-function mapMasteryKills(s, mapIdx) {
-  return (s.mapMastery || {})[mapIdx] || 0;
-}
-function isMapMastered(s, mapIdx) {
-  return mapMasteryKills(s, mapIdx) >= killsToMasterMap(mapIdx);
-}
-function masteredMapCount(s) {
-  if (!s.mapMastery) return 0;
-  var n = 0;
-  for (var i = 0; i < REGIONS.length; i++) if (isMapMastered(s, i)) n++;
-  return n;
-}
-function mapMasteryBonus(s) {
-  return 1 + masteredMapCount(s) * CONFIG.mastery.bonusPerMap;
-}
-function recordMapMasteryKill(s, mapIdx) {
-  if (!s.mapMastery) s.mapMastery = {};
-  var wasMastered = isMapMastered(s, mapIdx);
-  s.mapMastery[mapIdx] = (s.mapMastery[mapIdx] || 0) + 1;
-  return !wasMastered && isMapMastered(s, mapIdx);
-}
-function addMapMasteryKills(s, mapIdx, count) {
-  if (!s.mapMastery) s.mapMastery = {};
-  s.mapMastery[mapIdx] = (s.mapMastery[mapIdx] || 0) + count;
-}
-
 
 // ═══════════════════════════════════════════════════════════════════════
 // Unlock & progresso de mapa/subárea (linear)
@@ -237,8 +205,6 @@ if (typeof module !== "undefined") {
   module.exports = {
     getMap, getSubarea, subareasPerMap, lastSubarea, subareaGlobalIndex, isBossReady,
     enemyStatsFor, pickEnemy,
-    killsToMasterMap, mapMasteryKills, isMapMastered, masteredMapCount,
-    mapMasteryBonus, recordMapMasteryKill, addMapMasteryKills,
     maxSubareaCleared, isSubareaCleared, isMapUnlocked, clearCurrentSubarea,
     packSizeFor, getEnemyTier, makeEnemy, spawnPack,
     shardsOnKill,
