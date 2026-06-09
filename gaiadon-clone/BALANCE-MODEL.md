@@ -296,15 +296,141 @@ goldRatio = 0.10
 - Renda por kill: `mob_hp × 0.10 = 10 × 1.04^(level-1) × 0.10`
 - Ambos crescem exponencialmente → tempo por compra constante em qualquer fase ✅
 
-## 10. A Definir (próximos passos em ordem)
+## 10. Vestiges por Kill
 
-- [ ] **Vestiges por kill** — drop da moeda de prestige
-- [ ] **XP e leveling** — curva de level do hero e `level_bonus`
-- [ ] **Convergence** — fórmula do multiplicador, requisito de ativação
+```
+vestiges_por_kill = floor(globalSubIdx × 0.5)
+globalSubIdx      = mapIdx × 5 + subIdx
+
+vestiges_por_boss = max(1, vestiges_por_kill) × 10
+```
+
+| Zona | globalSubIdx | Por kill | Por boss |
+|------|-------------|----------|----------|
+| Map 1 Sub 1–2 | 0–1 | 0 | 10 |
+| Map 1 Sub 3 | 2 | 1 | 10 |
+| Map 1 Sub 5 | 4 | 2 | 20 |
+| Map 3 Sub 1 | 10 | 5 | 50 |
+| Map 5 Sub 5 | 24 | 12 | 120 |
+
+- Map 1+2 = ~5% dos Vestiges totais → pressão natural para avançar
+- Vestiges acumulam através das Convergences (preservados no reset)
+- Gastos exclusivamente em **Ascension** (não em Convergence)
+
+---
+
+## 11. Convergence
+
+### Trigger
+Derrote o boss de Map 1 Sub 5 pela primeira vez → botão permanentemente disponível. Sem custo de recurso.
+
+### Reset vs. Preserva
+
+| Item | Convergence |
+|------|-------------|
+| Gold Stats (str/vit/agi/lck/frt/wis) | ❌ volta a 0 |
+| Lumens | ❌ reset |
+| Progresso de mapa/subárea | ❌ volta Map 1 Sub 1 |
+| Hero level | ✅ preservado |
+| Gear | ✅ preservado |
+| Vestiges | ✅ preservado |
+| convergence_mult | ✅ acumula |
+
+### Fórmula de ganho
+
+```
+subareas_limpas   = subareas com boss derrotado nesta run (0–25)
+ganho_desta_run   = (subareas_limpas / 25) ^ 1.5 × 0.50
+convergence_mult  = convergence_mult × (1 + ganho_desta_run)
+```
+
+| Subareas limpas | Ganho | Mult desta run |
+|-----------------|-------|----------------|
+| 5  (Map 1 completo) | 0.045 | ×1.045 |
+| 10 (Map 2 completo) | 0.113 | ×1.113 |
+| 15 (Map 3 completo) | 0.207 | ×1.207 |
+| 20 (Map 4 completo) | 0.358 | ×1.358 |
+| 25 (full clear)     | 0.500 | ×1.500 |
+
+**Acumulado (full clears):** 10 conv → ×57 | 20 conv → ×3.325k | 50 conv → ×637k
+
+```
+dano_por_hit = baseDmg × str_total × level_bonus × gear_bonus
+             × convergence_mult × ascension_mult
+```
+
+---
+
+## 12. XP e Hero Level
+
+### XP por kill
+```
+xp_por_kill = mob_hp × xpRatio × wis_total
+xpRatio     = 0.08
+```
+`wis` (Gold Stat, reseta na convergence) acelera o leveling dentro do run.
+Hero level é permanente — investir em `wis` antes de converge escala o nível permanente mais rápido.
+
+### Curva de leveling
+```
+xp_para_nivel(n) = 50 × 1.25^n
+```
+
+| Hero Level | XP acumulado aprox. |
+|-----------|---------------------|
+| 5  | ~300 |
+| 10 | ~1.100 |
+| 25 | ~6.200 |
+| 50 | ~43k |
+| 100 | ~300k |
+
+### level_bonus (dano e HP)
+```
+level_bonus = 1 + sqrt(heroLevel) × 0.20
+```
+
+| Hero Level | level_bonus |
+|-----------|-------------|
+| 10  | ×1.63 |
+| 25  | ×2.00 |
+| 100 | ×3.00 |
+| 400 | ×5.00 |
+
+Sqrt garante que o nível seja valioso mas nunca domine o `convergence_mult`.
+Aplica-se tanto a dano quanto a HP máximo:
+```
+hp_max = playerBaseHp × vit_total × level_bonus
+```
+
+**Simulação:** após 10 convergences (full clears) → hero level ~30–40 → level_bonus ≈ ×2.1
+
+---
+
+## 13. Boss — Parâmetros
+
+```
+bossHpMult      = 15   // boss HP = mob HP regular × 15
+bossGoldMult    =  5   // boss drops 5× Lumens
+bossXpMult      =  5   // boss drops 5× XP
+bossVestigesMult = 10  // boss drops 10× Vestiges (ver §10)
+```
+
+### Kill time target no boss
+| Fase | Boss HP | DPS player | Kill time |
+|------|---------|------------|-----------|
+| Map 1 Sub 1 (após 20 kills) | 150 | ~4 | **~38s** |
+| Map 1 Sub 5 (str M10) | 480 | ~20 | **~24s** |
+| Map 3 Sub 3 (str M25) | 1.605 | ~200 | **~8s** |
+| Frontier (limite do player) | escala | equilibrado | **20–40s** target |
+
+Boss final do mapa (Sub 5) = mesmo `bossHpMult`, diferenciado por nome/emoji especial e kill threshold mais alto.
+
+---
+
+## 14. A Definir (próximos passos em ordem)
+
 - [ ] **Ascension** — custo em Vestiges, power-up resultante
 - [ ] **Gear** — como weapon/armor affixes escalam com rarity e level
-- [ ] `bossHpMult` — multiplicador de HP do boss vs regular
-- [ ] `level_bonus` — contribuição do hero level para dano e HP
 - [ ] `baseHp` absoluto — calibrar com loop completo rodando
 
 ---
