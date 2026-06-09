@@ -33,8 +33,20 @@ function getDisplayAffixes(slotId, rarity, level) {
   }));
 }
 // Soma todos os afixos dos itens equipados em modificadores globais.
+// Chaves seguem DESIGN §28. Stats não implementados ficam em 0 (zero state).
 function affixTotals(s) {
-  const t = { critRate: 0, critDmg: 0, dmgMult: 0, hpMult: 0, goldMult: 0, xpMult: 0, shardMult: 0, bossDmg: 0 };
+  const t = {
+    // Weapon + Gloves
+    critRate: 0, atkSpeed: 0, critDmg: 0, bossDmg: 0, aoeDmg: 0, critCascade: 0,
+    // Armor
+    defense: 0, hpRegenKill: 0, hpRegenAmp: 0, voidResist: 0, dmgReduction: 0,
+    // Helmet
+    critVsBoss: 0, bossHpReduct: 0, bossSpawnRate: 0, bossDropRate: 0,
+    // Amulet
+    xpBonus: 0, vestigeBonus: 0, offlineBonus: 0, materialDropRate: 0, lumensMult: 0,
+    // Ring
+    atkMult: 0, enemyHpReduct: 0, convergenceBonus: 0, eclatAffinity: 0, allStats: 0,
+  };
   for (const slot of SLOTS) {
     const it = s.equipped[slot.id];
     if (!it) continue; // guard: slots ausentes em saves antigos (migrate trata na carga)
