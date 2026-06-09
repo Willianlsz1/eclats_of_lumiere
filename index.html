@@ -1,11 +1,35 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="refresh" content="0; url=gaiadon-clone/">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Éclats of Lumière</title>
 </head>
 <body>
-  <p>Redirecionando para o jogo... <a href="gaiadon-clone/">clique aqui</a> se não for redirecionado.</p>
+  <header id="topbar">
+    <span>Lumens: <b id="top-lumens">0</b></span>
+    <span>Kills: <b id="top-kills">0</b></span>
+    <span id="top-zone"></span>
+    <span class="nav">
+      <button id="btn-prev" type="button">◀ Recuar subárea</button>
+      <button id="btn-next" type="button">Avançar subárea ▶</button>
+    </span>
+  </header>
+
+  <main id="layout">
+    <section id="player-card" aria-label="The Seeker">
+      <h2>The Seeker</h2>
+      <p>Level <b id="p-level">1</b></p>
+      <div class="bar"><div class="bar-fill hp" id="p-hp-fill"></div></div>
+      <p>HP: <b id="p-hp-text"></b></p>
+      <p>XP total: <b id="p-xp">0</b></p>
+      <p>DPS: <b id="p-dps">0</b></p>
+      <p id="p-status" class="status-dead" hidden></p>
+    </section>
+
+    <section id="enemy-grid" aria-label="Campo de combate"></section>
+  </main>
+
+  <script type="module" src="/src/main.js"></script>
 </body>
 </html>

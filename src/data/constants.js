@@ -1,0 +1,48 @@
+// Constantes de balanceamento — fonte: docs/eclats_gdd_final_v2.md
+// NUNCA inventar valores: tudo aqui vem do GDD (seções 3, 4, 6 e 12).
+
+// §4 — Constantes-âncora do núcleo de combate
+export const COMBAT = {
+  baseDmg: 7,
+  baseAPS: 0.40,          // intervalo de ataque 2.5s
+  apsCap: 1.25,           // intervalo mínimo 0.8s
+  playerBaseHp: 50,
+  regenPerSec: 0.01,      // 1% do HP máx por segundo
+  regenOnKill: 0.02,      // 2% do HP máx por kill
+  bossHpMult: 15,         // usado no CP-D
+  bossDmgMult: 3,         // usado no CP-D
+  deathRespawnSeconds: 3, // morte: respawn com HP cheio, sem perdas
+};
+
+// §12 — Lumens · §6 — XP
+export const ECONOMY = {
+  goldRatio: 0.10, // lumens_por_kill = mob_hp × 0.10 × frt_total
+  xpRatio: 0.08,   // xp_por_kill     = mob_hp × 0.08 × wis_total
+};
+
+// §3 — Malha geométrica do Map 1 (The Dreaming Wood)
+// §4 — Pack sizes e curva de dano dos mobs
+export const MAP_1 = {
+  id: 1,
+  name: 'The Dreaming Wood',
+  lvlLo: 1,
+  lvlHi: 1000,
+  hpLo: 10,
+  hpHi: 1e6,
+  dmgLo: 1,
+  dmgHi: 1e4,
+  subareaCount: 5,
+  packSizes: [1, 2, 4, 6, 8], // Sub1..Sub5
+  bossKillThreshold: 100,     // usado no CP-D
+};
+
+// Trio canônico de criaturas do Map 1 (The Fragmented) — art direction §3
+export const MAP_1_ENEMY_NAMES = ['Candlewisp Shade', 'Mothlight Herald', 'Dreamhorn Warden'];
+
+// Núcleo / infraestrutura
+export const TICK_SECONDS = 0.1;     // tick fixo de 100ms
+export const MAX_CATCHUP_TICKS = 50; // teto de catch-up por frame (offline real é CP-F)
+export const AUTOSAVE_MS = 10_000;
+export const SAVE_KEY = 'eclats_save_v1';
+export const SCHEMA_VERSION = 1;
+export const NUMBER_CAP = 1e100;     // teto do jogo base — cabe no float nativo
