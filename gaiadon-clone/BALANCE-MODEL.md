@@ -30,7 +30,7 @@ Cada subárea tem um range de levels. Os ranges crescem por mapa.
 hp(level) = baseHp × 1.04^(level - 1)
 ```
 
-- `baseHp` — HP do inimigo de level 1 (a calibrar com o loop completo)
+- `baseHp = 10` — HP do inimigo de level 1 ✅ confirmado
 - Crescimento de **4% por level** (`ramp = 1.04`)
 - Level 50 → ~7× o HP do level 1
 - Level 250 → ~16.000× o HP do level 1
@@ -147,7 +147,43 @@ Modelo de intervalo em segundos (inspirado em Melvor Idle):
 
 ---
 
-## 6. A Definir (próximos passos em ordem)
+## 6. Dano do Player — Valores Âncora
+
+```
+baseHp     = 10       // HP do mob level 1
+baseDmg    = 7        // dano por hit no início (baseHp / 1.4 → kill time 3.5s)
+atk_speed  = 0.4 APS  // intervalo 2.5s
+DPS_inicial = 2.8     // baseDmg × atk_speed
+```
+
+### Fórmula completa de dano
+```
+dano_por_hit = baseDmg
+             × str_total           // (1 + level × 0.08) × milestone_mults
+             × level_bonus         // hero level — a definir
+             × gear_bonus          // weapon — persistente
+             × convergence_mult    // permanente
+             × ascension_mult      // permanente
+```
+
+### Sistema de milestones (Gold Stat str)
+- Entre milestones: +8% dano por nível (mantém engajamento no grind)
+- Milestone 10: **×2.0** — spike principal do early game
+- Milestone 25: **×2.5** — permite avançar subareas
+- Milestone 50: **×3.0** — endgame do mapa atual
+- Milestone 100: **×4.0**
+- Multiplicador cumulativo até milestone 50: ×2 × ×2.5 × ×3 = **×15** + bônus aditivos
+
+### Simulação early game (Map 1)
+| Situação | HP mob | DPS player | Kill time |
+|----------|--------|------------|-----------|
+| Lv 1, sem upgrades | 10 | 2.8 | 3.6s ✅ |
+| Lv 50, sem upgrades | 68 | 2.8 | 24s ❌ |
+| Lv 50, str milestone 10 | 68 | 9.6 | 7.1s ✅ |
+| Lv 50, str milestone 25 | 68 | 40.9 | 1.7s 🔥 Sub 1 trivial |
+| Lv 150, str milestone 25 | 3.410 | 40.9 | 83s ❌ → requer convergence |
+
+## 7. A Definir (próximos passos em ordem)
 
 - [ ] **Damage scaling** — como `dano_por_hit` começa e cresce (gold stats, gear, level)
 - [ ] **HP do player** — base + crescimento por vitalidade
