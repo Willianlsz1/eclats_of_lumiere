@@ -228,21 +228,84 @@ hp_max = playerBaseHp × vit_total × level_bonus
 - Regen passivo **não salva** sem vit (diferença de ~0.1s), mas **amplifica** vit
 - Dilema de investimento intencional: Lumens em str vs vit → decisão real
 
-## 8. A Definir (próximos passos em ordem)
+---
 
-- [ ] **Lumens por kill** — fórmula de reward (loop econômico)
+## 8. Gold Stats — Sistema Completo
+
+Todos os 6 stats resetam na convergence. Mesmo padrão de custo e milestones.
+
+### Fórmula de custo (universal)
+```
+custo(n) = 10 × 1.15^n              // levels 1–999  (exponencial pura)
+custo(n) × (n / 1000)^2             // levels 1000+  (fase 2: cresce quadraticamente)
+custo(n) × 1.001^(n - 10000)        // levels 10000+ (fase 3: tiers futuros)
+```
+- α = 1.15: entre Cookie Clicker (1.15) e Synergism (1.25)
+- Paridade com renda: mob HP escala em 1.04^level → Lumens por kill escala igual → tempo por compra permanece constante em qualquer fase
+
+### Tabela de stats
+
+| Stat | Efeito | Bônus/nível | M10 | M25 | M50 | M100 |
+|------|--------|------------|-----|-----|-----|------|
+| **str** | Dano por hit | +8% | ×2.0 | ×2.5 | ×3.0 | ×4.0 |
+| **vit** | HP máximo | +6% | ×2.0 | ×2.5 | ×3.0 | ×4.0 |
+| **agi** | Atk speed mult | +4% | ×2.0 | ×2.5 | ×3.0 | ×4.0 |
+| **lck** | Crit rate | +1.5% | ×1.5 | ×2.0 | ×2.5 | ×3.0 |
+| **frt** | Lumens mult | +5% | ×2.0 | ×2.5 | ×3.0 | ×4.0 |
+| **wis** | XP mult | +5% | ×2.0 | ×2.5 | ×3.0 | ×4.0 |
+
+> lck tem milestones menores — crit 100% com mult alto domina o DPS, precisa ser controlado.
+
+### Fórmulas individuais
+```
+str_total = (1 + str_level × 0.08) × Π(milestones_str)
+vit_total = (1 + vit_level × 0.06) × Π(milestones_vit)
+agi_total = (1 + agi_level × 0.04) × Π(milestones_agi)
+  → ataques_por_seg = min(1.25, 0.4 × agi_total)
+  → milestone 25 já atinge o cap: 1.96 × 5.0 × 0.4 = 3.92 → capped em 1.25
+lck_total = min(1.0, lck_level × 0.015 × Π(milestones_lck))
+  → overflow acima de 100% → bônus de crit damage
+frt_total = (1 + frt_level × 0.05) × Π(milestones_frt)
+wis_total = (1 + wis_level × 0.05) × Π(milestones_wis)
+```
+
+### Dilemas de investimento por fase
+| Fase | Stats prioritários | Por quê |
+|------|--------------------|---------|
+| Sub 1–2 Map 1 | str + vit | DPS e sobrevivência básica |
+| Sub 3–4 Map 1 | str + vit + frt | frt acelera o ciclo de upgrades |
+| Sub 5 / Boss | str + vit + agi | agi aumenta DPS total |
+| Pre-convergence | wis | leveling rápido para último push |
+| Pós-convergence | str milestone 10 | recupera poder imediatamente |
+
+---
+
+## 9. Lumens por Kill — Loop Econômico
+
+### Fórmula base
+```
+lumens_por_kill = mob_hp × goldRatio × frt_total
+goldRatio = 0.10
+```
+- Level 1 mob (HP 10): **1 Lumens** → ~5-10 kills para 1ª compra ✅
+- Level 50 mob (HP 68): **6.8 Lumens**
+- Renda escala com HP do mob: quem empurra para mobs mais fortes ganha mais
+
+### Paridade custo/renda (confirmada pela pesquisa)
+- Custo str level n: `10 × 1.15^n`
+- Renda por kill: `mob_hp × 0.10 = 10 × 1.04^(level-1) × 0.10`
+- Ambos crescem exponencialmente → tempo por compra constante em qualquer fase ✅
+
+## 10. A Definir (próximos passos em ordem)
+
 - [ ] **Vestiges por kill** — drop da moeda de prestige
-- [ ] **XP e leveling** — curva de level do hero
-- [ ] **Gold Stats custo** — fórmula de custo por nível (str, vit, agi, lck, frt, wis)
+- [ ] **XP e leveling** — curva de level do hero e `level_bonus`
 - [ ] **Convergence** — fórmula do multiplicador, requisito de ativação
 - [ ] **Ascension** — custo em Vestiges, power-up resultante
 - [ ] **Gear** — como weapon/armor affixes escalam com rarity e level
 - [ ] `bossHpMult` — multiplicador de HP do boss vs regular
 - [ ] `level_bonus` — contribuição do hero level para dano e HP
-- [ ] **Convergence** — fórmula do multiplicador, requisito de ativação
-- [ ] **Ascension** — custo em Vestiges, power-up resultante
 - [ ] `baseHp` absoluto — calibrar com loop completo rodando
-- [ ] `bossHpMult` — multiplicador de HP do boss vs regular
 
 ---
 
