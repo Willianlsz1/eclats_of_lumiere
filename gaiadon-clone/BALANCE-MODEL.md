@@ -427,10 +427,76 @@ Boss final do mapa (Sub 5) = mesmo `bossHpMult`, diferenciado por nome/emoji esp
 
 ---
 
-## 14. A Definir (próximos passos em ordem)
+## 14. Gear — Sistema Completo
 
-- [ ] **Ascension** — custo em Vestiges, power-up resultante
-- [ ] **Gear** — como weapon/armor affixes escalam com rarity e level
+Inspirado em Gaiadon: Eternal Quest. Dois eixos independentes de upgrade:
+- **Item Level** — gasto contínuo de Lumens, taxa por nível varia com raridade
+- **Raridade** — milestone com Lumens + materiais; adiciona affixes e muda a taxa por nível
+
+### Slots (fixos, sempre presentes desde o início)
+| Slot | Affix 1 | Affix 2 | Affix 3 (Rare+) | Affix 4 (Epic+) | Affix 5 + Único (Legendary) |
+|------|---------|---------|-----------------|-----------------|------------------------------|
+| **Weapon** | atkMult | critChance | atkSpeed | critDamage | atkMult (2ª) + único |
+| **Armor** | hpMult | regenOnKill | enemyHpReduct | hpMult (2ª) | regenOnKill (2ª) + único |
+
+Gear é **preservado na Convergence** e reseta apenas na Ascension (a definir).
+
+### Fórmula de valor de affix
+```
+affix_valor = baseAffix × gearLevel × ratePerLevel[rarity]
+```
+
+### Taxa por nível e level cap por raridade
+| Raridade | Rate/nível | Level cap | Affix máx no cap (ex: atkMult) |
+|---------|-----------|-----------|-------------------------------|
+| Common | 0.50%/lv | 100 | **+50%** |
+| Rare | 0.20%/lv | 500 | **+100%** |
+| Epic | 0.08%/lv | 2.000 | **+160%** |
+| Legendary | 0.025%/lv | 25.000 × ascensions | **+625%** por ascension |
+
+### Regressão intencional ao fazer upgrade de raridade
+O level não reseta ao subir de raridade — mas a taxa por nível cai:
+```
+// Exemplo com atkMult:
+Common  nível 100 (cap) →  +50%
+  ↓ upgrade para Rare (level permanece em 100)
+Rare    nível 100       →  +20%  ← REGRESSÃO (-30%)
+Rare    nível 250       →  +50%  ← recupera o valor anterior
+Rare    nível 500 (cap) → +100%  ← dobra o teto do Common
+```
+Sensação: curto prazo mais fraco, longo prazo com teto muito maior.
+
+### Custo de upgrade de raridade
+| Upgrade | Lumens | Material | Drop |
+|---------|--------|----------|------|
+| Common → Rare | 5.000 | 5× Shard Bruto | Boss Map 2+ (20% chance) |
+| Rare → Epic | 50.000 | 5× Shard Refinado | Boss Map 4+ (10% chance) |
+| Epic → Legendary | 500.000 | 5× Essência Mítica | Boss Map 5 Sub 5 (5% chance) |
+
+### Custo de item level (Lumens)
+```
+level_cost(n) = 50 × 1.20^n
+```
+Mesmo expoente dos Gold Stats — familiar para o player.
+
+### baseAffix por tipo de affix
+| Affix | baseAffix | Efeito |
+|-------|-----------|--------|
+| atkMult | 1 | +X% dano por hit |
+| critChance | 1 | +X% chance de crit |
+| atkSpeed | 1 | −X% intervalo de ataque (cap: 0.8s) |
+| critDamage | 1 | +X% dano no crit |
+| hpMult | 1 | +X% HP máximo |
+| regenOnKill | 1 | +X% HP máximo recuperado por kill |
+| enemyHpReduct | 1 | −X% HP dos inimigos |
+
+> `baseAffix = 1` significa que os valores são todos derivados de `gearLevel × rate`. Ex: Weapon Common nível 50 → atkMult = 1 × 50 × 0.005 = 0.25 → +25% dano.
+
+---
+
+## 15. A Definir (próximos passos em ordem)
+
+- [ ] **Ascension** — custo em Vestiges, o que reseta, power-up resultante
 - [ ] `baseHp` absoluto — calibrar com loop completo rodando
 
 ---
