@@ -209,3 +209,132 @@ html, body {
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: var(--bg); }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+/* ── Mobile (≤768px) ─────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  html, body { overflow: hidden; }
+
+  #app {
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "header"
+      "content"
+      "mobile-nav";
+    height: 100dvh;
+  }
+
+  /* All main panels stack in the same content cell; only one visible */
+  #panel-left,
+  #panel-combat,
+  #panel-right {
+    grid-area: content;
+    display: none !important;
+    height: 100%;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .mobile-panel-active { display: flex !important; }
+
+  /* Header: compact, hide desktop tab-nav */
+  #header { height: 46px; padding: 0 12px; gap: 10px; }
+  #header h1 { font-size: 12px; letter-spacing: 0; }
+  .tab-nav { display: none; }
+  #btn-reset { margin-left: auto; }
+
+  /* Larger touch targets for stat buttons */
+  .btn { padding: 11px 14px; font-size: 14px; }
+
+  /* ── Mobile bottom nav ─────────────────────────────────────────────────── */
+  #mobile-nav {
+    grid-area: mobile-nav;
+    display: flex;
+    background: var(--bg2);
+    border-top: 1px solid var(--border);
+    height: 58px;
+    flex-shrink: 0;
+  }
+
+  .mobile-nav-btn {
+    flex: 1;
+    background: transparent;
+    border: none;
+    border-top: 2px solid transparent;
+    color: var(--text-muted);
+    font: 10px/1.2 var(--font);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    cursor: pointer;
+    padding: 6px 4px;
+    transition: all 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .mnav-icon { font-size: 20px; line-height: 1; }
+
+  .mobile-nav-btn.active {
+    color: var(--accent2);
+    border-top-color: var(--accent);
+  }
+
+  /* ── Mobile sub-tabs (upgrades panel only) ─────────────────────────────── */
+  #mobile-subtabs {
+    display: none;
+    gap: 6px;
+    padding: 10px 12px 0;
+    flex-shrink: 0;
+  }
+
+  #mobile-subtabs.visible { display: flex; }
+
+  .mobile-subtab-btn {
+    flex: 1;
+    padding: 7px 4px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text-muted);
+    font: 11px var(--font);
+    cursor: pointer;
+    text-align: center;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .mobile-subtab-btn.active {
+    border-color: var(--accent);
+    color: var(--accent2);
+    background: rgba(123,94,167,0.15);
+  }
+
+  /* Right panel layout on mobile */
+  #panel-right { flex-direction: column; padding: 0; gap: 0; }
+  #panel-right #convergence-strip { padding: 12px; }
+  #panel-right #asc-strip { padding: 8px 12px; }
+
+  #right-tab-content {
+    position: static !important;
+    flex: 1;
+    overflow-y: auto;
+  }
+
+  #right-tab-content .tab-content {
+    position: static !important;
+    height: auto;
+    overflow: visible;
+    padding: 12px;
+  }
+
+  /* Convergence button bigger on mobile */
+  #btn-converge { padding: 12px; font-size: 14px; }
+}
+
+/* Desktop: hide mobile-only elements */
+@media (min-width: 769px) {
+  #mobile-nav      { display: none !important; }
+  #mobile-subtabs  { display: none !important; }
+}

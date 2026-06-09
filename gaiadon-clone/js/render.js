@@ -334,6 +334,20 @@ function renderTabVisibility() {
   const tabGear = document.getElementById('tab-gear');
   if (tabMem)  tabMem.style.display  = G.ascensions >= 1 ? 'inline-block' : 'none';
   if (tabGear) tabGear.style.display = G.ascensions >= 1 ? 'inline-block' : 'none';
+
+  // Mobile: show Upgrades button once passives or mémoires unlock
+  const mobileUpgBtn = document.querySelector('.mobile-nav-btn[data-mobile="upgrades"]');
+  if (mobileUpgBtn) {
+    mobileUpgBtn.style.opacity = G.passivesUnlocked ? '1' : '0.4';
+  }
+
+  // Mobile: ensure correct panel visible (on first render)
+  const isMobile = window.innerWidth <= 768;
+  if (isMobile && !G.mobilePanel) {
+    G.mobilePanel = 'combat';
+    document.getElementById('panel-combat').classList.add('mobile-panel-active');
+    document.querySelector('.mobile-nav-btn[data-mobile="combat"]')?.classList.add('active');
+  }
 }
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -342,6 +356,60 @@ function renderTabVisibility() {
 function _setText(id, text) {
   const el = document.getElementById(id);
   if (el) el.textContent = text;
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// Mobile panel switcher
+// ────────────────────────────────────────────────────────────────────────────
+function switchMobilePanel(mobileTab) {
+  G.mobilePanel = mobileTab;
+
+  // Hide all main panels
+  ['panel-left', 'panel-combat', 'panel-right'].forEach(id => {
+    document.getElementById(id).classList.remove('mobile-panel-active');
+  });
+
+  // Update bottom nav active state
+  document.querySelectorAll('.mobile-nav-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.mobile === mobileTab);
+  });
+
+  const subtabs = document.getElementById('mobile-subtabs');
+
+  if (mobileTab === 'combat') {
+    document.getElementById('panel-combat').classList.add('mobile-panel-active');
+    if (subtabs) subtabs.classList.remove('visible');
+  } else if (mobileTab === 'stats') {
+    document.getElementById('panel-left').classList.add('mobile-panel-active');
+    if (subtabs) subtabs.classList.remove('visible');
+  } else if (mobileTab === 'info') {
+    document.getElementById('panel-right').classList.add('mobile-panel-active');
+    if (subtabs) subtabs.classList.remove('visible');
+    // Show run info sub-panel in right panel
+    document.querySelectorAll('#right-tab-content .tab-content').forEach(el => el.style.display = 'none');
+    const ri = document.getElementById('panel-combat-right');
+    if (ri) ri.style.display = 'flex';
+    G.activeTab = 'combat';
+  } else if (mobileTab === 'upgrades') {
+    document.getElementById('panel-right').classList.add('mobile-panel-active');
+    if (subtabs) subtabs.classList.add('visible');
+    // Default to first unlocked upgrade tab
+    const defaultTab = G.passivesUnlocked ? 'passives' : (G.ascensions >= 1 ? 'memoires' : 'passives');
+    _switchMobileSubtab(defaultTab);
+  }
+
+  renderAll();
+}
+
+function _switchMobileSubtab(subtab) {
+  document.querySelectorAll('.mobile-subtab-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.subtab === subtab);
+  });
+  // Re-use desktop switchTab logic
+  document.querySelectorAll('#right-tab-content .tab-content').forEach(el => el.style.display = 'none');
+  const panel = document.getElementById('panel-' + subtab);
+  if (panel) panel.style.display = 'flex';
+  G.activeTab = subtab;
 }
 
 function switchTab(tab) {
