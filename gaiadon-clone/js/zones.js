@@ -151,10 +151,9 @@ function makeEnemy(s) {
     var bossName = isFinal && map.boss ? map.boss.name : (map.name + " Warden " + (s.subarea + 1));
     var bossEmoji = isFinal && map.boss ? map.boss.emoji : "👑";
     var bossHp = Math.round(stats.hp * ascMult * B.hpMult);
-    if (typeof passiveTotals === "function" && s.passives) {
-      var _wpr = passiveTotals(s).enemyHpReduct;
-      if (_wpr > 0) bossHp = Math.max(1, Math.round(bossHp * (1 - Math.min(0.9, _wpr))));
-    }
+    var _wpr = (typeof passiveTotals === "function" && s.passives ? passiveTotals(s).enemyHpReduct : 0)
+             + (typeof affixTotals   === "function"               ? affixTotals(s).enemyHpReduct   : 0);
+    if (_wpr > 0) bossHp = Math.max(1, Math.round(bossHp * (1 - Math.min(0.9, _wpr))));
     var bossCrit = C.bossCritChanceMin + Math.random() * (C.bossCritChanceMax - C.bossCritChanceMin);
     return {
       name: bossName, emoji: bossEmoji,
@@ -178,10 +177,9 @@ function makeEnemy(s) {
   var finalHp  = Math.max(1, Math.round(stats.hp  * arch.hp  * tm.hp  * ascMult));
   var finalDmg = Math.max(1, Math.round(stats.dmg * arch.dmg * tm.dmg * ascMult));
 
-  if (typeof passiveTotals === "function" && s.passives) {
-    var _wpr2 = passiveTotals(s).enemyHpReduct;
-    if (_wpr2 > 0) finalHp = Math.max(1, Math.round(finalHp * (1 - Math.min(0.9, _wpr2))));
-  }
+  var _wpr2 = (typeof passiveTotals === "function" && s.passives ? passiveTotals(s).enemyHpReduct : 0)
+            + (typeof affixTotals   === "function"               ? affixTotals(s).enemyHpReduct   : 0);
+  if (_wpr2 > 0) finalHp = Math.max(1, Math.round(finalHp * (1 - Math.min(0.9, _wpr2))));
 
   var goldReward = Math.max(1, Math.round(stats.gold * arch.reward * tm.reward));
   var xpReward   = Math.max(1, Math.round(stats.xp   * arch.reward * tm.reward));

@@ -118,9 +118,9 @@ test("itemAffixes ativa afixos conforme a raridade (DESIGN §27: 1→5)", () => 
 });
 
 test("getNewAffix retorna o afixo correto ao subir raridade", () => {
-  // Subir para legendary (4) revela o 5º afixo (índice 4).
+  // Subir para legendary (4) revela o 5º afixo (índice 4) = AoE Damage (DESIGN §28).
   const a = game.getNewAffix("Weapon", 4);
-  assert(a && a.stat === "dmgMult", "5º afixo da Weapon = dmgMult");
+  assert(a && a.stat === "aoeDmg", "5º afixo da Weapon = aoeDmg (AoE Damage)");
   assertEqual(game.getNewAffix("Weapon", 1).stat, AFFIXES.Weapon[1].stat, "subir p/ uncommon revela índice 1");
 });
 
@@ -128,11 +128,13 @@ test("affixTotals soma os afixos dos itens equipados (estrutura)", () => {
   const s = game.defaultState();
   s.equipped.Weapon.rarity = 2;
   const t = game.affixTotals(s);
-  // Com affixScale=0 os valores são 0 — verificamos apenas a estrutura do objeto.
-  assert(typeof t.critRate === "number", "affixTotals deve ter critRate numérico");
-  assert(typeof t.critDmg  === "number", "affixTotals deve ter critDmg numérico");
-  assert(typeof t.dmgMult  === "number", "affixTotals deve ter dmgMult numérico");
-  assert(typeof t.hpMult   === "number", "affixTotals deve ter hpMult numérico");
+  // Com affixScale=0 os valores são 0 — verificamos a estrutura conforme DESIGN §28.
+  assert(typeof t.critRate     === "number", "affixTotals deve ter critRate");
+  assert(typeof t.critDmg      === "number", "affixTotals deve ter critDmg");
+  assert(typeof t.atkMult      === "number", "affixTotals deve ter atkMult (Ring afixo 1)");
+  assert(typeof t.lumensMult   === "number", "affixTotals deve ter lumensMult (Amulet afixo 5)");
+  assert(typeof t.vestigeBonus === "number", "affixTotals deve ter vestigeBonus (Amulet afixo 2)");
+  assert(typeof t.bossDmg      === "number", "affixTotals deve ter bossDmg");
 });
 
 console.log("== Combate e regiões ==");

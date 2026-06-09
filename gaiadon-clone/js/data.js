@@ -93,38 +93,38 @@ const REGIONS = [
     boss: { name: "Auroral Sentinel", emoji: "👑" },
   },
   {
-    id: "forest", name: "Cavernes Luminis", icon: "🌑",
-    cssClass: "region-forest",
+    id: "luminis", name: "Cavernes Luminis", icon: "🌑",
+    cssClass: "region-luminis",
     startPower: 1e12,
-    description: "A canopy of living shadows where ancient predators stalk in silence.",
-    background: "forest",
-    enemies: [
-      { name: "Shadow Creeper",  archetype: "standard", emoji: "🕷️" },
-      { name: "Thorn Sprite",    archetype: "swarm",    emoji: "🌿" },
-      { name: "Ancient Bark",    archetype: "tank",     emoji: "🌳" },
-      { name: "Night Stalker",   archetype: "brute",    emoji: "🐺" },
-      { name: "Hex Moth",        archetype: "cursed",   emoji: "🦋" },
-    ],
-    boss: { name: "The Hollow Warden", emoji: "👑" },
-  },
-  {
-    id: "caverns", name: "The Ashen Ruins", icon: "💠",
-    cssClass: "region-caverns",
-    startPower: 1e24,
-    description: "Frozen depths where crystalline formations pulse with forgotten power.",
+    description: "Ancient caverns where Or Ein Sof's light crystallized over millennia. The air hums with forgotten resonance.",
     background: "caverns",
     enemies: [
-      { name: "Crystal Fragment", archetype: "standard", emoji: "🔷" },
-      { name: "Ice Sprite",      archetype: "swarm",    emoji: "❄️" },
-      { name: "Crystal Golem",   archetype: "tank",     emoji: "🧊" },
-      { name: "Frost Wraith",    archetype: "brute",    emoji: "👻" },
-      { name: "Deep Singer",     archetype: "cursed",   emoji: "🎵" },
+      { name: "Luminis Shard",   archetype: "standard", emoji: "💎" },
+      { name: "Crystal Swarm",   archetype: "swarm",    emoji: "✨" },
+      { name: "Cavern Warden",   archetype: "tank",     emoji: "🪨" },
+      { name: "Void Stalker",    archetype: "brute",    emoji: "🌑" },
+      { name: "Echo Phantom",    archetype: "cursed",   emoji: "👻" },
     ],
     boss: { name: "Prismatic Colossus", emoji: "👑" },
   },
   {
-    id: "desert", name: "The Fractured Peaks", icon: "🔥",
-    cssClass: "region-desert",
+    id: "ruins", name: "The Ashen Ruins", icon: "💠",
+    cssClass: "region-ruins",
+    startPower: 1e24,
+    description: "Ruins where Lumière once stood, now consumed by roots and pale mist. The oldest Éclats lie buried in ash.",
+    background: "forest",
+    enemies: [
+      { name: "Ashen Remnant",   archetype: "standard", emoji: "⚫" },
+      { name: "Root Tendril",    archetype: "swarm",    emoji: "🌿" },
+      { name: "Ruins Hulk",      archetype: "tank",     emoji: "🗿" },
+      { name: "The Consumed",    archetype: "brute",    emoji: "💀" },
+      { name: "Hollow Wraith",   archetype: "cursed",   emoji: "🕯️" },
+    ],
+    boss: { name: "The Hollow Warden", emoji: "👑" },
+  },
+  {
+    id: "peaks", name: "The Fractured Peaks", icon: "🔥",
+    cssClass: "region-peaks",
     startPower: 1e36,
     description: "A scorched wasteland where fire and ruin reign over the broken earth.",
     background: "desert",
@@ -176,55 +176,62 @@ const SUBAREAS = [
 const SLOTS = [
   { id: "Weapon", stats: ["Damage"],                     defaultName: "The Waning Edge"        },
   { id: "Armor",  stats: ["Health"],                     defaultName: "Veil of Cinders"        },
-  { id: "Amulet", stats: ["Attack Speed", "Lumen Find"], defaultName: "The Last Resonance"     },
-  { id: "Ring",   stats: ["Vestige Find"],               defaultName: "Band of Dusk"           },
+  { id: "Amulet", stats: ["Lumens"],   defaultName: "The Last Resonance" },
+  { id: "Ring",   stats: ["Vestiges"], defaultName: "Band of Dusk"       },
   { id: "Gloves", stats: ["Crit Damage"],                defaultName: "Grasp of the Unnamed"   },
   { id: "Helmet", stats: ["Boss Damage"],                defaultName: "Crown of Hollow Stars"  },
 ];
 
 // 30 afixos fixos (5 por slot). Ativados pela raridade (DESIGN §27): common=1 … legendary=5.
+// Afixos por peça conforme DESIGN §28.
 const AFFIXES = {
+  // The Waning Edge — Weapon (DESIGN §28)
   Weapon: [
-    { stat: "critRate", base: 0, perLevel: 0 },
-    { stat: "critDmg",  base: 0, perLevel: 0 },
-    { stat: "dmgMult",  base: 0, perLevel: 0 },
-    { stat: "critDmg",  base: 0, perLevel: 0 },
-    { stat: "dmgMult",  base: 0, perLevel: 0 },
+    { stat: "critRate", base: 0, perLevel: 0 },  // 1 Common    — Crit Rate
+    { stat: "atkSpeed", base: 0, perLevel: 0 },  // 2 Uncommon  — Attack Speed
+    { stat: "critDmg",  base: 0, perLevel: 0 },  // 3 Rare      — Crit Damage
+    { stat: "bossDmg",  base: 0, perLevel: 0 },  // 4 Epic      — Boss Damage
+    { stat: "aoeDmg",   base: 0, perLevel: 0 },  // 5 Legendary — AoE Damage
   ],
+  // Veil of Cinders — Armor (DESIGN §28)
   Armor: [
-    { stat: "hpMult",   base: 0, perLevel: 0 },
-    { stat: "critRate", base: 0, perLevel: 0 },
-    { stat: "hpMult",   base: 0, perLevel: 0 },
-    { stat: "dmgMult",  base: 0, perLevel: 0 },
-    { stat: "hpMult",   base: 0, perLevel: 0 },
+    { stat: "defense",      base: 0, perLevel: 0 },  // 1 Common    — Defense
+    { stat: "hpRegenKill",  base: 0, perLevel: 0 },  // 2 Uncommon  — HP Regen per Kill
+    { stat: "hpRegenAmp",   base: 0, perLevel: 0 },  // 3 Rare      — HP Regen Amplifier
+    { stat: "voidResist",   base: 0, perLevel: 0 },  // 4 Epic      — Void Resistance
+    { stat: "dmgReduction", base: 0, perLevel: 0 },  // 5 Legendary — Damage Reduction
   ],
+  // The Last Resonance — Amulet (DESIGN §28)
   Amulet: [
-    { stat: "goldMult", base: 0, perLevel: 0 },
-    { stat: "xpMult",   base: 0, perLevel: 0 },
-    { stat: "goldMult", base: 0, perLevel: 0 },
-    { stat: "xpMult",   base: 0, perLevel: 0 },
-    { stat: "goldMult", base: 0, perLevel: 0 },
+    { stat: "xpBonus",          base: 0, perLevel: 0 },  // 1 Common    — XP Bonus
+    { stat: "vestigeBonus",     base: 0, perLevel: 0 },  // 2 Uncommon  — Vestige Bonus
+    { stat: "offlineBonus",     base: 0, perLevel: 0 },  // 3 Rare      — Offline Bonus
+    { stat: "materialDropRate", base: 0, perLevel: 0 },  // 4 Epic      — Material Drop Rate
+    { stat: "lumensMult",       base: 0, perLevel: 0 },  // 5 Legendary — Lumens Multiplier
   ],
+  // Band of Dusk — Ring (DESIGN §28)
   Ring: [
-    { stat: "shardMult", base: 0, perLevel: 0 },
-    { stat: "xpMult",    base: 0, perLevel: 0 },
-    { stat: "shardMult", base: 0, perLevel: 0 },
-    { stat: "goldMult",  base: 0, perLevel: 0 },
-    { stat: "dmgMult",   base: 0, perLevel: 0 },
+    { stat: "atkMult",         base: 0, perLevel: 0 },  // 1 Common    — Attack Multiplier
+    { stat: "enemyHpReduct",   base: 0, perLevel: 0 },  // 2 Uncommon  — Enemy HP Reduction
+    { stat: "convergenceBonus",base: 0, perLevel: 0 },  // 3 Rare      — Convergence Bonus
+    { stat: "eclatAffinity",   base: 0, perLevel: 0 },  // 4 Epic      — Éclat Affinity
+    { stat: "allStats",        base: 0, perLevel: 0 },  // 5 Legendary — All Stats Bonus
   ],
+  // Grasp of the Unnamed — Gloves (DESIGN §28, diversificada)
   Gloves: [
-    { stat: "critDmg",  base: 0, perLevel: 0 },
-    { stat: "critRate", base: 0, perLevel: 0 },
-    { stat: "dmgMult",  base: 0, perLevel: 0 },
-    { stat: "critDmg",  base: 0, perLevel: 0 },
-    { stat: "critRate", base: 0, perLevel: 0 },
+    { stat: "atkSpeed",    base: 0, perLevel: 0 },  // 1 Common    — Attack Speed
+    { stat: "aoeDmg",      base: 0, perLevel: 0 },  // 2 Uncommon  — AoE Damage
+    { stat: "critRate",    base: 0, perLevel: 0 },  // 3 Rare      — Crit Rate
+    { stat: "critDmg",     base: 0, perLevel: 0 },  // 4 Epic      — Crit Damage
+    { stat: "critCascade", base: 0, perLevel: 0 },  // 5 Legendary — Crit Cascade Chance
   ],
+  // Crown of Hollow Stars — Helmet (DESIGN §28)
   Helmet: [
-    { stat: "bossDmg", base: 0, perLevel: 0 },
-    { stat: "hpMult",  base: 0, perLevel: 0 },
-    { stat: "bossDmg", base: 0, perLevel: 0 },
-    { stat: "dmgMult", base: 0, perLevel: 0 },
-    { stat: "bossDmg", base: 0, perLevel: 0 },
+    { stat: "critVsBoss",    base: 0, perLevel: 0 },  // 1 Common    — Crit Rate vs Bosses
+    { stat: "bossHpReduct",  base: 0, perLevel: 0 },  // 2 Uncommon  — Boss HP Reduction
+    { stat: "bossSpawnRate", base: 0, perLevel: 0 },  // 3 Rare      — Boss Spawn Rate
+    { stat: "bossDropRate",  base: 0, perLevel: 0 },  // 4 Epic      — Boss Drop Rate
+    { stat: "bossDmg",       base: 0, perLevel: 0 },  // 5 Legendary — Boss Damage Multiplier
   ],
 };
 
@@ -398,141 +405,53 @@ const PASSIVES = [
     effect: "stub",               perLevel: 0.05,  maxLevel: 5,  costBase: 2500, costGrowth: 2.5,
     mapReq: 5, killsReq: 100000, desc: "+5% Lumens bonus per Echo type found per level" },
 
-  // ── Árvore FRACTURE (debuffs inimigos, sobrevivência) ─────────────────
-  { id: "weakenedVoid",     tree: "fracture", name: "Weakened Void",      icon: "🌪️",
-    effect: "enemyHpReduct",      perLevel: 0,  maxLevel: 10, costBase: 30,   costGrowth: 1.7,
-    mapReq: 1, killsReq: 0,      desc: "-6% enemy HP per level" },
-  { id: "fractureSense",    tree: "fracture", name: "Fracture Sense",     icon: "👁️",
-    effect: "stub",               perLevel: 0.05,  maxLevel: 5,  costBase: 60,   costGrowth: 1.8,
-    mapReq: 1, killsReq: 50,     desc: "+5% chance to reveal hidden enemy weaknesses per level" },
-  { id: "voidAwareness",    tree: "fracture", name: "Void Awareness",     icon: "🌐",
-    effect: "rewardMult",         perLevel: 0,  maxLevel: 10, costBase: 80,   costGrowth: 1.8,
-    mapReq: 1, killsReq: 100,    desc: "+8% all rewards per level" },
-  { id: "slowFracture",     tree: "fracture", name: "Slow Fracture",      icon: "❄️",
-    effect: "stub",               perLevel: 0.05,  maxLevel: 5,  costBase: 120,  costGrowth: 1.9,
-    mapReq: 1, killsReq: 150,    desc: "+5% chance to slow enemies per level" },
-  { id: "convergentWill",   tree: "fracture", name: "Convergent Will",    icon: "🔗",
-    effect: "stub",               perLevel: 0.05,  maxLevel: 5,  costBase: 180,  costGrowth: 1.9,
-    mapReq: 2, killsReq: 300,    desc: "+5% Convergence XP per level" },
-  { id: "nihelShadow",      tree: "fracture", name: "Nihel's Shadow",     icon: "🌒",
-    effect: "enemyDmgReduct",     perLevel: 0,  maxLevel: 10, costBase: 400,  costGrowth: 2.1,
-    mapReq: 3, killsReq: 2000,   desc: "-6% enemy damage per level" },
-  { id: "timeFracture",     tree: "fracture", name: "Time Fracture",      icon: "⏳",
-    effect: "stub",               perLevel: 0.10,  maxLevel: 5,  costBase: 500,  costGrowth: 2.1,
-    mapReq: 3, killsReq: 3000,   desc: "+10% chance to reset enemy action per level" },
-  { id: "rupture",          tree: "fracture", name: "Rupture",            icon: "💢",
-    effect: "stub",               perLevel: 0.05,  maxLevel: 5,  costBase: 600,  costGrowth: 2.2,
-    mapReq: 3, killsReq: 5000,   desc: "+5% bleed damage over time per level" },
-  { id: "lastLight",        tree: "fracture", name: "Last Light",         icon: "🕯️",
-    effect: "lastLightDmg",       perLevel: 0,  maxLevel: 5,  costBase: 750,  costGrowth: 2.2,
-    mapReq: 3, killsReq: 10000,  desc: "+20% damage when below 30% HP per level" },
-  { id: "voidPulse",        tree: "fracture", name: "Void Pulse",         icon: "💫",
-    effect: "stub",               perLevel: 0.05,  maxLevel: 5,  costBase: 900,  costGrowth: 2.3,
-    mapReq: 4, killsReq: 15000,  desc: "+5% AoE pulse damage per level" },
-  { id: "abyssal",          tree: "fracture", name: "Abyssal",            icon: "🕳️",
-    effect: "stub",               perLevel: 0.10,  maxLevel: 5,  costBase: 1000, costGrowth: 2.3,
-    mapReq: 4, killsReq: 20000,  desc: "+10% damage in The Abyss per level" },
-  { id: "fractureCore",     tree: "fracture", name: "Fracture Core",      icon: "💠",
-    effect: "stub",               perLevel: 0.08,  maxLevel: 5,  costBase: 1200, costGrowth: 2.3,
-    mapReq: 4, killsReq: 20000,  desc: "+8% damage vs elites per level" },
-  { id: "nilsEmbrace",      tree: "fracture", name: "Nil's Embrace",      icon: "🌌",
-    effect: "stub",               perLevel: 0.05,  maxLevel: 5,  costBase: 2000, costGrowth: 2.4,
-    mapReq: 5, killsReq: 50000,  desc: "+5% damage per minute spent in area per level" },
-  { id: "voidEndurance",    tree: "fracture", name: "Void Endurance",     icon: "🛡️",
-    effect: "voidEndurance",      perLevel: 0, maxLevel: 10, costBase: 2500, costGrowth: 2.5,
-    mapReq: 5, killsReq: 100000, desc: "+0.5% defense and HP per boss defeated this map per level" },
+  // ── Árvore FRACTURE (debuffs inimigos, sobrevivência) — DESIGN §20 ──────
+  { id: "weakenedVoid",      tree: "fracture", name: "Weakened Void",       icon: "🌪️",
+    effect: "enemyHpReduct",       perLevel: 0,  maxLevel: 10, costBase: 30,   costGrowth: 1.7,
+    mapReq: 1, killsReq: 0,       desc: "-% HP dos inimigos por nível" },
+  { id: "fractureSense",     tree: "fracture", name: "Fracture Sense",      icon: "👁️",
+    effect: "stub",                perLevel: 0,  maxLevel: 5,  costBase: 60,   costGrowth: 1.8,
+    mapReq: 1, killsReq: 50,      desc: "Chefe spawna mais rápido — afeta primeiro spawn" },
+  { id: "voidAwareness",     tree: "fracture", name: "Void Awareness",      icon: "🌐",
+    effect: "rewardMult",          perLevel: 0,  maxLevel: 10, costBase: 80,   costGrowth: 1.8,
+    mapReq: 1, killsReq: 100,     desc: "+% recompensas de qualquer fonte por nível" },
+  { id: "fracturePulse",     tree: "fracture", name: "Fracture Pulse",      icon: "❄️",
+    effect: "stub",                perLevel: 0,  maxLevel: 5,  costBase: 120,  costGrowth: 1.9,
+    mapReq: 2, killsReq: 150,     desc: "Ao entrar numa subárea, inimigos começam com -X% HP" },
+  { id: "voidHaste",         tree: "fracture", name: "Void Haste",          icon: "🔗",
+    effect: "stub",                perLevel: 0,  maxLevel: 5,  costBase: 180,  costGrowth: 1.9,
+    mapReq: 2, killsReq: 300,     desc: "Reduz tempo de spawn dos inimigos por nível" },
+  { id: "shardDisruption",   tree: "fracture", name: "Shard Disruption",    icon: "⚡",
+    effect: "stub",                perLevel: 0,  maxLevel: 5,  costBase: 220,  costGrowth: 1.9,
+    mapReq: 2, killsReq: 500,     desc: "Chance de inimigo perder turno de ataque por nível" },
+  { id: "nihelShadow",       tree: "fracture", name: "Nihel's Shadow",      icon: "🌒",
+    effect: "enemyDmgReduct",      perLevel: 0,  maxLevel: 10, costBase: 400,  costGrowth: 2.1,
+    mapReq: 3, killsReq: 2000,    desc: "-% dano dos inimigos por nível" },
+  { id: "eclatAttunement",   tree: "fracture", name: "Éclat Attunement",    icon: "⏳",
+    effect: "stub",                perLevel: 0,  maxLevel: 5,  costBase: 500,  costGrowth: 2.1,
+    mapReq: 3, killsReq: 3000,    desc: "Vestiges gastos amplificam Weakened Void e Nihel's Shadow" },
+  { id: "laFracturaEcho",    tree: "fracture", name: "La Fractura's Echo",  icon: "💢",
+    effect: "stub",                perLevel: 0,  maxLevel: 5,  costBase: 600,  costGrowth: 2.2,
+    mapReq: 3, killsReq: 5000,    desc: "Segundo spawn do chefe em diante começa com HP reduzido" },
+  { id: "lastLight",         tree: "fracture", name: "Last Light",          icon: "🕯️",
+    effect: "lastLightDmg",        perLevel: 0,  maxLevel: 5,  costBase: 750,  costGrowth: 2.2,
+    mapReq: 3, killsReq: 10000,   desc: "+% dano quando abaixo de 30% HP por nível" },
+  { id: "voidCollapse",      tree: "fracture", name: "Void Collapse",       icon: "💫",
+    effect: "stub",                perLevel: 0,  maxLevel: 5,  costBase: 900,  costGrowth: 2.3,
+    mapReq: 4, killsReq: 15000,   desc: "Corrompidos implodem causando AoE ao morrer" },
+  { id: "theFracturesGift",  tree: "fracture", name: "The Fracture's Gift", icon: "🕳️",
+    effect: "stub",                perLevel: 0,  maxLevel: 5,  costBase: 1000, costGrowth: 2.3,
+    mapReq: 4, killsReq: 20000,   desc: "Ao quase morrer, burst de dano temporário" },
+  { id: "claimedDomination", tree: "fracture", name: "Claimed Domination",  icon: "💠",
+    effect: "stub",                perLevel: 0,  maxLevel: 5,  costBase: 1200, costGrowth: 2.3,
+    mapReq: 4, killsReq: 20000,   desc: "The Claimed têm -% stats acima de X tier" },
+  { id: "nilsEmbrace",       tree: "fracture", name: "Nil's Embrace",       icon: "🌌",
+    effect: "stub",                perLevel: 0,  maxLevel: 5,  costBase: 2000, costGrowth: 2.4,
+    mapReq: 5, killsReq: 50000,   desc: "Quanto mais tempo numa subárea, mais forte o jogador" },
+  { id: "voidEndurance",     tree: "fracture", name: "Void Endurance",      icon: "🛡️",
+    effect: "voidEndurance",       perLevel: 0,  maxLevel: 10, costBase: 2500, costGrowth: 2.5,
+    mapReq: 5, killsReq: 100000,  desc: "+% defesa e HP por chefe derrotado no mapa atual por nível" },
 ];
-
-// ═══════════════════════════════════════════════════════════════════════
-// Artifacts — 13 artifacts comprados com Essence (permanentes)
-// ═══════════════════════════════════════════════════════════════════════
-// Custo: baseCost × level^1.6 (lv1 = baseCost exato, soft cap natural)
-// Fórmula: artifactCost(id, lv) = baseCost × lv^ARTIFACT_COST_EXPONENT
-// Lv1=baseCost, Lv2=baseCost×3.03, Lv3=baseCost×5.28, Lv5=baseCost×12.01
-// Efeitos amplificam Gold Stats, combat, ou meta-progressão.
-// Persistem entre ascensões.
-const ARTIFACT_COST_EXPONENT = 1.5;
-
-const ARTIFACTS = [
-  // Amplificam Gold Stats 1:1
-  { id: "warBanner",     name: "War Banner",         icon: "🚩",
-    effect: "strMult",   perLevel: 0.10,  baseCost: 25,
-    desc: "+10% Strength effectiveness per level" },
-  { id: "guardShield",   name: "Guardian's Shield",   icon: "🛡️",
-    effect: "vitMult",   perLevel: 0.10,  baseCost: 20,
-    desc: "+10% Vitality effectiveness per level" },
-  { id: "swiftTalisman", name: "Swift Talisman",      icon: "💨",
-    effect: "agiMult",   perLevel: 0.10,  baseCost: 22,
-    desc: "+10% Agility effectiveness per level" },
-  { id: "luckyCoin",     name: "Lucky Coin",          icon: "🎰",
-    effect: "lckMult",   perLevel: 0.10,  baseCost: 25,
-    desc: "+10% Luck effectiveness per level" },
-  { id: "goldenChalice", name: "Golden Chalice",      icon: "🏆",
-    effect: "frtMult",   perLevel: 0.10,  baseCost: 22,
-    desc: "+10% Fortune effectiveness per level" },
-  { id: "scholarTome",   name: "Scholar's Tome",      icon: "📚",
-    effect: "wisMult",   perLevel: 0.10,  baseCost: 22,
-    desc: "+10% Wisdom effectiveness per level" },
-
-  // Meta-progressão
-  { id: "crownRebirth",  name: "Crown of Rebirth",    icon: "👑",
-    effect: "startGold", perLevel: 75,    baseCost: 18,
-    desc: "+75 starting gold per level after ascension" },
-  { id: "wandererCompass", name: "Wanderer's Compass", icon: "🧭",
-    effect: "waveSpeed", perLevel: 0.08,  baseCost: 18,
-    desc: "+8% kill speed (reduces kills per wave) per level" },
-
-  // Combat
-  { id: "championMark",  name: "Champion's Mark",     icon: "⚜️",
-    effect: "critDmg",   perLevel: 0.10,  baseCost: 30,
-    desc: "+10% crit damage per level" },
-  { id: "dragonHeart",   name: "Dragon's Heart",      icon: "🐉",
-    effect: "bossDmg",   perLevel: 0.12,  baseCost: 35,
-    desc: "+12% boss damage per level" },
-
-  // Progressão
-  { id: "soulPrism",     name: "Soul Prism",          icon: "💎",
-    effect: "essenceMult", perLevel: 0.07, baseCost: 30,
-    desc: "+7% Essence gain per level" },
-  { id: "eternalHourglass", name: "Eternal Hourglass", icon: "⏳",
-    effect: "offlineEff", perLevel: 0.03, baseCost: 28,
-    desc: "+3% offline efficiency per level" },
-
-  // Ultimate (caro, amplifica tudo)
-  { id: "voidShard",     name: "Void Shard",          icon: "🌌",
-    effect: "allStats",  perLevel: 0.03,  baseCost: 50,
-    desc: "+3% to ALL Gold Stats per level" },
-];
-
-
-// ═══════════════════════════════════════════════════════════════════════
-// Essence — moeda de prestígio, 4 fontes ao ascender
-// ═══════════════════════════════════════════════════════════════════════
-// Sublinear por design: cresce, mas devagar → incentiva jogar, não exploitar.
-// Calibrada para 1ª ascensão ≈ 220 Essence → 5 artifacts lv1 + 1 lv2.
-const ESSENCE = {
-  // Fonte 1: stage clears (região × dificuldade limpas no run)
-  clear: {
-    base: 20,           // Essence por clear da 1ª região Normal
-    regionMult: 2.0,    // cada região seguinte dá ×2.0 mais
-    diffMult: 2.0,      // Hard = ×2, Nightmare = ×4
-  },
-  // Fonte 2: profundidade total (√ das waves limpas × scale)
-  depth: {
-    scale: 12,          // √(total_waves) × 12
-  },
-  // Fonte 3: boss kills
-  boss: {
-    base: 8,            // Essence por boss kill
-    perRegion: 4,       // +4 por índice de região
-  },
-  // Fonte 4: base flat (cresce com as ascensões)
-  base: {
-    flat: 20,           // Essence base por ascensão
-    perAscension: 0.8,  // +0.8 por ascensão anterior
-  },
-};
-
 
 // ═══════════════════════════════════════════════════════════════════════
 // CONFIG — painel de balanceamento central
@@ -693,7 +612,7 @@ if (typeof module !== "undefined") {
     ASSETS, ARCHETYPES, REGIONS, SUBAREAS,
     SLOTS, AFFIXES, RARITIES, TIERS,
     MATERIALS, MAP_MATERIALS, MATERIALS_BY_ID, materialDef,
-    GOLD_STATS, PASSIVES, ARTIFACTS, ARTIFACT_COST_EXPONENT, ESSENCE,
+    GOLD_STATS, PASSIVES,
     CONFIG, NUMBER_SUFFIXES,
     fmt, fmtMult, fmtPct,
   };

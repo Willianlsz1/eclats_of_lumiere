@@ -112,8 +112,8 @@ function playerDamage(s) {
   const P = CONFIG.player;
   let base = P.baseDamage + (s.level - 1) * damagePerLevel(s);
   base += slotPower(s, "Weapon");
-  base += goldStatBonus(s, "str");            // STR: +2 dmg per level
-  base *= (1 + affixTotals(s).dmgMult);
+  base += goldStatBonus(s, "str");
+  base *= (1 + affixTotals(s).atkMult);
   if (typeof passiveTotals === "function") base *= (1 + passiveTotals(s).dmgMult);
   return Math.round(base * totalPowerMult(s));
 }
@@ -121,16 +121,16 @@ function playerMaxHp(s) {
   const P = CONFIG.player;
   let base = P.baseHp + (s.level - 1) * hpPerLevel(s);
   base += slotPower(s, "Armor") * CONFIG.itemStats.healthPerPower;
-  base += goldStatBonus(s, "vit");            // VIT: +10 hp per level
-  base *= (1 + affixTotals(s).hpMult);
+  base += goldStatBonus(s, "vit");
   const _pt = typeof passiveTotals === "function" ? passiveTotals(s) : null;
   if (_pt && _pt.voidEnduranceBonus > 0) base *= (1 + _pt.voidEnduranceBonus);
   return Math.round(base * totalPowerMult(s));
 }
 // Stat bruto (soma linear de fontes). Entrada para a fórmula de atk speed.
+// Attack speed vem de afixos (Weapon #2, Gloves #1) e Gold Stat AGI — não de slotPower.
 function atkSpeedRaw(s) {
   return CONFIG.player.baseAttackSpeed
-    + slotPower(s, "Amulet") * CONFIG.itemStats.attackSpeedPerPower
+    + affixTotals(s).atkSpeed
     + goldStatBonus(s, "agi");
 }
 // Ataques por segundo: min(cap, √rawAtkSpeed × fator). Crescimento sublinear intencional.
@@ -158,8 +158,8 @@ function playerDps(s) { return playerDamage(s) * attackSpeed(s) * critExpectedMu
 // profundidade (HP do inimigo, via goldReward) + investimentos diretos (gear find, stats).
 function goldBonus(s) {
   let b = 1 + slotPower(s, "Amulet") * CONFIG.itemStats.goldFindPerPower;
-  b *= (1 + affixTotals(s).goldMult);
-  b *= (1 + goldStatBonus(s, "frt"));        // FRT: +5% gold per level
+  b *= (1 + affixTotals(s).lumensMult);
+  b *= (1 + goldStatBonus(s, "frt"));
   b = b * mapMasteryBonus(s);
   if (typeof passiveTotals === "function") {
     const _pt = passiveTotals(s);
@@ -169,8 +169,8 @@ function goldBonus(s) {
   return b;
 }
 function xpMultiplier(s) {
-  var base = (1 + affixTotals(s).xpMult) * mapMasteryBonus(s);
-  base = base * (1 + goldStatBonus(s, "wis")); // WIS: +5% xp per level
+  var base = (1 + affixTotals(s).xpBonus) * mapMasteryBonus(s);
+  base = base * (1 + goldStatBonus(s, "wis"));
   if (typeof passiveTotals === "function") {
     const _pt = passiveTotals(s);
     base *= (1 + _pt.xpMult);
@@ -180,7 +180,7 @@ function xpMultiplier(s) {
 }
 function shardBonus(s) {
   let b = 1 + slotPower(s, "Ring") * CONFIG.itemStats.shardFindPerPower;
-  b *= (1 + affixTotals(s).shardMult);
+  b *= (1 + affixTotals(s).vestigeBonus);
   b = b * mapMasteryBonus(s);
   if (typeof passiveTotals === "function") {
     const _pt = passiveTotals(s);
@@ -442,7 +442,8 @@ function computeOfflineGains(s, elapsedSec) {
   const ascMult = Math.pow(CONFIG.enemy.ascGrowth, s.ascensions);
   const killsPerSec = playerDps(s) / Math.max(1, stats.hp * ascMult);
   const passiveOfflineEff = typeof passiveTotals === "function" ? passiveTotals(s).offlineEff : 0;
-  const effectiveEfficiency = Math.min(1.0, efficiency + passiveOfflineEff);
+  const affixOfflineBonus = typeof affixTotals === "function" ? affixTotals(s).offlineBonus : 0;
+  const effectiveEfficiency = Math.min(1.0, efficiency + passiveOfflineEff + affixOfflineBonus);
   const kills = killsPerSec * seconds * effectiveEfficiency;
   const lumens   = Math.round(kills * stats.gold * goldBonus(s));
   const xp       = Math.round(kills * stats.xp * xpMultiplier(s));
