@@ -220,19 +220,26 @@ s.goldStats.wis = 0;
 
 
 // ═══════════════════════════════════════════════════════════════
-section("Ascensão reseta goldStats");
+section("Convergence reseta goldStats (ascensão é power-up, não reseta)");
 
 s = game.defaultState();
 s.goldStats.str = 20;
 s.goldStats.vit = 15;
-s.level = 30;
-s.mapProgress = { 0: game.lastSubarea() }; // chefe final do mapa 1 → habilita ascensão
+s.level = 30; // acima do minLevel para convergir
 
-game.ascend(s);
-assert("After ascend, STR = 0", s.goldStats.str === 0);
-assert("After ascend, VIT = 0", s.goldStats.vit === 0);
-assert("After ascend, all gold stats are 0",
+game.converge(s);
+assert("After converge, STR = 0", s.goldStats.str === 0);
+assert("After converge, VIT = 0", s.goldStats.vit === 0);
+assert("After converge, all gold stats are 0",
   Object.values(s.goldStats).every(function(v) { return v === 0; }));
+
+// Ascensão NÃO reseta gold stats (é power-up puro)
+s = game.defaultState();
+s.goldStats.str = 7;
+s.convsSinceAsc = CONFIG.ascension.convPerAsc;
+s.vestiges = game.ascCost(s);
+game.ascend(s);
+assert("After ascend, STR persists (no reset)", s.goldStats.str === 7);
 
 
 // ═══════════════════════════════════════════════════════════════

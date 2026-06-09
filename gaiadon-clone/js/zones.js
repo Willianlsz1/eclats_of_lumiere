@@ -103,9 +103,11 @@ function clearCurrentSubarea(s) {
   if (maxSubareaCleared(s, s.map) < s.subarea) s.mapProgress[s.map] = s.subarea;
   s.killsInSub = 0;
   if (s.subarea < lastSubarea()) {
-    s.subarea++;            // avança dentro do mapa
+    s.subarea++;                       // avança dentro do mapa
+  } else if (s.map < REGIONS.length - 1) {
+    s.map++; s.subarea = 0;            // chefe final → avança para o próximo mapa
   }
-  // Se era a Subárea 5, o mapa fica "limpo" → canAscend libera (game.js).
+  // (Ascensão é separada: power-up via convergences + Vestiges, não muda de mapa.)
 }
 
 

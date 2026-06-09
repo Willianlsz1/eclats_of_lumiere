@@ -127,17 +127,19 @@ function rarityUpMaterial(s, slotId) {
   else              id = (MAP_MATERIALS[s.map] || MAP_MATERIALS[0]).id;
   return { id: id, qty: qty };
 }
+// Nível mínimo para subir DA raridade atual (níveis são uncapped; isto paceia a raridade).
+function rarityLevelReq(item) { return CONFIG.gear.rarityLevelReq[item.rarity] || Infinity; }
 function canRarityUp(s, slotId) {
   const item = s.equipped[slotId];
   if (item.rarity >= RARITIES.length - 1) return false;
-  if (item.level < rarityCap(item)) return false; // precisa estar no cap atual
+  if (item.level < rarityLevelReq(item)) return false; // precisa do nível mínimo
   const need = rarityUpMaterial(s, slotId);
   return !!need && ((s.materials || {})[need.id] || 0) >= need.qty;
 }
 function rarityUpItem(s, slotId) {
   const item = s.equipped[slotId];
   if (item.rarity >= RARITIES.length - 1) return false;
-  if (item.level < rarityCap(item)) return false; // precisa estar no cap
+  if (item.level < rarityLevelReq(item)) return false; // precisa do nível mínimo
   const need = rarityUpMaterial(s, slotId);
   if (!need || ((s.materials || {})[need.id] || 0) < need.qty) return false;
   s.materials[need.id] -= need.qty; item.rarity++; // nível mantém; cap agora é maior

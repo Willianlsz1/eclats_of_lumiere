@@ -285,7 +285,7 @@ function renderHero(s) {
         <div class="hero-portrait-info">
           <div class="hero-portrait-name">${t.name}</div>
           <div class="hero-portrait-tier rar-${tierColor}">${tierColor.toUpperCase()} TIER</div>
-          <div class="hero-portrait-mult">Ascensão: ×${fmt(CONFIG.ascension.spikePerTier)} por mapa</div>
+          <div class="hero-portrait-mult">Ascensões: ${s.ascensions || 0} · ×${fmt(ascMultiplier(s))}</div>
         </div>
       </div>`;
   }
@@ -301,8 +301,8 @@ function renderHero(s) {
        <span>+${f1(hpl)}</span>
      </div>
      <div class="hero-foot-row">
-       <span class="hero-foot-label">Per ascension</span>
-       <span class="rar-${tierColor}">×${fmt(CONFIG.ascension.spikePerTier)} &nbsp;<small>(${t.name})</small></span>
+       <span class="hero-foot-label">Ascension mult</span>
+       <span class="rar-${tierColor}">×${fmt(ascMultiplier(s))} &nbsp;<small>(${t.name})</small></span>
      </div>`;
 }
 
@@ -378,43 +378,46 @@ function renderEquipment(s) {
 
 function renderAscend(s) {
   const asc = getAscensionStatus(s);
-  $("ascCount").textContent = asc.ascensionNumber + "/" + (REGIONS.length - 1);
+  $("ascCount").textContent = asc.ascensions + "/" + asc.maxAscensions;
 
   const tierColor = ["common", "uncommon", "rare", "epic", "legendary"][asc.tier];
-  // Barra: progresso de subáreas no mapa atual (até o chefe final → Ascensão).
-  const pct = asc.isMaxTier && asc.finalBossCleared ? 100
-            : Math.min(100, ((asc.subarea + (asc.finalBossCleared ? 1 : 0)) / (asc.lastSubarea + 1)) * 100);
+  // Barra: progresso de convergences até a próxima ascensão.
+  const convPct = Math.min(100, (asc.convsSinceAsc / asc.convPerAsc) * 100);
 
   let html = `
     <div class="asc-tier-name rar-${tierColor}">${asc.tierName}</div>
-    <div class="asc-sub-map">🗺️ ${asc.mapName} · Subárea ${asc.subarea + 1}/${asc.lastSubarea + 1}</div>
+    <div class="asc-sub-map">Ascensões: ${asc.ascensions} · poder ×${fmt(asc.currentPowerMult)}</div>
     <div class="asc-bar-wrap">
-      <div class="asc-bar-fill rarity-fill-${tierColor}" style="width:${pct.toFixed(1)}%"></div>
-      <span class="asc-bar-text">${asc.finalBossCleared ? "Chefe final derrotado!" : "Avance até o chefe da Subárea " + (asc.lastSubarea + 1)}</span>
+      <div class="asc-bar-fill rarity-fill-${tierColor}" style="width:${convPct.toFixed(1)}%"></div>
+      <span class="asc-bar-text">${Math.min(asc.convsSinceAsc, asc.convPerAsc)}/${asc.convPerAsc} convergences</span>
     </div>`;
 
   if (asc.nextTier) {
     html += `<div class="asc-next-tier">
       Próxima Ordre: <b class="rar-${["common","uncommon","rare","epic","legendary"][asc.tier+1]}">${asc.nextTierName}</b>
-      <span class="asc-spike">→ Power Spike ×${fmt(CONFIG.ascension.spikePerTier)}</span>
+      <span class="asc-spike">na ascensão ${fmt(asc.nextTier.minAsc)}</span>
     </div>`;
   } else {
     html += `<div class="asc-next-tier">Ordre máxima — <b class="rar-legendary">Lumière</b></div>`;
   }
 
-  html += `<div class="asc-mult-info">
-    Poder de Ascensão atual: <b>×${fmt(asc.currentPowerMult)}</b>${asc.nextTier ? ` · próxima: <b>×${fmt(asc.nextPowerMult)}</b>` : ""}
-  </div>`;
+  const hasVest = asc.haveVestiges >= asc.vestCost;
+  const hasConv = asc.convsSinceAsc >= asc.convPerAsc;
+  html += `<div class="asc-req-row">
+    <span class="asc-req ${hasConv ? 'req-ok' : 'req-missing'}">🔄 ${Math.min(asc.convsSinceAsc, asc.convPerAsc)}/${asc.convPerAsc} convergences ${hasConv ? '✓' : ''}</span>
+    <span class="asc-req ${hasVest ? 'req-ok' : 'req-missing'}">💎 ${fmt(asc.vestCost)} Vestiges ${hasVest ? '✓' : `(tem ${fmt(asc.haveVestiges)})`}</span>
+  </div>
+  <div class="asc-mult-info">Poder de Ascensão: <b>×${fmt(asc.currentPowerMult)}</b> → próxima: <b>×${fmt(asc.nextPowerMult)}</b></div>`;
 
   $("ascTierDisplay").innerHTML = html;
   $("ascendBtn").disabled = !asc.canAscend;
 
   if (asc.canAscend) {
-    $("ascInfo").innerHTML = `<b class="milestone-text">🎉 Ascender para ${asc.nextTierName}!</b><br><b>✓ MANTÉM</b> gear, passivas, materiais e progresso · <b>✗ RESETA</b> lumens, nível e gold stats. Próximo mapa desbloqueado!`;
-  } else if (asc.isMaxTier) {
-    $("ascInfo").innerHTML = `Você alcançou <b>Nil Aeternum</b>, o último mapa. Não há mais Ascensões.`;
+    $("ascInfo").innerHTML = `<b class="milestone-text">🔮 Ascender!</b> Power-up permanente (×${(asc.nextPowerMult/asc.currentPowerMult).toFixed(2)}). Não reseta nada — só consome convergences + Vestiges.`;
+  } else if (asc.isMaxTier && asc.ascensions >= asc.maxAscensions) {
+    $("ascInfo").innerHTML = `Você atingiu o teto de ${asc.maxAscensions} ascensões.`;
   } else {
-    $("ascInfo").innerHTML = `Derrote o chefe final (Subárea ${asc.lastSubarea + 1}) de <b>${asc.mapName}</b> para ascender à próxima Ordre.`;
+    $("ascInfo").innerHTML = `Junte <b>${asc.convPerAsc} convergences</b> + <b>${fmt(asc.vestCost)} Vestiges</b> para a próxima ascensão (power-up permanente).`;
   }
 
   // ── Convergence panel ──
@@ -452,24 +455,18 @@ function flashSlot(slotId) {
 }
 
 function renderSynergy(s) {
-  const syn       = synergyLevel(s);
-  const bonus     = synergyBonusMult(s);
-  const surges    = synergySurgeCount(s);
-  const surgeMult = synergySurgeMult(s);
-  const total     = totalPowerMult(s);
-  const interval  = CONFIG.synergy.surgeInterval;
-  const nextSurge = (surges + 1) * interval;
-  const pct       = ((syn % interval) / interval) * 100;
+  const syn   = synergyLevel(s);
+  const bonus = synergyBonusMult(s);
+  const total = totalPowerMult(s);
 
-  $("synergyLevel").textContent     = fmt(syn);
-  $("synergySurgeCount").textContent = surges;
+  $("synergyLevel").textContent      = fmt(syn);
   $("synergyBonusStat").textContent  = "+" + Math.round((bonus - 1) * 100) + "%";
-  $("synergyTotalMult").textContent  = "×" + total.toFixed(2);
-  $("synergySurgeMult").textContent  = "×" + surgeMult.toFixed(2);
-  $("synergyProgressFill").style.width = pct.toFixed(1) + "%";
-  $("synergyNextSurge").textContent  = surges === 0
-    ? `First surge at level ${interval}`
-    : `Next surge at level ${fmt(nextSurge)}`;
+  $("synergyTotalMult").textContent  = "×" + fmt(total);
+  // Synergy Surge eliminado — campos de surge ficam neutros.
+  if ($("synergySurgeCount")) $("synergySurgeCount").textContent = "—";
+  if ($("synergySurgeMult"))  $("synergySurgeMult").textContent  = "—";
+  if ($("synergyProgressFill")) $("synergyProgressFill").style.width = "0%";
+  if ($("synergyNextSurge")) $("synergyNextSurge").textContent = "";
 }
 
 function showOfflineSummary(g) {

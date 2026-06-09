@@ -231,12 +231,13 @@ const AFFIXES = {
 };
 
 // Raridades: nome, multiplicador de Item Power, CAP de nível.
+// Raridade = ×UP geométrico (a "escada" dentro do mapa). Níveis SEM CAP (todos Infinity).
 const RARITIES = [
-  { name: "common",    mult: 1.0, cap: 25    },
-  { name: "uncommon",  mult: 1.5, cap: 75    },
-  { name: "rare",      mult: 2.2, cap: 150   },
-  { name: "epic",      mult: 3.5, cap: 300   },
-  { name: "legendary", mult: 6.0, cap: Infinity },
+  { name: "common",    mult: 1,     cap: Infinity },
+  { name: "uncommon",  mult: 10,    cap: Infinity },
+  { name: "rare",      mult: 100,   cap: Infinity },
+  { name: "epic",      mult: 1000,  cap: Infinity },
+  { name: "legendary", mult: 10000, cap: Infinity },
 ];
 
 
@@ -244,12 +245,14 @@ const RARITIES = [
 // Tiers da Ordre de Lumière (DESIGN §15) — 1 por mapa, 5 ascensões totais.
 // tier = nº da ascensão = índice do mapa (0→4). minAsc = quantas ascensões para o tier.
 // ═══════════════════════════════════════════════════════════════════════
+// Tiers da Ordre — marcos da ascensão (até 1000). Ascensão é frequente; os tiers
+// são marcos grandes (saltos + benefícios). minAsc = ascensões para o tier.
 const TIERS = [
-  { name: "Seeker",      minAsc: 0, map: 0 },
-  { name: "Illuminate",  minAsc: 1, map: 1 },
-  { name: "Éclairé",     minAsc: 2, map: 2 },
-  { name: "L'Éveillé",   minAsc: 3, map: 3 },
-  { name: "Lumière",     minAsc: 4, map: 4 },
+  { name: "Seeker",      minAsc: 0    },
+  { name: "Illuminate",  minAsc: 50   },
+  { name: "Éclairé",     minAsc: 200  },
+  { name: "L'Éveillé",   minAsc: 500  },
+  { name: "Lumière",     minAsc: 1000 },
 ];
 
 
@@ -591,9 +594,7 @@ const CONFIG = {
   // Open-zone: spawn contínuo; o chefe da subárea aparece após killsToBoss kills.
   map: {
     baseHp:         10,    // HP do 1º inimigo (Mapa 1, Subárea 1)
-    subareaRamp:    8,     // ×HP por subárea. Subárea 1 gentil (10), Subárea 5 vira MURO
-                           // (×8^4 = 4096 → chefe ~1e6): convergence sozinha não basta, exige gear.
-                           // ALVO DESIGN §16 = curva ainda mais íngreme (×1e12/mapa) no late.
+    subareaRamp:    251,   // ×HP por subárea → ×1e12 por mapa (DESIGN §16). Chefe Mapa N = 1e(12N).
     subareasPerMap: 5,
     killsToBoss:    30,    // kills na subárea até o chefe (trigger oculto)
     materialDropChance: 0.20, // chance de drop de material por kill regular (chefe sempre dropa)
@@ -645,6 +646,8 @@ const CONFIG = {
     // Upgrade de raridade consome MATERIAIS (DESIGN §37), não Vestiges. Caro (filosofia:
     // dificuldade para subir raridade). qty para subir DE cada raridade.
     rarityMaterialQty: [20, 30, 45, 60],
+    // Níveis SEM cap; raridade exige nível mínimo + materiais (paceia a "escada").
+    rarityLevelReq: [25, 75, 150, 300],  // nível p/ subir DE common/unc/rare/epic
     affixScale: 0.6,     // afixos FRACOS mas não inúteis (escala global)
   },
 
@@ -672,10 +675,17 @@ const CONFIG = {
   // ── Ascensão (5 totais, 1 por mapa — DESIGN §15) ───────────────────────
   // Gatilho: derrotar o chefe da Subárea 5 do mapa atual → próximo mapa + tier.
   // Cada ascensão dá um spike de poder (≈ salto de HP por mapa) p/ começar o próximo.
+  // Ascension = motor geométrico tiered (até 1000, 5 tiers da Ordre). Não reseta nada.
+  // Gatilho: X convergences (desde a última asc) + custo crescente em Vestiges.
+  // ascMult = Π (multBase + multSlope·i) — mult por ascensão crescente.
   ascension: {
-    firstReqLevel:  30,
     perLevelGrowth: 1.03,
-    spikePerTier:   200,   // ascMultiplier = spikePerTier ^ ascensions (0-4)
+    multBase:   1.5,
+    multSlope:  0.002,
+    convPerAsc: 8,      // convergences exigidas por ascensão
+    vestBase:   150,
+    vestGrowth: 1.20,   // custo em Vestiges = vestBase × vestGrowth^ascensions
+    maxAscensions: 1000,
   },
 
   // ── Offline (melhora automaticamente com ascensões) ────────────────
@@ -694,10 +704,9 @@ const CONFIG = {
   },
 
   // ── Synergy (soma de equip levels) ─────────────────────────────────
+  // Synergy Surge ELIMINADO (era a fonte geométrica do runaway). Resta o bônus linear leve.
   synergy: {
-    bonusPerLevel:   0.001,
-    surgeInterval:   100,
-    surgeMultiplier: 1.10,
+    bonusPerLevel: 0.001,
   },
 };
 

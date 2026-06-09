@@ -8,8 +8,9 @@ function defaultState() {
     vestiges: 0,
     level: 1,
     xp: 0,
-    ascensions: 0,         // 0-4: mapas completados = tier (DESIGN §15)
-    convergences: 0,
+    ascensions: 0,         // 0-1000: motor geométrico tiered (Ordre)
+    convergences: 0,       // total de convergences (nunca reseta a contagem)
+    convsSinceAsc: 0,      // convergences desde a última ascensão (gate da próxima)
     totalKills: 0,
 
     // Map/Subárea state (DESIGN §16)
@@ -153,11 +154,13 @@ function hpRegenPerSec(s) {
   return s.level * CONFIG.combat.regenPerLevel;
 }
 function playerDps(s) { return playerDamage(s) * attackSpeed(s) * critExpectedMult(s); }
+// Renda DESACOPLADA do poder (não multiplica por totalPowerMult): escala só com a
+// profundidade (HP do inimigo, via goldReward) + investimentos diretos (gear find, stats).
 function goldBonus(s) {
   let b = 1 + slotPower(s, "Amulet") * CONFIG.itemStats.goldFindPerPower;
   b *= (1 + affixTotals(s).goldMult);
   b *= (1 + goldStatBonus(s, "frt"));        // FRT: +5% gold per level
-  b = b * totalPowerMult(s) * mapMasteryBonus(s);
+  b = b * mapMasteryBonus(s);
   if (typeof passiveTotals === "function") {
     const _pt = passiveTotals(s);
     b *= (1 + _pt.lumensMult);
@@ -166,7 +169,7 @@ function goldBonus(s) {
   return b;
 }
 function xpMultiplier(s) {
-  var base = totalPowerMult(s) * (1 + affixTotals(s).xpMult) * mapMasteryBonus(s);
+  var base = (1 + affixTotals(s).xpMult) * mapMasteryBonus(s);
   base = base * (1 + goldStatBonus(s, "wis")); // WIS: +5% xp per level
   if (typeof passiveTotals === "function") {
     const _pt = passiveTotals(s);
@@ -178,7 +181,7 @@ function xpMultiplier(s) {
 function shardBonus(s) {
   let b = 1 + slotPower(s, "Ring") * CONFIG.itemStats.shardFindPerPower;
   b *= (1 + affixTotals(s).shardMult);
-  b = b * totalPowerMult(s) * mapMasteryBonus(s);
+  b = b * mapMasteryBonus(s);
   if (typeof passiveTotals === "function") {
     const _pt = passiveTotals(s);
     b *= (1 + _pt.vestigeMult);
@@ -368,7 +371,8 @@ function converge(s) {
   if (!canConverge(s)) return false;
   const keep = {
     convergences:      (s.convergences || 0) + 1,
-    ascensions:        s.ascensions,
+    convsSinceAsc:     (s.convsSinceAsc || 0) + 1,  // conta p/ a próxima ascensão
+    ascensions:        s.ascensions || 0,
     map:               s.map,
     subarea:           s.subarea,
     mapProgress:       s.mapProgress || {},
@@ -383,18 +387,25 @@ function converge(s) {
   return true;
 }
 
-// Ascensão (DESIGN §15): derrotar o chefe da Subárea 5 do mapa atual.
-// Não é o último mapa, e o chefe final do mapa atual já foi derrotado.
+// Custo da próxima ascensão em Vestiges (crescente).
+function ascCost(s) {
+  const A = CONFIG.ascension;
+  return Math.ceil(A.vestBase * Math.pow(A.vestGrowth, s.ascensions || 0));
+}
+
+// Ascensão = power-up permanente (motor geométrico). Exige X convergences (desde a
+// última ascensão) + Vestiges. NÃO reseta mapa, gear nem nível — só consome e dá o ×UP.
 function canAscend(s) {
-  return s.map < REGIONS.length - 1
-      && maxSubareaCleared(s, s.map) >= lastSubarea();
+  return (s.ascensions || 0) < CONFIG.ascension.maxAscensions
+      && (s.convsSinceAsc || 0) >= CONFIG.ascension.convPerAsc
+      && s.vestiges >= ascCost(s);
 }
 
 function getAscensionStatus(s) {
   const tier  = heroTier(s);
   const t     = TIERS[tier];
   const nextT = tier + 1 < TIERS.length ? TIERS[tier + 1] : null;
-  const finalCleared = maxSubareaCleared(s, s.map) >= lastSubarea();
+  const A     = CONFIG.ascension;
   return {
     tier,
     tierName: t.name,
@@ -402,31 +413,22 @@ function getAscensionStatus(s) {
     nextTierName: nextT ? nextT.name : null,
     isMaxTier: !nextT,
     canAscend: canAscend(s),
-    ascensionNumber: s.ascensions,        // mapas completados
-    map: s.map, mapName: REGIONS[s.map].name,
-    subarea: s.subarea, lastSubarea: lastSubarea(),
-    finalBossCleared: finalCleared,
+    ascensions: s.ascensions || 0,
+    maxAscensions: A.maxAscensions,
+    convsSinceAsc: s.convsSinceAsc || 0,
+    convPerAsc: A.convPerAsc,
+    vestCost: ascCost(s),
+    haveVestiges: s.vestiges,
     currentPowerMult: ascMultiplier(s),
-    nextPowerMult: Math.pow(CONFIG.ascension.spikePerTier, s.ascensions + 1),
+    nextPowerMult: ascMultiplier({ ascensions: (s.ascensions || 0) + 1 }),
   };
 }
 
 function ascend(s) {
   if (!canAscend(s)) return false;
-  const keep = {
-    ascensions:        s.ascensions + 1,
-    convergences:      s.convergences || 0,
-    map:               s.map + 1,         // próximo mapa
-    mapProgress:       s.mapProgress || {},
-    mapMastery:        s.mapMastery  || {},
-    equipped:          s.equipped,
-    passives:          s.passives || {},
-    materials:         s.materials || {},
-    totalVestgesSpent: s.totalVestgesSpent || 0,
-  };
-  Object.assign(s, defaultState());
-  Object.assign(s, keep);
-  // subarea/killsInSub/level/lumens/goldStats/bossKills resetam (defaultState)
+  s.vestiges -= ascCost(s);
+  s.ascensions = (s.ascensions || 0) + 1;
+  s.convsSinceAsc = 0;
   return true;
 }
 
@@ -457,7 +459,7 @@ if (typeof module !== "undefined") {
     enterMap, registerKill, handleDeath, tick,
     addMaterial, materialDropFor,
     canConverge, getConvergenceStatus, converge,
-    canAscend, getAscensionStatus, ascend,
+    canAscend, getAscensionStatus, ascend, ascCost,
     computeOfflineGains,
   };
 }

@@ -2,31 +2,29 @@
 // Funções puras que calculam multiplicadores a partir de s.ascensions e s.equipped.
 // Sem dependências de combate ou região — só CONFIG e TIERS de data.js.
 
-// --- Tiers da Ordre (DESIGN §15) — tier = nº da ascensão (0-4) ---
+// --- Tiers da Ordre — marco da ascensão (até 1000) ---
 function heroTier(s) {
-  return Math.max(0, Math.min(s.ascensions, TIERS.length - 1));
+  const n = s.ascensions || 0;
+  for (let i = TIERS.length - 1; i >= 0; i--) if (n >= TIERS[i].minAsc) return i;
+  return 0;
 }
 
-// Multiplicador de Ascensão: cada ascensão (mapa completado) dá um spike de poder
-// (≈ salto de HP por mapa) para começar o próximo. ascMult = spikePerTier ^ ascensions.
-// O prestígio FREQUENTE que compõe é a Convergence; a Ascensão são 5 marcos grandes.
+// Multiplicador de Ascensão (motor geométrico): produto de mults crescentes.
+// ascMult = Π_{i=0}^{n-1} (multBase + multSlope·i). Cada ascensão vale um pouco mais.
 function ascMultiplier(s) {
-  return Math.pow(CONFIG.ascension.spikePerTier, s.ascensions || 0);
+  const n = s.ascensions || 0;
+  const A = CONFIG.ascension;
+  let mult = 1;
+  for (let i = 0; i < n; i++) mult *= (A.multBase + A.multSlope * i);
+  return mult;
 }
 
-// --- Synergy (soma de todos os níveis de equipamento) ---
+// --- Synergy (soma de todos os níveis de equipamento) — só o bônus linear leve ---
 function synergyLevel(s) {
   return Object.values(s.equipped).reduce((sum, it) => sum + it.level, 0);
 }
 function synergyBonusMult(s) {
   return 1 + synergyLevel(s) * CONFIG.synergy.bonusPerLevel;
-}
-function synergySurgeCount(s) {
-  return Math.floor(synergyLevel(s) / CONFIG.synergy.surgeInterval);
-}
-function synergySurgeMult(s) {
-  const n = synergySurgeCount(s);
-  return n > 0 ? Math.pow(CONFIG.synergy.surgeMultiplier, n) : 1;
 }
 function convergenceMult(s) {
   const n = s.convergences || 0;
@@ -46,7 +44,7 @@ function convergenceRecommended(s) {
 }
 
 function totalPowerMult(s) {
-  return ascMultiplier(s) * convergenceMult(s) * synergyBonusMult(s) * synergySurgeMult(s);
+  return ascMultiplier(s) * convergenceMult(s) * synergyBonusMult(s);
 }
 
 // Stats POR NÍVEL crescem a cada ascensão.
@@ -67,7 +65,7 @@ if (typeof module !== "undefined") {
   module.exports = {
     heroTier, ascMultiplier,
     convergenceMult, convergenceRecommended,
-    synergyLevel, synergyBonusMult, synergySurgeCount, synergySurgeMult, totalPowerMult,
+    synergyLevel, synergyBonusMult, totalPowerMult,
     perLevelMult, damagePerLevel, hpPerLevel,
     offlineConfig,
   };

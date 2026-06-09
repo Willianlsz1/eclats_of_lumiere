@@ -133,16 +133,14 @@ function bindButtons() {
   $("ascendBtn").onclick = () => {
     const asc = getAscensionStatus(state);
     if (!asc.canAscend) return;
-    const msg = `🔮 Ascensão — ${asc.tierName} → ${asc.nextTierName}!\n\n`
-      + `✓ MANTÉM — Equipamento, Passivas, Materiais e Progresso de Mapa\n`
-      + `✗ RESETA — Lumens, Nível e Gold Stats\n\n`
-      + `Desbloqueia o próximo mapa. Power Spike ×${fmt(CONFIG.ascension.spikePerTier)}.\n\nAscender?`;
+    const msg = `🔮 Ascensão #${asc.ascensions + 1}\n\n`
+      + `Power-up PERMANENTE (×${(asc.nextPowerMult / asc.currentPowerMult).toFixed(2)} no poder).\n`
+      + `Custo: ${asc.convPerAsc} convergences + ${fmt(asc.vestCost)} Vestiges.\n`
+      + `Não reseta nada.\n\nAscender?`;
     if (confirm(msg)) {
       ascend(state);
-      spawnPack(state); state.playerHp = playerMaxHp(state);
-      const postAsc = getAscensionStatus(state);
-      logMsg(`🎉 Ascensão! Bem-vindo a ${postAsc.mapName}, ${postAsc.tierName}!`, "milestone");
-      renderAll(state);
+      logMsg(`🔮 Ascensão #${state.ascensions}! Poder ×${fmt(ascMultiplier(state))}.`, "milestone");
+      scheduleRender(new Set(["resources", "ascension", "hero", "combat"]), state);
     }
   };
 

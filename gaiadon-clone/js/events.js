@@ -8,13 +8,6 @@ function createEventCtx() {
 }
 
 function dispatchEvents(events, state, ctx) {
-  // ── Synergy Surge notification ──
-  const curSurge = synergySurgeCount(state);
-  if (ctx.prevSurgeCount >= 0 && curSurge > ctx.prevSurgeCount) {
-    logMsg(`⚡ Synergy Surge #${curSurge}! All stats ×${CONFIG.synergy.surgeMultiplier.toFixed(2)} · Total surge: ×${fmtMult(synergySurgeMult(state))}`, "milestone");
-  }
-  ctx.prevSurgeCount = curSurge;
-
   for (const ev of events) {
     if (ev.type === "kill") {
       const tierPrefix = ev.tier === "champion" ? "💀 Champion " : ev.tier === "elite" ? "⚔️ Elite " : "";

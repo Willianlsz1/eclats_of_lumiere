@@ -50,11 +50,12 @@ test("levelUpMax compra vários níveis de uma vez", () => {
   assertEqual(s.equipped.Weapon.level, 1 + n);
 });
 
-test("levelUpMax respeita o cap da raridade", () => {
+test("níveis são SEM cap (gasta tudo que puder)", () => {
   const s = game.defaultState();
-  s.lumens = 1e12;
-  game.levelUpMax(s, "Weapon");
-  assertEqual(s.equipped.Weapon.level, RARITIES[0].cap, "para no cap da common");
+  s.lumens = 1e6;
+  const n = game.levelUpMax(s, "Weapon");
+  assert(n > 25, "deve subir muito além do antigo cap 25 (uncapped)");
+  assert(s.lumens < Math.ceil(5 * Math.pow(1.15, s.equipped.Weapon.level)), "gastou até não poder mais");
 });
 
 test("levelUpMaxPreview bate com a compra real (count e custo)", () => {
@@ -67,17 +68,9 @@ test("levelUpMaxPreview bate com a compra real (count e custo)", () => {
   assertEqual(pre.spent, lumensBefore - s.lumens, "custo previsto = gasto");
 });
 
-test("nível trava no cap da raridade", () => {
+test("rarityUpItem exige nível mínimo + materiais", () => {
   const s = game.defaultState();
-  s.lumens = 1e9;
-  s.equipped.Weapon.level = RARITIES[0].cap;
-  assertEqual(game.levelUpItem(s, "Weapon"), false, "não passa do cap sem subir raridade");
-});
-
-test("rarityUpItem exige estar no cap + materiais e libera o próximo cap", () => {
-  const s = game.defaultState();
-  s.equipped.Weapon.level = RARITIES[0].cap;
-  s.lumens = 1e9;
+  s.equipped.Weapon.level = CONFIG.gear.rarityLevelReq[0]; // nível p/ subir de common
   const need = game.rarityUpMaterial(s, "Weapon"); // common→uncommon = Dim Shard
   assertEqual(need.id, "dimShard", "primeiro upgrade pede Dim Shard");
   s.materials[need.id] = need.qty + 5;
@@ -85,12 +78,11 @@ test("rarityUpItem exige estar no cap + materiais e libera o próximo cap", () =
   assert(game.rarityUpItem(s, "Weapon"), "deveria subir a raridade");
   assertEqual(s.equipped.Weapon.rarity, r0 + 1);
   assertEqual(s.materials[need.id], 5, "consome a quantidade exata de material");
-  assert(game.levelUpItem(s, "Weapon"), "após subir raridade, nível volta a subir");
 });
 
-test("não sobe raridade sem material suficiente (mesmo no cap)", () => {
+test("não sobe raridade sem material suficiente", () => {
   const s = game.defaultState();
-  s.equipped.Weapon.level = RARITIES[0].cap;
+  s.equipped.Weapon.level = CONFIG.gear.rarityLevelReq[0];
   const need = game.rarityUpMaterial(s, "Weapon");
   s.materials[need.id] = need.qty - 1; // 1 a menos
   assertEqual(game.rarityUpItem(s, "Weapon"), false, "material insuficiente bloqueia");
@@ -100,7 +92,7 @@ test("epic→legendary consome o material especial do mapa atual", () => {
   const s = game.defaultState();
   s.map = 4; // Nil Aeternum → Nil Essence
   s.equipped.Weapon.rarity = 3; // epic
-  s.equipped.Weapon.level = RARITIES[3].cap;
+  s.equipped.Weapon.level = CONFIG.gear.rarityLevelReq[3];
   const need = game.rarityUpMaterial(s, "Weapon");
   assertEqual(need.id, "nilEssence", "epic→legendary no peak pede Nil Essence");
   s.materials.nilEssence = need.qty;
@@ -108,10 +100,10 @@ test("epic→legendary consome o material especial do mapa atual", () => {
   assertEqual(s.equipped.Weapon.rarity, 4);
 });
 
-test("não sobe raridade fora do cap", () => {
+test("não sobe raridade sem nível mínimo", () => {
   const s = game.defaultState();
-  s.materials = { dimShard: 1e9 };
-  assertEqual(game.rarityUpItem(s, "Weapon"), false, "precisa estar no cap pra subir raridade");
+  s.materials = { dimShard: 1e9 }; s.equipped.Weapon.level = 1; // abaixo do req
+  assertEqual(game.rarityUpItem(s, "Weapon"), false, "precisa do nível mínimo pra subir raridade");
 });
 
 console.log("== Afixos / Crítico ==");
@@ -199,7 +191,7 @@ test("chefe da subárea aparece após killsToBoss e avança a subárea ao morrer
   assertEqual(s.killsInSub, 0, "kills da subárea zeram");
 });
 
-test("chefe final do mapa (Subárea 5) marca mapCleared e libera ascensão", () => {
+test("chefe final do mapa (Subárea 5) marca mapCleared e avança o mapa", () => {
   const s = game.defaultState();
   s.subarea = game.lastSubarea();
   s.killsInSub = CONFIG.map.killsToBoss;
@@ -207,7 +199,8 @@ test("chefe final do mapa (Subárea 5) marca mapCleared e libera ascensão", () 
   assert(s.enemies[0].isFinalBoss, "deve ser o chefe final do mapa");
   const ev = game.registerKill(s);
   assert(ev.mapCleared, "mapa limpo");
-  assert(game.canAscend(s), "ascensão liberada após o chefe final");
+  assertEqual(s.map, 1, "avança para o próximo mapa");
+  assertEqual(s.subarea, 0, "começa na subárea 1 do novo mapa");
 });
 
 test("morte zera killsInSub sem punição de recursos", () => {
@@ -237,58 +230,56 @@ test("enterMap configura o estado corretamente", () => {
   assert(s.enemies.length > 0, "deveria ter inimigos spawnados");
 });
 
-test("ascensões e afixo de XP aumentam o multiplicador de XP", () => {
+test("afixo de XP aumenta o multiplicador de XP (renda desacoplada do poder)", () => {
   const s = game.defaultState();
   const base = game.xpMultiplier(s);
-  s.ascensions = 2;
-  assert(game.xpMultiplier(s) > base, "ascensões devem aumentar o XP mult");
-  const withAsc = game.xpMultiplier(s);
+  s.ascensions = 5;
+  assertEqual(game.xpMultiplier(s), base, "ascensões NÃO afetam a renda (desacoplado)");
   s.equipped.Amulet.rarity = 2;
-  assert(game.xpMultiplier(s) > withAsc, "afixo de XP deveria somar ainda mais");
+  assert(game.xpMultiplier(s) > base, "afixo de XP aumenta o XP mult");
 });
 
-console.log("== Ascensão (5 mapas, DESIGN §15) ==");
-test("heroTier = nº da ascensão (0-4), clampado", () => {
+console.log("== Ascensão (tiered, até 1000) ==");
+test("heroTier por marco da Ordre (minAsc 0/50/200/500/1000)", () => {
   const s = game.defaultState();
   assertEqual(game.heroTier(s), 0);
-  s.ascensions = 1; assertEqual(game.heroTier(s), 1);
-  s.ascensions = 4; assertEqual(game.heroTier(s), 4);
-  assertEqual(TIERS[game.heroTier(s)].name, "Lumière");
+  s.ascensions = 49;  assertEqual(game.heroTier(s), 0, "Seeker até 49");
+  s.ascensions = 50;  assertEqual(TIERS[game.heroTier(s)].name, "Illuminate");
+  s.ascensions = 1000; assertEqual(TIERS[game.heroTier(s)].name, "Lumière");
 });
 
-test("ascMultiplier = spikePerTier ^ ascensions", () => {
-  const sp = CONFIG.ascension.spikePerTier;
+test("ascMultiplier = produto de mults crescentes", () => {
+  const A = CONFIG.ascension;
   assertEqual(game.ascMultiplier({ ascensions: 0 }), 1);
-  assertEqual(game.ascMultiplier({ ascensions: 1 }), sp);
-  assertEqual(game.ascMultiplier({ ascensions: 3 }), Math.pow(sp, 3));
+  assertEqual(game.ascMultiplier({ ascensions: 1 }), A.multBase);
+  const expect2 = A.multBase * (A.multBase + A.multSlope);
+  assert(Math.abs(game.ascMultiplier({ ascensions: 2 }) - expect2) < 1e-9, "2 asc = produto");
+  assert(game.ascMultiplier({ ascensions: 10 }) > game.ascMultiplier({ ascensions: 9 }), "cresce");
 });
 
-test("canAscend: só após o chefe final do mapa, e não no último mapa", () => {
+test("canAscend exige X convergences + Vestiges (não reseta nada)", () => {
   const s = game.defaultState();
-  assertEqual(game.canAscend(s), false, "sem limpar o mapa");
-  s.mapProgress = { 0: game.lastSubarea() };
-  assertEqual(game.canAscend(s), true, "mapa 1 limpo → pode ascender");
-  // No último mapa, não há mais ascensão.
-  s.map = REGIONS.length - 1;
-  s.mapProgress = {}; s.mapProgress[s.map] = game.lastSubarea();
-  assertEqual(game.canAscend(s), false, "último mapa não ascende");
+  assertEqual(game.canAscend(s), false, "sem convergences nem vestiges");
+  s.convsSinceAsc = CONFIG.ascension.convPerAsc;
+  assertEqual(game.canAscend(s), false, "tem convergences mas falta vestiges");
+  s.vestiges = game.ascCost(s);
+  assert(game.canAscend(s), "X convergences + Vestiges → pode ascender");
 });
 
-test("ascender vai para o próximo mapa, mantém gear/mapProgress, reseta recursos", () => {
+test("ascend: power-up permanente (consome conv+vestiges, não reseta mapa/gear/nível)", () => {
   const s = game.defaultState();
-  s.mapProgress = { 0: game.lastSubarea() };
-  s.lumens = 999; s.vestiges = 500; s.level = 40;
-  s.equipped.Weapon.rarity = 3; s.equipped.Weapon.level = 120;
-  const result = game.ascend(s);
-  assertEqual(result, true);
+  s.convsSinceAsc = CONFIG.ascension.convPerAsc;
+  s.vestiges = game.ascCost(s) + 100;
+  s.level = 40; s.map = 2; s.subarea = 3;
+  s.equipped.Weapon.level = 120;
+  const cost = game.ascCost(s);
+  assert(game.ascend(s), "deve ascender");
   assertEqual(s.ascensions, 1, "ascensão incrementa");
-  assertEqual(s.map, 1, "vai para o mapa 2");
-  assertEqual(s.subarea, 0, "começa na subárea 1");
-  assertEqual(s.equipped.Weapon.rarity, 3, "gear persiste (raridade)");
-  assertEqual(s.equipped.Weapon.level, 120, "gear persiste (nível)");
-  assertEqual(s.lumens, 0, "reseta lumens");
-  assertEqual(s.level, 1, "reseta nível");
-  assertEqual(s.mapProgress[0], game.lastSubarea(), "mapProgress persiste");
+  assertEqual(s.convsSinceAsc, 0, "zera o contador de convergences");
+  assertEqual(s.vestiges, 100, "consome o custo em vestiges");
+  assertEqual(s.level, 40, "NÃO reseta nível");
+  assertEqual(s.map, 2, "NÃO muda de mapa");
+  assertEqual(s.equipped.Weapon.level, 120, "NÃO reseta gear");
 });
 
 test("stats por nível crescem a cada ascensão", () => {
@@ -299,12 +290,12 @@ test("stats por nível crescem a cada ascensão", () => {
   assert(game.hpPerLevel(s) > h0, "vida por nível deveria crescer");
 });
 
-test("ascMultiplier se aplica ao dano e ao ouro do herói", () => {
+test("ascMultiplier se aplica ao DANO (mas NÃO à renda — desacoplada)", () => {
   const s = game.defaultState();
   const dmg0 = game.playerDamage(s), gold0 = game.goldBonus(s);
   s.ascensions = 20;
-  assert(game.playerDamage(s) > dmg0, "ascensões devem aumentar o dano");
-  assert(game.goldBonus(s) > gold0, "ascensões devem aumentar o ouro");
+  assert(game.playerDamage(s) > dmg0, "ascensões aumentam o dano (totalPowerMult)");
+  assertEqual(game.goldBonus(s), gold0, "ascensões NÃO aumentam a renda (desacoplado)");
 });
 
 test("offlineConfig cresce automaticamente com ascensões", () => {
@@ -543,17 +534,17 @@ test("Weakened Void reduz HP do inimigo no spawn", () => {
   } finally { Math.random = _r; }
 });
 
-test("passivas persistem após ascend, bossKills reseta", () => {
+test("ascend é power-up puro: não reseta passivas/bossKills/nada", () => {
   const s = game.defaultState();
   s.passives.radiantStrike = 3;
   s.bossKills = 5;
   s.totalVestgesSpent = 999;
-  s.level = 30;
-  s.mapProgress = { 0: game.lastSubarea() };
+  s.convsSinceAsc = CONFIG.ascension.convPerAsc;
+  s.vestiges = game.ascCost(s);
   game.ascend(s);
-  assertEqual(s.passives.radiantStrike, 3, "passivas devem persistir");
-  assertEqual(s.bossKills, 0, "bossKills deve resetar");
-  assertEqual(s.totalVestgesSpent, 999, "totalVestgesSpent deve persistir");
+  assertEqual(s.passives.radiantStrike, 3, "passivas persistem");
+  assertEqual(s.bossKills, 5, "bossKills NÃO reseta (ascend não reseta nada)");
+  assertEqual(s.totalVestgesSpent, 999, "totalVestgesSpent persiste");
 });
 
 console.log("\n== Fase 2: Convergence ==");
@@ -739,9 +730,9 @@ test("tiers usam a Ordre de Lumière (Seeker→Lumière)", () => {
 
 test("heroTier resolve o nome da Ordre conforme ascensões", () => {
   const s = game.defaultState();
-  s.ascensions = 0; assertEqual(TIERS[game.heroTier(s)].name, "Seeker");
-  s.ascensions = 1; assertEqual(TIERS[game.heroTier(s)].name, "Illuminate");
-  s.ascensions = 4; assertEqual(TIERS[game.heroTier(s)].name, "Lumière");
+  s.ascensions = 0;    assertEqual(TIERS[game.heroTier(s)].name, "Seeker");
+  s.ascensions = 50;   assertEqual(TIERS[game.heroTier(s)].name, "Illuminate");
+  s.ascensions = 1000; assertEqual(TIERS[game.heroTier(s)].name, "Lumière");
 });
 
 console.log("\n== Regressão: render robusto ==");

@@ -141,6 +141,12 @@ const MIGRATIONS = [
     return s;
   },
 
+  // v9 → v10: adiciona convsSinceAsc (gate da ascensão por convergences).
+  function addConvsSinceAsc(s) {
+    if (s.convsSinceAsc === undefined) s.convsSinceAsc = 0;
+    return s;
+  },
+
   // v8 → v9: realinha ao modelo do DESIGN — region/difficulty/wave → map/subarea,
   // ascensões agora 0-4 (1 por mapa). Converte saves antigos (migração com perda
   // controlada do progresso de subárea, preservando mastery e moedas).
