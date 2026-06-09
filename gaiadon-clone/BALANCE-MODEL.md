@@ -31,9 +31,22 @@ hp(level) = baseHp × 1.04^(level - 1)
 ```
 
 - `baseHp` — HP do inimigo de level 1 (a calibrar com o loop completo)
-- Crescimento de **4% por level**
+- Crescimento de **4% por level** (`ramp = 1.04`)
 - Level 50 → ~7× o HP do level 1
 - Level 250 → ~16.000× o HP do level 1
+
+### Range total (base game)
+| Ponto | Level | HP (baseHp = 10) |
+|-------|-------|-----------------|
+| Map 1, Sub 1 mínimo | 1 | 10 |
+| Map 1, Sub 5 máximo | 250 | ~160.000 |
+| Map 3, Sub 5 máximo | 1.000 | ~9,6 × 10¹² |
+| Map 5, Sub 5 máximo | 4.000 | **~10⁶⁸** |
+
+- Range confirmado: **10 → ~1e68** (base game, idle puro)
+- JS float padrão suporta até 1e308 — sem biblioteca especial necessária
+- **Tiers futuros** estendem além de 1e68 (conteúdo adicional)
+- Implicação crítica: convergence + ascension + gear precisam entregar **~10⁶⁸** de crescimento de dano total ao longo de toda a progressão
 
 ### Boss
 - Level fixo = **level máximo da subárea** (ex: Sub 1 Map 1 → boss é Lv 50)
