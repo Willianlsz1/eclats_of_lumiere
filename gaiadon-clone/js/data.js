@@ -58,14 +58,12 @@ function assetExists(path) {
 // Cada archetype modifica HP, DMG e reward multiplicativamente.
 // Resultado: importa QUEM aparece no pack. Um pack com Brute é perigoso.
 const ARCHETYPES = {
-  standard: { hp: 1.0,  dmg: 1.0,  reward: 1.0,  packBonus: 0,  label: "" },
-  tank:     { hp: 2.5,  dmg: 0.4,  reward: 1.5,  packBonus: 0,  label: "Tank" },
-  swarm:    { hp: 0.3,  dmg: 0.6,  reward: 0.5,  packBonus: 2,  label: "Swarm" },
-  brute:    { hp: 0.8,  dmg: 2.5,  reward: 2.0,  packBonus: 0,  label: "Brute" },
-  treasure: { hp: 0.4,  dmg: 0.2,  reward: 5.0,  packBonus: 0,  label: "Treasure" },
-  cursed:   { hp: 1.2,  dmg: 1.0,  reward: 1.0,  packBonus: 0,  label: "Cursed" },
-  //                                              packBonus = membros extras no pack
-  //                                              cursed: reduz atk speed do player em 20%
+  standard: { hp: 1.0, dmg: 1.0, reward: 1.0, packBonus: 0, label: "" },
+  tank:     { hp: 1.0, dmg: 1.0, reward: 1.0, packBonus: 0, label: "Tank" },
+  swarm:    { hp: 1.0, dmg: 1.0, reward: 1.0, packBonus: 0, label: "Swarm" },
+  brute:    { hp: 1.0, dmg: 1.0, reward: 1.0, packBonus: 0, label: "Brute" },
+  treasure: { hp: 1.0, dmg: 1.0, reward: 1.0, packBonus: 0, label: "Treasure" },
+  cursed:   { hp: 1.0, dmg: 1.0, reward: 1.0, packBonus: 0, label: "Cursed" },
 };
 
 
@@ -187,46 +185,46 @@ const SLOTS = [
 // 30 afixos fixos (5 por slot). Ativados pela raridade (DESIGN §27): common=1 … legendary=5.
 const AFFIXES = {
   Weapon: [
-    { stat: "critRate", base: 0.05, perLevel: 0.0003 },
-    { stat: "critDmg",  base: 0.30, perLevel: 0.004  },
-    { stat: "dmgMult",  base: 0.15, perLevel: 0.003  },
-    { stat: "critDmg",  base: 0.60, perLevel: 0.006  },
-    { stat: "dmgMult",  base: 0.40, perLevel: 0.005  }, // §28 #5 (proxy de AoE Damage)
+    { stat: "critRate", base: 0, perLevel: 0 },
+    { stat: "critDmg",  base: 0, perLevel: 0 },
+    { stat: "dmgMult",  base: 0, perLevel: 0 },
+    { stat: "critDmg",  base: 0, perLevel: 0 },
+    { stat: "dmgMult",  base: 0, perLevel: 0 },
   ],
   Armor: [
-    { stat: "hpMult",   base: 0.20, perLevel: 0.004  },
-    { stat: "critRate", base: 0.05, perLevel: 0.0003 },
-    { stat: "hpMult",   base: 0.35, perLevel: 0.006  },
-    { stat: "dmgMult",  base: 0.20, perLevel: 0.003  },
-    { stat: "hpMult",   base: 0.45, perLevel: 0.007  }, // §28 #5 (proxy de Damage Reduction)
+    { stat: "hpMult",   base: 0, perLevel: 0 },
+    { stat: "critRate", base: 0, perLevel: 0 },
+    { stat: "hpMult",   base: 0, perLevel: 0 },
+    { stat: "dmgMult",  base: 0, perLevel: 0 },
+    { stat: "hpMult",   base: 0, perLevel: 0 },
   ],
   Amulet: [
-    { stat: "goldMult", base: 0.25, perLevel: 0.005  },
-    { stat: "xpMult",   base: 0.25, perLevel: 0.005  },
-    { stat: "goldMult", base: 0.50, perLevel: 0.007  },
-    { stat: "xpMult",   base: 0.50, perLevel: 0.008  },
-    { stat: "goldMult", base: 0.70, perLevel: 0.009  }, // §28 #5 Lumens Multiplier
+    { stat: "goldMult", base: 0, perLevel: 0 },
+    { stat: "xpMult",   base: 0, perLevel: 0 },
+    { stat: "goldMult", base: 0, perLevel: 0 },
+    { stat: "xpMult",   base: 0, perLevel: 0 },
+    { stat: "goldMult", base: 0, perLevel: 0 },
   ],
   Ring: [
-    { stat: "shardMult", base: 0.20, perLevel: 0.004 },
-    { stat: "xpMult",    base: 0.20, perLevel: 0.004 },
-    { stat: "shardMult", base: 0.40, perLevel: 0.006 },
-    { stat: "goldMult",  base: 0.30, perLevel: 0.005 },
-    { stat: "dmgMult",   base: 0.35, perLevel: 0.005 }, // §28 #5 (proxy de All Stats Bonus)
+    { stat: "shardMult", base: 0, perLevel: 0 },
+    { stat: "xpMult",    base: 0, perLevel: 0 },
+    { stat: "shardMult", base: 0, perLevel: 0 },
+    { stat: "goldMult",  base: 0, perLevel: 0 },
+    { stat: "dmgMult",   base: 0, perLevel: 0 },
   ],
   Gloves: [
-    { stat: "critDmg",  base: 0.20, perLevel: 0.003  },
-    { stat: "critRate", base: 0.05, perLevel: 0.0003 },
-    { stat: "dmgMult",  base: 0.15, perLevel: 0.003  },
-    { stat: "critDmg",  base: 0.50, perLevel: 0.006  },
-    { stat: "critRate", base: 0.08, perLevel: 0.0004 }, // §28 #5 (proxy de Crit Cascade)
+    { stat: "critDmg",  base: 0, perLevel: 0 },
+    { stat: "critRate", base: 0, perLevel: 0 },
+    { stat: "dmgMult",  base: 0, perLevel: 0 },
+    { stat: "critDmg",  base: 0, perLevel: 0 },
+    { stat: "critRate", base: 0, perLevel: 0 },
   ],
   Helmet: [
-    { stat: "bossDmg", base: 0.15, perLevel: 0.003 },
-    { stat: "hpMult",  base: 0.20, perLevel: 0.004 },
-    { stat: "bossDmg", base: 0.30, perLevel: 0.005 },
-    { stat: "dmgMult", base: 0.20, perLevel: 0.003 },
-    { stat: "bossDmg", base: 0.45, perLevel: 0.006 }, // §28 #5 Boss Damage Multiplier
+    { stat: "bossDmg", base: 0, perLevel: 0 },
+    { stat: "hpMult",  base: 0, perLevel: 0 },
+    { stat: "bossDmg", base: 0, perLevel: 0 },
+    { stat: "dmgMult", base: 0, perLevel: 0 },
+    { stat: "bossDmg", base: 0, perLevel: 0 },
   ],
 };
 
@@ -289,18 +287,12 @@ function materialDef(id) { return MATERIALS_BY_ID[id] || null; }
 // Custo polynomial: baseCost × (level+1)^exponent
 // Amplificados por Artifacts (multiplicador externo).
 const GOLD_STATS = [
-  { id: "str", name: "Strength",  icon: "⚔️",  stat: "damage",   baseCost: 8,   exponent: 1.6,
-    desc: "+3 base damage per level",      perLevel: 3 },
-  { id: "vit", name: "Vitality",  icon: "❤️",  stat: "health",   baseCost: 10,  exponent: 1.6,
-    desc: "+15 max health per level",      perLevel: 15 },
-  { id: "agi", name: "Agility",   icon: "⚡",  stat: "atkSpeed", baseCost: 12,  exponent: 1.7,
-    desc: "+0.05 attack speed per level",  perLevel: 0.05 },
-  { id: "lck", name: "Luck",      icon: "🍀",  stat: "critRate", baseCost: 15,  exponent: 1.8,
-    desc: "+0.8% crit rate per level",     perLevel: 0.008 },
-  { id: "frt", name: "Fortune",   icon: "🪙",  stat: "goldMult", baseCost: 20,  exponent: 1.9,
-    desc: "+6% gold bonus per level",      perLevel: 0.06 },
-  { id: "wis", name: "Wisdom",    icon: "📖",  stat: "xpMult",   baseCost: 20,  exponent: 1.9,
-    desc: "+6% XP bonus per level",        perLevel: 0.06 },
+  { id: "str", name: "Strength",  icon: "⚔️",  stat: "damage",   baseCost: 1, exponent: 1.0, desc: "a definir", perLevel: 0 },
+  { id: "vit", name: "Vitality",  icon: "❤️",  stat: "health",   baseCost: 1, exponent: 1.0, desc: "a definir", perLevel: 0 },
+  { id: "agi", name: "Agility",   icon: "⚡",  stat: "atkSpeed", baseCost: 1, exponent: 1.0, desc: "a definir", perLevel: 0 },
+  { id: "lck", name: "Luck",      icon: "🍀",  stat: "critRate", baseCost: 1, exponent: 1.0, desc: "a definir", perLevel: 0 },
+  { id: "frt", name: "Fortune",   icon: "🪙",  stat: "goldMult", baseCost: 1, exponent: 1.0, desc: "a definir", perLevel: 0 },
+  { id: "wis", name: "Wisdom",    icon: "📖",  stat: "xpMult",   baseCost: 1, exponent: 1.0, desc: "a definir", perLevel: 0 },
 ];
 
 
@@ -314,14 +306,14 @@ const GOLD_STATS = [
 const PASSIVES = [
   // ── Árvore ÉCLAT (dano, crítico, execução) ──────────────────────────
   { id: "radiantStrike",    tree: "eclat",   name: "Radiant Strike",     icon: "⚔️",
-    effect: "dmgMult",            perLevel: 0.10,  maxLevel: 10, costBase: 30,   costGrowth: 1.7,
-    mapReq: 1, killsReq: 0,      desc: "+10% base damage per level" },
+    effect: "dmgMult",            perLevel: 0,     maxLevel: 10, costBase: 30,   costGrowth: 1.7,
+    mapReq: 1, killsReq: 0,      desc: "a definir" },
   { id: "shardBurst",       tree: "eclat",   name: "Shard Burst",        icon: "💥",
-    effect: "stub",               perLevel: 0.05,  maxLevel: 5,  costBase: 60,   costGrowth: 1.8,
-    mapReq: 1, killsReq: 50,     desc: "+5% AoE damage per level" },
+    effect: "stub",               perLevel: 0,     maxLevel: 5,  costBase: 60,   costGrowth: 1.8,
+    mapReq: 1, killsReq: 50,     desc: "a definir" },
   { id: "luminalEdge",      tree: "eclat",   name: "Luminal Edge",       icon: "✨",
-    effect: "critRate",           perLevel: 0.04,  maxLevel: 10, costBase: 90,   costGrowth: 1.7,
-    mapReq: 1, killsReq: 100,    desc: "+4% Crit Rate per level" },
+    effect: "critRate",           perLevel: 0,     maxLevel: 10, costBase: 90,   costGrowth: 1.7,
+    mapReq: 1, killsReq: 100,    desc: "a definir" },
   { id: "resonantForce",    tree: "eclat",   name: "Resonant Force",     icon: "🔥",
     effect: "stub",               perLevel: 0.10,  maxLevel: 5,  costBase: 150,  costGrowth: 1.9,
     mapReq: 2, killsReq: 200,    desc: "+10% temporary damage per kill per level" },
@@ -347,10 +339,10 @@ const PASSIVES = [
     effect: "stub",               perLevel: 0.10,  maxLevel: 5,  costBase: 1000, costGrowth: 2.3,
     mapReq: 4, killsReq: 20000,  desc: "+10% AoE damage on crit kill per level" },
   { id: "orEinSofTouch",    tree: "eclat",   name: "Or Ein Sof Touch",   icon: "🌠",
-    effect: "critOverflowFactor", perLevel: 0.15,  maxLevel: 5,  costBase: 1200, costGrowth: 2.3,
+    effect: "critOverflowFactor", perLevel: 0,  maxLevel: 5,  costBase: 1200, costGrowth: 2.3,
     mapReq: 4, killsReq: 20000,  desc: "+15% Crit Overflow conversion factor per level" },
   { id: "shatteredLight",   tree: "eclat",   name: "Shattered Light",    icon: "💫",
-    effect: "shatteredLight",     perLevel: 0.20,  maxLevel: 5,  costBase: 1500, costGrowth: 2.4,
+    effect: "shatteredLight",     perLevel: 0,  maxLevel: 5,  costBase: 1500, costGrowth: 2.4,
     mapReq: 4, killsReq: 50000,  desc: "+0.20 Crit Damage per full 100% crit overflow per level" },
   { id: "fractureWeakness", tree: "eclat",   name: "Fracture Weakness",  icon: "🔷",
     effect: "stub",               perLevel: 0.10,  maxLevel: 5,  costBase: 2000, costGrowth: 2.4,
@@ -361,22 +353,22 @@ const PASSIVES = [
 
   // ── Árvore VESTIGE (recursos, drops, progressão) ─────────────────────
   { id: "lumenBlessing",    tree: "vestige", name: "Lumen Blessing",     icon: "✨",
-    effect: "lumensMult",         perLevel: 0.12,  maxLevel: 10, costBase: 30,   costGrowth: 1.7,
+    effect: "lumensMult",         perLevel: 0,  maxLevel: 10, costBase: 30,   costGrowth: 1.7,
     mapReq: 1, killsReq: 0,      desc: "+12% Lumens per kill per level" },
   { id: "wisdomRuins",      tree: "vestige", name: "Wisdom of Ruins",    icon: "📖",
-    effect: "xpMult",             perLevel: 0.10,  maxLevel: 10, costBase: 50,   costGrowth: 1.7,
+    effect: "xpMult",             perLevel: 0,  maxLevel: 10, costBase: 50,   costGrowth: 1.7,
     mapReq: 1, killsReq: 50,     desc: "+10% XP per kill per level" },
   { id: "remnantHarvest",   tree: "vestige", name: "Remnant Harvest",    icon: "🌿",
     effect: "stub",               perLevel: 0.10,  maxLevel: 5,  costBase: 80,   costGrowth: 1.8,
     mapReq: 1, killsReq: 100,    desc: "+10% material drop chance per level" },
   { id: "vestigePull",      tree: "vestige", name: "Vestige Pull",       icon: "💜",
-    effect: "vestigeMult",        perLevel: 0.12,  maxLevel: 10, costBase: 100,  costGrowth: 1.8,
+    effect: "vestigeMult",        perLevel: 0,  maxLevel: 10, costBase: 100,  costGrowth: 1.8,
     mapReq: 1, killsReq: 150,    desc: "+12% Vestiges per kill per level" },
   { id: "scavenger",        tree: "vestige", name: "Scavenger",          icon: "🔍",
     effect: "stub",               perLevel: 0.15,  maxLevel: 5,  costBase: 180,  costGrowth: 1.9,
     mapReq: 2, killsReq: 300,    desc: "+15% boss drop rate per level" },
   { id: "dreamwalker",      tree: "vestige", name: "Dreamwalker",        icon: "🌙",
-    effect: "offlineEff",         perLevel: 0.06,  maxLevel: 10, costBase: 200,  costGrowth: 1.9,
+    effect: "offlineEff",         perLevel: 0,  maxLevel: 10, costBase: 200,  costGrowth: 1.9,
     mapReq: 2, killsReq: 500,    desc: "+6% offline efficiency per level" },
   { id: "beastCaller",      tree: "vestige", name: "Beast Caller",       icon: "🐾",
     effect: "stub",               perLevel: 0.10,  maxLevel: 5,  costBase: 300,  costGrowth: 2.0,
@@ -408,13 +400,13 @@ const PASSIVES = [
 
   // ── Árvore FRACTURE (debuffs inimigos, sobrevivência) ─────────────────
   { id: "weakenedVoid",     tree: "fracture", name: "Weakened Void",      icon: "🌪️",
-    effect: "enemyHpReduct",      perLevel: 0.06,  maxLevel: 10, costBase: 30,   costGrowth: 1.7,
+    effect: "enemyHpReduct",      perLevel: 0,  maxLevel: 10, costBase: 30,   costGrowth: 1.7,
     mapReq: 1, killsReq: 0,      desc: "-6% enemy HP per level" },
   { id: "fractureSense",    tree: "fracture", name: "Fracture Sense",     icon: "👁️",
     effect: "stub",               perLevel: 0.05,  maxLevel: 5,  costBase: 60,   costGrowth: 1.8,
     mapReq: 1, killsReq: 50,     desc: "+5% chance to reveal hidden enemy weaknesses per level" },
   { id: "voidAwareness",    tree: "fracture", name: "Void Awareness",     icon: "🌐",
-    effect: "rewardMult",         perLevel: 0.08,  maxLevel: 10, costBase: 80,   costGrowth: 1.8,
+    effect: "rewardMult",         perLevel: 0,  maxLevel: 10, costBase: 80,   costGrowth: 1.8,
     mapReq: 1, killsReq: 100,    desc: "+8% all rewards per level" },
   { id: "slowFracture",     tree: "fracture", name: "Slow Fracture",      icon: "❄️",
     effect: "stub",               perLevel: 0.05,  maxLevel: 5,  costBase: 120,  costGrowth: 1.9,
@@ -423,7 +415,7 @@ const PASSIVES = [
     effect: "stub",               perLevel: 0.05,  maxLevel: 5,  costBase: 180,  costGrowth: 1.9,
     mapReq: 2, killsReq: 300,    desc: "+5% Convergence XP per level" },
   { id: "nihelShadow",      tree: "fracture", name: "Nihel's Shadow",     icon: "🌒",
-    effect: "enemyDmgReduct",     perLevel: 0.06,  maxLevel: 10, costBase: 400,  costGrowth: 2.1,
+    effect: "enemyDmgReduct",     perLevel: 0,  maxLevel: 10, costBase: 400,  costGrowth: 2.1,
     mapReq: 3, killsReq: 2000,   desc: "-6% enemy damage per level" },
   { id: "timeFracture",     tree: "fracture", name: "Time Fracture",      icon: "⏳",
     effect: "stub",               perLevel: 0.10,  maxLevel: 5,  costBase: 500,  costGrowth: 2.1,
@@ -432,7 +424,7 @@ const PASSIVES = [
     effect: "stub",               perLevel: 0.05,  maxLevel: 5,  costBase: 600,  costGrowth: 2.2,
     mapReq: 3, killsReq: 5000,   desc: "+5% bleed damage over time per level" },
   { id: "lastLight",        tree: "fracture", name: "Last Light",         icon: "🕯️",
-    effect: "lastLightDmg",       perLevel: 0.20,  maxLevel: 5,  costBase: 750,  costGrowth: 2.2,
+    effect: "lastLightDmg",       perLevel: 0,  maxLevel: 5,  costBase: 750,  costGrowth: 2.2,
     mapReq: 3, killsReq: 10000,  desc: "+20% damage when below 30% HP per level" },
   { id: "voidPulse",        tree: "fracture", name: "Void Pulse",         icon: "💫",
     effect: "stub",               perLevel: 0.05,  maxLevel: 5,  costBase: 900,  costGrowth: 2.3,
@@ -447,7 +439,7 @@ const PASSIVES = [
     effect: "stub",               perLevel: 0.05,  maxLevel: 5,  costBase: 2000, costGrowth: 2.4,
     mapReq: 5, killsReq: 50000,  desc: "+5% damage per minute spent in area per level" },
   { id: "voidEndurance",    tree: "fracture", name: "Void Endurance",     icon: "🛡️",
-    effect: "voidEndurance",      perLevel: 0.005, maxLevel: 10, costBase: 2500, costGrowth: 2.5,
+    effect: "voidEndurance",      perLevel: 0, maxLevel: 10, costBase: 2500, costGrowth: 2.5,
     mapReq: 5, killsReq: 100000, desc: "+0.5% defense and HP per boss defeated this map per level" },
 ];
 
@@ -545,144 +537,116 @@ const ESSENCE = {
 // ═══════════════════════════════════════════════════════════════════════
 // CONFIG — painel de balanceamento central
 // ═══════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════════
+// CONFIG — tábula rasa: todos os valores zerados/neutros.
+// Cada sistema será projetado do zero, um por vez.
+// ═══════════════════════════════════════════════════════════════════════
 const CONFIG = {
   player: {
-    baseDamage: 10, baseHp: 100,
-    damagePerLevel: 2.0, hpPerLevel: 12,
+    baseDamage: 1, baseHp: 1,
+    damagePerLevel: 0, hpPerLevel: 0,
     baseAttackSpeed: 1.0,
   },
   combat: {
-    baseCritMult: 2.5,
-    critOverflowToDmg: 0.8,
-    attackSpeedCap:    12,
+    baseCritMult: 1.0,
+    critOverflowToDmg: 0,
+    attackSpeedCap:    1,
     attackSpeedFactor: 1.0,
-    regenPerLevel: 0.15,
-    radiantCritThreshold: 4.0,
-    enemyCritChanceMin: 0.02,
-    enemyCritChanceMax: 0.05,
-    enemyCritMult: 2.0,
-    bossCritChanceMin: 0.08,
-    bossCritChanceMax: 0.15,
-    bossCritMult: 2.5,
+    regenPerLevel: 0,
+    radiantCritThreshold: 999,
+    enemyCritChanceMin: 0,
+    enemyCritChanceMax: 0,
+    enemyCritMult: 1.0,
+    bossCritChanceMin: 0,
+    bossCritChanceMax: 0,
+    bossCritMult: 1.0,
   },
-
-  // ── Convergence (rebirth frequente) ───────────────────────────────────
-  //   conv 1..earlyCount   → ×earlyMult cada (multiplicativo, "feels good" no começo)
-  //   conv >earlyCount     → ×(1 + lateCoef·√(n − earlyCount))  (saturação √)
-  // Ex.: n=12 → ×5.4 · n=100 → ×38 · n=1000 → ×108 · n=10000 → ×329
   convergence: {
-    earlyMult:  1.25,
-    earlyCount: 12,
-    lateCoef:   0.7,
-    minLevel:   5,
+    earlyMult:  1.0,
+    earlyCount: 1,
+    lateCoef:   0,
+    minLevel:   2,
     maxMult:    1e9,
   },
-
-  // ── Map / Subárea progression ────────────────────────────────────────
   map: {
-    baseHp:         10,
+    baseHp:         1,
     subareaRamp:    251,
     subareasPerMap: 5,
-    killsToBoss:    25,
-    materialDropChance: 0.25,
+    killsToBoss:    1,
+    materialDropChance: 1.0,
   },
-
-  // ── Escala de recompensa do inimigo ───────────────────────────────────
   enemy: {
-    dmgRatio:   0.10,
-    goldRatio:  0.20,
-    xpRatio:    0.15,
-    damageFactor: 0.25,
-    ascGrowth: 1.04,
-    cursedAtkSpeedReduction: 0.15,
+    dmgRatio:   0,
+    goldRatio:  0,
+    xpRatio:    0,
+    damageFactor: 0,
+    ascGrowth: 1.0,
+    cursedAtkSpeedReduction: 0,
   },
-
-  // Chefe = muro real, mas recompensador.
   boss: {
-    hpMult: 15,
-    goldMult: 15,
-    xpMult: 10,
-    shardMult: 8,
+    hpMult: 1,
+    goldMult: 1,
+    xpMult: 1,
+    shardMult: 1,
   },
-
-  // ── Elites e Champions ─────────────────────────────────────────────────
   elite: {
     eliteMinSubarea:    1,
     championMinSubarea: 3,
-    eliteChance:     0.18,
-    championChance:  0.05,
+    eliteChance:     0,
+    championChance:  0,
     tiers: {
       normal:   { hp: 1.0, dmg: 1.0, reward: 1.0 },
-      elite:    { hp: 2.0, dmg: 1.6, reward: 3.0 },
-      champion: { hp: 4.0, dmg: 2.8, reward: 7.0 },
+      elite:    { hp: 1.0, dmg: 1.0, reward: 1.0 },
+      champion: { hp: 1.0, dmg: 1.0, reward: 1.0 },
     },
   },
-
-  // ── Pack size ──────────────────────────────────────────────────────────
   pack: {
-    baseBySubarea: [1, 2, 2, 3, 4],
-    maxBySubarea:  [3, 4, 5, 7, 10],
+    baseBySubarea: [1, 1, 1, 1, 1],
+    maxBySubarea:  [1, 1, 1, 1, 1],
   },
-
-  // ── Equipment ──────────────────────────────────────────────────────────
   gear: {
     powerPerLevel: 1,
-    levelCostBase: 3, levelCostGrowth: 1.12,
-    rarityMaterialQty: [15, 25, 40, 55],
-    rarityLevelReq: [20, 60, 120, 250],
-    affixScale: 0.75,
+    levelCostBase: 1, levelCostGrowth: 1.0,
+    rarityMaterialQty: [1, 1, 1, 1],
+    rarityLevelReq: [2, 2, 2, 2],
+    affixScale: 0,
   },
-
-  // ── Vestiges (drop por kill) ───────────────────────────────────────────
   shards: {
-    basePerKill: 2,
-    perMap: 3,
-    perSubarea: 1,
+    basePerKill: 0,
+    perMap: 0,
+    perSubarea: 0,
   },
-
-  // ── Item stat conversions ──────────────────────────────────────────────
   itemStats: {
-    healthPerPower:      5,
-    attackSpeedPerPower:  0.02,
-    goldFindPerPower:    0.03,
-    shardFindPerPower:   0.02,
-    critDmgPerPower:     0.006,
-    bossDmgPerPower:     0.012,
+    healthPerPower:      0,
+    attackSpeedPerPower:  0,
+    goldFindPerPower:    0,
+    shardFindPerPower:   0,
+    critDmgPerPower:     0,
+    bossDmgPerPower:     0,
   },
-
-  // ── XP / Hero level ────────────────────────────────────────────────────
-  xp: { base: 30, growth: 1.10 },
-
-  // ── Ascensão (até 1000) ────────────────────────────────────────────────
-  // ascMult = Π (multBase + multSlope·i) — cresce a cada ascensão.
+  xp: { base: 1, growth: 1.0 },
   ascension: {
-    perLevelGrowth: 1.04,
-    multBase:   1.8,
-    multSlope:  0.001,
-    convPerAsc: 6,
-    vestBase:   80,
-    vestGrowth: 1.12,
+    perLevelGrowth: 1.0,
+    multBase:   1.0,
+    multSlope:  0,
+    convPerAsc: 1,
+    vestBase:   1,
+    vestGrowth: 1.0,
     maxAscensions: 1000,
   },
-
-  // ── Offline (melhora automaticamente com ascensões) ────────────────────
   offline: {
-    startEfficiency: 0.30, efficiencyMax: 0.65,
-    startCapHours: 3,      capMaxHours: 48,
-    ascPerStep: 8,         effPerStep: 0.015,
-    capHoursPerStep: 0.5,
+    startEfficiency: 0, efficiencyMax: 0,
+    startCapHours: 0,   capMaxHours: 0,
+    ascPerStep: 1,      effPerStep: 0,
+    capHoursPerStep: 0,
   },
-
-  // ── Map Mastery (permanente entre ascensões) ───────────────────────────
   mastery: {
-    killsBase: 150,
-    killsPerMap: 40,
-    bonusPerMap: 0.03,
+    killsBase: 1,
+    killsPerMap: 0,
+    bonusPerMap: 0,
   },
-
-  // ── Synergy (soma de equip levels) ─────────────────────────────────────
   synergy: {
-    bonusPerLevel: 0.002,
+    bonusPerLevel: 0,
   },
 };
 
