@@ -307,12 +307,12 @@ test("offlineConfig cresce automaticamente com ascensões", () => {
   assert(c1.capHours > c0.capHours, "cap de horas sobe com ascensões");
 });
 
-test("offlineConfig respeita teto de 50% e 24h", () => {
+test("offlineConfig respeita teto de efficiencyMax e capMaxHours", () => {
   const s = game.defaultState();
   s.ascensions = 10000;
   const c = game.offlineConfig(s);
-  assert(c.efficiency <= 0.50, "eficiência não passa de 50%");
-  assert(c.capHours <= 24, "cap não passa de 24h");
+  assert(c.efficiency <= CONFIG.offline.efficiencyMax, "eficiência não passa do teto");
+  assert(c.capHours <= CONFIG.offline.capMaxHours, "cap de horas não passa do teto");
 });
 
 test("ganhos offline > 0", () => {
@@ -376,10 +376,10 @@ console.log("== Fase 1 — Combate Core ==");
 test("critMult inclui overflow: crit rate > 100% converte para crit damage", () => {
   const s = game.defaultState();
   const baseMult = game.critMult(s);
-  // lck=220 → 220 × 0.005 = 1.1 crit rate → overflow = 0.1
-  s.goldStats.lck = 220;
+  // lck=130 → 130 × 0.008 = 1.04 crit rate → overflow = 0.04
+  s.goldStats.lck = 130;
   const overflow = game.critOverflow(s);
-  assert(overflow > 0, "deve haver overflow com lck 220 (1.1 crit rate > 1.0)");
+  assert(overflow > 0, "deve haver overflow com lck 130 (1.04 crit rate > 1.0)");
   assert(game.critMult(s) > baseMult, "overflow deve aumentar critMult");
   // overflow × critOverflowToDmg deve ser exatamente o bônus adicionado
   const expected = baseMult + overflow * CONFIG.combat.critOverflowToDmg;
@@ -436,11 +436,11 @@ test("attackSpeed usa fórmula √ — retornos decrescentes por investimento ig
   assert(gain_200to400 < gain_1to200, "investimento igual → ganho decrescente (√ é côncava)");
 });
 
-test("attackSpeed nunca passa do cap de 20", () => {
+test("attackSpeed nunca passa do cap configurado", () => {
   const s = game.defaultState();
   s.goldStats.agi = 10000; // valor absurdo
   s.equipped.Amulet.level = 10000;
-  assert(game.attackSpeed(s) <= 20, "cap de 20 ataques/s respeitado");
+  assert(game.attackSpeed(s) <= CONFIG.combat.attackSpeedCap, "cap de ataques/s respeitado");
 });
 
 test("inimigos têm critChance após spawn", () => {
@@ -500,7 +500,8 @@ test("passiveTotals: Radiant Strike aumenta dmgMult", () => {
   assertEqual(pt0.dmgMult, 0, "sem passivas: dmgMult = 0");
   s.passives.radiantStrike = 3;
   const pt3 = game.passiveTotals(s);
-  assert(Math.abs(pt3.dmgMult - 3 * 0.08) < 0.001, "Radiant Strike lv3 = +0.24 dmgMult");
+  const def = PASSIVES.find(p => p.id === "radiantStrike");
+  assert(Math.abs(pt3.dmgMult - 3 * def.perLevel) < 0.001, `Radiant Strike lv3 = +${(3 * def.perLevel).toFixed(2)} dmgMult`);
 });
 
 test("Radiant Strike aumenta playerDamage", () => {
