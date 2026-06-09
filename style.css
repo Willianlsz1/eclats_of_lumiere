@@ -1,0 +1,71 @@
+/* CSS provisório — apenas funcional. Skin final (mockup branco/azul) é CP-G. */
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: system-ui, sans-serif;
+  background: #14181f;
+  color: #e8ecf2;
+  min-height: 100vh;
+}
+
+#topbar {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 10px 16px;
+  background: #1c222c;
+  border-bottom: 1px solid #333c4a;
+}
+#topbar .nav { margin-left: auto; display: flex; gap: 8px; }
+#topbar button { padding: 6px 12px; cursor: pointer; }
+
+#layout {
+  display: flex;
+  gap: 16px;
+  padding: 16px;
+  align-items: flex-start;
+}
+
+#player-card {
+  width: 280px;
+  flex-shrink: 0;
+  padding: 14px;
+  background: #1c222c;
+  border: 1px solid #333c4a;
+  border-radius: 8px;
+  display: grid;
+  gap: 8px;
+}
+
+#enemy-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 12px;
+}
+
+.enemy-card {
+  padding: 12px;
+  background: #1c222c;
+  border: 1px solid #333c4a;
+  border-radius: 8px;
+  display: grid;
+  gap: 6px;
+  font-size: 14px;
+}
+
+.bar {
+  height: 14px;
+  background: #2a3240;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.bar-fill {
+  height: 100%;
+  width: 100%;
+  background: #c0455a;
+  transition: width 0.1s linear;
+}
+
+.status-dead { color: #e8616c; font-weight: 600; }
