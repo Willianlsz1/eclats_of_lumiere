@@ -279,9 +279,11 @@ function registerKill(s, e) {
 function handleDeath(s) {
   const diedOnSubarea = s.subarea;
   s.killsInSub = 0;
+  // Recua uma subárea (conteúdo sobrevivível) para regrindar/convergir e voltar.
+  if (s.subarea > 0) s.subarea--;
   s.enemies = [];
   s.playerHp = playerMaxHp(s);
-  return { type: "death", diedOnSubarea, map: s.map, subarea: s.subarea };
+  return { type: "death", diedOnSubarea, retreatedTo: s.subarea, map: s.map };
 }
 
 // Processa dt segundos de combate. Retorna lista de eventos para a UI.

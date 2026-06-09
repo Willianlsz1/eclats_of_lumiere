@@ -210,7 +210,7 @@ test("morte zera killsInSub sem punição de recursos", () => {
   assertEqual(s.lumens, 100, "não perde lumens");
   assertEqual(s.vestiges, 50, "não perde vestiges");
   assertEqual(s.killsInSub, 0, "zera o progresso da subárea");
-  assertEqual(s.subarea, 2, "permanece na subárea atual");
+  assertEqual(s.subarea, 1, "recua uma subárea ao morrer");
 });
 
 test("packSize cresce com a subárea (boss vem sozinho)", () => {

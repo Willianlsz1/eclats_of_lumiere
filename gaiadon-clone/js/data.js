@@ -584,7 +584,7 @@ const CONFIG = {
     earlyMult:  1.15,
     earlyCount: 8,
     lateCoef:   0.5,
-    minLevel:   10,    // piso de nível para converger (evita spam grátis no piso)
+    minLevel:   5,     // piso de nível para converger (baixo: loop frequente cedo)
     maxMult:    1e9,   // teto de segurança
   },
 
