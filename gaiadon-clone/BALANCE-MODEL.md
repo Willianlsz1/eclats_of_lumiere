@@ -183,15 +183,62 @@ dano_por_hit = baseDmg
 | Lv 50, str milestone 25 | 68 | 40.9 | 1.7s 🔥 Sub 1 trivial |
 | Lv 150, str milestone 25 | 3.410 | 40.9 | 83s ❌ → requer convergence |
 
-## 7. A Definir (próximos passos em ordem)
+## 7. HP do Player e Sobrevivência
 
-- [ ] **Damage scaling** — como `dano_por_hit` começa e cresce (gold stats, gear, level)
-- [ ] **HP do player** — base + crescimento por vitalidade
-- [ ] **Dano recebido** — fórmula de dano dos mobs vs defesa do player
-- [ ] **Lumens por kill** — fórmula de reward (goldRatio × hp ou outra)
+```
+playerBaseHp = 50     // HP sem upgrades (hero level 1, vit = 0)
+dmgRatio     = 0.10   // mob inflige 10% do seu HP por segundo
+regenRate    = 0.01   // regen passivo = 1% do HP máximo por segundo
+```
+
+### Fórmula de dano recebido
+```
+incoming_dps = mob_hp × dmgRatio × N_mobs_ativos
+```
+
+### Fórmula de HP máximo
+```
+hp_max = playerBaseHp × vit_total × level_bonus
+```
+
+### Sistema de milestones (Gold Stat vit) — mesmo padrão do str
+- Entre milestones: +6% HP por nível
+- Milestone 10: **×2.0**
+- Milestone 25: **×2.5**
+- Milestone 50: **×3.0**
+- Milestone 100: **×4.0**
+
+### Simulação de sobrevivência (sem regen)
+| Situação | HP mob | Mobs | DPS recebido | Sobrevive |
+|----------|--------|------|-------------|-----------|
+| Sub 1, Lv 1, 1 mob | 10 | 1 | 1.0 | ~50s ✅ tutorial |
+| Sub 1, Lv 50, 1 mob | 68 | 1 | 6.8 | 7.4s ⚠️ precisa DPS alto |
+| Sub 2, Lv 75, 2 mobs | 107 | 2 | 21.4 | **2.3s** ❌ morre sem vit |
+| Sub 3, Lv 125, 4 mobs | 267 | 4 | 106.8 | **0.5s** ❌ quase instantâneo |
+| Sub 5, Lv 225, 8 mobs | 666 | 8 | 533 | **0.09s** 💀 |
+
+### HP Regen — três camadas de sobrevivência
+
+| Camada | Fonte | Reseta? | Papel |
+|--------|-------|---------|-------|
+| **HP máximo** | Base + vit + hero level | vit reseta | Buffer contra burst |
+| **Regen passivo** | 1% HP máximo/seg | Deriva do HP | Sustain entre packs |
+| **Regen por kill** | Afixo Armor (gear) | ❌ persistente | Recompensa DPS alto |
+
+- Regen passivo **não salva** sem vit (diferença de ~0.1s), mas **amplifica** vit
+- Dilema de investimento intencional: Lumens em str vs vit → decisão real
+
+## 8. A Definir (próximos passos em ordem)
+
+- [ ] **Lumens por kill** — fórmula de reward (loop econômico)
 - [ ] **Vestiges por kill** — drop da moeda de prestige
 - [ ] **XP e leveling** — curva de level do hero
-- [ ] **Gold Stats** — custo e bônus por stat (str, vit, agi, lck, frt, wis)
+- [ ] **Gold Stats custo** — fórmula de custo por nível (str, vit, agi, lck, frt, wis)
+- [ ] **Convergence** — fórmula do multiplicador, requisito de ativação
+- [ ] **Ascension** — custo em Vestiges, power-up resultante
+- [ ] **Gear** — como weapon/armor affixes escalam com rarity e level
+- [ ] `bossHpMult` — multiplicador de HP do boss vs regular
+- [ ] `level_bonus` — contribuição do hero level para dano e HP
 - [ ] **Convergence** — fórmula do multiplicador, requisito de ativação
 - [ ] **Ascension** — custo em Vestiges, power-up resultante
 - [ ] `baseHp` absoluto — calibrar com loop completo rodando
