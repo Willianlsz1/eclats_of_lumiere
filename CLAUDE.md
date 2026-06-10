@@ -5,8 +5,9 @@ Idle RPG para browser. JavaScript puro (ES6 modules) + HTML + CSS, build com Vit
 
 ## Fontes da verdade (leia antes de implementar qualquer sistema)
 - docs/eclats_gdd_final_v2.md — TODOS os sistemas, fórmulas e constantes de balanceamento. Nunca invente valores: se um número não está no GDD, pergunte.
-- docs/eclats_lore_revisao_consolidada.md — nomes e nomenclatura canônica (idiomas: hebraico = primordial, francês = mundo, inglês = criaturas).
-- docs/eclats_art_direction.md — direção visual; a UI segue o mockup docs/eclats_ui_mockup_v2_branco_azul.html (chrome branco/azul, 1920×1080 desktop como referência).
+- docs/eclats_lore_bible.md — TODA a narrativa, nomes e nomenclatura canônica (idiomas: hebraico = primordial, francês = mundo, inglês = criaturas).
+- docs/eclats_art_direction.md — direção visual (v3); a UI segue o mockup docs/eclats_ui_mockup_v2_branco_azul.html (chrome branco/azul, 1920×1080 desktop como referência). Convenções de arquivos de arte: assets/README.md.
+- docs/eclats_expansion_ideas.md — ideias debatidas e seus status; NADA dali entra em produção sem antes virar decisão aprovada no GDD.
 
 ## Regras de números
 - Number nativo do JS; teto do jogo base é 1e100 (cabe no float, sem bibliotecas).
