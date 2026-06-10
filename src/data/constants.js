@@ -39,6 +39,25 @@ export const MAP_1 = {
 // Trio canônico de criaturas do Map 1 (The Fragmented) — art direction §3
 export const MAP_1_ENEMY_NAMES = ['Candlewisp Shade', 'Mothlight Herald', 'Dreamhorn Warden'];
 
+// §5 — Gold Stats (resetam na Convergence — CP-E)
+// custo(n) = costBase × costRamp^n · stat_total = (1 + nível × per) × milestones
+export const GOLD_STATS = {
+  costBase: 10,
+  costRamp: 1.15,
+  per: { str: 0.08, vit: 0.06, agi: 0.04, lck: 0.015, frt: 0.05, wis: 0.05 },
+  // Milestones geométricos (não se aplicam a agi — cap duro de APS — nem a lck)
+  milestones: [[10, 2], [25, 2.5], [50, 3], [100, 4], [200, 4.5], [400, 5], [800, 5.5], [1600, 6], [3200, 6.5]],
+};
+
+// ⏳ PROVISÓRIO (GDD §16.6 — pendência de calibração, aprovado pelo Willian):
+// crit damage base ×2, transbordo 1:1 (1% de rate acima de 100% → +1% de crit dmg),
+// lck sem milestones. Recalibrar quando o GDD fechar os valores.
+export const CRIT = {
+  baseChance: 0,
+  baseDamageMult: 2,
+  overflowFactor: 1,
+};
+
 // Núcleo / infraestrutura
 export const TICK_SECONDS = 0.1;     // tick fixo de 100ms
 export const MAX_CATCHUP_TICKS = 50; // teto de catch-up por frame (offline real é CP-F)

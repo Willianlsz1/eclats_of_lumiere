@@ -69,3 +69,16 @@ body {
 }
 
 .status-dead { color: #e8616c; font-weight: 600; }
+
+#player-card h3 { margin-top: 6px; font-size: 14px; color: #9fb0c8; }
+
+.stat-row {
+  display: grid;
+  grid-template-columns: 72px 1fr auto auto;
+  gap: 6px;
+  align-items: center;
+  font-size: 13px;
+}
+.stat-row .s-effect { color: #9fb0c8; }
+.stat-row button { padding: 4px 8px; cursor: pointer; font-size: 12px; }
+.stat-row button:disabled { opacity: 0.45; cursor: default; }

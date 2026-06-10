@@ -10,6 +10,9 @@ export function createInitialState() {
     lumens: 0,
     xpTotal: 0, // XP acumulado da vida — alimenta o level de display (§6 do GDD)
 
+    // Gold Stats (§5) — resetam na Convergence (CP-E)
+    stats: { str: 0, vit: 0, agi: 0, lck: 0, frt: 0, wis: 0 },
+
     // Posição no mundo
     map: 1,
     subarea: 1, // 1..5
@@ -40,6 +43,8 @@ export function applySnapshot(snapshot) {
   state.map = snapshot.map ?? 1;
   state.subarea = snapshot.subarea ?? 1;
   state.killsTotal = snapshot.killsTotal ?? 0;
+  // saves antigos (sem stats) entram com tudo zerado
+  Object.assign(state.stats, snapshot.stats ?? {});
 }
 
 // Extrai só o que deve ser persistido (pack e timers são reconstruídos no load)
@@ -51,5 +56,6 @@ export function toSnapshot() {
     map: state.map,
     subarea: state.subarea,
     killsTotal: state.killsTotal,
+    stats: { ...state.stats },
   };
 }

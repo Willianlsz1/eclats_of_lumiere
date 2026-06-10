@@ -8,7 +8,7 @@
 
 import { COMBAT } from '../data/constants.js';
 import { spawnMob, spawnPack, getCurrentMap } from './enemies.js';
-import { damagePerHit, currentAPS, playerHpMax } from './stats.js';
+import { damagePerHit, currentAPS, playerHpMax, critChance, critDamageMult } from './stats.js';
 import { awardKill } from './economy.js';
 
 // Reconstrói o pack da subárea atual (usado no boot, troca de subárea e respawn)
@@ -33,7 +33,7 @@ export function combatTick(state, dt) {
   }
 
   // --- Ataques do jogador (acumulador respeita o intervalo do APS) ---
-  const interval = 1 / currentAPS();
+  const interval = 1 / currentAPS(state);
   player.attackTimer += dt;
   while (player.attackTimer >= interval) {
     player.attackTimer -= interval;
@@ -65,7 +65,9 @@ function playerAttack(state, hpMax) {
     if (m.hp < target.hp) target = m;
   }
 
-  target.hp -= damagePerHit(state);
+  // Crit ⏳ provisório (GDD §16.6): rola por ataque, multiplica o hit
+  const isCrit = Math.random() < critChance(state);
+  target.hp -= damagePerHit(state) * (isCrit ? critDamageMult(state) : 1);
   if (target.hp <= 0) {
     awardKill(state, target);
     // Regen on-kill: 2% do HP máx
