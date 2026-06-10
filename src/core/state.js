@@ -15,7 +15,10 @@ export function createInitialState() {
 
     // Posição no mundo
     map: 1,
-    subarea: 1, // 1..5
+    subarea: 1,         // 1..5
+    unlockedSubarea: 1, // gate: maior subárea acessível (abre ao derrotar o boss)
+    bossDefeated: [false, false, false, false, false], // 1ª derrota por subárea
+    killsInSubarea: 0,  // contador oculto rumo ao threshold do boss
 
     // Jogador (valores derivados ficam em src/game/stats.js)
     player: {
@@ -45,6 +48,11 @@ export function applySnapshot(snapshot) {
   state.killsTotal = snapshot.killsTotal ?? 0;
   // saves antigos (sem stats) entram com tudo zerado
   Object.assign(state.stats, snapshot.stats ?? {});
+  // saves anteriores ao gate: herda a subárea atual como desbloqueada
+  state.unlockedSubarea = snapshot.unlockedSubarea ?? state.subarea;
+  state.bossDefeated = snapshot.bossDefeated ?? state.bossDefeated;
+  state.killsInSubarea = snapshot.killsInSubarea ?? 0;
+  state.subarea = Math.min(state.subarea, state.unlockedSubarea);
 }
 
 // Extrai só o que deve ser persistido (pack e timers são reconstruídos no load)
@@ -57,5 +65,8 @@ export function toSnapshot() {
     subarea: state.subarea,
     killsTotal: state.killsTotal,
     stats: { ...state.stats },
+    unlockedSubarea: state.unlockedSubarea,
+    bossDefeated: [...state.bossDefeated],
+    killsInSubarea: state.killsInSubarea,
   };
 }

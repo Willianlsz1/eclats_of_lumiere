@@ -72,6 +72,9 @@ body {
 
 #player-card h3 { margin-top: 6px; font-size: 14px; color: #9fb0c8; }
 
+.enemy-card.boss { border-color: #e8b54a; box-shadow: 0 0 12px rgba(232, 181, 74, 0.25); }
+.enemy-card.boss .e-name { color: #e8b54a; }
+
 .stat-row {
   display: grid;
   grid-template-columns: 72px 1fr auto auto;

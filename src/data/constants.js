@@ -33,8 +33,13 @@ export const MAP_1 = {
   dmgHi: 1e4,
   subareaCount: 5,
   packSizes: [1, 2, 4, 6, 8], // Sub1..Sub5
-  bossKillThreshold: 100,     // usado no CP-D
+  bossKillThreshold: 100,     // kills (oculto) para o boss entrar no pack
 };
+
+// Boss final do Map 1 (canônico — art direction §3). Bosses das subáreas 1-4
+// não têm nome canônico ainda (aguardando doc de lore) — rótulo provisório.
+export const MAP_1_BOSS_NAME = 'The Gilded Hollow';
+export const BOSS_LUMEN_MULT = 5; // §12: lumens_por_kill de boss ×5
 
 // Trio canônico de criaturas do Map 1 (The Fragmented) — art direction §3
 export const MAP_1_ENEMY_NAMES = ['Candlewisp Shade', 'Mothlight Herald', 'Dreamhorn Warden'];

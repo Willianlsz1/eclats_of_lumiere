@@ -2,7 +2,7 @@
 // Bounds de level por subárea: lvl_lo × r^s, com r = (lvl_hi/lvl_lo)^(1/5).
 // HP e dano interpolados geometricamente no log do level.
 
-import { MAP_1, MAP_1_ENEMY_NAMES } from '../data/constants.js';
+import { MAP_1, MAP_1_ENEMY_NAMES, MAP_1_BOSS_NAME, COMBAT } from '../data/constants.js';
 
 let nextEnemyId = 1;
 
@@ -52,6 +52,22 @@ export function spawnMob(map, subarea) {
     hpMax,
     hp: hpMax,
     dmg: dmgForLevel(map, level), // dano por segundo causado ao jogador
+  };
+}
+
+// Boss da subárea (GDD §3/§4): level máximo da subárea, HP ×15, dano ×3.
+// Sub 5 = boss final do mapa (The Gilded Hollow); subs 1-4 usam rótulo provisório.
+export function spawnBoss(map, subarea) {
+  const level = Math.round(subareaLevelRange(map, subarea).hi);
+  const hpMax = hpForLevel(map, level) * COMBAT.bossHpMult;
+  return {
+    id: nextEnemyId++,
+    name: subarea === map.subareaCount ? MAP_1_BOSS_NAME : `Boss — Subárea ${subarea}`,
+    isBoss: true,
+    level,
+    hpMax,
+    hp: hpMax,
+    dmg: dmgForLevel(map, level) * COMBAT.bossDmgMult,
   };
 }
 

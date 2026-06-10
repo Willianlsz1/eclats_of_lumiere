@@ -5,15 +5,21 @@
 // - Todos os mobs ativos causam dano ao jogador (Σ dano do pack, contínuo/s).
 // - Regen: 1% HP máx/s + 2% HP máx por kill.
 // - Morte: recua uma subárea, respawn com HP cheio em 3s, sem perdas.
+// - Boss (CP-D): após o kill threshold (oculto) entra no pack substituindo
+//   1 mob; derrotá-lo abre o gate da próxima subárea e vira loop recorrente.
 
 import { COMBAT } from '../data/constants.js';
-import { spawnMob, spawnPack, getCurrentMap } from './enemies.js';
+import { spawnMob, spawnPack, spawnBoss, getCurrentMap } from './enemies.js';
 import { damagePerHit, currentAPS, playerHpMax, critChance, critDamageMult } from './stats.js';
 import { awardKill } from './economy.js';
 
 // Reconstrói o pack da subárea atual (usado no boot, troca de subárea e respawn)
 export function resetPack(state) {
   state.enemies = spawnPack(getCurrentMap(), state.subarea);
+}
+
+export function bossActive(state) {
+  return state.enemies.some((m) => m.isBoss);
 }
 
 export function combatTick(state, dt) {
@@ -30,6 +36,12 @@ export function combatTick(state, dt) {
       resetPack(state);
     }
     return;
+  }
+
+  // --- Boss: atingiu o threshold oculto → substitui 1 mob do pack ---
+  const map = getCurrentMap();
+  if (!bossActive(state) && state.killsInSubarea >= map.bossKillThreshold) {
+    state.enemies[0] = spawnBoss(map, state.subarea);
   }
 
   // --- Ataques do jogador (acumulador respeita o intervalo do APS) ---
@@ -52,6 +64,7 @@ export function combatTick(state, dt) {
     player.dead = true;
     player.respawnTimer = COMBAT.deathRespawnSeconds;
     state.subarea = Math.max(1, state.subarea - 1); // recua uma subárea
+    state.killsInSubarea = 0; // boss some; o muro exige farmar de novo
     state.enemies = [];
   }
 }
@@ -72,17 +85,31 @@ function playerAttack(state, hpMax) {
     awardKill(state, target);
     // Regen on-kill: 2% do HP máx
     state.player.hp = Math.min(hpMax, state.player.hp + hpMax * COMBAT.regenOnKill);
-    // Respawn imediato: substitui o mob morto por um novo da subárea atual
+    if (target.isBoss) {
+      onBossKill(state);
+    } else {
+      state.killsInSubarea += 1;
+    }
+    // Respawn imediato: substitui o morto por um mob normal da subárea
     const idx = state.enemies.indexOf(target);
     state.enemies[idx] = spawnMob(getCurrentMap(), state.subarea);
   }
 }
 
-// Navegação provisória entre subáreas (a lógica real de boss/gate é CP-D)
-export function changeSubarea(state, delta) {
+// Derrota do boss: abre o gate da próxima subárea e reinicia o ciclo
+// (loop recorrente de recompensa — o boss volta a cada threshold).
+function onBossKill(state) {
   const map = getCurrentMap();
-  const next = Math.min(map.subareaCount, Math.max(1, state.subarea + delta));
+  state.bossDefeated[state.subarea - 1] = true;
+  state.unlockedSubarea = Math.max(state.unlockedSubarea, Math.min(map.subareaCount, state.subarea + 1));
+  state.killsInSubarea = 0;
+}
+
+// Navegação entre subáreas, respeitando o gate (boss abre a próxima)
+export function changeSubarea(state, delta) {
+  const next = Math.min(state.unlockedSubarea, Math.max(1, state.subarea + delta));
   if (next === state.subarea) return;
   state.subarea = next;
+  state.killsInSubarea = 0; // threshold conta kills na subárea atual
   if (!state.player.dead) resetPack(state);
 }

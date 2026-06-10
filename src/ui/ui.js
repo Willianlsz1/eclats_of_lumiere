@@ -51,7 +51,16 @@ export function renderUI(state) {
   // Topo
   $('top-lumens').textContent = formatNumber(state.lumens);
   $('top-kills').textContent = formatNumber(state.killsTotal);
-  $('top-zone').textContent = `${map.name} · Subárea ${state.subarea}/${map.subareaCount}`;
+  const mapDone = state.bossDefeated.every(Boolean) ? ' · ✓ Mapa completo' : '';
+  $('top-zone').textContent = `${map.name} · Subárea ${state.subarea}/${map.subareaCount}${mapDone}`;
+
+  // Gate: avançar só até a subárea desbloqueada (boss abre a próxima)
+  const next = $('btn-next');
+  next.disabled = state.subarea >= state.unlockedSubarea;
+  next.title = next.disabled && state.subarea < map.subareaCount
+    ? 'Derrote o boss desta subárea para avançar'
+    : '';
+  $('btn-prev').disabled = state.subarea <= 1;
 
   // Card do jogador
   $('p-level').textContent = formatNumber(heroLevel(state.xpTotal));
@@ -112,7 +121,7 @@ function renderEnemies(state) {
 
 function buildEnemyCard(mob) {
   const card = document.createElement('article');
-  card.className = 'enemy-card';
+  card.className = mob.isBoss ? 'enemy-card boss' : 'enemy-card';
   card.dataset.mobId = mob.id;
   card.innerHTML = `
     <h3 class="e-name"></h3>
@@ -120,7 +129,7 @@ function buildEnemyCard(mob) {
     <div class="bar"><div class="bar-fill e-hp-fill"></div></div>
     <span class="e-hp-text"></span>
   `;
-  card.querySelector('.e-name').textContent = mob.name;
-  card.querySelector('.e-level').textContent = `Lv ${formatNumber(mob.level)}`;
+  card.querySelector('.e-name').textContent = mob.isBoss ? `👑 ${mob.name}` : mob.name;
+  card.querySelector('.e-level').textContent = `Lv ${formatNumber(mob.level)}${mob.isBoss ? ' · BOSS' : ''}`;
   return card;
 }
