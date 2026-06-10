@@ -45,9 +45,10 @@ function rollLevel(map, subarea) {
 export function spawnMob(map, subarea) {
   const level = rollLevel(map, subarea);
   const hpMax = hpForLevel(map, level);
+  const id = nextEnemyId++;
   return {
-    id: nextEnemyId++,
-    name: MAP_1_ENEMY_NAMES[nextEnemyId % MAP_1_ENEMY_NAMES.length],
+    id,
+    name: MAP_1_ENEMY_NAMES[id % MAP_1_ENEMY_NAMES.length],
     level,
     hpMax,
     hp: hpMax,

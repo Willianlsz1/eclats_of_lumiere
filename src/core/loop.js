@@ -20,7 +20,7 @@ export function startLoop(tickFn) {
       ticks++;
     }
     // Aba em background por muito tempo: descarta o excedente.
-    // Progresso offline de verdade é o CP-F.
+    // Ausências longas são cobertas pelo progresso offline (§15) no reload.
     if (ticks >= MAX_CATCHUP_TICKS) accumulator = 0;
   }, TICK_SECONDS * 1000);
 }

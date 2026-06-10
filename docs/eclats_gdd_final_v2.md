@@ -2,7 +2,7 @@
 
 **Fonte da verdade única de game design e balanceamento.**
 Substitui: DESIGN.md (Parte II em diante) e BALANCE_MODEL.md.
-Lore: ver *Lore Bible + Revisão Consolidada* (documento separado — inalterado).
+Lore: ver *docs/eclats_lore_bible.md* (Lore Bible Completo v2 — já consolida a Revisão de jun/2026).
 Data: 2026-06-09 · Status: **estrutura completa e calibrada por simulação** · Pendências listadas em §16.
 
 Legenda de maturidade:
@@ -264,7 +264,7 @@ Renda e custo de stats crescem em paridade → tempo por compra constante em qua
 
 ## 13. GEAR (🔒 estrutura herdada · ⏳ recalibrar valores na malha v2)
 
-- 6 peças (The Waning Edge, Veil of Cinders, Crown of Hollow Stars, Grasp of the Unnamed, The Last Resonance, Band of Dusk) com afixos fixos por peça e Legendary exclusivo — tabelas do DESIGN.md §26-28 permanecem válidas como estrutura.
+- 6 peças (The Waning Edge, Veil of Cinders, The Silent Vigil, Grasp of the Unnamed, The Last Resonance, Band of Dusk) com afixos fixos por peça e Legendary exclusivo — tabelas do DESIGN.md §26-28 permanecem válidas como estrutura. *(Rename aprovado no Art Direction v3: "Crown of Hollow Stars" → "The Silent Vigil" — coroa virou linguagem de reis caídos. Raridades na lore: Faded → Kindled → Luminous → Radiant → Converged.)*
 - Dois eixos: item level (Lumens) + raridade (Lumens + materiais de boss), com regressão intencional de taxa ao subir raridade (Common 0.5%/lv cap 100 → Legendary 0.025%/lv cap alto).
 - **Persiste em tudo**; reforja na Ascension é opcional (material/desconto).
 - No simulador, gear entra como ×2 por Ascension (envelope ~×32 na vida). Os valores de afixo da malha v2 devem somar a esse envelope. ⏳ recalibrar tabela de rates/caps.
