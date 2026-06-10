@@ -64,6 +64,6 @@ Legenda de status: ✅ **Aprovada como direção** · 🌱 **Precisa amadurecer*
 ## Pendências registradas
 - [ ] Definir fonte geradora de Vestiges (ideia 2)
 - [ ] Retomar Echoes e detalhar bônus/temas (ideia 3 — aguarda Willian)
-- [ ] Decidir momento de adoção do break_infinity.js (ideia 4 — quanto antes)
+- [x] Decidir momento de adoção do break_infinity.js (ideia 4) — **RESOLVIDO 2026-06-10:** instalado como dependência do projeto; a migração do código (saves, fórmulas, format) será um CP próprio pós-MVP
 - [ ] Pesquisa de referências de game changer unlocks em idles (ideia 5)
 - [ ] Mapa-múndi visual de continentes — polish futuro (ideia 1)

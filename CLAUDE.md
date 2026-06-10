@@ -10,7 +10,8 @@ Idle RPG para browser. JavaScript puro (ES6 modules) + HTML + CSS, build com Vit
 - docs/eclats_expansion_ideas.md — ideias debatidas e seus status; NADA dali entra em produção sem antes virar decisão aprovada no GDD.
 
 ## Regras de números
-- Number nativo do JS; teto do jogo base é 1e100 (cabe no float, sem bibliotecas).
+- Number nativo do JS; teto do jogo base é 1e100 (cabe no float).
+- break_infinity.js já está instalado como dependência (decisão de fundação — ver docs/eclats_expansion_ideas.md, ideia 4) para o futuro pós-MVP ultrapassar 1e308. NÃO usar no MVP: a migração (saves, fórmulas, format) será um CP próprio quando for pedida.
 - Todo valor exibido passa por src/core/format.js (sufixos K/M/B/T, depois notação científica curta).
 - Cap físico de combate: máximo de 1 kill por ataque — kill rate nunca excede o APS atual. Esta regra ancora toda a economia.
 
