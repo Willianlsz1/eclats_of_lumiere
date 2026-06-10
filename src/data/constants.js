@@ -71,6 +71,19 @@ export const CONVERGENCE = {
   pointBonus: 0.15,      // conv_factor = 1 + 0.15 × Σ pontos
 };
 
+// §7 — Vestiges (renda; gasto em Passivas/Ascension é pós-MVP)
+// vestiges_por_kill = ceil(subárea × 0.5) × 3^(índice_do_mapa) · boss ×10
+export const VESTIGES = {
+  bossMult: 10,
+};
+
+// §15 — Offline: simulação real do combate enquanto fora.
+// Teto de 30 dias é guarda de engenharia (custo de CPU), não balanceamento.
+export const OFFLINE = {
+  maxSeconds: 30 * 24 * 3600,
+  minSecondsToReport: 60, // abaixo disso não mostra o resumo
+};
+
 // Núcleo / infraestrutura
 export const TICK_SECONDS = 0.1;     // tick fixo de 100ms
 export const MAX_CATCHUP_TICKS = 50; // teto de catch-up por frame (offline real é CP-F)

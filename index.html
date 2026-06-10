@@ -8,6 +8,7 @@
 <body>
   <header id="topbar">
     <span>Lumens: <b id="top-lumens">0</b></span>
+    <span class="vestiges">Vestiges: <b id="top-vestiges">0</b></span>
     <span>Kills: <b id="top-kills">0</b></span>
     <span id="top-zone"></span>
     <span class="nav">
@@ -15,6 +16,11 @@
       <button id="btn-next" type="button">Avançar subárea ▶</button>
     </span>
   </header>
+
+  <div id="offline-banner" hidden>
+    <span id="offline-text"></span>
+    <button id="offline-close" type="button">OK</button>
+  </div>
 
   <main id="layout">
     <section id="player-card" aria-label="The Seeker">

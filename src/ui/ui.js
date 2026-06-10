@@ -47,12 +47,26 @@ export function setupUI(state) {
   }
 }
 
+// Banner de retorno: resumo do progresso offline (§15)
+export function showOfflineSummary(summary) {
+  const hours = summary.seconds / 3600;
+  const time = hours >= 1 ? `${hours.toFixed(1)}h` : `${Math.round(summary.seconds / 60)}min`;
+  const retreat = summary.retreated ? ' Recuou até o ponto sustentável.' : '';
+  $('offline-text').textContent =
+    `Enquanto você esteve fora (${time}): ${formatNumber(summary.kills)} kills, ` +
+    `+${formatNumber(summary.lumens)} Lumens, +${formatNumber(summary.xp)} XP, ` +
+    `+${formatNumber(summary.vestiges)} Vestiges.${retreat}`;
+  $('offline-banner').hidden = false;
+  $('offline-close').addEventListener('click', () => { $('offline-banner').hidden = true; }, { once: true });
+}
+
 export function renderUI(state) {
   const map = getCurrentMap();
   const hpMax = playerHpMax(state);
 
   // Topo
   $('top-lumens').textContent = formatNumber(state.lumens);
+  $('top-vestiges').textContent = formatNumber(state.vestiges);
   $('top-kills').textContent = formatNumber(state.killsTotal);
   const mapDone = state.bossDefeated.every(Boolean) ? ' · ✓ Mapa completo' : '';
   $('top-zone').textContent = `${map.name} · Subárea ${state.subarea}/${map.subareaCount}${mapDone}`;

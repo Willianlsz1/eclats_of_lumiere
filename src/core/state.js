@@ -11,6 +11,9 @@ export function createInitialState() {
     xpTotal: 0, // XP acumulado da vida — alimenta o level de display (§6 do GDD)
     xpRun: 0,   // XP da run — enche a parede de Convergence, reseta ao convergir
 
+    // Vestiges (§7) — nunca resetam
+    vestiges: 0,
+
     // Convergence (§6) — persistem para sempre
     convergences: 0,
     convPoints: 0,
@@ -60,6 +63,7 @@ export function applySnapshot(snapshot) {
   state.killsInSubarea = snapshot.killsInSubarea ?? 0;
   state.subarea = Math.min(state.subarea, state.unlockedSubarea);
   state.xpRun = snapshot.xpRun ?? 0;
+  state.vestiges = snapshot.vestiges ?? 0;
   state.convergences = snapshot.convergences ?? 0;
   state.convPoints = snapshot.convPoints ?? 0;
   state.bestSubareaRun = snapshot.bestSubareaRun ?? state.subarea;
@@ -79,6 +83,7 @@ export function toSnapshot() {
     bossDefeated: [...state.bossDefeated],
     killsInSubarea: state.killsInSubarea,
     xpRun: state.xpRun,
+    vestiges: state.vestiges,
     convergences: state.convergences,
     convPoints: state.convPoints,
     bestSubareaRun: state.bestSubareaRun,
