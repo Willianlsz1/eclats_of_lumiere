@@ -6,36 +6,37 @@ import { toSnapshot, applySnapshot } from './state.js';
 
 export function save() {
   try {
-    localStorage.setItem(SAVE_KEY, JSON.stringify(toSnapshot()));
+    // savedAt marca o momento do save — base do progresso offline (§15)
+    localStorage.setItem(SAVE_KEY, JSON.stringify({ ...toSnapshot(), savedAt: Date.now() }));
   } catch (e) {
     // localStorage cheio ou indisponível — não derruba o jogo
     console.warn('Falha ao salvar:', e);
   }
 }
 
-// Retorna true se um save válido foi carregado.
+// Retorna o snapshot carregado (já aplicado ao estado) ou null.
 export function load() {
   let raw;
   try {
     raw = localStorage.getItem(SAVE_KEY);
   } catch {
-    return false;
+    return null;
   }
-  if (!raw) return false;
+  if (!raw) return null;
   let snapshot;
   try {
     snapshot = JSON.parse(raw);
   } catch {
     console.warn('Save corrompido — começando do zero.');
-    return false;
+    return null;
   }
   if (snapshot.schemaVersion !== SCHEMA_VERSION) {
     // Migrações entram aqui quando o schema evoluir; por ora, descarta.
     console.warn(`Schema ${snapshot.schemaVersion} ≠ ${SCHEMA_VERSION} — save descartado.`);
-    return false;
+    return null;
   }
   applySnapshot(snapshot);
-  return true;
+  return snapshot;
 }
 
 export function setupAutosave() {

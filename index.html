@@ -4,31 +4,77 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Éclats of Lumière</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-  <header id="topbar">
-    <span>Lumens: <b id="top-lumens">0</b></span>
-    <span>Kills: <b id="top-kills">0</b></span>
-    <span id="top-zone"></span>
-    <span class="nav">
-      <button id="btn-prev" type="button">◀ Recuar subárea</button>
-      <button id="btn-next" type="button">Avançar subárea ▶</button>
-    </span>
+
+  <header class="topbar">
+    <nav class="nav" aria-label="Sistemas">
+      <button type="button" title="Seeker">🜂</button>
+      <button type="button" title="Gear (pós-MVP)" data-locked>⚔</button>
+      <button type="button" title="Passivas (pós-MVP)" data-locked>✦</button>
+      <button type="button" title="Echoes (pós-MVP)" data-locked>◈</button>
+      <button type="button" title="Mémoires (pós-MVP)" data-locked>📖</button>
+      <button type="button" title="Ascension (pós-MVP)" data-locked>▲</button>
+    </nav>
+    <div class="spacer"></div>
+    <div class="currency" title="Lumens">
+      <span class="dot gold"></span>
+      <div><b id="top-lumens">0</b><br><span>Lumens</span></div>
+    </div>
+    <div class="currency" title="Vestiges">
+      <span class="dot violet"></span>
+      <div><b id="top-vestiges">0</b><br><span>Vestiges</span></div>
+    </div>
+    <div class="zone">
+      <span class="map-name">The Dreaming Wood</span>
+      <span class="sub" id="top-zone-sub">Sub-área 1</span>
+    </div>
+    <div class="subnav">
+      <button id="btn-prev" type="button" title="Recuar sub-área">◀</button>
+      <button id="btn-next" type="button" title="Avançar sub-área">▶</button>
+    </div>
   </header>
 
-  <main id="layout">
-    <section id="player-card" aria-label="The Seeker">
-      <h2>The Seeker</h2>
-      <p>Level <b id="p-level">1</b></p>
-      <div class="bar"><div class="bar-fill hp" id="p-hp-fill"></div></div>
-      <p>HP: <b id="p-hp-text"></b></p>
-      <p>XP total: <b id="p-xp">0</b></p>
-      <p>DPS: <b id="p-dps">0</b></p>
-      <p id="p-status" class="status-dead" hidden></p>
+  <div id="offline-banner" hidden>
+    <span id="offline-text"></span>
+    <button id="offline-close" type="button">OK</button>
+  </div>
+
+  <main class="layout">
+    <section class="seeker" aria-label="The Seeker">
+      <div class="rank">
+        <span class="title">The Seeker</span>
+        <span class="tier">Tier I · Seeker</span>
+      </div>
+      <div class="portrait">
+        <div class="silhouette" role="img" aria-label="Retrato do Seeker (placeholder)"></div>
+        <span class="placeholder-note">arte via geração de imagem</span>
+      </div>
+      <div class="stats">
+        <div class="bar hp"><i id="p-hp-fill"></i><label><span class="lbl">HP</span><span id="p-hp-text"></span></label></div>
+        <div class="bar xp"><i id="p-xp-fill"></i><label><span class="lbl">Parede da run</span><span id="p-xp-text"></span></label></div>
+        <div class="meta"><span>Level <b id="p-level">1</b></span><span>DPS <b id="p-dps">0</b></span></div>
+        <div class="meta"><span>APS <b id="p-aps">0.40</b></span><span>Crit <b id="p-crit">0%</b></span></div>
+        <div class="meta"><span>Convergences <b id="c-count">0</b></span><span>Pontos <b id="c-points">0</b> · Fator <b id="c-factor">×1.00</b></span></div>
+        <p id="p-status" class="status-dead" hidden></p>
+      </div>
+      <h3 class="section-label">Gold Stats</h3>
+      <div id="stat-rows"></div>
     </section>
 
-    <section id="enemy-grid" aria-label="Campo de combate"></section>
+    <section id="enemy-grid" class="field" aria-label="Campo de combate"></section>
   </main>
+
+  <footer class="gauge" aria-label="Progresso para Convergence">
+    <span class="cap" id="g-cap">A luz se reúne — <b>Convergence em 0%</b></span>
+    <div class="gauge-track">
+      <div class="gauge-fill" id="g-fill"></div>
+      <span class="pct" id="g-pct"></span>
+      <button class="seed" id="btn-converge" type="button" title="Convergir" disabled>✶</button>
+    </div>
+  </footer>
 
   <script type="module" src="/src/main.js"></script>
 </body>

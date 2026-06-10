@@ -6,14 +6,23 @@ import { load, setupAutosave } from './core/save.js';
 import { startLoop } from './core/loop.js';
 import { combatTick, resetPack } from './game/combat.js';
 import { playerHpMax } from './game/stats.js';
-import { setupUI, renderUI } from './ui/ui.js';
+import { simulateOffline } from './game/offline.js';
+import { setupUI, renderUI, showOfflineSummary } from './ui/ui.js';
 
 // Carrega o save (se houver) e reconstrói o runtime
-load();
+const snapshot = load();
 state.player.hp = playerHpMax(state);
 resetPack(state);
 
 setupUI(state);
+
+// Progresso offline (§15): simula o tempo ausente antes do loop começar
+if (snapshot?.savedAt) {
+  const away = (Date.now() - snapshot.savedAt) / 1000;
+  const summary = simulateOffline(state, away);
+  if (summary) showOfflineSummary(summary);
+}
+
 setupAutosave();
 
 // Tick de simulação (100ms fixo) + render por tick

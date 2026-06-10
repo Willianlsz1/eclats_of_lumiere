@@ -33,11 +33,56 @@ export const MAP_1 = {
   dmgHi: 1e4,
   subareaCount: 5,
   packSizes: [1, 2, 4, 6, 8], // Sub1..Sub5
-  bossKillThreshold: 100,     // usado no CP-D
+  bossKillThreshold: 100,     // kills (oculto) para o boss entrar no pack
 };
+
+// Boss final do Map 1 (canônico — art direction §3). Bosses das subáreas 1-4
+// não têm nome canônico ainda (aguardando doc de lore) — rótulo provisório.
+export const MAP_1_BOSS_NAME = 'The Gilded Hollow';
+export const BOSS_LUMEN_MULT = 5; // §12: lumens_por_kill de boss ×5
 
 // Trio canônico de criaturas do Map 1 (The Fragmented) — art direction §3
 export const MAP_1_ENEMY_NAMES = ['Candlewisp Shade', 'Mothlight Herald', 'Dreamhorn Warden'];
+
+// §5 — Gold Stats (resetam na Convergence — CP-E)
+// custo(n) = costBase × costRamp^n · stat_total = (1 + nível × per) × milestones
+export const GOLD_STATS = {
+  costBase: 10,
+  costRamp: 1.15,
+  per: { str: 0.08, vit: 0.06, agi: 0.04, lck: 0.015, frt: 0.05, wis: 0.05 },
+  // Milestones geométricos (não se aplicam a agi — cap duro de APS — nem a lck)
+  milestones: [[10, 2], [25, 2.5], [50, 3], [100, 4], [200, 4.5], [400, 5], [800, 5.5], [1600, 6], [3200, 6.5]],
+};
+
+// ⏳ PROVISÓRIO (GDD §16.6 — pendência de calibração, aprovado pelo Willian):
+// crit damage base ×2, transbordo 1:1 (1% de rate acima de 100% → +1% de crit dmg),
+// lck sem milestones. Recalibrar quando o GDD fechar os valores.
+export const CRIT = {
+  baseChance: 0,
+  baseDamageMult: 2,
+  overflowFactor: 1,
+};
+
+// §6 — Convergence: parede de XP geométrica e pontos por profundidade
+export const CONVERGENCE = {
+  wallBase: 1500,        // parede da 1ª run
+  wallRatio: 1.5,        // razão base entre paredes
+  wallRatioGrowth: 1.06, // a razão cresce 6% a cada Convergence
+  pointBonus: 0.15,      // conv_factor = 1 + 0.15 × Σ pontos
+};
+
+// §7 — Vestiges (renda; gasto em Passivas/Ascension é pós-MVP)
+// vestiges_por_kill = ceil(subárea × 0.5) × 3^(índice_do_mapa) · boss ×10
+export const VESTIGES = {
+  bossMult: 10,
+};
+
+// §15 — Offline: simulação real do combate enquanto fora.
+// Teto de 30 dias é guarda de engenharia (custo de CPU), não balanceamento.
+export const OFFLINE = {
+  maxSeconds: 30 * 24 * 3600,
+  minSecondsToReport: 60, // abaixo disso não mostra o resumo
+};
 
 // Núcleo / infraestrutura
 export const TICK_SECONDS = 0.1;     // tick fixo de 100ms
