@@ -11,6 +11,8 @@ import {
 } from '../game/stats.js';
 import { changeSubarea } from '../game/combat.js';
 import { getCurrentMap } from '../game/enemies.js';
+import { xpWall, canConverge, runPoints, doConverge } from '../game/convergence.js';
+import { convFactor } from '../game/stats.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -27,6 +29,7 @@ const STAT_DEFS = [
 export function setupUI(state) {
   $('btn-prev').addEventListener('click', () => changeSubarea(state, -1));
   $('btn-next').addEventListener('click', () => changeSubarea(state, +1));
+  $('btn-converge').addEventListener('click', () => doConverge(state));
 
   const rows = $('stat-rows');
   for (const def of STAT_DEFS) {
@@ -80,7 +83,25 @@ export function renderUI(state) {
   }
 
   renderStats(state);
+  renderConvergence(state);
   renderEnemies(state);
+}
+
+function renderConvergence(state) {
+  const wall = xpWall(state.convergences);
+  const pct = Math.min(100, (state.xpRun / wall) * 100);
+  $('c-count').textContent = formatNumber(state.convergences);
+  $('c-points').textContent = formatNumber(state.convPoints);
+  $('c-factor').textContent = `×${convFactor(state).toFixed(2)}`;
+  $('c-fill').style.width = `${pct}%`;
+  $('c-progress').textContent =
+    `Parede da run: ${formatNumber(state.xpRun)} / ${formatNumber(wall)} XP (${pct.toFixed(1)}%)`;
+  const btn = $('btn-converge');
+  const ready = canConverge(state);
+  btn.disabled = !ready;
+  btn.textContent = ready
+    ? `✶ Convergir (+${formatNumber(runPoints(state))} pontos)`
+    : 'A luz ainda se reúne…';
 }
 
 function renderStats(state) {

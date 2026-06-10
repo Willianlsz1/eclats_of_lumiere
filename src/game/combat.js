@@ -111,5 +111,6 @@ export function changeSubarea(state, delta) {
   if (next === state.subarea) return;
   state.subarea = next;
   state.killsInSubarea = 0; // threshold conta kills na subárea atual
+  state.bestSubareaRun = Math.max(state.bestSubareaRun, next); // pontos da run (§6)
   if (!state.player.dead) resetPack(state);
 }

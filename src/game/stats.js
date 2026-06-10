@@ -2,7 +2,7 @@
 // Fatores de sistemas futuros (Convergence, Ascension, Gear, Passivas,
 // Mémoires) valem 1 até seus CPs chegarem.
 
-import { COMBAT, GOLD_STATS, CRIT } from '../data/constants.js';
+import { COMBAT, GOLD_STATS, CRIT, CONVERGENCE } from '../data/constants.js';
 
 // ───── Gold Stats (§5) ─────
 
@@ -79,9 +79,14 @@ export function levelBonus(xpTotal) {
   return 1 + Math.sqrt(heroLevel(xpTotal)) * 0.20;
 }
 
+// conv_factor = 1 + 0.15 × Σ pontos de Convergence (§6)
+export function convFactor(state) {
+  return 1 + CONVERGENCE.pointBonus * state.convPoints;
+}
+
 // dano_por_hit = baseDmg × str_total × level_bonus × conv_factor × asc_mult × ... (§4)
 export function damagePerHit(state) {
-  return COMBAT.baseDmg * strTotal(state) * levelBonus(state.xpTotal);
+  return COMBAT.baseDmg * strTotal(state) * levelBonus(state.xpTotal) * convFactor(state);
 }
 
 // DPS exibido: valor esperado incluindo crit
@@ -92,5 +97,5 @@ export function dps(state) {
 
 // hp_max = playerBaseHp × vit_total × level_bonus × conv_factor × ... (§4)
 export function playerHpMax(state) {
-  return COMBAT.playerBaseHp * vitTotal(state) * levelBonus(state.xpTotal);
+  return COMBAT.playerBaseHp * vitTotal(state) * levelBonus(state.xpTotal) * convFactor(state);
 }

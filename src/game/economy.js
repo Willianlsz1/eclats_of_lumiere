@@ -9,6 +9,8 @@ export function awardKill(state, mob) {
   // §12: o ×5 de boss só se aplica a Lumens; o XP já escala pelo HP ×15
   const bossMult = mob.isBoss ? BOSS_LUMEN_MULT : 1;
   state.lumens = Math.min(NUMBER_CAP, state.lumens + mob.hpMax * ECONOMY.goldRatio * frtTotal(state) * bossMult);
-  state.xpTotal = Math.min(NUMBER_CAP, state.xpTotal + mob.hpMax * ECONOMY.xpRatio * wisTotal(state));
+  const xp = mob.hpMax * ECONOMY.xpRatio * wisTotal(state);
+  state.xpTotal = Math.min(NUMBER_CAP, state.xpTotal + xp); // vida (level display)
+  state.xpRun = Math.min(NUMBER_CAP, state.xpRun + xp);     // run (parede de Convergence)
   state.killsTotal += 1;
 }

@@ -63,6 +63,14 @@ export const CRIT = {
   overflowFactor: 1,
 };
 
+// §6 — Convergence: parede de XP geométrica e pontos por profundidade
+export const CONVERGENCE = {
+  wallBase: 1500,        // parede da 1ª run
+  wallRatio: 1.5,        // razão base entre paredes
+  wallRatioGrowth: 1.06, // a razão cresce 6% a cada Convergence
+  pointBonus: 0.15,      // conv_factor = 1 + 0.15 × Σ pontos
+};
+
 // Núcleo / infraestrutura
 export const TICK_SECONDS = 0.1;     // tick fixo de 100ms
 export const MAX_CATCHUP_TICKS = 50; // teto de catch-up por frame (offline real é CP-F)
