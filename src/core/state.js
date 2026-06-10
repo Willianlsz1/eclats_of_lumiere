@@ -40,6 +40,9 @@ export function createInitialState() {
     // Pack ativo de inimigos (runtime, não persistido)
     enemies: [],
 
+    // Fila de efeitos visuais (runtime) — hits para os números flutuantes
+    fx: [],
+
     // Métricas
     killsTotal: 0,
   };

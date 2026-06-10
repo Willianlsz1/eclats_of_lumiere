@@ -1,18 +1,17 @@
-// UI provisória (sem arte — skin final é CP-G).
-// Card do jogador à esquerda (com Gold Stats), grade de inimigos à direita,
-// contadores no topo.
+// UI — skin branco/azul (CP-G), segue docs/eclats_ui_mockup_v2_branco_azul.html.
+// Card do Seeker à esquerda, grade de inimigos à direita, contadores no topo,
+// medidor de Convergence fixo no rodapé.
 
 import { formatNumber } from '../core/format.js';
 import {
   heroLevel, dps, playerHpMax, currentAPS,
-  critChance, critDamageMult,
+  critChance, critDamageMult, convFactor,
   strTotal, vitTotal, frtTotal, wisTotal,
   statCostNext, buyStat, buyStatMax,
 } from '../game/stats.js';
 import { changeSubarea } from '../game/combat.js';
-import { getCurrentMap } from '../game/enemies.js';
+import { getCurrentMap, subareaLevelRange } from '../game/enemies.js';
 import { xpWall, canConverge, runPoints, doConverge } from '../game/convergence.js';
-import { convFactor } from '../game/stats.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -25,6 +24,13 @@ const STAT_DEFS = [
   { key: 'frt', label: 'FRT', effect: (s) => `×${formatNumber(frtTotal(s))} Lumens` },
   { key: 'wis', label: 'WIS', effect: (s) => `×${formatNumber(wisTotal(s))} XP` },
 ];
+
+// Glyph placeholder por criatura (arte real entra via assets/ quando aprovada)
+const GLYPHS = {
+  'Candlewisp Shade': 'wisp',
+  'Mothlight Herald': 'frag',
+  'Dreamhorn Warden': 'shroom',
+};
 
 export function setupUI(state) {
   $('btn-prev').addEventListener('click', () => changeSubarea(state, -1));
@@ -67,30 +73,33 @@ export function renderUI(state) {
   // Topo
   $('top-lumens').textContent = formatNumber(state.lumens);
   $('top-vestiges').textContent = formatNumber(state.vestiges);
-  $('top-kills').textContent = formatNumber(state.killsTotal);
-  const mapDone = state.bossDefeated.every(Boolean) ? ' · ✓ Mapa completo' : '';
-  $('top-zone').textContent = `${map.name} · Subárea ${state.subarea}/${map.subareaCount}${mapDone}`;
+  const range = subareaLevelRange(map, state.subarea);
+  const mapDone = state.bossDefeated.every(Boolean) ? ' · ✓' : '';
+  $('top-zone-sub').textContent =
+    `Sub-área ${state.subarea}/${map.subareaCount} · Lv ${Math.round(range.lo)}–${Math.round(range.hi)}${mapDone}`;
 
   // Gate: avançar só até a subárea desbloqueada (boss abre a próxima)
   const next = $('btn-next');
   next.disabled = state.subarea >= state.unlockedSubarea;
   next.title = next.disabled && state.subarea < map.subareaCount
-    ? 'Derrote o boss desta subárea para avançar'
-    : '';
+    ? 'Derrote o boss desta sub-área para avançar'
+    : 'Avançar sub-área';
   $('btn-prev').disabled = state.subarea <= 1;
 
-  // Card do jogador
+  // Card do Seeker
   $('p-level').textContent = formatNumber(heroLevel(state.xpTotal));
   $('p-hp-text').textContent = `${formatNumber(Math.max(0, state.player.hp))} / ${formatNumber(hpMax)}`;
   $('p-hp-fill').style.width = `${Math.max(0, (state.player.hp / hpMax) * 100)}%`;
-  $('p-xp').textContent = formatNumber(state.xpTotal);
   $('p-dps').textContent = formatNumber(dps(state));
   $('p-aps').textContent = currentAPS(state).toFixed(2);
   $('p-crit').textContent = `${(critChance(state) * 100).toFixed(1)}% ×${critDamageMult(state).toFixed(2)}`;
+  $('c-count').textContent = formatNumber(state.convergences);
+  $('c-points').textContent = formatNumber(state.convPoints);
+  $('c-factor').textContent = `×${convFactor(state).toFixed(2)}`;
 
   const status = $('p-status');
   if (state.player.dead) {
-    status.textContent = `Morto — respawn em ${Math.ceil(state.player.respawnTimer)}s (recuou uma subárea)`;
+    status.textContent = `Morto — respawn em ${Math.ceil(state.player.respawnTimer)}s (recuou uma sub-área)`;
     status.hidden = false;
   } else {
     status.hidden = true;
@@ -99,23 +108,7 @@ export function renderUI(state) {
   renderStats(state);
   renderConvergence(state);
   renderEnemies(state);
-}
-
-function renderConvergence(state) {
-  const wall = xpWall(state.convergences);
-  const pct = Math.min(100, (state.xpRun / wall) * 100);
-  $('c-count').textContent = formatNumber(state.convergences);
-  $('c-points').textContent = formatNumber(state.convPoints);
-  $('c-factor').textContent = `×${convFactor(state).toFixed(2)}`;
-  $('c-fill').style.width = `${pct}%`;
-  $('c-progress').textContent =
-    `Parede da run: ${formatNumber(state.xpRun)} / ${formatNumber(wall)} XP (${pct.toFixed(1)}%)`;
-  const btn = $('btn-converge');
-  const ready = canConverge(state);
-  btn.disabled = !ready;
-  btn.textContent = ready
-    ? `✶ Convergir (+${formatNumber(runPoints(state))} pontos)`
-    : 'A luz ainda se reúne…';
+  renderDamageFloats(state);
 }
 
 function renderStats(state) {
@@ -131,6 +124,26 @@ function renderStats(state) {
     buy.disabled = state.lumens < cost;
     row.querySelector('.s-max').disabled = state.lumens < cost;
   });
+}
+
+function renderConvergence(state) {
+  const wall = xpWall(state.convergences);
+  const pct = Math.min(100, (state.xpRun / wall) * 100);
+  const ready = canConverge(state);
+
+  // Barra "Parede da run" do card (violeta, como no mockup)
+  $('p-xp-fill').style.width = `${pct}%`;
+  $('p-xp-text').textContent = `${formatNumber(state.xpRun)} / ${formatNumber(wall)} XP`;
+
+  // Medidor fixo do rodapé
+  $('g-cap').innerHTML = ready
+    ? `A luz se reuniu — <b>Convergir: +${formatNumber(runPoints(state))} pontos</b>`
+    : `A luz se reúne — <b>Convergence em ${pct.toFixed(0)}%</b>`;
+  $('g-fill').style.width = `${pct}%`;
+  $('g-pct').textContent = `${formatNumber(state.xpRun)} / ${formatNumber(wall)} XP`;
+  const seed = $('btn-converge');
+  seed.disabled = !ready;
+  seed.classList.toggle('ready', ready);
 }
 
 function renderEnemies(state) {
@@ -156,15 +169,34 @@ function renderEnemies(state) {
 
 function buildEnemyCard(mob) {
   const card = document.createElement('article');
-  card.className = mob.isBoss ? 'enemy-card boss' : 'enemy-card';
+  card.className = mob.isBoss ? 'enemy boss' : 'enemy';
   card.dataset.mobId = mob.id;
+  const glyph = mob.isBoss ? 'gold' : (GLYPHS[mob.name] ?? 'frag');
   card.innerHTML = `
-    <h3 class="e-name"></h3>
-    <span class="e-level"></span>
-    <div class="bar"><div class="bar-fill e-hp-fill"></div></div>
-    <span class="e-hp-text"></span>
+    <div class="art"><span class="glyph ${glyph}"></span></div>
+    <h3 class="name"></h3>
+    <span class="lvl"></span>
+    <div class="row"><span>ATK <b class="e-atk"></b></span><span>HP <b class="e-hp-text"></b></span></div>
+    <div class="ebar"><i class="e-hp-fill"></i></div>
   `;
-  card.querySelector('.e-name').textContent = mob.isBoss ? `👑 ${mob.name}` : mob.name;
-  card.querySelector('.e-level').textContent = `Lv ${formatNumber(mob.level)}${mob.isBoss ? ' · BOSS' : ''}`;
+  card.querySelector('.name').textContent = mob.isBoss ? `👑 ${mob.name}` : mob.name;
+  card.querySelector('.lvl').textContent = `The Fragmented · Lv ${formatNumber(mob.level)}${mob.isBoss ? ' · BOSS' : ''}`;
+  card.querySelector('.e-atk').textContent = formatNumber(mob.dmg);
   return card;
+}
+
+// Números de dano flutuantes em branco-ciano (interface fria — mockup).
+// Consome a fila state.fx preenchida pelo combate.
+function renderDamageFloats(state) {
+  if (state.fx.length === 0) return;
+  for (const hit of state.fx) {
+    const card = document.querySelector(`[data-mob-id="${hit.mobId}"] .art`);
+    if (!card) continue; // mob já substituído — descarta silenciosamente
+    const el = document.createElement('span');
+    el.className = hit.isCrit ? 'dmg crit' : 'dmg';
+    el.textContent = `${hit.isCrit ? 'CRIT ' : ''}−${formatNumber(hit.amount)}`;
+    card.appendChild(el);
+    setTimeout(() => el.remove(), 850);
+  }
+  state.fx.length = 0;
 }

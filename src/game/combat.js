@@ -80,7 +80,10 @@ function playerAttack(state, hpMax) {
 
   // Crit ⏳ provisório (GDD §16.6): rola por ataque, multiplica o hit
   const isCrit = Math.random() < critChance(state);
-  target.hp -= damagePerHit(state) * (isCrit ? critDamageMult(state) : 1);
+  const hit = damagePerHit(state) * (isCrit ? critDamageMult(state) : 1);
+  target.hp -= hit;
+  // Fila dos números flutuantes (a UI consome; teto evita acúmulo em background)
+  if (state.fx.length < 50) state.fx.push({ mobId: target.id, amount: hit, isCrit });
   if (target.hp <= 0) {
     awardKill(state, target);
     // Regen on-kill: 2% do HP máx
