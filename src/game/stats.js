@@ -2,8 +2,8 @@
 // Fatores de sistemas futuros (Convergence, Ascension, Gear, Passivas,
 // Mémoires) valem 1 até seus CPs chegarem.
 
-import { COMBAT, GOLD_STATS, CRIT, CONVERGENCE } from '../data/constants.js';
-import { gearDamageMult, gearHpMult, gearCritAdd } from './gear.js';
+import { COMBAT, GOLD_STATS, CRIT, CONVERGENCE, DEFENSE } from '../data/constants.js';
+import { gearDamageMult, gearHpMult, gearCritAdd, gearDefesaMult } from './gear.js';
 import { passiveDmgMult, passiveHpMult } from './passives.js';
 import { memoireDmgMult, memoireHpMult, memoireCritDmgMult } from './memoires.js';
 import { ascMult } from './ascension.js';
@@ -105,4 +105,30 @@ export function dps(state) {
 // hp_max = playerBaseHp × vit_total × level_bonus × conv_factor × gear_hp × ... (§4)
 export function playerHpMax(state) {
   return COMBAT.playerBaseHp * vitTotal(state) * levelBonus(state.xpTotal) * convFactor(state) * gearHpMult(state) * passiveHpMult(state) * memoireHpMult(state) * ascMult(state);
+}
+
+// ───── Defesa / mitigação (§4, Passo 2) ─────
+
+// Fração de defesa: afixo Veil (gearDefesaMult) + futuras passivas. 0 sem Veil → comportamento atual.
+export function veilFactor(state) {
+  const fromVeil = Math.max(0, gearDefesaMult(state) - 1) * DEFENSE.veilScale;
+  const fromPassives = 0; // ⛓️ hook reservado (passivas de defesa) — sem fonte ainda
+  return fromVeil + fromPassives;
+}
+
+// def = hp_max × veilFactor → escala com o poder, mantendo def/packDps ~constante (§4).
+export function playerDefesa(state) {
+  return playerHpMax(state) * veilFactor(state);
+}
+
+// Camada % à parte, aplicada DEPOIS da armadura (Nihel's Shadow etc.). Sem fonte → 1 (sem efeito).
+// ⛓️ hook reservado.
+export function postArmorDR(_state) {
+  return 1;
+}
+
+// Defesa de INIMIGOS (mesma razão virada, §4). Early = 0 → sem efeito.
+// ⛓️ hooks reservados: Weakened Void reduz a base; Void Piercing penetra X%.
+export function enemyDefesa(_state, _mob) {
+  return DEFENSE.enemyDefBase; // 0
 }

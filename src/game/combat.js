@@ -13,7 +13,7 @@
 
 import { COMBAT, NUMBER_CAP } from '../data/constants.js';
 import { spawnPack, spawnBoss, getCurrentMap } from './enemies.js';
-import { damagePerHit, currentAPS, playerHpMax, critChance, critDamageMult } from './stats.js';
+import { damagePerHit, currentAPS, playerHpMax, critChance, critDamageMult, playerDefesa, postArmorDR, enemyDefesa } from './stats.js';
 import { awardKill } from './economy.js';
 import { eclatsDripPerSec } from './ascension.js';
 
@@ -74,8 +74,13 @@ export function combatTick(state, dt) {
   }
 
   // --- Dano só dos mobs VIVOS (mortos ficam apagados até a onda virar) ---
+  // Mitigação por razão/armadura (§4): dano_recebido = Σdano² / (defesa + Σdano).
+  // Sem defesa (early, def=0) → Σdano²/Σdano = Σdano = comportamento original.
+  // Camada % à parte (postArmorDR) aplicada DEPOIS da armadura.
   const packDps = state.enemies.reduce((sum, m) => sum + (m.hp > 0 ? m.dmg : 0), 0);
-  player.hp -= packDps * dt;
+  const def = playerDefesa(state);
+  const armored = packDps > 0 ? (packDps * packDps) / (def + packDps) : 0;
+  player.hp -= armored * postArmorDR(state) * dt;
 
   // --- Regen contínuo de 1% HP máx/s ---
   player.hp = Math.min(hpMax, player.hp + hpMax * COMBAT.regenPerSec * dt);
@@ -106,7 +111,11 @@ function playerAttack(state, hpMax) {
 
   // Crit ⏳ provisório (GDD §16.6): rola por ataque, multiplica o hit
   const isCrit = Math.random() < critChance(state);
-  const hit = damagePerHit(state) * (isCrit ? critDamageMult(state) : 1);
+  const raw = damagePerHit(state) * (isCrit ? critDamageMult(state) : 1);
+  // Defesa de INIMIGOS (§4, razão virada): hit = raw² / (def_inimigo + raw).
+  // Early (def_inimigo=0) → hit = raw = comportamento original.
+  const edef = enemyDefesa(state, target);
+  const hit = edef > 0 ? (raw * raw) / (edef + raw) : raw;
   target.hp -= hit;
   // Fila dos números flutuantes (a UI consome; teto evita acúmulo em background)
   if (state.fx.length < 50) state.fx.push({ mobId: target.id, amount: hit, isCrit });

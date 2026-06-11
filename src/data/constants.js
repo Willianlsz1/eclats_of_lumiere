@@ -96,6 +96,16 @@ export const CRIT = {
   overflowFactor: 1,
 };
 
+// §4 — DEFESA / MITIGAÇÃO (razão/armadura). Camada 2/3 (Passo 2 do wiring §10.5.1).
+//   dano_recebido = Σdano × Σdano / (defesa + Σdano)   → nunca 100%, auto-escala.
+//   def_jogador = hp_max × veilFactor ; veilFactor = (gearDefesaMult − 1) × veilScale (+ passivas).
+//   Alvo (gear.mjs): Veil maximizado ≈ veilFactor 0.18 → def ≈ 4× packDps ≈ 80% mit.
+//   Sem Veil (early) → veilFactor 0 → def 0 → reproduz o comportamento original.
+export const DEFENSE = {
+  veilScale: 0.02,   // ⏳ PROVISÓRIO — recalibra junto com os números do gear (multBase etc.)
+  enemyDefBase: 0,   // defesa de inimigos: early = 0 (hooks: Void Piercing penetra · Weakened Void reduz)
+};
+
 // §6 — Convergence: parede de XP geométrica e pontos por profundidade
 export const CONVERGENCE = {
   wallBase: 1500,        // parede da 1ª run
