@@ -291,7 +291,16 @@ Nota de calibração: no simulador as passivas entram como agregado (+5% dano/n�
 | **Nil's Embrace** | eleva o **teto do offline** (dentro das 24h) / reduz dano ao voltar — par do Dreamwalker, sem furar "offline ≤ ativo" | mid |
 | **Void Endurance** | **+HP e regen sem teto** — motor defensivo de longo prazo (o "prêmio" defensivo da árvore) | late |
 
-**✅ Árvore Fracture 15/15.** 🎉 **AS 3 ÁRVORES ESTÃO COMPLETAS — 45/45 passivas com efeito definido.** Próximo: passada de POSICIONAMENTO (grupos early/mid/late) + decidir cap por passiva.
+**✅ Árvore Fracture 15/15.** 🎉 **AS 3 ÁRVORES ESTÃO COMPLETAS — 45/45 passivas com efeito definido.**
+
+#### GRADE DE POSICIONAMENTO — ✅ APROVADA 2026-06-11 (gate: maximizar o grupo → abre o próximo)
+| Árvore | Grupo 1 (early) | Grupo 2 (mid) | Grupo 3 (late — os mais fortes / escalam c/ o jogo) |
+|---|---|---|---|
+| **Éclat** | Radiant Strike · Luminal Edge · Éclat Surge · Refraction · Crit Cascade | Shard Burst · Resonant Force · Momentum · Fracture Weakness · Execute | Overkill · Luminal Explosion · Or Ein Sof's Touch · Shattered Light · Void Piercing |
+| **Vestige** | Lumen's Blessing · Wisdom of Ruins · Remnant Harvest · Scavenger · Echo of Greed | Awakened Harvest · Hoarder · Dreamwalker · Beast Caller · **Vestige Pull (materiais)** | **Void Scavenger** · Eternal Vestige · Fractured Soul · Luminal Cache · The Collector |
+| **Fracture** | Fracture Pulse (APS) · Void Haste · Fracture Sense · Void Awareness · Last Light | Weakened Void · Shard Disruption · Nihel's Shadow · Éclat Attunement · The Fracture's Gift | Void Collapse · La Fracture's Echo · Claimed Domination · Nil's Embrace · Void Endurance |
+
+> **✅ SISTEMA DE PASSIVAS — DESIGN COMPLETO** (efeitos + posicionamento). Resta só **calibração numérica**: valor por nível de cada efeito, custos (já há fórmula §7), maxLevel por passiva, e os caps relacionados (mobs na tela, APS, defesa — §14B). E o **wiring no código** (hoje as 45 são +5% agregado placeholder).
 
 ---
 
