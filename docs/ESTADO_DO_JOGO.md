@@ -204,14 +204,18 @@ boss:  level = máximo da sub-área,  HP × 15,  dano × 3
 
 ## 9. Sistemas de progressão — fórmulas completas
 
-### 9.1 Convergence (§6) — moeda: XP da run ✅
+### 9.1 Convergence (§6) — moeda: XP da run
+
+> 🔄 **Design REVISTO em 2026-06-11** (registrado no GDD §6) — **código ainda NÃO atualizado** (faz o comportamento antigo abaixo). Decisão nova: a Convergence **não reseta o mapa** (gates/bosses persistem, viagem livre); pontos da run = **`f(xp_run)` com retorno decrescente + bônus único do Boss final** (não mais "profundidade alcançada"); 1ª parede ~1.500 XP só para encher. A forma de `f` e aditivo-vs-composto ficam para a sessão de Escala. **Implementação pendente.**
+
+**Comportamento atual no código (a ser revisto):**
 ```
 parede(c)   = 1500 × Π(i=0..c-1) [ 1.5 × 1.06^i ]      // c = nº de convergências
 pode_convergir = xp_run ≥ parede(convergences)
 pontos_da_run  = bestSubareaRun (sub-área mais funda alcançada na run)
 conv_factor    = 1 + 0.15 × convPoints                 // entra em dano e HP
 ```
-Ao convergir: ganha `pontos_da_run`, **reseta a run** (Lumens, Gold Stats, mapa→Sub 1), preserva o resto. **A 1ª Convergence desbloqueia as Passivas.**
+Hoje ao convergir: ganha `pontos_da_run`, **reseta a run** (Lumens, Gold Stats, **e o mapa→Sub 1** — isto será removido), preserva o resto. **A 1ª Convergence desbloqueia as Passivas.**
 
 ### 9.2 Gear (§13) — moeda: Lumens — ⏳ VALORES PROVISÓRIOS ✅
 6 peças fixas, cada uma com **nível** + **raridade**.

@@ -29,12 +29,12 @@ Cinco camadas, cada moeda com exatamente uma casa:
 | Camada | Loop | Moeda | Reseta em |
 |---|---|---|---|
 | **Run** | minutos–horas | Lumens → Gold Stats | Convergence |
-| **Convergence** | ~4h em média (81 na vida) | dá **pontos** (bônus aditivo) | — |
+| **Convergence** | ~4h em média (81 na vida) | dá **pontos** (aditivo vs composto → sessão de Escala) | — |
 | **Passivas** | permanente | **Vestiges** | nunca |
 | **Ascension** | 1 por mapa (5 na vida) | custa Vestiges, libera **Éclats** | — |
 | **Mémoires** | permanente | **Éclats** | nunca |
 
-**Convergence** (portão estilo Gaiadon): ao encher a parede de XP da run, o jogador converge — reseta Gold Stats, Lumens e progresso de mapa; ganha pontos pela profundidade alcançada. A **1ª Convergence desbloqueia as Passivas** (momento de lore: a Semente desperta).
+**Convergence** (portão estilo Gaiadon): ao encher a parede de XP da run, o jogador converge — reseta **só o econômico** (Gold Stats, Lumens, parede); **o progresso de mapa NÃO reseta** (revisão 2026-06-11 — viagem livre pelo desbloqueado). Ganha pontos pela **luz juntada na run (`xp_run`)** com retorno decrescente + bônus único do Boss final (ver §6). A **1ª Convergence desbloqueia as Passivas** (momento de lore: a Semente desperta).
 
 **Ascension** (marco por mapa): derrotar o boss final do mapa + custo em Vestiges → desbloqueia o próximo mapa + rank da Ordre + multiplicador grande + Éclats. A **A1 desbloqueia o sistema de Éclats/Mémoires**. Nada além do que a Convergence já reseta é perdido — o sacrifício é o custo de oportunidade dos Vestiges.
 
@@ -152,12 +152,22 @@ level_do_Seeker    = (XP_total_da_vida / 10)^0.4            // display: explode 
 - A razão da parede cresce (×1.5 no início → ×15+ no fim): **~81 Convergences na vida**, cadência média ~4h, sem deadlock em nenhum ponto (validado).
 - O level exibido é função do XP acumulado da vida — números enormes e satisfatórios (milhões de níveis por run no late game) sem quebrar o portão.
 
-### Convergence — pontos e fator
+### Convergence — reset, pontos e fator  (🔄 REVISTO 2026-06-11 — sessão de design)
+
+**Reset:** a Convergence reseta **só o econômico** — Lumens, Gold Stats e a parede de XP da run.
+- **O progresso de mapa NÃO reseta** (revisão): sub-áreas desbloqueadas e Guardiões derrotados persistem. O jogador volta a farmar com stats zerados, mas **viaja livre** por qualquer sub-área já aberta (a morte/recuo corrige quem se arrisca além do que aguenta). Re-subir vira *recuperar poder*, não *re-pagar pedágio* — elimina o tédio de re-gatear o mapa a cada run.
+- Ascension continua sem resetar nada.
+
+**Pontos da run (revisão — substitui "profundidade alcançada"):**
 ```
-pontos_da_run = índice global da subárea mais funda alcançada (1–25)
-conv_factor   = 1 + 0.15 × Σ pontos      // aditivo entre si, multiplicativo na fórmula
+pontos_da_run = f(xp_run)  +  bônus_boss_final     // f com retorno decrescente (sqrt/log)
 ```
-A 1ª Convergence desbloqueia as Passivas + concede os Vestiges acumulados da run (onboarding garantido pela fórmula de Vestiges, §7).
+- A run rende pela **"luz juntada" = `xp_run`** (já é HP destruído × 0.08 × wis → pondera profundidade: mob fundo vale ordens de grandeza mais). O retorno decrescente cria o dilema *convergir cedo e frequente* vs *farmar mais fundo*.
+- **Bônus único** por matar o **Boss final do mapa** na run — objetivo de run (prêmio extra, não requisito da Convergence).
+- **Anti-cheese:** spam de trash da Sub 1 dá luz desprezível; ir fundo é exponencialmente melhor. **Escala entre mapas:** mob do Map 2 dá ~1e10× mais luz → convergir lá vale ordens de grandeza mais (com o `asc_mult`, é o que faz "tudo do Map 1 não bastar pro Map 2").
+- ⏳ **A forma de `f` e o `conv_factor` (aditivo `1+0.15×pts` vs composto `×1.15^pts`) ficam para a sessão de Escala.**
+
+**1ª Convergence:** requisito = **só encher a parede** (~1.500 XP, sem gate extra); alvo de pacing ~5-10 min de jogo ativo. Desbloqueia as Passivas (lore: a Semente desperta) + concede os Vestiges da run.
 
 ---
 
@@ -304,7 +314,7 @@ Offline: progressão simulada até o ponto sustentável (nunca abre morto); afix
 
 ## 17. CHANGELOG — O QUE MUDOU vs DESIGN.md/BALANCE.md ANTIGOS
 
-1. **Contradições resolvidas:** Convergence re-climb (reseta progresso de mapa, preserva Gear/hero); Ascension = marco por mapa (5 na vida) com custo em Vestiges; Vestiges → exclusivamente Passivas + custo de Ascension; Gear persiste (reforja opcional).
+1. **Contradições resolvidas:** Convergence re-climb (reseta progresso de mapa, preserva Gear/hero) — *⚠️ REVISTO 2026-06-11: o progresso de mapa NÃO reseta mais; ver §6*; Ascension = marco por mapa (5 na vida) com custo em Vestiges; Vestiges → exclusivamente Passivas + custo de Ascension; Gear persiste (reforja opcional).
 2. **Malha geométrica** substitui levels lineares 1-4000 e HP 1.04^level: levels 1→1e9, HP 10→1e100, interpolação por mapa.
 3. **Portão de Convergence** (parede de XP geométrica) substitui trigger livre + plateau.
 4. **Convergence aditiva** (+15%/ponto) substitui mults ×1.20/×1.12 e spikes ×1.5.
