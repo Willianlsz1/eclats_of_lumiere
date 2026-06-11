@@ -1,25 +1,46 @@
-// Núcleo de combate — GDD §4.
-// - Jogador ataca um mob por vez (o de menor HP atual).
+// Núcleo de combate — GDD §4 (modelo de ONDAS, estilo Gaiadon).
+// - Jogador ataca um mob por vez (o vivo de menor HP atual).
 // - Cap físico: máximo de 1 kill por ataque — o hit atinge um único mob e o
 //   excedente de dano se perde; kill rate nunca excede o APS atual.
-// - Todos os mobs ativos causam dano ao jogador (Σ dano do pack, contínuo/s).
+// - Mob morto NÃO respawna: fica na cena (apagado) e para de causar dano. Só
+//   quando TODA a onda é limpa é que a próxima onda surge. Reset da onda só
+//   acontece ao trocar de subárea ou morrer.
+// - Dano ao jogador = Σ dano dos mobs VIVOS da onda (contínuo/s).
 // - Regen: 1% HP máx/s + 2% HP máx por kill.
 // - Morte: recua uma subárea, respawn com HP cheio em 3s, sem perdas.
-// - Boss (CP-D): após o kill threshold (oculto) entra no pack substituindo
-//   1 mob; derrotá-lo abre o gate da próxima subárea e vira loop recorrente.
+// - Boss (CP-D): após o kill threshold (oculto), a próxima onda é o Guardião
+//   (sozinho); derrotá-lo abre o gate da próxima subárea e vira loop recorrente.
 
 import { COMBAT } from '../data/constants.js';
-import { spawnMob, spawnPack, spawnBoss, getCurrentMap } from './enemies.js';
+import { spawnPack, spawnBoss, getCurrentMap } from './enemies.js';
 import { damagePerHit, currentAPS, playerHpMax, critChance, critDamageMult } from './stats.js';
 import { awardKill } from './economy.js';
 
-// Reconstrói o pack da subárea atual (usado no boot, troca de subárea e respawn)
+// Monta a onda da subárea. Se já bateu o threshold, o Guardião entra JUNTO,
+// substituindo 1 mob do pack (§4); na Sub 1 (pack de 1) ele vem sozinho.
+function makeWave(state) {
+  const map = getCurrentMap();
+  const pack = spawnPack(map, state.subarea);
+  if (state.killsInSubarea >= map.bossKillThreshold) {
+    pack[0] = spawnBoss(map, state.subarea);
+  }
+  return pack;
+}
+
+// Reinicia a onda (boot, troca de subárea, respawn) — zera a contagem de ondas.
 export function resetPack(state) {
-  state.enemies = spawnPack(getCurrentMap(), state.subarea);
+  state.wave = 1;
+  state.enemies = makeWave(state);
+}
+
+// Próxima onda (após limpar a atual) — incrementa o contador.
+function nextWave(state) {
+  state.wave += 1;
+  state.enemies = makeWave(state);
 }
 
 export function bossActive(state) {
-  return state.enemies.some((m) => m.isBoss);
+  return state.enemies.some((m) => m.isBoss && m.hp > 0);
 }
 
 export function combatTick(state, dt) {
@@ -38,12 +59,6 @@ export function combatTick(state, dt) {
     return;
   }
 
-  // --- Boss: atingiu o threshold oculto → substitui 1 mob do pack ---
-  const map = getCurrentMap();
-  if (!bossActive(state) && state.killsInSubarea >= map.bossKillThreshold) {
-    state.enemies[0] = spawnBoss(map, state.subarea);
-  }
-
   // --- Ataques do jogador (acumulador respeita o intervalo do APS) ---
   const interval = 1 / currentAPS(state);
   player.attackTimer += dt;
@@ -52,31 +67,37 @@ export function combatTick(state, dt) {
     playerAttack(state, hpMax);
   }
 
-  // --- Dano dos mobs ativos (soma do pack, aplicado por segundo) ---
-  const packDps = state.enemies.reduce((sum, m) => sum + m.dmg, 0);
+  // --- Onda limpa (todos mortos) → próxima onda. NÃO há respawn individual. ---
+  if (state.enemies.length > 0 && state.enemies.every((m) => m.hp <= 0)) {
+    nextWave(state);
+  }
+
+  // --- Dano só dos mobs VIVOS (mortos ficam apagados até a onda virar) ---
+  const packDps = state.enemies.reduce((sum, m) => sum + (m.hp > 0 ? m.dmg : 0), 0);
   player.hp -= packDps * dt;
 
   // --- Regen contínuo de 1% HP máx/s ---
   player.hp = Math.min(hpMax, player.hp + hpMax * COMBAT.regenPerSec * dt);
 
-  // --- Morte ---
+  // --- Morte: recua uma subárea e a onda reinicia ---
   if (player.hp <= 0) {
     player.dead = true;
     player.respawnTimer = COMBAT.deathRespawnSeconds;
     state.subarea = Math.max(1, state.subarea - 1); // recua uma subárea
     state.killsInSubarea = 0; // boss some; o muro exige farmar de novo
+    state.wave = 1;
     state.enemies = [];
   }
 }
 
-// Um ataque: alvo único (menor HP), no máximo 1 kill, respawn imediato.
+// Um ataque: alvo único = o mob VIVO de menor HP. Máx 1 kill. SEM respawn —
+// o mob morto fica na cena (apagado) até a onda inteira ser limpa.
 function playerAttack(state, hpMax) {
-  if (state.enemies.length === 0) return;
-
-  let target = state.enemies[0];
+  let target = null;
   for (const m of state.enemies) {
-    if (m.hp < target.hp) target = m;
+    if (m.hp > 0 && (target === null || m.hp < target.hp)) target = m;
   }
+  if (!target) return; // onda toda morta (será trocada no tick)
 
   // Crit ⏳ provisório (GDD §16.6): rola por ataque, multiplica o hit
   const isCrit = Math.random() < critChance(state);
@@ -93,9 +114,7 @@ function playerAttack(state, hpMax) {
     } else {
       state.killsInSubarea += 1;
     }
-    // Respawn imediato: substitui o morto por um mob normal da subárea
-    const idx = state.enemies.indexOf(target);
-    state.enemies[idx] = spawnMob(getCurrentMap(), state.subarea);
+    // sem respawn individual — o morto permanece até a onda limpar (nextWave)
   }
 }
 

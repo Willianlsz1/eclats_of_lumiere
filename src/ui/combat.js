@@ -135,15 +135,15 @@ export function renderCombat(state) {
     ? 'Derrote o Guardião desta sub-área para avançar'
     : 'Próxima sub-área';
 
-  // ── Progresso até o boss (substitui o "Wave X/Y" do mockup pelo dado real;
-  //    o motor não tem waves literais — usa killsInSubarea/bossKillThreshold).
-  //    TODO(canon): rótulo "Wave" vs progresso real (handoff §8.5). ──
-  const bossOut = state.enemies.some((m) => m.isBoss);
-  const pct = bossOut ? 100 : Math.min(100, (state.killsInSubarea / map.bossKillThreshold) * 100);
+  // ── Onda atual + progresso até o boss (modelo de ondas: limpa a onda → próxima;
+  //    o Guardião entra na onda ao bater killsInSubarea/bossKillThreshold). ──
+  const bossOut = state.enemies.some((m) => m.isBoss && m.hp > 0);
+  const alive = state.enemies.reduce((n, m) => n + (m.hp > 0 ? 1 : 0), 0);
+  const pct = Math.min(100, (state.killsInSubarea / map.bossKillThreshold) * 100);
   $('cb-progress-fill').style.width = `${pct}%`;
   $('cb-progress-label').textContent = bossOut
-    ? 'O Guardião emergiu'
-    : `Rumo ao Guardião · ${Math.floor(pct)}%`;
+    ? `⚔ O Guardião chegou · ${alive} na onda`
+    : `Onda ${state.wave} · ${alive} vivo${alive === 1 ? '' : 's'} · Guardião ${Math.floor(pct)}%`;
 
   // ── HUD: taxas suavizadas ──
   renderRates(state);

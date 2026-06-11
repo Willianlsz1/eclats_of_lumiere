@@ -56,8 +56,10 @@ export function createInitialState() {
       attackTimer: 0,   // acumulador do intervalo de ataque
     },
 
-    // Pack ativo de inimigos (runtime, não persistido)
+    // Onda ativa de inimigos (runtime, não persistido). Mobs mortos ficam na
+    // cena (apagados) até a onda ser limpa — sem respawn individual.
     enemies: [],
+    wave: 1, // número da onda atual na subárea (runtime)
 
     // Fila de efeitos visuais (runtime) — hits para os números flutuantes
     fx: [],
