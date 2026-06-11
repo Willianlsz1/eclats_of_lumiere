@@ -332,7 +332,7 @@ A Ascension vira o **loop de prestige de cima** (a Convergence é o de baixo):
 | **A1** | **Automação básica** | auto-comprar Gold Stats + auto-Convergir (destrava o idle) |
 | **A2** | **Auto-progressão + abre as Dificuldades** | auto-limpar sub-áreas/auto-Despertar + desbloqueia o **SISTEMA de dificuldades** (escolha por sub-área; modos altos gateados por poder, não por Ascension) |
 | **A3** | **Motor de Éclats** | drip no mapa atual + offline 24h cheio (o "idle engine" do mid/late) |
-| **A4** | **🟡 a definir** | candidatos: automação de Gear · +cap global de mobs na tela · desbloquear Echoes — escolha do Willian |
+| **A4** | **+Cap global de mobs** | sobe o teto de inimigos simultâneos na tela → mais kills/s de pico = mais farm (recursos/Éclats/materiais). Casa com o aumento de cap de mobs (insp. Synergism/Gaiadon). ⏳ valor do salto = calibração |
 | **A5** | **Transcendência** | loop infinito pós-Nihel (§16.7) + meta-multiplicador permanente |
 
 **Expansão de sub-áreas (futuro):** o nº de sub-áreas por mapa CRESCE (ex.: Map 1 ~6 → Map 5 ~11-14) p/ suavizar a curva de HP (ideia 4). A **Auto-progressão (A2)** escala com isso. *(§3 hoje fixa 5/mapa — será variável.)*
