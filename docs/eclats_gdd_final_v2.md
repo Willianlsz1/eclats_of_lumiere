@@ -96,6 +96,13 @@ DPS = dano_por_hit × APS
 hp_max = playerBaseHp × vit_total × level_bonus × conv_factor × asc_mult × gear_hp × passive_hp × memoire_hp
 ```
 
+### 🟡 REGRA DE OURO DE ESCALA (✅ TRAVADA 2026-06-11 — Tópico 2.2)
+> **Some DENTRO da mesma categoria · Multiplique ENTRE categorias diferentes.**
+- Cada andar (Gold Stats · Gear · Passivas · Mémoires · Convergence · Ascension) é um fator **multiplicativo** independente — melhorar qualquer um melhora tudo. (Já implementado: dano e HP já multiplicam todas as fontes.)
+- **Todo andar de longo prazo precisa crescer SEM teto fixo** (um motor exponencial/multiplicativo repetível, como a Clarté `1.07^níveis`), senão vira irrelevante num jogo que vai a 1e100. Hoje **Gear morre** (cap ~×31/peça) e **Passivas são fracas** (linear, teto baixo) → ambos precisam de motor sem teto.
+- **Gold Stats podem morrer no late** (são as "rodinhas" do early — ok).
+- Cada andar tem um **tema** (Gear=bruto/dano · Passivas=mecânicas · Mémoires=motor global · Convergence=bola de neve · Ascension=o salto entre mapas) para a escolha do jogador ter identidade.
+
 ### Dano dos mobs — curva própria, desacoplada do HP deles (🔒 décadas por mapa, ⏳ validação fina)
 | Mapa | Dano do mob (range) |
 |---|---|
