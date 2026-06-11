@@ -30,6 +30,21 @@
 .gr-note { margin-top: 18px; font-size: var(--fs-xs); color: var(--faint);
   font-style: italic; font-family: var(--font-display); }
 
+/* ---------------- Forja — materiais + refino (§13B) ---------------- */
+.gr-forja-h { margin-top: 22px !important; font-size: var(--fs-lg) !important;
+  padding-top: 16px; border-top: 1px solid var(--line); }
+.gr-mats { margin: 0; display: grid; gap: 8px; }
+.gr-mats > div { display: flex; justify-content: space-between; align-items: baseline;
+  border-bottom: 1px dotted var(--line); padding-bottom: 4px; }
+.gr-mats dt { font-size: var(--fs-xs); color: var(--dim); letter-spacing: .04em; }
+.gr-mats dd { margin: 0; font-weight: 600; color: var(--eclat); font-variant-numeric: tabular-nums; }
+.gr-refino { margin-top: 12px; display: grid; gap: 6px; }
+.gr-ref { appearance: none; cursor: pointer; padding: 7px 10px; border-radius: var(--radius-sm);
+  border: var(--border-soft); background: var(--panel-2); color: var(--ink); font-size: var(--fs-xs);
+  transition: border-color .15s ease, opacity .15s ease; }
+.gr-ref:hover:not(:disabled) { border-color: var(--eclat); }
+.gr-ref:disabled { opacity: .35; cursor: not-allowed; }
+
 /* ---------------- Grade de slots ---------------- */
 .gr-slots { display: grid; grid-template-columns: repeat(3, 1fr); grid-auto-rows: 1fr; gap: 18px; }
 .gr-slot {

@@ -159,9 +159,20 @@ export const GEAR = {
   // custo de upar 1 nível = base × ramp^nível × costMult[raridade]
   levelCostBase: 50,
   levelCostRamp: 1.12,
-  // custo (Lumens) p/ subir à raridade índice i. ⏳ Passo 4 troca por MATERIAIS (gate duplo).
-  rarityUpCost: [0, 6000, 90_000, 1.5e6, 3e7],
+  // (Subir raridade = gate duplo: nível no cap + MATERIAIS do tier — ver CRAFT, Passo 4.)
 };
+
+// §13B — CRAFT / MATERIAIS (Camada 4, Passo 4). Material TIERED por raridade:
+// materiais[r] paga o salto da raridade r→r+1 (T1=idx0: Faded→Kindled … T4=idx3: Radiant→Converged).
+export const CRAFT = {
+  dropChance: 0.01,        // 1% por mob comum, do tier do MAPA atual
+  nextTierChance: 0.001,   // 0.1% do tier seguinte (tabela com peso — pré-estoca)
+  bossChunk: 30,           // boss (Guardião/final): chunk garantido do tier do mapa (acelera, não gate)
+  rarityUpMaterial: 40,    // 40 materiais do tier p/ subir 1 PEÇA de raridade (gate duplo c/ nível máx)
+  refinoRatio: 12,         // refino 12:1 (só pra cima): 12 de Tn → 1 de Tn+1
+};
+// tier do material que o mapa dropa (índice 0..3 = T1..T4); Map 5 = T4 (future T5)
+export const mapMaterialTier = (map) => Math.min(map - 1, 3);
 
 // §7 — PASSIVAS · economia ✅ canônica · efeitos individuais ⏳ PROVISÓRIOS.
 // 3 árvores × 15 (3 grupos de 5). Moeda = Vestiges. Desbloqueia na 1ª Convergence.
@@ -248,5 +259,5 @@ export const TICK_SECONDS = 0.1;     // tick fixo de 100ms
 export const MAX_CATCHUP_TICKS = 50; // teto de catch-up por frame (ausências longas: offline §15 no reload)
 export const AUTOSAVE_MS = 10_000;
 export const SAVE_KEY = 'eclats_save_v1';
-export const SCHEMA_VERSION = 1;
+export const SCHEMA_VERSION = 2; // v2 (Passo 4): + state.materiais[4] (T1-T4)
 export const NUMBER_CAP = 1e100;     // teto do jogo base — cabe no float nativo

@@ -5,7 +5,7 @@
 // secundário = primário^0.30 (30% das décadas). Cap de nível da raridade topo sobe
 // +capPerAsc por Ascension (motor sem-teto). Persiste sempre (não reseta).
 
-import { GEAR, GEAR_RARITIES } from '../data/constants.js';
+import { GEAR, GEAR_RARITIES, CRAFT } from '../data/constants.js';
 
 const maxRarity = GEAR_RARITIES.length - 1;
 
@@ -95,15 +95,17 @@ export function levelCost(piece) {
   return GEAR.levelCostBase * GEAR.levelCostRamp ** piece.level * GEAR.costMult[piece.rarity];
 }
 
-// custo (Lumens) p/ subir à PRÓXIMA raridade; Infinity se já no topo. ⏳ Passo 4 = materiais.
+// Tier de material que paga a raridade atual→próxima (= índice da raridade atual: T1 paga 0→1)
+export const rarityUpTier = (piece) => piece.rarity;
+// custo de raridade = MATERIAIS do tier (não mais Lumens, §13B); Infinity se já no topo.
 export function rarityUpCost(piece) {
-  if (piece.rarity >= maxRarity) return Infinity;
-  return GEAR.rarityUpCost[piece.rarity + 1];
+  return piece.rarity >= maxRarity ? Infinity : CRAFT.rarityUpMaterial;
 }
 
+// GATE DUPLO (§13B): nível no cap da raridade atual + materiais do tier suficientes.
 export function canRarityUp(state, key) {
   const p = state.gear[key];
-  return p.rarity < maxRarity && atLevelCap(p, state) && state.lumens >= rarityUpCost(p);
+  return p.rarity < maxRarity && atLevelCap(p, state) && state.materiais[rarityUpTier(p)] >= CRAFT.rarityUpMaterial;
 }
 
 // ───── Ações (gastam Lumens) ─────
@@ -131,7 +133,18 @@ export function buyLevels(state, key, n) {
 export function doRarityUp(state, key) {
   if (!canRarityUp(state, key)) return false;
   const p = state.gear[key];
-  state.lumens -= rarityUpCost(p);
+  state.materiais[rarityUpTier(p)] -= CRAFT.rarityUpMaterial; // paga em materiais do tier
   p.rarity += 1; // mantém o nível: segue subindo até o cap maior da nova raridade
+  return true;
+}
+
+// ───── Refino de materiais (§13B): 12:1, SÓ pra cima ─────
+export const canRefino = (state, fromTier) =>
+  fromTier >= 0 && fromTier < 3 && state.materiais[fromTier] >= CRAFT.refinoRatio;
+
+export function doRefino(state, fromTier) {
+  if (!canRefino(state, fromTier)) return false;
+  state.materiais[fromTier] -= CRAFT.refinoRatio;
+  state.materiais[fromTier + 1] += 1;
   return true;
 }

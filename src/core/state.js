@@ -45,6 +45,7 @@ export function createInitialState() {
       reson: { level: 0, rarity: 0 },
       band:  { level: 0, rarity: 0 },
     },
+    materiais: [0, 0, 0, 0], // §13B (Passo 4): T1-T4. materiais[r] paga a raridade r→r+1.
 
     // Posição no mundo
     map: 1,
@@ -118,6 +119,9 @@ export function applySnapshot(snapshot) {
       if (g) state.gear[key] = { level: g.level ?? 0, rarity: g.rarity ?? 0 };
     }
   }
+  // Materiais (§13B, schema v2): default 0 p/ saves antigos (sem materiais). Normaliza sempre.
+  const mats = Array.isArray(snapshot.materiais) ? snapshot.materiais : [];
+  for (let i = 0; i < state.materiais.length; i++) state.materiais[i] = mats[i] ?? 0;
 }
 
 // Extrai só o que deve ser persistido (pack e timers são reconstruídos no load)
@@ -139,6 +143,7 @@ export function toSnapshot() {
     convPoints: state.convPoints,
     bestSubareaRun: state.bestSubareaRun,
     gear: JSON.parse(JSON.stringify(state.gear)),         // persiste sempre (§13)
+    materiais: [...state.materiais],                      // §13B (persiste sempre)
     passives: JSON.parse(JSON.stringify(state.passives)), // persiste sempre (§7)
     eclats: state.eclats,                                 // §10
     ascensions: state.ascensions,                         // §9

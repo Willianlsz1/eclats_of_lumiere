@@ -7,13 +7,17 @@
 
 import { formatNumber } from '../core/format.js';
 import { picture } from '../data/assets.js';
-import { GEAR, GEAR_RARITIES, GEAR_RARITY_LABELS } from '../data/constants.js';
+import { GEAR, GEAR_RARITIES, GEAR_RARITY_LABELS, CRAFT } from '../data/constants.js';
 import {
   primaryMult, secondaryMult, critOf, critDmgOf, activeSecondaries, levelCapFor,
-  levelCost, atLevelCap, rarityUpCost, canRarityUp,
-  buyLevels, doRarityUp, gearDamageMult, gearHpMult, gearLumensMult, gearCritAdd,
+  levelCost, atLevelCap, rarityUpCost, rarityUpTier, canRarityUp,
+  buyLevels, doRarityUp, canRefino, doRefino, gearDamageMult, gearHpMult, gearLumensMult, gearCritAdd,
   gearDefesaMult, gearApsMult,
 } from '../game/gear.js';
+
+// Rótulos dos tiers de material (§13B): materiais[r] paga a raridade r→r+1
+const MAT_LABELS = ['T1 · Kindled', 'T2 · Luminous', 'T3 · Radiant', 'T4 · Converged'];
+const MAT_SHORT = ['T1', 'T2', 'T3', 'T4'];
 
 const $ = (id) => document.getElementById(id);
 const pieceDef = (key) => GEAR.pieces.find((p) => p.key === key);
@@ -61,6 +65,12 @@ export function buildGearView(root, state) {
         <div><dt>Lumens</dt><dd id="gr-t-lumens">×1</dd></div>
       </dl>
       <p class="gr-note">⏳ Valores provisórios — recalibram na malha v2.</p>
+
+      <h3 class="gr-forja-h">Forja — Materiais</h3>
+      <dl class="gr-mats" id="gr-mats"></dl>
+      <div class="gr-refino" id="gr-refino">
+        ${[0, 1, 2].map((t) => `<button type="button" class="gr-ref" data-t="${t}">Refinar 12 ${MAT_SHORT[t]} → 1 ${MAT_SHORT[t + 1]}</button>`).join('')}
+      </div>
     </aside>
 
     <div class="gr-slots" id="gr-slots"></div>
@@ -83,6 +93,10 @@ export function buildGearView(root, state) {
     slot.addEventListener('click', () => selectPiece(state, def.key));
     slots.appendChild(slot);
   }
+
+  // Refino (§13B): 12 Tn → 1 Tn+1
+  $('gr-refino').querySelectorAll('.gr-ref').forEach((b) =>
+    b.addEventListener('click', () => doRefino(state, Number(b.dataset.t))));
 
   selectPiece(state, selectedKey);
 }
@@ -137,6 +151,13 @@ export function renderGear(state) {
   $('gr-t-aps').textContent = `×${formatNumber(gearApsMult(state))}`;
   $('gr-t-lumens').textContent = `×${formatNumber(gearLumensMult(state))}`;
 
+  // Forja — materiais T1-T4 + estado dos botões de refino
+  $('gr-mats').innerHTML = MAT_LABELS.map((lbl, i) =>
+    `<div><dt>${lbl}</dt><dd>${formatNumber(Math.floor(state.materiais[i]))}</dd></div>`).join('');
+  $('gr-refino').querySelectorAll('.gr-ref').forEach((b) => {
+    b.disabled = !canRefino(state, Number(b.dataset.t));
+  });
+
   // Slots
   for (const def of GEAR.pieces) {
     const slot = document.querySelector(`.gr-slot[data-key="${def.key}"]`);
@@ -189,8 +210,9 @@ function updateDetail(state) {
   if (top) { rb.disabled = true; rb.textContent = 'Raridade máxima'; }
   else {
     rb.disabled = !canRarityUp(state, selectedKey);
+    const tier = rarityUpTier(piece);
     rb.textContent = capped
-      ? `Subir raridade (${formatNumber(rarityUpCost(piece))})`
+      ? `Subir raridade (${CRAFT.rarityUpMaterial} ${MAT_SHORT[tier]})`
       : 'Maximize o nível para subir raridade';
   }
 }
