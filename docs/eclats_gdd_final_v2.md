@@ -435,6 +435,11 @@ Offline: progressão simulada até o ponto sustentável (nunca abre morto); afix
 
 ---
 
+## 15B. ORDEM DE TRABALHO (✅ 2026-06-11)
+> **Fechar TODO o design primeiro** (mecânicas, sistemas, regras). **Calibração numérica** (valores por nível, custos, caps numéricos, envelopes) e **wiring no código** ficam por **último**, numa passada dedicada com o simulador — calibrar antes de o design fechar é re-trabalho.
+
+---
+
 ## 16. PENDÊNCIAS DE CALIBRAÇÃO (⏳)
 
 1. Passada de **sobrevivência** no simulador (curvas de dano dos mobs §4 contra HP do jogador, mapa a mapa; pack sizes como pressão).
