@@ -458,8 +458,14 @@ Sistema próprio (NÃO Ascension — saiu dos Fate Keepers em 2026-06-11 porque 
 - Idle-friendly: pouca gestão de inventário (1 família, ~4-5 contadores), sem receita multi-mapa.
 - Nomes (lore) ⏳ — puxar do lore bible (tema: fragmentos de luz/Lumière).
 
+### Ponto 2 — Fontes de drop ✅ TRAVADO 2026-06-11
+**Split mob vs boss** (decisão do Willian): o material comum cai de mob, os raros só de boss.
+- **Tier 1 ("comum")** → dropa de **mobs normais** (fluxo imediato; a 1ª evolução Faded→Kindled não depende de boss). Bosses também soltam T1, em maior quantia.
+- **Tiers 2-4 ("raros")** → **só de bosses:** Guardião de sub-área dá os médios; boss final do mapa dá os altos + chance do tier seguinte. ⇒ os tiers que gateiam a progressão ficam **fora da inflação do APS** (não viram função de kills/s — protege a economia de 1-kill).
+- **Dificuldade** multiplica a quantia E empurra o tier dropado → farmar tier alto em mapa antigo = evoluir gear cedo.
+- ⏳ *fino:* a linha "comum vs raro" está em **T1=mob, T2+=boss**; mover p/ T1-2=mob é ajuste aberto. Drop rate exato = calibração.
+
 ### Pontos em debate (próximos)
-- **Ponto 2 — Fontes de drop:** Guardiões de sub-área (frequente/early) + boss final do mapa (raro/maior). Dificuldade multiplica a quantia E libera tiers mais altos. ⏳ travar.
 - **Ponto 3 — A Forja (tela de craft):** (a) gastar material p/ subir raridade do Gear; (b) **refino** = converter N de tier baixo → 1 de tier alto (dá uso ao excedente do farm early). ⏳ travar.
 - **Ponto 4 — Automação/idle:** botão "subir tudo" + passiva **Vestige Pull** (turbina ganho, já travada §14B). ⏳ travar.
 - ⏳ **Calibração (por último):** quantidade por salto × 6 peças, taxa de drop, multiplicadores de dificuldade, custo do refino.
