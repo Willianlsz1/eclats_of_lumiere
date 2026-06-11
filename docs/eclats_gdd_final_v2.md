@@ -280,7 +280,12 @@ Nota de calibração: no simulador as passivas entram como agregado (+5% dano/n�
 | **Void Awareness** | **+mobs por onda** (aumenta o cap da tela — §14B) | mid |
 | **Fracture Pulse** | **+APS** — a passiva-CHAVE para bater o teto de ~15 (com gear; AGI é só a base pequena) | early/mid |
 | **Void Haste** | +velocidade de **respawn da onda** (menos tempo morto entre ondas) | early |
-| *(Shard Disruption, Nihel's Shadow, Éclat Attunement, La Fracture's Echo, Last Light, Void Collapse, The Fracture's Gift, Claimed Domination, Nil's Embrace, Void Endurance)* | ⏳ a definir | — |
+| **Shard Disruption** | chance de **estilhaçar a defesa** do alvo por alguns segundos (debuff temporário) | mid |
+| **Nihel's Shadow** | **defensiva**: reduz o dano recebido / devolve parte ao atacante (sobreviver ondas cheias) | mid |
+| **Éclat Attunement** | aumenta o ganho de **pontos de Convergence** (a luz juntada rende mais) | mid/late |
+| **Last Light** | **sobrevive a um golpe fatal** com 1 HP (1×/onda ou cooldown) — rede de segurança | mid |
+| **Void Collapse** | a cada X kills, colapso que tira **% da vida MÁX** de todos os mobs (não escala c/ seu dano) + reduz o dano deles — **anti-tank** (destrava ondas onde seu dano empaca). *Distinto do Luminal Explosion (ofensivo, escala c/ seu dano)* | late |
+| *(La Fracture's Echo, The Fracture's Gift, Claimed Domination, Nil's Embrace, Void Endurance)* | ⏳ a definir | — |
 
 ---
 
