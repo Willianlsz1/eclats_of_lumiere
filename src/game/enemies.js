@@ -2,7 +2,7 @@
 // Bounds de level por subárea: lvl_lo × r^s, com r = (lvl_hi/lvl_lo)^(1/5).
 // HP e dano interpolados geometricamente no log do level.
 
-import { MAP_1, MAP_1_ENEMY_NAMES, MAP_1_BOSS_NAME, COMBAT } from '../data/constants.js';
+import { MAPS, COMBAT } from '../data/constants.js';
 
 let nextEnemyId = 1;
 
@@ -46,9 +46,11 @@ export function spawnMob(map, subarea) {
   const level = rollLevel(map, subarea);
   const hpMax = hpForLevel(map, level);
   const id = nextEnemyId++;
+  const k = id % map.enemyNames.length; // trio do mapa
   return {
     id,
-    name: MAP_1_ENEMY_NAMES[id % MAP_1_ENEMY_NAMES.length],
+    name: map.enemyNames[k],
+    art: map.enemyArts[k],
     level,
     hpMax,
     hp: hpMax,
@@ -57,14 +59,15 @@ export function spawnMob(map, subarea) {
 }
 
 // Boss da subárea (GDD §3/§4): level máximo da subárea, HP ×15, dano ×3.
-// Sub 5 = boss final do mapa (The Gilded Hollow); subs 1-4 usam rótulo provisório.
+// Sub 5 = boss final do mapa (arte/nome canônicos); subs 1-4 = Guardião (placeholder).
 export function spawnBoss(map, subarea) {
   const level = Math.round(subareaLevelRange(map, subarea).hi);
   const hpMax = hpForLevel(map, level) * COMBAT.bossHpMult;
-  const isFinal = subarea === map.subareaCount; // só a Sub final é The Gilded Hollow
+  const isFinal = subarea === map.subareaCount;
   return {
     id: nextEnemyId++,
-    name: isFinal ? MAP_1_BOSS_NAME : `Guardião — Subárea ${subarea}`,
+    name: isFinal ? map.bossName : `Guardião — Subárea ${subarea}`,
+    art: isFinal ? map.bossArt : map.guardianArt,
     isBoss: true,
     isFinalBoss: isFinal,
     level,
@@ -80,7 +83,8 @@ export function spawnPack(map, subarea) {
   return Array.from({ length: size }, () => spawnMob(map, subarea));
 }
 
-export function getCurrentMap() {
-  // MVP = Map 1 apenas; mapas 2-5 ficam fora do escopo
-  return MAP_1;
+// Mapa atual conforme state.map (1-indexado). Aceita state ou nada (default Map 1).
+export function getCurrentMap(state) {
+  const id = state && state.map ? state.map : 1;
+  return MAPS[id - 1] || MAPS[0];
 }

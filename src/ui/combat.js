@@ -18,20 +18,9 @@ import { currentRank } from '../game/ascension.js';
 
 const $ = (id) => document.getElementById(id);
 
-// Mapeamento criatura→arte do Map 1 — identidades CONFIRMADAS pela Art Direction
-// v3 §6 + imagens de referência do Willian (2026-06-11). O sufixo VERIFICAR nos
-// nomes de arquivo é só pendência de renomeação (U-final), não de identidade.
-const ENEMY_ART = {
-  'Candlewisp Shade': 'enemies.map1.constellation_weaver', // chama branco-azul, corpo de constelações
-  'Mothlight Herald': 'enemies.map1.moth_lantern',         // cavaleiro-mariposa com lanterna
-  'Dreamhorn Warden': 'enemies.map1.deer_spirit',          // deidade-cervo com chifres
-};
+// A arte de cada inimigo/boss vem do mapa (mob.art, definido em enemies.js a
+// partir de MAPS em constants). Fallback caso falte.
 const ENEMY_ART_FALLBACK = 'enemies.map1.deer_spirit';
-// Boss FINAL do Map 1 (só Sub-área 5): The Gilded Hollow — arte confirmada.
-const FINAL_BOSS_ART = 'enemies.map1.golden_figure';
-// Guardiões das Subs 1-4: sem arte canônica ainda → placeholder (não usar a do
-// Gilded Hollow, que é exclusiva da Sub 5). TODO(canon): arte dos guardiões.
-const GUARDIAN_ART = 'enemies.map1.constellation_weaver';
 
 // Pontos de spawn fixos dentro da arena (%) — pack ≤ 8 (packSizes do GDD),
 // então renderizamos todos, sem badge "+N".
@@ -97,12 +86,12 @@ export function buildCombatView(root, state) {
   $('cb-prev').addEventListener('click', () => changeSubarea(state, -1));
   $('cb-next').addEventListener('click', () => changeSubarea(state, +1));
 
-  // Fundo nítido do mapa atual (a tela de combate não usa o blur do menu)
-  $('cb-backdrop').style.backgroundImage = bg('backgrounds.map1');
+  // Fundo nítido do mapa atual (atualizado também no render, em troca de mapa)
+  $('cb-backdrop').style.backgroundImage = bg(getCurrentMap(state).bg);
 }
 
 export function renderCombat(state) {
-  const map = getCurrentMap();
+  const map = getCurrentMap(state);
   const hpMax = playerHpMax(state);
 
   // ── Card do Seeker ──
@@ -128,7 +117,10 @@ export function renderCombat(state) {
     seeker.classList.remove('dead');
   }
 
-  // ── Navegação / zona ──
+  // ── Navegação / zona (segue o mapa atual) ──
+  $('cb-zone-name').textContent = map.name;
+  const bd = $('cb-backdrop');
+  if (bd) bd.style.backgroundImage = bg(map.bg);
   const range = subareaLevelRange(map, state.subarea);
   $('cb-zone-sub').textContent =
     `Sub-área ${state.subarea}/${map.subareaCount} · Lv ${Math.round(range.lo)}–${Math.round(range.hi)}`;
@@ -197,9 +189,7 @@ function renderEnemies(state) {
 
 function buildEnemyCard(mob, i) {
   const pos = mob.isBoss ? BOSS_POINT : SPAWN_POINTS[i % SPAWN_POINTS.length];
-  const artId = mob.isFinalBoss ? FINAL_BOSS_ART
-    : mob.isBoss ? GUARDIAN_ART
-    : (ENEMY_ART[mob.name] ?? ENEMY_ART_FALLBACK);
+  const artId = mob.art || ENEMY_ART_FALLBACK; // arte vem do mapa (enemies.js)
 
   const card = document.createElement('article');
   card.className = mob.isBoss ? 'cb-enemy boss' : 'cb-enemy';
@@ -209,7 +199,7 @@ function buildEnemyCard(mob, i) {
   card.innerHTML = `
     <div class="cb-e-art">${picture(artId, { alt: mob.name })}</div>
     <div class="cb-e-name">${mob.isBoss ? '👑 ' : ''}${mob.name}</div>
-    <div class="cb-e-meta">The Fragmented · Lv ${formatNumber(mob.level)}${mob.isBoss ? ' · GUARDIÃO' : ''}</div>
+    <div class="cb-e-meta">Lv ${formatNumber(mob.level)}${mob.isBoss ? ' · GUARDIÃO' : ''}</div>
     <div class="cb-e-bar"><i class="cb-e-fill"></i></div>
     <div class="cb-e-hp"></div>
   `;

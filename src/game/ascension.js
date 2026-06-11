@@ -3,7 +3,7 @@
 // A1 também libera o drip de Éclats (§10). Persiste sempre. Só Map 1 existe
 // no MVP → só A1 é completável; A2-A5 exigem Maps 2-5.
 
-import { ASCENSIONS, ECLATS_DRIP } from '../data/constants.js';
+import { ASCENSIONS, ECLATS_DRIP, MAPS } from '../data/constants.js';
 import { hpForLevel, subareaLevelRange, getCurrentMap } from './enemies.js';
 
 // Próximo marco de Ascension (ou null se já no fim)
@@ -36,8 +36,15 @@ export function doAscend(state) {
   state.vestiges -= a.cost;
   state.ascensions += 1;
   state.eclats += a.eclats; // bolsa da cerimônia (§10)
-  // Próximo mapa: Maps 2-5 ainda não existem no motor → mantém Map 1.
-  // TODO: quando Maps 2-5 entrarem, avançar state.map e reiniciar o progresso.
+  // Avança para o próximo mapa (§8) e reinicia o progresso do mapa. A onda é
+  // recriada pelo chamador (resetPack) — evita ciclo de import com combat.js.
+  if (a.mapBoss < MAPS.length) {
+    state.map = a.mapBoss + 1;
+    state.subarea = 1;
+    state.unlockedSubarea = 1;
+    state.bossDefeated = state.bossDefeated.map(() => false);
+    state.killsInSubarea = 0;
+  }
   return true;
 }
 
@@ -52,7 +59,7 @@ export function currentRank(state) {
 // (boss da subárea mais funda desbloqueada do mapa atual).
 export function eclatsDripPerSec(state) {
   if (state.ascensions < 1) return 0;
-  const map = getCurrentMap();
+  const map = getCurrentMap(state);
   const frontierLevel = subareaLevelRange(map, state.unlockedSubarea).hi;
   const hpFrontier = hpForLevel(map, frontierLevel);
   return (ECLATS_DRIP.coef * hpFrontier ** ECLATS_DRIP.exp) / 3600;

@@ -46,10 +46,18 @@
   white-space: nowrap; backdrop-filter: blur(4px);
 }
 .map-pin:hover .dot { transform: scale(1.18); }
-.map-pin.locked { cursor: not-allowed; }
-.map-pin.locked .dot { background: var(--faint); box-shadow: none;
-  border-color: #06101f; }
+.map-pin.locked, .map-pin.done { cursor: default; }
+.map-pin.locked:hover .dot, .map-pin.done:hover .dot { transform: none; }
+.map-pin.locked .dot { background: var(--faint); box-shadow: none; border-color: #06101f; }
 .map-pin.locked .lbl { color: var(--dim); }
+.map-pin.locked .lbl::after { content: ' 🔒'; }
+/* mapa conquistado (já passou) */
+.map-pin.done .dot { background: var(--vest); box-shadow: var(--glow-vest); }
+.map-pin.done .lbl::after { content: ' ✓'; color: var(--vest); }
+/* mapa atual — pino pulsante, é o único clicável */
+.map-pin.current { cursor: pointer; }
+.map-pin.current .dot { animation: map-pulse 1.4s ease-in-out infinite; }
+@keyframes map-pulse { 0%,100% { box-shadow: var(--glow-eclat), 0 0 0 4px color-mix(in srgb, var(--eclat) 30%, transparent); } 50% { box-shadow: var(--glow-eclat), 0 0 0 9px color-mix(in srgb, var(--eclat) 12%, transparent); } }
 
 /* ---------------- Continente ---------------- */
 .map-back {

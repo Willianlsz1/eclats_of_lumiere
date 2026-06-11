@@ -20,29 +20,61 @@ export const ECONOMY = {
   xpRatio: 0.08,   // xp_por_kill     = mob_hp × 0.08 × wis_total
 };
 
-// §3 — Malha geométrica do Map 1 (The Dreaming Wood)
-// §4 — Pack sizes e curva de dano dos mobs
-export const MAP_1 = {
-  id: 1,
-  name: 'The Dreaming Wood',
-  lvlLo: 1,
-  lvlHi: 1000,
-  hpLo: 10,
-  hpHi: 1e6,
-  dmgLo: 1,
-  dmgHi: 1e4,
-  subareaCount: 5,
-  packSizes: [1, 2, 4, 6, 8], // Sub1..Sub5
-  bossKillThreshold: 100,     // kills (oculto) para o boss entrar no pack
-};
-
-// Boss final do Map 1 (canônico — art direction §3). Bosses das subáreas 1-4
-// não têm nome canônico ainda (aguardando doc de lore) — rótulo provisório.
-export const MAP_1_BOSS_NAME = 'The Gilded Hollow';
+// §3 — Malha geométrica dos 5 mapas (✅ levels/HP/threshold canônicos).
+// packSizes do §4 reusado em todos os mapas. Nomes de criatura/boss = Art
+// Direction §3. ⏳ PROVISÓRIO: dmgLo/dmgHi por mapa (pendência §16.1 — extrapolados
+// mantendo a razão dano/HP do Map 1, que é calibrado: dmgLo=hpLo×0.1, dmgHi=hpHi×0.01)
+// e o vínculo nome↔arte dos Maps 2-5 (TODO canon; arte de alguns trios incompleta).
+const PACK = [1, 2, 4, 6, 8];
+export const MAPS = [
+  {
+    id: 1, name: 'The Dreaming Wood', continent: 'worldmap.continent1', bg: 'backgrounds.map1',
+    lvlLo: 1, lvlHi: 1000, hpLo: 10, hpHi: 1e6, dmgLo: 1, dmgHi: 1e4,
+    subareaCount: 5, packSizes: PACK, bossKillThreshold: 100,
+    enemyNames: ['Candlewisp Shade', 'Mothlight Herald', 'Dreamhorn Warden'],
+    enemyArts: ['enemies.map1.constellation_weaver', 'enemies.map1.moth_lantern', 'enemies.map1.deer_spirit'],
+    guardianArt: 'enemies.map1.constellation_weaver',
+    bossName: 'The Gilded Hollow', bossArt: 'enemies.map1.golden_figure',
+  },
+  {
+    id: 2, name: 'Cavernes Luminis', continent: 'worldmap.continent2', bg: 'backgrounds.map2',
+    lvlLo: 1000, lvlHi: 1e5, hpLo: 1e6, hpHi: 1e16, dmgLo: 1e5, dmgHi: 1e14,
+    subareaCount: 5, packSizes: PACK, bossKillThreshold: 200,
+    enemyNames: ['Crystalbound Husk', 'Luminis Pilgrim', 'Hollowflame Adept'],
+    enemyArts: ['enemies.map2.crystal_being', 'enemies.map2.cyan_ghost', 'enemies.map2.teal_flame'],
+    guardianArt: 'enemies.map2.crystal_being',
+    bossName: 'The Pale Reunion', bossArt: 'bosses.pale_reunion',
+  },
+  {
+    id: 3, name: 'The Ashen Ruins', continent: 'worldmap.continent3', bg: 'backgrounds.map3',
+    lvlLo: 1e5, lvlHi: 1e7, hpLo: 1e16, hpHi: 1e34, dmgLo: 1e15, dmgHi: 1e32,
+    subareaCount: 5, packSizes: PACK, bossKillThreshold: 350,
+    enemyNames: ['Ember Revenant', 'Emberhorn Penitent', 'Ash Choir'],
+    enemyArts: ['enemies.map3.thorn_sentinel', 'enemies.map3.three_faces', 'enemies.map3.vortex'],
+    guardianArt: 'enemies.map3.horned_statue',
+    bossName: 'The Ashen King', bossArt: 'bosses.m3_ashen_king',
+  },
+  {
+    id: 4, name: 'The Fractured Peaks', continent: 'worldmap.continent4', bg: 'backgrounds.map4',
+    lvlLo: 1e7, lvlHi: 1e8, hpLo: 1e34, hpHi: 1e62, dmgLo: 1e33, dmgHi: 1e60,
+    subareaCount: 5, packSizes: PACK, bossKillThreshold: 500,
+    enemyNames: ['Fissure Stalker', 'Sundered Titan', 'Claimed Vanguard'],
+    enemyArts: ['enemies.map4.chained_giant', 'enemies.map4.chained_giant', 'enemies.map4.chained_giant'], // ⏳ só 1 arte
+    guardianArt: 'enemies.map4.chained_giant',
+    bossName: 'The Claimed Queen', bossArt: 'bosses.m4_claimed_queen',
+  },
+  {
+    id: 5, name: 'Nil Aeternum', continent: 'worldmap.continent5', bg: 'backgrounds.map5',
+    lvlLo: 1e8, lvlHi: 1e9, hpLo: 1e62, hpHi: 1e100, dmgLo: 1e61, dmgHi: 1e98,
+    subareaCount: 5, packSizes: PACK, bossKillThreshold: 800,
+    enemyNames: ['Pale Courtier', 'Crownless King', 'Crimson Wyrmlord'],
+    enemyArts: ['enemies.map5.crown_bearer', 'enemies.map5.hooded_redeyes', 'enemies.map5.dragon_lancer'],
+    guardianArt: 'enemies.map5.white_mask_priest',
+    bossName: 'Nihel, The Fracture', bossArt: 'enemies.map5.fallen_angel', // ⏳ sem arte de Nihel — placeholder
+  },
+];
+export const MAP_1 = MAPS[0]; // compat
 export const BOSS_LUMEN_MULT = 5; // §12: lumens_por_kill de boss ×5
-
-// Trio canônico de criaturas do Map 1 (The Fragmented) — art direction §3
-export const MAP_1_ENEMY_NAMES = ['Candlewisp Shade', 'Mothlight Herald', 'Dreamhorn Warden'];
 
 // §5 — Gold Stats (resetam na Convergence — CP-E)
 // custo(n) = costBase × costRamp^n · stat_total = (1 + nível × per) × milestones

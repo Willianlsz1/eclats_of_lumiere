@@ -12,15 +12,15 @@ import { enterSubarea } from '../game/combat.js';
 
 const $ = (id) => document.getElementById(id);
 
-// Nomes canônicos dos mapas (Art Direction §2). Só Map 1 é MVP; 2-5 ficam
-// bloqueados (visual). Pinos posicionados no atlas — coords provisórias.
-// TODO(canon): posição exata dos pinos no worldmap.
+// Nomes canônicos dos mapas (Art Direction §2). O desbloqueio é por progressão:
+// um mapa abre quando você ascende até ele (mapId ≤ state.map). Pinos no atlas —
+// coords provisórias. TODO(canon): posição exata dos pinos no worldmap.
 const WORLD = [
-  { id: 1, name: 'The Dreaming Wood',   bgId: 'worldmap.continent1', pin: { x: 30, y: 64 } },
-  { id: 2, name: 'Cavernes Luminis',    bgId: 'worldmap.continent2', pin: { x: 47, y: 44 }, locked: true },
-  { id: 3, name: 'The Ashen Ruins',     bgId: 'worldmap.continent3', pin: { x: 62, y: 60 }, locked: true },
-  { id: 4, name: 'The Fractured Peaks', bgId: 'worldmap.continent4', pin: { x: 75, y: 38 }, locked: true },
-  { id: 5, name: 'Nil Aeternum',        bgId: 'worldmap.continent5', pin: { x: 86, y: 66 }, locked: true },
+  { id: 1, name: 'The Dreaming Wood',   pin: { x: 30, y: 64 } },
+  { id: 2, name: 'Cavernes Luminis',    pin: { x: 47, y: 44 } },
+  { id: 3, name: 'The Ashen Ruins',     pin: { x: 62, y: 60 } },
+  { id: 4, name: 'The Fractured Peaks', pin: { x: 75, y: 38 } },
+  { id: 5, name: 'Nil Aeternum',        pin: { x: 86, y: 66 } },
 ];
 
 // Posições das 5 sub-áreas sobre o crop do continente — provisórias. Mantidas
@@ -59,11 +59,13 @@ export function buildMapView(root, state, goToCombat) {
   for (const m of WORLD) {
     const pin = document.createElement('button');
     pin.type = 'button';
-    pin.className = 'map-pin' + (m.locked ? ' locked' : '');
+    pin.className = 'map-pin';
+    pin.dataset.map = m.id;
     pin.style.left = `${m.pin.x}%`;
     pin.style.top = `${m.pin.y}%`;
-    pin.innerHTML = `<span class="dot"></span><span class="lbl">${m.name}${m.locked ? ' 🔒' : ''}</span>`;
-    if (!m.locked) pin.addEventListener('click', () => openContinent(state, m));
+    pin.innerHTML = `<span class="dot"></span><span class="lbl">${m.name}</span>`;
+    // Só o mapa atual abre o continente (progressão linear via Ascension)
+    pin.addEventListener('click', () => { if (m.id === state.map) openContinent(state); });
     pins.appendChild(pin);
   }
 
@@ -73,13 +75,12 @@ export function buildMapView(root, state, goToCombat) {
   });
 }
 
-// Abre a visão de continente de um mapa (MVP: só Map 1)
-function openContinent(state, m) {
+// Abre a visão de continente do mapa ATUAL
+function openContinent(state) {
   $('map-world').hidden = true;
   $('map-continent').hidden = false;
-  $('cont-bg').style.backgroundImage = bg(m.bgId);
-
-  const map = getCurrentMap();
+  const map = getCurrentMap(state);
+  $('cont-bg').style.backgroundImage = bg(map.continent);
   const nodes = $('cont-nodes');
   nodes.innerHTML = '';
   for (let i = 1; i <= map.subareaCount; i++) {
@@ -113,7 +114,7 @@ let panelSig = '';
 function renderPanel(state) {
   const panel = $('cont-panel');
   if (!panel) return;
-  const map = getCurrentMap();
+  const map = getCurrentMap(state);
   const n = selectedSub;
   const accessible = n <= state.unlockedSubarea;
   const cleared = !!state.bossDefeated[n - 1];
@@ -137,7 +138,7 @@ function renderPanel(state) {
     </button>
     <p class="hint">Sub-áreas avançam ao derrotar o Guardião de cada uma.</p>
   `;
-  $('cont-cover').style.backgroundImage = bg('backgrounds.map1');
+  $('cont-cover').style.backgroundImage = bg(map.bg);
   if (accessible) {
     $('enter-btn').addEventListener('click', () => {
       enterSubarea(state, n);
@@ -147,7 +148,14 @@ function renderPanel(state) {
 }
 
 export function renderMap(state) {
-  const map = getCurrentMap();
+  const map = getCurrentMap(state);
+  // Pinos do mundo: liberado se mapId ≤ state.map; atual destacado; futuros 🔒
+  document.querySelectorAll('.map-pin').forEach((pin) => {
+    const id = Number(pin.dataset.map);
+    pin.classList.toggle('locked', id > state.map);
+    pin.classList.toggle('current', id === state.map);
+    pin.classList.toggle('done', id < state.map);
+  });
   // Estados dos nós da sub-área (se o continente estiver montado)
   document.querySelectorAll('.sub-node').forEach((el) => {
     const i = Number(el.dataset.sub);

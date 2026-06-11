@@ -9,6 +9,7 @@ import { ASCENSIONS } from '../data/constants.js';
 import {
   nextAscension, ascMult, reqMet, canAscend, doAscend, currentRank, eclatsDripPerSec,
 } from '../game/ascension.js';
+import { resetPack } from '../game/combat.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -46,7 +47,10 @@ export function buildAscensionView(root, state) {
         <span class="as-step-state"></span>
       </div>
     `;
-    step.querySelector('.as-step-btn').addEventListener('click', () => { doAscend(state); renderAscension(state); });
+    step.querySelector('.as-step-btn').addEventListener('click', () => {
+      if (doAscend(state)) resetPack(state); // respawna a onda do novo mapa
+      renderAscension(state);
+    });
     ladder.appendChild(step);
   });
 }

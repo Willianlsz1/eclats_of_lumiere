@@ -4,7 +4,7 @@ const BASE = "eclats/";
 const DATA = {
   "backgrounds": {
     "map1": "backgrounds/map1_dreaming_wood",
-    "map2": "backgrounds/map2_cavernes_luminis_BAIXA-RES_print",
+    "map2": "backgrounds/map2_cavernes_luminis",
     "map3": "backgrounds/map3_ashen_ruins",
     "map4": "backgrounds/map4_fractured_peaks",
     "map5": "backgrounds/map5_nil_aeternum"
@@ -179,9 +179,7 @@ const DATA = {
   }
 };
 const FLAGS = {
-  "lowres": [
-    "backgrounds/map2_cavernes_luminis_BAIXA-RES_print"
-  ],
+  "lowres": [],
   "verify": [
     "bosses/boss_m3_ashen_king_VERIFICAR",
     "bosses/boss_m4_claimed_queen_VERIFICAR",
@@ -207,7 +205,7 @@ const FLAGS = {
   ]
 };
 const FALLBACK_EXT = {
-  "backgrounds/map2_cavernes_luminis_BAIXA-RES_print": ".jpg"
+  "backgrounds/map2_cavernes_luminis": ".png"
 };
 
 export function path(id) {

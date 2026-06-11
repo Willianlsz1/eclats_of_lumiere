@@ -20,7 +20,7 @@ import { eclatsDripPerSec } from './ascension.js';
 // Monta a onda da subárea. Se já bateu o threshold, o Guardião entra JUNTO,
 // substituindo 1 mob do pack (§4); na Sub 1 (pack de 1) ele vem sozinho.
 function makeWave(state) {
-  const map = getCurrentMap();
+  const map = getCurrentMap(state);
   const pack = spawnPack(map, state.subarea);
   if (state.killsInSubarea >= map.bossKillThreshold) {
     pack[0] = spawnBoss(map, state.subarea);
@@ -126,7 +126,7 @@ function playerAttack(state, hpMax) {
 // Derrota do boss: abre o gate da próxima subárea e reinicia o ciclo
 // (loop recorrente de recompensa — o boss volta a cada threshold).
 function onBossKill(state) {
-  const map = getCurrentMap();
+  const map = getCurrentMap(state);
   state.bossDefeated[state.subarea - 1] = true;
   state.unlockedSubarea = Math.max(state.unlockedSubarea, Math.min(map.subareaCount, state.subarea + 1));
   state.killsInSubarea = 0;
