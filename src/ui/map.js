@@ -23,10 +23,11 @@ const WORLD = [
   { id: 5, name: 'Nil Aeternum',        bgId: 'worldmap.continent5', pin: { x: 86, y: 66 }, locked: true },
 ];
 
-// Posições das 5 sub-áreas sobre o crop do continente — provisórias.
+// Posições das 5 sub-áreas sobre o crop do continente — provisórias. Mantidas
+// à esquerda do painel da direita (que começa em ~78%) para não ficarem ocultas.
 // TODO(canon): trilha/coords reais das sub-áreas no Map 1.
 const SUB_NODES = [
-  { x: 22, y: 74 }, { x: 38, y: 56 }, { x: 53, y: 66 }, { x: 70, y: 46 }, { x: 84, y: 60 },
+  { x: 12, y: 74 }, { x: 26, y: 52 }, { x: 40, y: 70 }, { x: 54, y: 48 }, { x: 68, y: 66 },
 ];
 
 let goToCombatFn = null;

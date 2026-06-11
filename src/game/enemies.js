@@ -61,10 +61,12 @@ export function spawnMob(map, subarea) {
 export function spawnBoss(map, subarea) {
   const level = Math.round(subareaLevelRange(map, subarea).hi);
   const hpMax = hpForLevel(map, level) * COMBAT.bossHpMult;
+  const isFinal = subarea === map.subareaCount; // só a Sub final é The Gilded Hollow
   return {
     id: nextEnemyId++,
-    name: subarea === map.subareaCount ? MAP_1_BOSS_NAME : `Boss — Subárea ${subarea}`,
+    name: isFinal ? MAP_1_BOSS_NAME : `Guardião — Subárea ${subarea}`,
     isBoss: true,
+    isFinalBoss: isFinal,
     level,
     hpMax,
     hp: hpMax,

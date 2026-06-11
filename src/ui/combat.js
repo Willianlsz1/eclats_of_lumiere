@@ -26,9 +26,11 @@ const ENEMY_ART = {
   'Dreamhorn Warden': 'enemies.map1.deer_spirit',          // deidade-cervo com chifres
 };
 const ENEMY_ART_FALLBACK = 'enemies.map1.deer_spirit';
-// Boss do Map 1: The Gilded Hollow — arte confirmada (figura de vestes claras,
-// rosto-vazio, filigrana e cabelo de chama dourados, orbe anelado na mão).
-const BOSS_ART = 'enemies.map1.golden_figure';
+// Boss FINAL do Map 1 (só Sub-área 5): The Gilded Hollow — arte confirmada.
+const FINAL_BOSS_ART = 'enemies.map1.golden_figure';
+// Guardiões das Subs 1-4: sem arte canônica ainda → placeholder (não usar a do
+// Gilded Hollow, que é exclusiva da Sub 5). TODO(canon): arte dos guardiões.
+const GUARDIAN_ART = 'enemies.map1.constellation_weaver';
 
 // Pontos de spawn fixos dentro da arena (%) — pack ≤ 8 (packSizes do GDD),
 // então renderizamos todos, sem badge "+N".
@@ -176,18 +178,25 @@ function renderEnemies(state) {
       if (card) arena.replaceChild(fresh, card); else arena.appendChild(fresh);
       card = fresh;
     }
+    // Mob morto SOME (sem respawn no lugar); fica fora da cena até a onda virar.
+    if (mob.hp <= 0) {
+      card.style.display = 'none';
+      return;
+    }
+    card.style.display = '';
     const pct = Math.max(0, (mob.hp / mob.hpMax) * 100);
     card.querySelector('.cb-e-fill').style.width = `${pct}%`;
     card.querySelector('.cb-e-hp').textContent =
       `${formatNumber(Math.max(0, mob.hp))} / ${formatNumber(mob.hpMax)}`;
     card.classList.toggle('target', mob.id === targetId);
-    card.classList.toggle('slain', mob.hp <= 0);
   });
 }
 
 function buildEnemyCard(mob, i) {
   const pos = mob.isBoss ? BOSS_POINT : SPAWN_POINTS[i % SPAWN_POINTS.length];
-  const artId = mob.isBoss ? BOSS_ART : (ENEMY_ART[mob.name] ?? ENEMY_ART_FALLBACK);
+  const artId = mob.isFinalBoss ? FINAL_BOSS_ART
+    : mob.isBoss ? GUARDIAN_ART
+    : (ENEMY_ART[mob.name] ?? ENEMY_ART_FALLBACK);
 
   const card = document.createElement('article');
   card.className = mob.isBoss ? 'cb-enemy boss' : 'cb-enemy';
