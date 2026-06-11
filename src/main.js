@@ -7,14 +7,17 @@ import { startLoop } from './core/loop.js';
 import { combatTick, resetPack } from './game/combat.js';
 import { playerHpMax } from './game/stats.js';
 import { simulateOffline } from './game/offline.js';
+import { maybeApplyDevUnlock, showDevBadge } from './core/dev.js';
 import { setupUI, renderUI, showOfflineSummary } from './ui/ui.js';
 
 // Carrega o save (se houver) e reconstrói o runtime
 const snapshot = load();
+const devMode = maybeApplyDevUnlock(state); // modo de teste via ?dev (sem efeito sem o param)
 state.player.hp = playerHpMax(state);
 resetPack(state);
 
 setupUI(state);
+if (devMode) showDevBadge();
 
 // Progresso offline (§15): simula o tempo ausente antes do loop começar
 if (snapshot?.savedAt) {
