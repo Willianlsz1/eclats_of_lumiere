@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Éclats — Teste de Assets (CP-0)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#0b0e14; --panel:#141923; --line:#243042; --ink:#e8eef7; --dim:#8a98ac;
+      --eclat:#aac8ff; --vest:#3fd0b6; --frac:#9d7bdb; --gold:#d9a441;
+      --r-faded:#6b7280; --r-kindled:#c96a2a; --r-luminous:#d9a441; --r-radiant:#f0d9a0; --r-converged:#aac8ff;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:radial-gradient(1200px 700px at 50% -10%, #16203020, transparent), var(--bg);color:var(--ink);font-family:Inter,system-ui,sans-serif;padding:28px 32px 80px}
+    h1{font-family:'Cormorant Garamond',serif;font-weight:700;font-size:34px;margin:0 0 4px;color:var(--eclat)}
+    .sub{color:var(--dim);font-size:13px;margin:0 0 22px}
+    .flags{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:24px}
+    .chip{background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:12px;color:var(--dim)}
+    .chip b{color:var(--ink)}
+    section.cat{margin:0 0 30px}
+    section.cat>h2{font-family:'Cormorant Garamond',serif;font-size:22px;margin:0 0 2px;border-bottom:1px solid var(--line);padding-bottom:6px}
+    .count{color:var(--dim);font-size:12px;font-weight:400;margin-left:8px}
+    h3.subcat{font-size:13px;color:var(--dim);text-transform:uppercase;letter-spacing:.08em;margin:16px 0 8px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:12px}
+    .tile{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px;text-align:center;display:flex;flex-direction:column;gap:6px;min-height:130px}
+    .tile picture{display:flex;align-items:center;justify-content:center;flex:1;min-height:84px}
+    .tile img{max-width:100%;max-height:104px;object-fit:contain;image-rendering:auto}
+    .tile .id{font-size:10.5px;color:var(--dim);word-break:break-word;line-height:1.25}
+    .tile.verify{outline:1px dashed var(--gold);outline-offset:-1px}
+    .tile.lowres{outline:1px dashed var(--r-kindled);outline-offset:-1px}
+    .badge{font-size:9px;padding:1px 5px;border-radius:4px;align-self:center}
+    .badge.v{background:#3a2e12;color:var(--gold)}
+    .badge.l{background:#3a2114;color:var(--r-kindled)}
+    .bgtile{grid-column:1/-1;height:160px;border-radius:10px;border:1px solid var(--line);background-size:cover;background-position:center;display:flex;align-items:flex-end;padding:8px}
+    .bgtile .id{background:#000a;padding:3px 8px;border-radius:6px}
+    #err{color:#ff8b8b;font-size:13px;white-space:pre-wrap}
+  </style>
+</head>
+<body>
+  <h1>Éclats of Lumière — Teste de Assets</h1>
+  <p class="sub">CP-0 · cada categoria carregada de <code>assets/manifest.js</code>. WebP com fallback PNG nativo (<code>&lt;picture&gt;</code>).</p>
+  <div class="flags" id="flags"></div>
+  <div id="err"></div>
+  <div id="root"></div>
+
+  <script src="assets/manifest.js"></script>
+  <script>
+    const A = window.EclatsAssets;
+    const root = document.getElementById('root');
+    const err = document.getElementById('err');
+
+    if (!A) {
+      err.textContent = 'ERRO: EclatsAssets não carregou (assets/manifest.js).';
+    } else {
+      // flags resumo
+      const f = A.FLAGS || {lowres:[],verify:[]};
+      const lowset = new Set(f.lowres||[]);
+      const verset = new Set(f.verify||[]);
+      let leafCount = 0;
+      const flagsEl = document.getElementById('flags');
+      flagsEl.innerHTML =
+        `<span class="chip">Base: <b>${A.BASE}</b></span>` +
+        `<span class="chip">Lowres: <b>${(f.lowres||[]).length}</b></span>` +
+        `<span class="chip">VERIFICAR: <b>${(f.verify||[]).length}</b></span>`;
+
+      const tile = (id, relpath, isBg) => {
+        const verify = verset.has(relpath), low = lowset.has(relpath);
+        if (isBg) {
+          return `<div class="bgtile ${low?'lowres':''}" style="background-image:${A.bg(id)}">
+            <span class="id">${id}${low?' · LOWRES':''}</span></div>`;
+        }
+        leafCount++;
+        return `<div class="tile ${verify?'verify':''} ${low?'lowres':''}">
+          ${A.picture(id, {alt:id})}
+          ${verify?'<span class="badge v">VERIFICAR</span>':''}
+          ${low?'<span class="badge l">LOWRES</span>':''}
+          <span class="id">${id}</span></div>`;
+      };
+
+      // renderiza recursivamente um no (dict) como grid; sub-dicts viram subcat
+      const renderNode = (node, idPrefix, isBgCat) => {
+        const leaves = [], subdicts = [];
+        for (const k of Object.keys(node)) {
+          (typeof node[k] === 'string' ? leaves : subdicts).push(k);
+        }
+        let html = '';
+        if (leaves.length) {
+          html += '<div class="grid">' +
+            leaves.map(k => tile(idPrefix + k, node[k], isBgCat)).join('') + '</div>';
+        }
+        for (const k of subdicts) {
+          html += `<h3 class="subcat">${k} <span class="count">(${Object.keys(node[k]).length})</span></h3>`;
+          html += renderNode(node[k], idPrefix + k + '.', isBgCat);
+        }
+        return html;
+      };
+
+      const countLeaves = (node) => Object.values(node).reduce((n,v)=> n + (typeof v==='string'?1:countLeaves(v)),0);
+
+      let html = '';
+      for (const cat of Object.keys(A.DATA)) {
+        const node = A.DATA[cat];
+        const isBgCat = (cat === 'backgrounds' || cat === 'worldmap');
+        html += `<section class="cat"><h2>${cat}<span class="count">${countLeaves(node)} itens</span></h2>`;
+        html += renderNode(node, cat + '.', isBgCat);
+        html += '</section>';
+      }
+      root.innerHTML = html;
+
+      // conta falhas de carregamento
+      let broken = 0, checked = 0, totalImgs = root.querySelectorAll('img').length;
+      root.querySelectorAll('img').forEach(img => {
+        const done = () => { checked++; if (checked===totalImgs) {
+          flagsEl.innerHTML += `<span class="chip">Imagens: <b>${totalImgs}</b> · quebradas: <b style="color:${broken?'#ff8b8b':'#7bd88f'}">${broken}</b></span>`;
+        }};
+        if (img.complete) { if (!img.naturalWidth) broken++; done(); }
+        else { img.addEventListener('load', done); img.addEventListener('error', ()=>{broken++;done();}); }
+      });
+    }
+  </script>
+</body>
+</html>
