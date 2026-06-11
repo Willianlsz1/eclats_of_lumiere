@@ -1,202 +1,127 @@
-// UI — skin branco/azul (CP-G), segue docs/eclats_ui_mockup_v2_branco_azul.html.
-// Card do Seeker à esquerda, grade de inimigos à direita, contadores no topo,
-// medidor de Convergence fixo no rodapé.
+// UI — casca Éclats (unificação U-1). Substitui a UI antiga mantendo o
+// contrato que src/main.js consome: setupUI / renderUI / showOfflineSummary.
+// Chrome do mockup: nav (topo-esq) + moedas (topo-dir) + stage 1920×1080.
+// As telas (combate/mapa/player) são preenchidas nos U-2..U-4; aqui ficam
+// placeholders, mas as moedas e a zona já leem o state REAL do motor.
 
+import './tokens.css';
+import './shell.css';
 import { formatNumber } from '../core/format.js';
-import {
-  heroLevel, dps, playerHpMax, currentAPS,
-  critChance, critDamageMult, convFactor,
-  strTotal, vitTotal, frtTotal, wisTotal,
-  statCostNext, buyStat, buyStatMax,
-} from '../game/stats.js';
-import { changeSubarea } from '../game/combat.js';
+import { picture, bg } from '../data/assets.js';
 import { getCurrentMap, subareaLevelRange } from '../game/enemies.js';
-import { xpWall, canConverge, runPoints, doConverge } from '../game/convergence.js';
 
-const $ = (id) => document.getElementById(id);
+const $ = (sel, root = document) => root.querySelector(sel);
 
-// Rótulo e texto de efeito de cada Gold Stat (§5)
-const STAT_DEFS = [
-  { key: 'str', label: 'STR', effect: (s) => `×${formatNumber(strTotal(s))} dano` },
-  { key: 'vit', label: 'VIT', effect: (s) => `×${formatNumber(vitTotal(s))} HP` },
-  { key: 'agi', label: 'AGI', effect: (s) => `${currentAPS(s).toFixed(2)} APS` },
-  { key: 'lck', label: 'LCK', effect: (s) => `${(critChance(s) * 100).toFixed(1)}% crit` },
-  { key: 'frt', label: 'FRT', effect: (s) => `×${formatNumber(frtTotal(s))} Lumens` },
-  { key: 'wis', label: 'WIS', effect: (s) => `×${formatNumber(wisTotal(s))} XP` },
+// moedas do topo — leem o state real
+const COINS = [
+  { id: 'lumens',      icon: 'icons.currency.lumens',      name: 'Lumens',      get: (s) => formatNumber(s.lumens) },
+  { id: 'vestiges',    icon: 'icons.currency.vestiges',    name: 'Vestiges',    get: (s) => formatNumber(s.vestiges) },
+  { id: 'convergence', icon: 'icons.currency.convergence', name: 'Convergence', get: (s) => formatNumber(s.convergences) },
 ];
 
-// Glyph placeholder por criatura (arte real entra via assets/ quando aprovada)
-const GLYPHS = {
-  'Candlewisp Shade': 'wisp',
-  'Mothlight Herald': 'frag',
-  'Dreamhorn Warden': 'shroom',
-};
+// telas. icon = id de nav confirmado pelo Willian. locked = pós-MVP da main.
+const VIEWS = [
+  { id: 'combat',    label: 'Combate',   icon: 'icons.nav.2' },
+  { id: 'map',       label: 'Mapa',      icon: 'icons.nav.5' },
+  { id: 'player',    label: 'Seeker',    icon: 'icons.nav.1' },
+  { id: 'gear',      label: 'Gear',      glyph: '🛡',         locked: true },
+  { id: 'passives',  label: 'Passivas',  icon: 'icons.nav.3', locked: true },
+  { id: 'memoires',  label: 'Mémoires',  icon: 'icons.nav.6', locked: true },
+  { id: 'ascension', label: 'Ascension', icon: 'icons.nav.7', locked: true },
+];
+
+let current = 'combat';
 
 export function setupUI(state) {
-  $('btn-prev').addEventListener('click', () => changeSubarea(state, -1));
-  $('btn-next').addEventListener('click', () => changeSubarea(state, +1));
-  $('btn-converge').addEventListener('click', () => doConverge(state));
+  buildCoins();
+  buildNav();
+  buildViews();
+  show('combat');
+  fit();
+  window.addEventListener('resize', fit);
+}
 
-  const rows = $('stat-rows');
-  for (const def of STAT_DEFS) {
-    const row = document.createElement('div');
-    row.className = 'stat-row';
-    row.innerHTML = `
-      <span class="s-label">${def.label} <b class="s-level"></b></span>
-      <span class="s-effect"></span>
-      <button type="button" class="s-buy"></button>
-      <button type="button" class="s-max">Max</button>
-    `;
-    row.querySelector('.s-buy').addEventListener('click', () => buyStat(state, def.key));
-    row.querySelector('.s-max').addEventListener('click', () => buyStatMax(state, def.key));
-    rows.appendChild(row);
+function buildCoins() {
+  $('.coins').innerHTML = COINS.map((c) =>
+    `<div class="coin ${c.id}">${picture(c.icon, { alt: c.name })}` +
+    `<span class="meta"><span class="n">${c.name}</span><span class="v" id="coin-${c.id}">0</span></span></div>`
+  ).join('');
+}
+
+function buildNav() {
+  const nav = $('.nav'); nav.innerHTML = '';
+  for (const v of VIEWS) {
+    const btn = document.createElement('button');
+    btn.className = 'navbtn' + (v.locked ? ' locked' : '') + (v.glyph && !v.icon ? ' provisional' : '');
+    btn.dataset.view = v.id;
+    btn.title = v.locked ? `${v.label} — pós-MVP` : v.label;
+    btn.innerHTML = `<span class="ico">${v.glyph ? v.glyph : picture(v.icon, { alt: v.label })}</span>`;
+    if (!v.locked) btn.addEventListener('click', () => show(v.id));
+    nav.appendChild(btn);
   }
 }
 
-// Banner de retorno: resumo do progresso offline (§15)
+function buildViews() {
+  const main = $('.stage-main'); main.innerHTML = '';
+  for (const v of VIEWS) {
+    const view = document.createElement('div');
+    view.id = 'view-' + v.id;
+    view.className = 'view placeholder';
+    const glyph = v.glyph
+      ? `<div class="glyph" style="font-size:96px;display:grid;place-items:center;opacity:.5">${v.glyph}</div>`
+      : `<div class="glyph">${picture(v.icon, { alt: v.label })}</div>`;
+    const sub = v.locked ? 'pós-MVP' : 'em construção · U-2…U-4';
+    view.innerHTML = `<div>${glyph}<h2>${v.label}</h2><div class="cp">${sub}</div>` +
+      (v.id === 'combat' ? `<div class="lore" id="combat-readout">—</div>` : '') + `</div>`;
+    main.appendChild(view);
+  }
+}
+
+function show(id) {
+  current = id;
+  document.querySelectorAll('.view').forEach((n) => n.classList.toggle('active', n.id === 'view-' + id));
+  document.querySelectorAll('.navbtn').forEach((n) => n.classList.toggle('active', n.dataset.view === id));
+  $('#stage-backdrop').style.backgroundImage = bg('backgrounds.map1');
+}
+
+function fit() {
+  const s = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
+  $('#stage').style.transform = `scale(${s})`;
+  $('#toosmall').style.display = s < 0.22 ? 'grid' : 'none';
+}
+
+export function renderUI(state) {
+  // moedas (state real)
+  for (const c of COINS) {
+    const el = document.getElementById('coin-' + c.id);
+    if (el) el.textContent = c.get(state);
+  }
+  // leitura ao vivo na tela de combate (prova que o motor roda sob a casca)
+  const ro = document.getElementById('combat-readout');
+  if (ro && current === 'combat') {
+    const map = getCurrentMap();
+    const range = subareaLevelRange(map, state.subarea);
+    ro.textContent = `${map.name} · Sub-área ${state.subarea}/${map.subareaCount} · ` +
+      `Lv ${Math.round(range.lo)}–${Math.round(range.hi)} · ${formatNumber(state.killsTotal)} kills`;
+  }
+}
+
+// Resumo de progresso offline (§15) — toast simples sobre a casca
 export function showOfflineSummary(summary) {
   const hours = summary.seconds / 3600;
   const time = hours >= 1 ? `${hours.toFixed(1)}h` : `${Math.round(summary.seconds / 60)}min`;
   const retreat = summary.retreated ? ' Recuou até o ponto sustentável.' : '';
-  $('offline-text').textContent =
-    `Enquanto você esteve fora (${time}): ${formatNumber(summary.kills)} kills, ` +
-    `+${formatNumber(summary.lumens)} Lumens, +${formatNumber(summary.xp)} XP, ` +
-    `+${formatNumber(summary.vestiges)} Vestiges.${retreat}`;
-  $('offline-banner').hidden = false;
-  $('offline-close').addEventListener('click', () => { $('offline-banner').hidden = true; }, { once: true });
-}
-
-export function renderUI(state) {
-  const map = getCurrentMap();
-  const hpMax = playerHpMax(state);
-
-  // Topo
-  $('top-lumens').textContent = formatNumber(state.lumens);
-  $('top-vestiges').textContent = formatNumber(state.vestiges);
-  const range = subareaLevelRange(map, state.subarea);
-  const mapDone = state.bossDefeated.every(Boolean) ? ' · ✓' : '';
-  $('top-zone-sub').textContent =
-    `Sub-área ${state.subarea}/${map.subareaCount} · Lv ${Math.round(range.lo)}–${Math.round(range.hi)}${mapDone}`;
-
-  // Gate: avançar só até a subárea desbloqueada (boss abre a próxima)
-  const next = $('btn-next');
-  next.disabled = state.subarea >= state.unlockedSubarea;
-  next.title = next.disabled && state.subarea < map.subareaCount
-    ? 'Derrote o boss desta sub-área para avançar'
-    : 'Avançar sub-área';
-  $('btn-prev').disabled = state.subarea <= 1;
-
-  // Card do Seeker
-  $('p-level').textContent = formatNumber(heroLevel(state.xpTotal));
-  $('p-hp-text').textContent = `${formatNumber(Math.max(0, state.player.hp))} / ${formatNumber(hpMax)}`;
-  $('p-hp-fill').style.width = `${Math.max(0, (state.player.hp / hpMax) * 100)}%`;
-  $('p-dps').textContent = formatNumber(dps(state));
-  $('p-aps').textContent = currentAPS(state).toFixed(2);
-  $('p-crit').textContent = `${(critChance(state) * 100).toFixed(1)}% ×${critDamageMult(state).toFixed(2)}`;
-  $('c-count').textContent = formatNumber(state.convergences);
-  $('c-points').textContent = formatNumber(state.convPoints);
-  $('c-factor').textContent = `×${convFactor(state).toFixed(2)}`;
-
-  const status = $('p-status');
-  if (state.player.dead) {
-    status.textContent = `Morto — respawn em ${Math.ceil(state.player.respawnTimer)}s (recuou uma sub-área)`;
-    status.hidden = false;
-  } else {
-    status.hidden = true;
+  let el = document.getElementById('offline-toast');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'offline-toast';
+    document.getElementById('screen').appendChild(el);
   }
-
-  renderStats(state);
-  renderConvergence(state);
-  renderEnemies(state);
-  renderDamageFloats(state);
-}
-
-function renderStats(state) {
-  const rows = $('stat-rows').children;
-  STAT_DEFS.forEach((def, i) => {
-    const row = rows[i];
-    const level = state.stats[def.key];
-    const cost = statCostNext(level);
-    row.querySelector('.s-level').textContent = `Lv ${formatNumber(level)}`;
-    row.querySelector('.s-effect').textContent = def.effect(state);
-    const buy = row.querySelector('.s-buy');
-    buy.textContent = `+1 (${formatNumber(cost)})`;
-    buy.disabled = state.lumens < cost;
-    row.querySelector('.s-max').disabled = state.lumens < cost;
-  });
-}
-
-function renderConvergence(state) {
-  const wall = xpWall(state.convergences);
-  const pct = Math.min(100, (state.xpRun / wall) * 100);
-  const ready = canConverge(state);
-
-  // Barra "Parede da run" do card (violeta, como no mockup)
-  $('p-xp-fill').style.width = `${pct}%`;
-  $('p-xp-text').textContent = `${formatNumber(state.xpRun)} / ${formatNumber(wall)} XP`;
-
-  // Medidor fixo do rodapé
-  $('g-cap').innerHTML = ready
-    ? `A luz se reuniu — <b>Convergir: +${formatNumber(runPoints(state))} pontos</b>`
-    : `A luz se reúne — <b>Convergence em ${pct.toFixed(0)}%</b>`;
-  $('g-fill').style.width = `${pct}%`;
-  $('g-pct').textContent = `${formatNumber(state.xpRun)} / ${formatNumber(wall)} XP`;
-  const seed = $('btn-converge');
-  seed.disabled = !ready;
-  seed.classList.toggle('ready', ready);
-}
-
-function renderEnemies(state) {
-  const grid = $('enemy-grid');
-
-  // Reconstroi os cards quando o pack muda de tamanho/identidade
-  if (grid.children.length !== state.enemies.length) {
-    grid.innerHTML = '';
-    for (const mob of state.enemies) grid.appendChild(buildEnemyCard(mob));
-  }
-
-  state.enemies.forEach((mob, i) => {
-    const card = grid.children[i];
-    if (card.dataset.mobId !== String(mob.id)) {
-      grid.replaceChild(buildEnemyCard(mob), card);
-      return;
-    }
-    card.querySelector('.e-hp-text').textContent =
-      `${formatNumber(Math.max(0, mob.hp))} / ${formatNumber(mob.hpMax)}`;
-    card.querySelector('.e-hp-fill').style.width = `${Math.max(0, (mob.hp / mob.hpMax) * 100)}%`;
-  });
-}
-
-function buildEnemyCard(mob) {
-  const card = document.createElement('article');
-  card.className = mob.isBoss ? 'enemy boss' : 'enemy';
-  card.dataset.mobId = mob.id;
-  const glyph = mob.isBoss ? 'gold' : (GLYPHS[mob.name] ?? 'frag');
-  card.innerHTML = `
-    <div class="art"><span class="glyph ${glyph}"></span></div>
-    <h3 class="name"></h3>
-    <span class="lvl"></span>
-    <div class="row"><span>ATK <b class="e-atk"></b></span><span>HP <b class="e-hp-text"></b></span></div>
-    <div class="ebar"><i class="e-hp-fill"></i></div>
-  `;
-  card.querySelector('.name').textContent = mob.isBoss ? `👑 ${mob.name}` : mob.name;
-  card.querySelector('.lvl').textContent = `The Fragmented · Lv ${formatNumber(mob.level)}${mob.isBoss ? ' · BOSS' : ''}`;
-  card.querySelector('.e-atk').textContent = formatNumber(mob.dmg);
-  return card;
-}
-
-// Números de dano flutuantes em branco-ciano (interface fria — mockup).
-// Consome a fila state.fx preenchida pelo combate.
-function renderDamageFloats(state) {
-  if (state.fx.length === 0) return;
-  for (const hit of state.fx) {
-    const card = document.querySelector(`[data-mob-id="${hit.mobId}"] .art`);
-    if (!card) continue; // mob já substituído — descarta silenciosamente
-    const el = document.createElement('span');
-    el.className = hit.isCrit ? 'dmg crit' : 'dmg';
-    el.textContent = `${hit.isCrit ? 'CRIT ' : ''}−${formatNumber(hit.amount)}`;
-    card.appendChild(el);
-    setTimeout(() => el.remove(), 850);
-  }
-  state.fx.length = 0;
+  el.innerHTML =
+    `<b>🌙 Enquanto você esteve fora (${time})</b><br>` +
+    `${formatNumber(summary.kills)} kills · +${formatNumber(summary.lumens)} Lumens · ` +
+    `+${formatNumber(summary.xp)} XP · +${formatNumber(summary.vestiges)} Vestiges.${retreat}` +
+    `<button id="offline-close">OK</button>`;
+  el.style.display = 'block';
+  document.getElementById('offline-close').addEventListener('click', () => { el.style.display = 'none'; }, { once: true });
 }
