@@ -86,7 +86,7 @@ export const OFFLINE = {
 
 // Núcleo / infraestrutura
 export const TICK_SECONDS = 0.1;     // tick fixo de 100ms
-export const MAX_CATCHUP_TICKS = 50; // teto de catch-up por frame (offline real é CP-F)
+export const MAX_CATCHUP_TICKS = 50; // teto de catch-up por frame (ausências longas: offline §15 no reload)
 export const AUTOSAVE_MS = 10_000;
 export const SAVE_KEY = 'eclats_save_v1';
 export const SCHEMA_VERSION = 1;
