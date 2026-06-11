@@ -458,7 +458,7 @@ Renda e custo de stats crescem em paridade → tempo por compra constante em qua
 - Afixos **iguais somam** (regra de ouro: somam dentro da categoria, multiplicam entre). Tema do Gear = **multiplicadores brutos** (mecânicas ficam nas Passivas).
 - Raridades futuras possíveis (Art Direction): **Primordial · Ein Sof** (extensão do teto no endgame).
 - Persiste sempre (não reseta).
-- ⏳ **Em debate:** catálogo de afixos (primário por peça + pool secundário; now vs future), motor sem-teto exato, sistema de materiais.
+- ✅ **Catálogo de afixos FECHADO** (ver abaixo). ⏳ resta: motor sem-teto exato (calibração) e assignment determinístico por peça (passada leve).
 
 > *(Estrutura herdada do DESIGN.md §26-28 fica como histórico; substituída pelo modelo acima.)*
 
@@ -467,7 +467,31 @@ Renda e custo de stats crescem em paridade → tempo por compra constante em qua
 - ❌ **Synergy** (bônus por subir todas as peças parelho) — **descartado** (decisão do Willian).
 - ✅ **Stats em camadas (multi-flavor, estilo Gaiadon):** cada stat de afixo vem em "sabores" que empilham — **flat (+X) · bônus (+%) · multiplicador (×) · mastery (% lento)**. **A raridade desbloqueia sabores mais fortes** (Faded = flat/%; Converged = também × e mastery), além de mais afixos. Empilham estilo ARPG (`flat → ×(1+Σ%) → ×Π mult → ×(1+mastery)`). [forma exata na calibração]
 - 🔮 **Gems / Set bonus** — camada FUTURA (colecionável, set 2/3/4/5; pode encaixar com Echoes). Pesquisar via prints do Willian (Steam bloqueia fetch).
-- Afixos primários por peça ✅ (Edge=dano · Vigil=HP · Veil=defesa · Grasp=crit · Resonance=APS · Band=Lumens). Pool secundário "agora" aprovado; "futuros" a pesquisar.
+- Afixos primários por peça ✅ (Edge=dano · Vigil=HP · Veil=defesa · Grasp=crit · Resonance=APS · Band=Lumens). Pool secundário ✅ enumerado abaixo.
+
+### Catálogo de afixos ✅ FECHADO 2026-06-11 (insp. Gaiadon equipment + Grand Chase; pesquisa idle/ARPG)
+**Modelo:** cada peça garante seu **primário** (afixo inerente, estilo Diablo); a **raridade abre slots** que puxam deste **pool**; cada afixo rola nos **4 sabores** (flat · Bonus% · Multiplier× · Mastery) já travados, com os fortes gateados por raridade. **Determinístico** (sem re-roll). **Só multiplicadores brutos** — procs/mecânicas ficam nas Passivas.
+
+**12 afixos no pool:**
+
+| Grupo | Afixo | Now/Future | Nota |
+|---|---|---|---|
+| **A — Combate** | **Dano** | now | primário *Edge* |
+| | **HP máximo** | now | primário *Vigil* |
+| | **Defesa** | now | primário *Veil* (mitigação, §4) |
+| | **Crit Chance** | now | primário *Grasp*; transbordo >100% → crit damage (§14B) |
+| | **Crit Damage** | now | o multiplicador-rei, uncapped (pesquisa idle) |
+| | **APS** | now | primário *Resonance*; 1 das 3 fontes de APS (§4) |
+| | **Regen** | now | sobrevivência (HP recovery) |
+| **B — Anti-inimigo** | **Dano em Boss** | now | acelera materiais + Éclats (bosses são a fonte) |
+| | **Erosão do Vazio** (penetração / Enemy HP Reduction) | future | precisa da defesa de inimigos; par do Void Piercing |
+| **C — Farm/economia** | **Lumens** | now | primário *Band* |
+| | **XP** | now | — |
+| | **Materiais** | now | **+% drop de materiais** (qtd por kill/boss) — modesto de propósito; engata no Craft (§13B) e na Mémoire #5 |
+
+**Exclusões deliberadas** (decisão do Willian 2026-06-11): **Vestiges, Éclats e Offline ficam FORA do Gear**. Linha de design: **Gear acelera FARM** (Lumens/XP/Materiais); **moedas de prestígio (Vestiges/Éclats) e Offline vêm de Passivas/Mémoires** — evita empilhar fontes da mesma moeda de prestígio (inflação) e dá identidade a cada andar.
+
+⏳ **Próximo (passada leve):** assignment determinístico — **qual secundário cada uma das 6 peças ganha** conforme sobe de raridade (dá identidade às peças). ⏳ **Calibração:** valor por sabor/afixo, nº de slots por raridade.
 
 ## 13B. CRAFT / MATERIAIS (🟡 EM DESIGN 2026-06-11 — sistema BASE, early/mid)
 
