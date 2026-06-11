@@ -441,6 +441,31 @@ Renda e custo de stats crescem em paridade → tempo por compra constante em qua
 - 🔮 **Gems / Set bonus** — camada FUTURA (colecionável, set 2/3/4/5; pode encaixar com Echoes). Pesquisar via prints do Willian (Steam bloqueia fetch).
 - Afixos primários por peça ✅ (Edge=dano · Vigil=HP · Veil=defesa · Grasp=crit · Resonance=APS · Band=Lumens). Pool secundário "agora" aprovado; "futuros" a pesquisar.
 
+## 13B. CRAFT / MATERIAIS (🟡 EM DESIGN 2026-06-11 — sistema BASE, early/mid)
+
+Sistema próprio (NÃO Ascension — saiu dos Fate Keepers em 2026-06-11 porque o Gear precisa evoluir cedo). Serve o Gear (§13): subir raridade custa materiais. Disponível desde o começo do jogo.
+
+### Ponto 1 — Estrutura do material ✅ TRAVADO 2026-06-11
+- **Materiais TIERED por raridade.** O **tier do material decide qual salto de raridade do Gear ele paga:**
+  | Material | Paga o salto |
+  |---|---|
+  | **Tier 1** | Faded → Kindled |
+  | **Tier 2** | Kindled → Luminous |
+  | **Tier 3** | Luminous → Radiant |
+  | **Tier 4** | Radiant → Converged |
+  | *(Tier 5+)* | *futuro: Primordial · Ein Sof (§13, teto endgame)* |
+- Tiers **baixos dropam de conteúdo early** (Map 1-2 / dificuldade Normal); **altos de mapas/dificuldades late**. Escala sozinho com o jogo.
+- Idle-friendly: pouca gestão de inventário (1 família, ~4-5 contadores), sem receita multi-mapa.
+- Nomes (lore) ⏳ — puxar do lore bible (tema: fragmentos de luz/Lumière).
+
+### Pontos em debate (próximos)
+- **Ponto 2 — Fontes de drop:** Guardiões de sub-área (frequente/early) + boss final do mapa (raro/maior). Dificuldade multiplica a quantia E libera tiers mais altos. ⏳ travar.
+- **Ponto 3 — A Forja (tela de craft):** (a) gastar material p/ subir raridade do Gear; (b) **refino** = converter N de tier baixo → 1 de tier alto (dá uso ao excedente do farm early). ⏳ travar.
+- **Ponto 4 — Automação/idle:** botão "subir tudo" + passiva **Vestige Pull** (turbina ganho, já travada §14B). ⏳ travar.
+- ⏳ **Calibração (por último):** quantidade por salto × 6 peças, taxa de drop, multiplicadores de dificuldade, custo do refino.
+
+---
+
 ## 14. ECHOES (🔒 estrutura herdada · ⏳ lista e recalibração)
 
 Sistema mantido do DESIGN.md §21-24 (5 raridades Hollow→Sovereign, 3 categorias de stats, recipes com materiais de mapa + boss). Nunca resetam. ⏳ lista completa por mapa, evolução e envelope numérico dentro do orçamento de décadas.
