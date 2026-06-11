@@ -47,6 +47,10 @@ export function createInitialState() {
     },
     materiais: [0, 0, 0, 0], // §13B (Passo 4): T1-T4. materiais[r] paga a raridade r→r+1.
 
+    // §8 (Passo 5): dificuldade selecionada (índice em DIFFICULTIES) + automações dos Fate Keepers
+    difficulty: 0,
+    auto: { stats: false, converge: false, progress: false }, // toggl_es (default off; desbloqueiam por Ascension)
+
     // Posição no mundo
     map: 1,
     subarea: 1,         // 1..5
@@ -122,6 +126,10 @@ export function applySnapshot(snapshot) {
   // Materiais (§13B, schema v2): default 0 p/ saves antigos (sem materiais). Normaliza sempre.
   const mats = Array.isArray(snapshot.materiais) ? snapshot.materiais : [];
   for (let i = 0; i < state.materiais.length; i++) state.materiais[i] = mats[i] ?? 0;
+  // §8 (schema v3): dificuldade + automações. Normaliza sempre (default p/ saves antigos).
+  state.difficulty = snapshot.difficulty ?? 0;
+  const a = snapshot.auto || {};
+  state.auto = { stats: !!a.stats, converge: !!a.converge, progress: !!a.progress };
 }
 
 // Extrai só o que deve ser persistido (pack e timers são reconstruídos no load)
@@ -144,6 +152,8 @@ export function toSnapshot() {
     bestSubareaRun: state.bestSubareaRun,
     gear: JSON.parse(JSON.stringify(state.gear)),         // persiste sempre (§13)
     materiais: [...state.materiais],                      // §13B (persiste sempre)
+    difficulty: state.difficulty,                         // §8 (Passo 5)
+    auto: { ...state.auto },                              // §8 automações
     passives: JSON.parse(JSON.stringify(state.passives)), // persiste sempre (§7)
     eclats: state.eclats,                                 // §10
     ascensions: state.ascensions,                         // §9

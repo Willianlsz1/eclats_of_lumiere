@@ -50,3 +50,20 @@
 
 .as-note { text-align: center; font-family: var(--font-display); font-style: italic;
   font-size: var(--fs-lg); color: var(--dim); margin: 0; }
+
+/* ---------------- Fate Keepers — automação + dificuldade (Passo 5) ---------------- */
+.as-fate { margin-top: 22px; padding-top: 16px; border-top: var(--border-soft); }
+.as-fate h3 { margin: 14px 0 8px; font-family: var(--font-display); font-size: var(--fs-md);
+  color: var(--ink); display: flex; align-items: center; gap: 8px; }
+.as-fk { font-style: normal; font-size: var(--fs-xs); color: var(--gold);
+  border: 1px solid color-mix(in srgb, var(--gold) 45%, transparent); border-radius: 6px; padding: 1px 6px; }
+.as-autos { display: grid; gap: 8px; }
+.as-autos label { display: flex; align-items: center; gap: 8px; font-size: var(--fs-sm); color: var(--ink); cursor: pointer; }
+.as-autos label.locked { opacity: .4; cursor: not-allowed; }
+.as-diffs { display: flex; flex-wrap: wrap; gap: 8px; }
+.as-diffs button { appearance: none; cursor: pointer; padding: 7px 14px; border-radius: var(--radius-sm);
+  border: var(--border-soft); background: var(--panel-2); color: var(--ink); font-size: var(--fs-sm);
+  transition: border-color .15s ease, background .15s ease, opacity .15s ease; }
+.as-diffs button:hover:not(:disabled) { border-color: var(--eclat); }
+.as-diffs button.active { border-color: var(--gold); background: color-mix(in srgb, var(--gold) 16%, transparent); color: var(--gold); }
+.as-diffs button:disabled { opacity: .4; cursor: not-allowed; }

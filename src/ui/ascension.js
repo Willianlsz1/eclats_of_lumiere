@@ -5,13 +5,17 @@
 // Contrato: buildAscensionView(root, state) monta o DOM; renderAscension(state) atualiza.
 
 import { formatNumber } from '../core/format.js';
-import { ASCENSIONS } from '../data/constants.js';
+import { ASCENSIONS, DIFFICULTIES } from '../data/constants.js';
 import {
   nextAscension, ascMult, reqMet, canAscend, doAscend, currentRank, eclatsDripPerSec,
 } from '../game/ascension.js';
 import { resetPack } from '../game/combat.js';
+import { difficultyAvailable, setDifficulty } from '../game/difficulty.js';
 
 const $ = (id) => document.getElementById(id);
+
+// Fate Keeper mínimo p/ cada automação (A1 = stats/converge, A2 = progress)
+const AUTO_FK = { stats: 1, converge: 1, progress: 2 };
 
 export function buildAscensionView(root, state) {
   root.classList.remove('placeholder');
@@ -27,7 +31,28 @@ export function buildAscensionView(root, state) {
 
     <div class="as-ladder" id="as-ladder"></div>
     <p class="as-note" id="as-note"></p>
+
+    <section class="as-fate">
+      <h3>Fate Keepers — Automação</h3>
+      <div class="as-autos" id="as-autos">
+        <label><input type="checkbox" data-auto="stats"> Auto Gold Stats <i class="as-fk">A1</i></label>
+        <label><input type="checkbox" data-auto="converge"> Auto Convergir <i class="as-fk">A1</i></label>
+        <label><input type="checkbox" data-auto="progress"> Auto-progressão <i class="as-fk">A2</i></label>
+      </div>
+      <h3>Dificuldade <i class="as-fk">abre na A2</i></h3>
+      <div class="as-diffs" id="as-diffs">
+        ${DIFFICULTIES.map((d, i) => `<button type="button" data-diff="${i}">${d.name}</button>`).join('')}
+      </div>
+    </section>
   `;
+
+  $('as-autos').querySelectorAll('input[data-auto]').forEach((cb) =>
+    cb.addEventListener('change', () => {
+      const k = cb.dataset.auto;
+      if (state.ascensions >= AUTO_FK[k]) state.auto[k] = cb.checked; else cb.checked = false;
+    }));
+  $('as-diffs').querySelectorAll('button[data-diff]').forEach((b) =>
+    b.addEventListener('click', () => { setDifficulty(state, Number(b.dataset.diff)); renderAscension(state); }));
 
   const ladder = $('as-ladder');
   ASCENSIONS.forEach((a, idx) => {
@@ -89,4 +114,22 @@ export function renderAscension(state) {
         ? (able ? 'Pronto para ascender.' : `Junte ${formatNumber(next.cost)} Vestiges para a A${next.id}.`)
         : `Derrote o Guardião final do mapa para liberar a A${next.id}.`)
     : 'Todas as Ascensions concluídas — você é Lumière.';
+
+  // Fate Keepers — automação (toggles) + dificuldade
+  $('as-autos').querySelectorAll('input[data-auto]').forEach((cb) => {
+    const k = cb.dataset.auto;
+    const unlocked = state.ascensions >= AUTO_FK[k];
+    cb.disabled = !unlocked;
+    cb.checked = unlocked && state.auto[k];
+    cb.closest('label').classList.toggle('locked', !unlocked);
+  });
+  $('as-diffs').querySelectorAll('button[data-diff]').forEach((b) => {
+    const i = Number(b.dataset.diff);
+    const d = DIFFICULTIES[i];
+    const avail = difficultyAvailable(state, i);
+    b.disabled = !avail;
+    b.classList.toggle('active', state.difficulty === i);
+    b.textContent = d.breakInf ? `${d.name} 🔒` : d.name;
+    b.title = d.breakInf ? 'Requer break_infinity (futuro)' : `×${formatNumber(d.hpMult)} HP/dano · ×${d.rewardMult} recompensa`;
+  });
 }

@@ -174,6 +174,22 @@ export const CRAFT = {
 // tier do material que o mapa dropa (índice 0..3 = T1..T4); Map 5 = T4 (future T5)
 export const mapMaterialTier = (map) => Math.min(map - 1, 3);
 
+// §8 — DIFICULDADES (Camada 7, Passo 5). hpMult aplica a HP E dano dos mobs;
+// rewardMult a materiais/Éclats. O SISTEMA abre na A2 (minAscension); o gate dos
+// modos é por PODER (você morre se fraco) + bloqueio de OVERFLOW (≤ 1e100).
+// Nightmare/Tormento = território break_infinity → VISÍVEIS mas sempre bloqueados (breakInf).
+export const DIFFICULTIES = [
+  { key: 'normal',    name: 'Normal',    hpMult: 1,    rewardMult: 1,  minAscension: 0, breakInf: false },
+  { key: 'dificil',   name: 'Difícil',   hpMult: 1e5,  rewardMult: 3,  minAscension: 2, breakInf: false },
+  { key: 'nightmare', name: 'Nightmare', hpMult: 1e15, rewardMult: 10, minAscension: 2, breakInf: true  },
+  { key: 'tormento',  name: 'Tormento',  hpMult: 1e30, rewardMult: 30, minAscension: 2, breakInf: true  },
+];
+
+// Fate Keepers (A1-A5) — desbloqueio = state.ascensions ≥ N. A4 soma mobs na tela.
+export const FATE = {
+  a4MobBonus: 6, // +6 mobs no pack quando ascensions ≥ 4 (respeita o teto ~24: sub5 12→18)
+};
+
 // §7 — PASSIVAS · economia ✅ canônica · efeitos individuais ⏳ PROVISÓRIOS.
 // 3 árvores × 15 (3 grupos de 5). Moeda = Vestiges. Desbloqueia na 1ª Convergence.
 // Custo de desbloqueio (posição ×5) e evolução (×0.3×1.30^(n-1)) são do GDD §7;
@@ -259,5 +275,5 @@ export const TICK_SECONDS = 0.1;     // tick fixo de 100ms
 export const MAX_CATCHUP_TICKS = 50; // teto de catch-up por frame (ausências longas: offline §15 no reload)
 export const AUTOSAVE_MS = 10_000;
 export const SAVE_KEY = 'eclats_save_v1';
-export const SCHEMA_VERSION = 2; // v2 (Passo 4): + state.materiais[4] (T1-T4)
+export const SCHEMA_VERSION = 3; // v3 (Passo 5): + state.difficulty + state.auto (Fate Keepers)
 export const NUMBER_CAP = 1e100;     // teto do jogo base — cabe no float nativo

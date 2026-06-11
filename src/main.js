@@ -5,6 +5,7 @@ import { state } from './core/state.js';
 import { load, save, setupAutosave } from './core/save.js';
 import { startLoop } from './core/loop.js';
 import { combatTick, resetPack } from './game/combat.js';
+import { automationTick } from './game/fatekeepers.js';
 import { playerHpMax } from './game/stats.js';
 import { simulateOffline } from './game/offline.js';
 import { maybeApplyDevUnlock, showDevBadge, setupDevButton } from './core/dev.js';
@@ -33,6 +34,7 @@ setupAutosave();
 // Tick de simulação (100ms fixo) + render por tick
 startLoop((dt) => {
   combatTick(state, dt);
+  automationTick(state); // §8 Fate Keepers (A1-A2): auto-stats/converge/progress (se ligados)
   renderUI(state);
 });
 

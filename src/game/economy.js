@@ -7,13 +7,13 @@ import { frtTotal, wisTotal } from './stats.js';
 import { gearLumensMult, gearXpMult } from './gear.js';
 import { passiveEcoMult } from './passives.js';
 import { memoireLumensMult, memoireXpMult, memoireVestigeMult } from './memoires.js';
+import { effectiveDifficulty } from './difficulty.js';
 
-// Multiplicador de YIELD de material (§13B). ⛓️ hooks reservados, todos = 1 por ora:
-//   dificuldade (Step 5: ×3/×10/×30) · Vestige Pull (passiva) · Mémoire du Façonnage (Passo 6)
-//   · afixo Materiais do gear (⏳ precisa de mapeamento amortecido — a curva crua do gear é forte demais).
-// Base (sem fontes) reproduz o pacing de material.mjs (~27 min/tier no teto de 54k kills/h).
-function materialYieldMult(_state) {
-  return 1;
+// Multiplicador de YIELD de material (§13B): DIFICULDADE ×rewardMult (×3/×10/×30).
+// ⛓️ hooks reservados (= 1 por ora): Vestige Pull (passiva) · Mémoire du Façonnage (Passo 6)
+//   · afixo Materiais do gear (⏳ precisa de mapeamento amortecido — a curva crua é forte demais).
+function materialYieldMult(state) {
+  return effectiveDifficulty(state).rewardMult;
 }
 
 // §13B: drop de materiais no kill. 1% do tier do MAPA + 0.1% do tier seguinte; boss = chunk garantido.

@@ -5,6 +5,7 @@
 
 import { TICK_SECONDS, OFFLINE } from '../data/constants.js';
 import { combatTick, resetPack } from './combat.js';
+import { automationTick } from './fatekeepers.js';
 import { playerHpMax } from './stats.js';
 
 // Simula `seconds` de ausência. Retorna o resumo dos ganhos (ou null se curto).
@@ -23,6 +24,7 @@ export function simulateOffline(state, seconds) {
   const ticks = Math.floor(simSeconds / TICK_SECONDS);
   for (let i = 0; i < ticks; i++) {
     combatTick(state, TICK_SECONDS);
+    automationTick(state); // §8: automações dos Fate Keepers também rodam offline
   }
 
   // Garantia do §15: nunca abrir morto — completa o respawn pendente
