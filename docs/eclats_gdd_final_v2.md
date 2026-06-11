@@ -285,7 +285,13 @@ Nota de calibração: no simulador as passivas entram como agregado (+5% dano/n�
 | **Éclat Attunement** | aumenta o ganho de **pontos de Convergence** (a luz juntada rende mais) | mid/late |
 | **Last Light** | **sobrevive a um golpe fatal** com 1 HP (1×/onda ou cooldown) — rede de segurança | mid |
 | **Void Collapse** | a cada X kills, colapso que tira **% da vida MÁX** de todos os mobs (não escala c/ seu dano) + reduz o dano deles — **anti-tank** (destrava ondas onde seu dano empaca). *Distinto do Luminal Explosion (ofensivo, escala c/ seu dano)* | late |
-| *(La Fracture's Echo, The Fracture's Gift, Claimed Domination, Nil's Embrace, Void Endurance)* | ⏳ a definir | — |
+| **La Fracture's Echo** | efeitos periódicos (surge/burst/colapso) têm chance de **ecoar** (disparar 2×) — turbina todo efeito temporizado | late |
+| **The Fracture's Gift** | concede **níveis grátis de Gold Stats** por nível — empurrão que **sobrevive ao reset** da Convergence (a "stats extras" do Willian) | late |
+| **Claimed Domination** | bônus forte contra **bosses/Guardiões** (+dano e/ou +defesa contra eles) — matador de boss | mid/late |
+| **Nil's Embrace** | eleva o **teto do offline** (dentro das 24h) / reduz dano ao voltar — par do Dreamwalker, sem furar "offline ≤ ativo" | mid |
+| **Void Endurance** | **+HP e regen sem teto** — motor defensivo de longo prazo (o "prêmio" defensivo da árvore) | late |
+
+**✅ Árvore Fracture 15/15.** 🎉 **AS 3 ÁRVORES ESTÃO COMPLETAS — 45/45 passivas com efeito definido.** Próximo: passada de POSICIONAMENTO (grupos early/mid/late) + decidir cap por passiva.
 
 ---
 
