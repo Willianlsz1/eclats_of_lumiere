@@ -84,7 +84,7 @@ goldRatio    = 0.10     xpRatio   = 0.08
 >
 > **Distribuição do APS (decisão do Willian):** nenhuma fonte sozinha chega ao teto.
 > - **AGI (Gold Stat):** sobe o APS só até um **teto pequeno próprio** (sub-cap baixo);
-> - **1 passiva (Void Haste, árvore Fracture):** contribui mais APS;
+> - **1 passiva (Fracture Pulse, árvore Fracture):** é a CHAVE que bate o teto;
 > - **Gear:** contribui APS (afixo dedicado);
 > - As três juntas alcançam o ~15 → todas relevantes a vida toda (conserta o AGI, que era inútil pelo cap 1.25).
 >
@@ -272,6 +272,16 @@ Nota de calibração: no simulador as passivas entram como agregado (+5% dano/n�
 
 **✅ Árvore Vestige 15/15 definida.** Nota XP: cobertura proposital de 1 dedicada (**Wisdom of Ruins**) + globais (Awakened Harvest, Hoarder, Scavenger/Void Scavenger) + Mémoire "de la Marche" — XP é "double-dip" (nível do Seeker **e** parede de Convergence), logo potente por ponto; não se inunda de passivas de XP de propósito. *(Willian pode pedir +peso em XP.)*
 
+**Fracture (utilidade / defesa / QoL) — efeitos definidos:**
+| Passiva | Efeito aprovado | Hint |
+|---|---|---|
+| **Weakened Void** | **reduz a defesa** dos inimigos (par do Void Piercing) — req. sistema de defesa | mid |
+| **Fracture Sense** | chance de **pular onda** / parte da contagem ao limpar (stage skip) | early |
+| **Void Awareness** | **+mobs por onda** (aumenta o cap da tela — §14B) | mid |
+| **Fracture Pulse** | **+APS** — a passiva-CHAVE para bater o teto de ~15 (com gear; AGI é só a base pequena) | early/mid |
+| **Void Haste** | +velocidade de **respawn da onda** (menos tempo morto entre ondas) | early |
+| *(Shard Disruption, Nihel's Shadow, Éclat Attunement, La Fracture's Echo, Last Light, Void Collapse, The Fracture's Gift, Claimed Domination, Nil's Embrace, Void Endurance)* | ⏳ a definir | — |
+
 ---
 
 ## 8. ASCENSION (✅ CALIBRADO)
@@ -372,12 +382,12 @@ Seção dedicada: os tetos do jogo interagem (APS × kills/ataque × mobs na tel
 | Cap | Valor atual (código) | Decisão | Status |
 |---|---|---|---|
 | **APS (teto global)** | 1.25 | subir p/ **~15** (Tópico 2.4) — nº exato a calibrar | 🟡 direção ✅, valor ⏳ |
-| **APS por AGI (sub-cap)** | sem sub-cap (per 0.04) | AGI sobe só até um **teto pequeno**; resto = passiva + gear | ⏳ definir o sub-cap |
+| **APS por AGI (sub-cap)** | sem sub-cap (per 0.04) | AGI sobe só até um **teto pequeno**; o grosso vem da passiva **Fracture Pulse** (chave p/ bater o teto) + gear | ⏳ definir o sub-cap |
 | **Kills por ataque** | 1 (fixo) | base 1; passivas (Overkill/Execute/Luminal Explosion) furam, extras pagam ~50% | 🟡 regra ✅, máx de extras ⏳ |
-| **Mobs na tela (onda)** | [1,2,4,6,8] por sub-área | base + **passiva que aumenta o cap** (ideia do Willian) | ⏳ definir base e teto |
+| **Mobs na tela (onda)** | [1,2,4,6,8] por sub-área | base + passiva **Void Awareness** (aumenta o cap) | ⏳ definir base e teto |
 | **Crit (distribuição)** | LCK domina | **distribuído** (como APS): LCK (Gold Stat) dá fração mínima; o resto (chance e damage) vem de passivas (Luminal Edge…) + gear (Grasp) | ✅ direção 2026-06-11 |
 | **Crit chance (teto)** | 100% | ✅ **transbordo confirmado**: acima de 100% (geralmente via gear) o excedente vira crit damage (~101% → +1% dmg). Valores finos ⏳ §16.6 | ✅ direção |
-| **Defesa de inimigos** | 🔒 não existe | **novo sistema a implementar:** mobs/bosses mitigam dano do jogador; Void Piercing penetra. Definir forma (plana? %? escala com level/mapa?) | ⏳ a desenhar |
+| **Defesa de inimigos** | 🔒 não existe | **novo sistema a implementar:** mobs/bosses mitigam dano; **Void Piercing** (Éclat) penetra, **Weakened Void** (Fracture) reduz. Definir forma (plana? %? escala?) | ⏳ a desenhar |
 | **Loot / coleta** | direta no kill | **automático, sem drop no chão** (confirmado) — não haverá passivas de "raio de coleta" | ✅ |
 | **Materiais** | 🔒 não existe | **novo recurso a desenhar:** materiais de boss para subir **raridade de gear** (§13); passiva **Vestige Pull** turbina o ganho. Definir: o quê, de onde (bosses?), por mapa? | ⏳ a desenhar |
 | **Gear: nível por raridade** | 25/50/100/175/300 | provisório | ⏳ calibrar |
