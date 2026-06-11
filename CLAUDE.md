@@ -16,7 +16,7 @@ Idle RPG para browser. JavaScript puro (ES6 modules) + HTML + CSS, build com Vit
 - Cap físico de combate: máximo de 1 kill por ataque — kill rate nunca excede o APS atual. Esta regra ancora toda a economia.
 
 ## Estrutura
-index.html · style.css · src/core/ (loop, state, save, format) · src/game/ (combat, enemies, economy, stats, convergence) · src/data/constants.js · src/ui/ · assets/ · docs/
+index.html · style.css · src/core/ (loop, state, save, format) · src/game/ (combat, enemies, economy, stats, convergence) · src/data/ (constants, assets) · src/ui/ (ui = casca nav/moedas + fit; combat/map/player = telas reais; tokens/shell/combat/map/player .css) · assets/ · docs/
 
 ## Disciplina de fases (inegociável)
 O MVP é só o Map 1, em fases: CP-A bootstrap/loop/save · CP-B combate · CP-C gold stats · CP-D subáreas+boss · CP-E convergence · CP-F vestiges+offline · CP-G skin/assets. Implemente APENAS o CP pedido na tarefa. Nunca adiante fases, nunca faça refactors amplos não pedidos, nunca misture escopo. Fora do MVP (não implementar ainda): Passivas, Gear, Echoes, Mémoires, Ascension, Maps 2-5.

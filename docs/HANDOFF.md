@@ -14,8 +14,13 @@
   - **`redesign/curve-sim`** = a **CARA** (pipeline de assets + design system + telas pixel-fiéis) — mas sem motor real.
 - **Decisão do Willian (dono):** base = **`main`** (o motor); trazer a arte + telas pra dentro dela; **escopo = MVP da main** (só Map 1; Gear/Passivas/Mémoires/Ascension são **pós-MVP**, ficam como nav bloqueada).
 - **Branch de trabalho:** `unify/eclats` (parte da `main`). A `redesign/curve-sim` fica **intacta como backup**.
-- **Já feito:** U-0 (assets migrados) e U-1 (casca lendo o state real). **Falta:** U-2 (combate), U-3 (mapa), U-4 (player), U-final (limpeza).
-- **Rodar:** `npm install` (já feito) → `npm run dev` → `localhost:5173`.
+- **Já feito:** U-0 (assets), U-1 (casca), **U-2 (combate)**, **U-3 (mapa)**, **U-4 (player: Gold Stats + Convergence)** — todas as telas do MVP ligadas ao motor real. **Falta:** só o **U-final** (reconciliar nomes de assets `VERIFICAR`→kebab-case do `assets/README.md` — depende de cânon do Willian).
+- **Rodar:** `npm install` (já feito) → `npm run dev` → `localhost:5173`. **Deploy:** push na `main` → GitHub Pages (`willianlsz1.github.io/Game-Teste`). Toda a unificação já está na `main`.
+
+> **Atualização 2026-06-11 (U-2..U-4 concluídos):** Combate, Mapa e Player são telas reais
+> (`src/ui/combat.js` · `map.js` · `player.js`), verificadas headless e no mobile. Correção de
+> mobile aplicada (centralização do palco via `translate` — celular renderizava o palco fora da
+> tela). Identidades do trio do Map 1 + boss confirmadas pela Art Direction §6. Resta o U-final.
 
 ---
 
@@ -143,12 +148,10 @@ Categorias em `ASSETS.DATA`: `backgrounds(map1..5)`, `worldmap(atlas, continent1
 
 ## 6. O que FALTA fazer (detalhado)
 
-> ⚠️ **Estado atual = "modo casca":** entre U-1 e U-4 o jogo roda (motor ticka) mas as telas
-> são placeholders. **Controles de interação foram removidos no U-1 e PRECISAM voltar** nas
-> próximas fases, senão o jogo fica só idle sem input:
-> - **comprar Gold Stats** (`buyStat`/`buyStatMax`) — vai na tela do Player (U-4).
-> - **Convergir** (`doConverge`, quando `canConverge`) — Player ou rodapé (U-4).
-> - **mudar de sub-área** (`changeSubarea`) — Combate ou Mapa (U-2/U-3).
+> ✅ **RESOLVIDO (U-2..U-4):** os controles de interação que o U-1 tirou da casca voltaram:
+> - **comprar Gold Stats** (`buyStat`/`buyStatMax`) — tela do Player (U-4). ✅
+> - **Convergir** (`doConverge`, quando `canConverge`) — tela do Player (U-4). ✅
+> - **mudar de sub-área** (`changeSubarea`/`enterSubarea`) — setas no Combate (U-2) e nós no Mapa (U-3). ✅
 
 ### U-2 — Tela de Combate ligada ao motor real
 **Objetivo:** trocar o loop de mentira pelo `combatTick` real.
