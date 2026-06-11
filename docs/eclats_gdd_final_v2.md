@@ -564,7 +564,15 @@ Tela própria com as 6 peças + painel de refino.
 - **Vestige Pull** (passiva, §14B) turbina o ganho de material.
 
 ### ✅ Craft/Materiais — DESIGN FECHADO 2026-06-11 (4 pontos)
-Falta só **calibração (por último):** nº de níveis por raridade, custo de material por salto × 6 peças, taxa de drop por boss/mob, multiplicadores de dificuldade, razão do refino, nomes de lore.
+
+### Calibração (Camada 4) ✅ 2026-06-11 — `tools/sim/material.mjs` + pesquisa de gênero
+**Pesquisa** (Idle Slayer ~10% drop · Melvor tabelas de peso + Luck · materiais de progressão = comuns, "caça" = raros): o gênero usa **% de drop**; o nº certo depende do **ritmo de kills**. Como matamos 15-50 mobs/s (Idle Slayer mata devagar), **~1% aqui ≈ ~10% deles** (normalizado). Validado.
+- **Drop = % por MOB**, do **tier do MAPA atual** (Map 1→T1 … Map 4→T4): **~1%** do tier do mapa **+ ~0.1%** do **tier seguinte** (tabela com peso, estilo Melvor — deixa pré-estocar). **Vestige Pull** (passiva) + futuros bônus tipo Luck **multiplicam** a taxa.
+- **Custo p/ subir 1 peça um tier ≈ 40** material → **240 p/ as 6 peças**. Subir a raridade do mapa todo ≈ **24k mob kills** ≈ **8 min** (ref. 180k/h) a **27 min** (piso 15 APS).
+- **Bosses** (Guardião/final): bônus garantido (~+30) + chance melhor do tier seguinte — **aceleram, nunca são requisito**.
+- **Decisões do Willian:** (1) raridade **independe de dificuldade** — tudo farmável no **Normal**; dificuldade (×3/×10/×30) só **acelera**. (2) **Converged abre no Map 4** (último tier pronto antes do Map 5). (3) material = **% do mob** (mata-se muitos).
+- **Refino:** 12:1 entre tiers (usa excedente; rushar tier alto cedo é proibitivo — mantém o ritmo).
+- ⏳ resta (fino): nomes de lore dos materiais, valor exato do bônus do Vestige Pull.
 
 ---
 

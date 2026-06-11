@@ -350,7 +350,8 @@ Tudo abaixo está **decidido** (travado com o Willian, registrado no GDD), mas o
 > - ✅ **Camada 1 (Caps):** APS 15 + sub-cap AGI 3.75× · kills extras 50% · mobs `[2,4,6,9,12]` teto ~24 · crit distribuído.
 > - ✅ **Camada 2 (Sobrevivência):** dano dos mobs = **0.02×HP** constante + alvo de Defesa `def≈1-4×packDps`. *(já no `constants.js`: dano + packSizes; `apsCap` e Defesa esperam o wiring dos sistemas de suporte.)*
 > - ✅ **Camada 3 (Gear):** orçamento **~10 décadas** (de 100); modelo `(1+L×0.02×rarityMult) × 1.008^L` (× liga em Luminous), **+500 níveis/Ascension** = sem-teto; **Veil maximizado = 80% mit** (`tools/sim/gear.mjs`). Sobe de ×1.5 a ×1.4 tri — nunca morre.
-> - ⏳ **Próximas:** 4 Craft · 5 Passivas · 6 Mémoires · 7 Convergence+Dificuldades.
+> - ✅ **Camada 4 (Craft/Materiais):** material = **~1% drop/mob** (tier=tier do mapa) **+0.1% tier seguinte**; **240 mat = 6 peças/tier** (~8-27 min); **Converged no Map 4**; raridade **independe de dificuldade**; refino 12:1 (`tools/sim/material.mjs` + pesquisa de gênero).
+> - ⏳ **Próximas:** 5 Passivas · 6 Mémoires · 7 Convergence+Dificuldades.
 
 > **Orçamento de poder** (`tools/sim/budget.mjs`): dano cresce **~95 décadas** no jogo. Split: Mémoires 70 · Gear 10 · Passivas 8 · Gold Stats 4 · Convergence 4 · Ascension 3.8 · Level 1 = ~100. HP segue o mesmo.
 
