@@ -315,6 +315,15 @@ A Ascension vira o **loop de prestige de cima** (a Convergence é o de baixo):
 - **Fate Keepers = game-changers / recompensas muito fortes** (5 mecânicas, 1 por Ascension) — quais 5: pesquisa + escolha numa sessão dedicada.
 - ⏳ **Pendente (registrado):** as **15 Mémoires precisam do mesmo tratamento das passivas** (pesquisa + efeito de cada uma) — tópico próprio.
 
+### Tier do Seeker = DESPERTAR (✅ TRAVADO 2026-06-11 — separado da Ascension)
+> O tier (T1→T5) deixa de ser recompensa de Ascension e vira um **gate de poder no MEIO do mapa** (estilo "awakening" do Idle Blade): você chega à região do boss final **já evoluído**, e sem despertar os mobs ficam tanky/letais demais (parede natural).
+- **Quando:** ao alcançar a **Sub-área 3** do mapa + **requisito**.
+- **Requisito:** **(a) derrotar o Guardião da Sub 3** (teste do despertar — só combate). ⏳ **Futuro: escalar para (b) + custo de material** (quando o sistema de craft de materiais existir — decisão do Willian).
+- **Efeito:** salto de poder **permanente** (×dano/HP) necessário pra limpar Sub 4-5 + o boss final + o mapa seguinte. Permanente (sobrevive a todos os resets, incl. Ascension).
+- **Progressão:** Despertar em Sub 3 dos Maps 1-4 → T2 Illuminate · T3 Éclairé · T4 L'Éveillé · T5 Lumière. Map 5 (Nihel) já é Lumière.
+- **Tier ≠ Ascension:** o **Despertar** é o gate de poder no meio do mapa; a **Ascension** é o prestige no fim do mapa. Dois sistemas.
+- *Código:* `currentRank`/arte/moldura passam a ler o **tier de Despertar** (novo campo de state), não `state.ascensions`.
+
 | Ascension | Requisito | Custo (Vestiges) | asc_mult | Éclats (bolsa) | Rank desbloqueado |
 |---|---|---|---|---|---|
 | A1 | Boss Map 1 | **500.000** | **×10** | 100 + desbloqueia drip | Illuminate |
@@ -431,6 +440,7 @@ Seção dedicada: os tetos do jogo interagem (APS × kills/ataque × mobs na tel
 | **Crit (distribuição)** | LCK domina | **distribuído** (como APS): LCK (Gold Stat) dá fração mínima; o resto (chance e damage) vem de passivas (Luminal Edge…) + gear (Grasp) | ✅ direção 2026-06-11 |
 | **Crit chance (teto)** | 100% | ✅ **transbordo confirmado**: acima de 100% (geralmente via gear) o excedente vira crit damage (~101% → +1% dmg). Valores finos ⏳ §16.6 | ✅ direção |
 | **Defesa de inimigos** | 🔒 não existe | **novo sistema a implementar:** mobs/bosses mitigam dano; **Void Piercing** (Éclat) penetra, **Weakened Void** (Fracture) reduz. Definir forma (plana? %? escala?) | ⏳ a desenhar |
+| **Tier do Seeker (Despertar)** | tier = nº de ascensions (código) | 🔄 vira gate de poder na **Sub 3** (vencer o Guardião) → ×poder permanente; arte/rank leem o tier de Despertar, não ascensions | ✅ direção / impl. pendente |
 | **Loot / coleta** | direta no kill | **automático, sem drop no chão** (confirmado) — não haverá passivas de "raio de coleta" | ✅ |
 | **Materiais** | 🔒 não existe | **novo recurso a desenhar:** materiais de boss para subir **raridade de gear** (§13); passiva **Vestige Pull** turbina o ganho. Definir: o quê, de onde (bosses?), por mapa? | ⏳ a desenhar |
 | **Gear: nível por raridade** | 25/50/100/175/300 | provisório | ⏳ calibrar |
