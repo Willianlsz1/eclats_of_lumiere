@@ -1,14 +1,15 @@
-// UI — casca Éclats (unificação U-1). Substitui a UI antiga mantendo o
-// contrato que src/main.js consome: setupUI / renderUI / showOfflineSummary.
+// UI — casca Éclats (unificação). Mantém o contrato que src/main.js consome:
+// setupUI / renderUI / showOfflineSummary.
 // Chrome do mockup: nav (topo-esq) + moedas (topo-dir) + stage 1920×1080.
-// As telas (combate/mapa/player) são preenchidas nos U-2..U-4; aqui ficam
-// placeholders, mas as moedas e a zona já leem o state REAL do motor.
+// Combate já é a cena real ligada ao motor (U-2, em src/ui/combat.js);
+// Mapa e Player seguem placeholders até U-3/U-4. Moedas leem o state REAL.
 
 import './tokens.css';
 import './shell.css';
+import './combat.css';
 import { formatNumber } from '../core/format.js';
 import { picture, bg } from '../data/assets.js';
-import { getCurrentMap, subareaLevelRange } from '../game/enemies.js';
+import { buildCombatView, renderCombat } from './combat.js';
 
 const $ = (sel, root = document) => root.querySelector(sel);
 
@@ -35,7 +36,7 @@ let current = 'combat';
 export function setupUI(state) {
   buildCoins();
   buildNav();
-  buildViews();
+  buildViews(state);
   show('combat');
   fit();
   window.addEventListener('resize', fit);
@@ -61,18 +62,26 @@ function buildNav() {
   }
 }
 
-function buildViews() {
+function buildViews(state) {
   const main = $('.stage-main'); main.innerHTML = '';
   for (const v of VIEWS) {
     const view = document.createElement('div');
     view.id = 'view-' + v.id;
+
+    // Combate: cena real ligada ao motor (U-2). Map/Player ainda placeholders (U-3/U-4).
+    if (v.id === 'combat') {
+      view.className = 'view';
+      main.appendChild(view);
+      buildCombatView(view, state);
+      continue;
+    }
+
     view.className = 'view placeholder';
     const glyph = v.glyph
       ? `<div class="glyph" style="font-size:96px;display:grid;place-items:center;opacity:.5">${v.glyph}</div>`
       : `<div class="glyph">${picture(v.icon, { alt: v.label })}</div>`;
-    const sub = v.locked ? 'pós-MVP' : 'em construção · U-2…U-4';
-    view.innerHTML = `<div>${glyph}<h2>${v.label}</h2><div class="cp">${sub}</div>` +
-      (v.id === 'combat' ? `<div class="lore" id="combat-readout">—</div>` : '') + `</div>`;
+    const sub = v.locked ? 'pós-MVP' : 'em construção · U-3…U-4';
+    view.innerHTML = `<div>${glyph}<h2>${v.label}</h2><div class="cp">${sub}</div></div>`;
     main.appendChild(view);
   }
 }
@@ -96,14 +105,8 @@ export function renderUI(state) {
     const el = document.getElementById('coin-' + c.id);
     if (el) el.textContent = c.get(state);
   }
-  // leitura ao vivo na tela de combate (prova que o motor roda sob a casca)
-  const ro = document.getElementById('combat-readout');
-  if (ro && current === 'combat') {
-    const map = getCurrentMap();
-    const range = subareaLevelRange(map, state.subarea);
-    ro.textContent = `${map.name} · Sub-área ${state.subarea}/${map.subareaCount} · ` +
-      `Lv ${Math.round(range.lo)}–${Math.round(range.hi)} · ${formatNumber(state.killsTotal)} kills`;
-  }
+  // tela de combate ligada ao motor (só renderiza a ativa, por custo)
+  if (current === 'combat') renderCombat(state);
 }
 
 // Resumo de progresso offline (§15) — toast simples sobre a casca
