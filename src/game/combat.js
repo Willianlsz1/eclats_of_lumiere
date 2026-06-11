@@ -15,7 +15,7 @@ import { COMBAT, NUMBER_CAP, FATE } from '../data/constants.js';
 import { spawnPack, spawnBoss, spawnMob, getCurrentMap } from './enemies.js';
 import { damagePerHit, currentAPS, playerHpMax, critChance, critDamageMult, playerDefesa, postArmorDR, enemyDefesa } from './stats.js';
 import { awardKill } from './economy.js';
-import { eclatsDripPerSec } from './ascension.js';
+import { eclatsDripPerSec, checkDespertar } from './ascension.js';
 import { effectiveDifficulty } from './difficulty.js';
 import { gearBossDmgMult, gearRegenMult } from './gear.js';
 import { memoireSurvivalMult, memoireBossDmgMult, memoireEclatsAllMult, memoireDiffRewardMult } from './memoires.js';
@@ -159,6 +159,7 @@ function onBossKill(state) {
   state.bossDefeated[state.subarea - 1] = true;
   state.unlockedSubarea = Math.max(state.unlockedSubarea, Math.min(map.subareaCount, state.subarea + 1));
   state.killsInSubarea = 0;
+  checkDespertar(state); // §8: Guardião da Sub 3 → Despertar (tier de poder)
 }
 
 // Navegação entre subáreas, respeitando o gate (boss abre a próxima)

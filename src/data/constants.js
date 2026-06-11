@@ -236,6 +236,19 @@ export const ASCENSIONS = [
 // §10 — drip de Éclats (liberado pela A1): éclats_por_hora = 0.1 × HP_frontier^0.9
 export const ECLATS_DRIP = { coef: 0.1, exp: 0.9 };
 
+// §8 — DESPERTAR / TIER (Passo 7). O tier T1→T5 é DESACOPLADO do nº de ascensions:
+// vence o Guardião da Sub 3 do mapa → +1 tier (gate de poder no meio do mapa).
+// Map N Sub3 → despertares=N (T_{N+1}); Map 5 já é T5. index despertares = 0..4.
+export const SEEKER_RANKS = [
+  { name: 'Seeker',     tier: 'I' },
+  { name: 'Illuminate', tier: 'II' },
+  { name: 'Éclairé',    tier: 'III' },
+  { name: 'L’Éveillé',  tier: 'IV' },
+  { name: 'Lumière',    tier: 'V' },
+];
+// ×poder permanente por tier de Despertar (dano E HP). ⏳ PROVISÓRIO — calibração na Escala.
+export const DESPERTAR = { mult: 5 };
+
 // §10/§11 — ÉCLATS + MÉMOIRES (✅ motor canônico do GDD). 15 relíquias, 3 por era,
 // desbloqueadas pela Ascension da era; moeda = Éclats. Clarté é o motor global.
 // Os efeitos `wired:true` já somam aos fatores memoire_*; os `wired:false` são
@@ -278,5 +291,5 @@ export const TICK_SECONDS = 0.1;     // tick fixo de 100ms
 export const MAX_CATCHUP_TICKS = 50; // teto de catch-up por frame (ausências longas: offline §15 no reload)
 export const AUTOSAVE_MS = 10_000;
 export const SAVE_KEY = 'eclats_save_v1';
-export const SCHEMA_VERSION = 3; // v3 (Passo 5): + state.difficulty + state.auto (Fate Keepers)
+export const SCHEMA_VERSION = 4; // v4 (Passo 7): + state.despertares (tier de Despertar)
 export const NUMBER_CAP = 1e100;     // teto do jogo base — cabe no float nativo

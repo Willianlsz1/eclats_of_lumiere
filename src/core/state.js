@@ -1,6 +1,6 @@
 // Estado central do jogo. Único objeto mutável compartilhado entre os módulos.
 
-import { SCHEMA_VERSION } from '../data/constants.js';
+import { SCHEMA_VERSION, SEEKER_RANKS } from '../data/constants.js';
 
 export function createInitialState() {
   return {
@@ -17,6 +17,7 @@ export function createInitialState() {
     // Éclats (§10) — moeda-relíquia; fonte é a Ascension (A1). Nunca resetam.
     eclats: 0,
     ascensions: 0, // marcos de Ascension concluídos (§9) — gate das Mémoires por era
+    despertares: 0, // §8 (Passo 7): tier de Despertar (0..4 = T1..T5), gate de poder no meio do mapa
     memoires: new Array(15).fill(0), // níveis das 15 Mémoires (§11); 0 = bloqueada. PERSISTE.
 
     // Convergence (§6) — persistem para sempre
@@ -130,6 +131,13 @@ export function applySnapshot(snapshot) {
   state.difficulty = snapshot.difficulty ?? 0;
   const a = snapshot.auto || {};
   state.auto = { stats: !!a.stats, converge: !!a.converge, progress: !!a.progress };
+  // §8 (schema v4): tier de Despertar. MIGRA de saves antigos a partir das ascensions p/
+  // NÃO regredir o tier — cada ascension passada implica um Despertar (você passou a Sub 3
+  // do mapa p/ vencer o boss e ascender); +1 se já passou a Sub 3 do mapa ATUAL.
+  state.despertares = snapshot.despertares ?? Math.min(
+    SEEKER_RANKS.length - 1,
+    state.ascensions + (state.unlockedSubarea > 3 ? 1 : 0),
+  );
 }
 
 // Extrai só o que deve ser persistido (pack e timers são reconstruídos no load)
@@ -157,6 +165,7 @@ export function toSnapshot() {
     passives: JSON.parse(JSON.stringify(state.passives)), // persiste sempre (§7)
     eclats: state.eclats,                                 // §10
     ascensions: state.ascensions,                         // §9
+    despertares: state.despertares,                       // §8 (Passo 7) tier de Despertar
     memoires: [...state.memoires],                        // §11
   };
 }

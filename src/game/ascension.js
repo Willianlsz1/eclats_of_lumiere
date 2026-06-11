@@ -3,7 +3,7 @@
 // A1 também libera o drip de Éclats (§10). Persiste sempre. Só Map 1 existe
 // no MVP → só A1 é completável; A2-A5 exigem Maps 2-5.
 
-import { ASCENSIONS, ECLATS_DRIP, MAPS } from '../data/constants.js';
+import { ASCENSIONS, ECLATS_DRIP, MAPS, SEEKER_RANKS, DESPERTAR } from '../data/constants.js';
 import { hpForLevel, subareaLevelRange, getCurrentMap } from './enemies.js';
 import { memoireEclatsAllMult } from './memoires.js';
 
@@ -49,11 +49,23 @@ export function doAscend(state) {
   return true;
 }
 
-// Rank/tier atual da Ordre (cerimônia §8). 0 = Seeker (Tier I).
-export function currentRank(state) {
-  if (state.ascensions === 0) return { name: 'Seeker', tier: 'I' };
-  const a = ASCENSIONS[Math.min(state.ascensions, ASCENSIONS.length) - 1];
-  return { name: a.rank, tier: a.tier };
+// ───── Despertar / Tier (§8, Passo 7) — DESACOPLADO das ascensions ─────
+
+// Índice de tier = nº de Despertares (0..4). Tier T1..T5 = SEEKER_RANKS[idx].
+export const despertarTier = (state) => Math.min(SEEKER_RANKS.length - 1, state.despertares || 0);
+
+// Rank/tier atual da Ordre — lê o tier de DESPERTAR (não as ascensions).
+export const currentRank = (state) => SEEKER_RANKS[despertarTier(state)];
+
+// ×poder permanente do Despertar (dano E HP): mult^despertares.
+export const despertarMult = (state) => DESPERTAR.mult ** (state.despertares || 0);
+
+// Gate de poder: vencer o Guardião da Sub 3 do mapa → Despertar (idempotente). Map 5 = sem ganho (já T5).
+export function checkDespertar(state) {
+  if (state.subarea !== 3) return false;
+  const target = Math.min(SEEKER_RANKS.length - 1, state.map); // Map N Sub3 → despertares N
+  if ((state.despertares || 0) < target) { state.despertares = target; return true; }
+  return false;
 }
 
 // Moldura do card do Seeker conforme o tier (T1..T5, todas confirmadas).
