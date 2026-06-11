@@ -420,11 +420,11 @@ Duas fontes, ambas liberadas pela **A1**:
 
 | # | Mémoire | Era | Efeito por nível | Status |
 |---|---|---|---|---|
-| 1 | du Premier Matin | 1 | +10% dano global | ✅ 2026-06-11 |
-| 2 | des Rires | 1 | +10% Lumens *(opção: +% a toda renda early)* | ✅ 2026-06-11 |
-| 3 | de la Marche | 1 | +8% XP (a Mémoire dedicada de XP — double-dip level+Convergence) | ✅ 2026-06-11 |
-| 4 | de la Forme | 2 | +8% Crit Damage (nunca satura — casa com o transbordo de crit, §14B) | ✅ 2026-06-11 |
-| 5 | du Façonnage | 2 | **+% materiais dropados** *(troca: era "+6% efeito de Gear")* — "façonnage"=forjar; alimenta o Craft (§13B) | ✅ 2026-06-11 |
+| 1 | du Premier Matin | 1 | +10% dano global | 🟡 proposta |
+| 2 | des Rires | 1 | +10% Lumens *(opção: +% a toda renda early)* | 🟡 proposta |
+| 3 | de la Marche | 1 | +8% XP (a Mémoire dedicada de XP — double-dip level+Convergence) | 🟡 proposta |
+| 4 | de la Forme | 2 | +8% Crit Damage (nunca satura — casa com o transbordo de crit, §14B) | 🟡 proposta |
+| 5 | du Façonnage | 2 | **+% materiais dropados** *(troca: era "+6% efeito de Gear")* — "façonnage"=forjar; alimenta o Craft (§13B) | 🟡 proposta |
 | 6 | des Profondeurs | 2 | +10% offline | ⏳ rever |
 | 7 | de la Chute | 3 | +12% dano em boss | ⏳ rever |
 | 8 | des Cendres | 3 | +10% Vestiges | ⏳ rever |
