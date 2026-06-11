@@ -465,8 +465,15 @@ Sistema próprio (NÃO Ascension — saiu dos Fate Keepers em 2026-06-11 porque 
 - **Dificuldade** multiplica a quantia E empurra o tier dropado → farmar tier alto em mapa antigo = evoluir gear cedo.
 - ⏳ *fino:* a linha "comum vs raro" está em **T1=mob, T2+=boss**; mover p/ T1-2=mob é ajuste aberto. Drop rate exato = calibração.
 
+### Ponto 3 — A Forja (tela de craft) ✅ TRAVADO 2026-06-11
+Tela própria com as 6 peças + painel de refino.
+- **(a) Subir raridade = GATE DUPLO** (decisão do Willian, mescla dos 2 gates): a peça precisa estar **no nível MÁXIMO da raridade atual** **E** você **paga o material** do tier (T1→Kindled…). Cada salto adiciona afixos + libera sabores de stat mais fortes (§13).
+  - **Catraca:** nivela c/ Lumens → bate o teto da raridade → sobe raridade c/ material → abre níveis novos → repete. Sempre tem "próximo objetivo" claro.
+  - **Encaixe no motor sem-teto:** a **Ascension** levanta o TETO geral (libera as raridades/bandas de nível altas no topo — incl. Primordial/Ein Sof futuras). Dois motores aninhados: rarity↔level (curto) dentro de Ascension (longo).
+- **(b) Refino** = converter **N de tier baixo → 1 de tier alto** (só pra cima; dá uso ao excedente de T1 do farm de mob). Idle-friendly.
+- ⏳ *calibração:* nº de níveis por raridade, custo de material por salto, razão do refino.
+
 ### Pontos em debate (próximos)
-- **Ponto 3 — A Forja (tela de craft):** (a) gastar material p/ subir raridade do Gear; (b) **refino** = converter N de tier baixo → 1 de tier alto (dá uso ao excedente do farm early). ⏳ travar.
 - **Ponto 4 — Automação/idle:** botão "subir tudo" + passiva **Vestige Pull** (turbina ganho, já travada §14B). ⏳ travar.
 - ⏳ **Calibração (por último):** quantidade por salto × 6 peças, taxa de drop, multiplicadores de dificuldade, custo do refino.
 
