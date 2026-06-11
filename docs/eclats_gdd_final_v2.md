@@ -508,7 +508,21 @@ Cada peça **prioriza** seus secundários-assinatura nas raridades baixas (ident
 - **Toda a economia (Lumens/XP/Materiais) concentra no Anel** → cria a decisão de leveling manual ("subo o Anel por farm ou a Arma por dano?", §13B ponto 4). Crit chance+damage andam juntos (Grasp+Edge), como a pesquisa idle recomenda.
 - ⚠️ **Fix de implementação:** o código (`constants.js` GEAR.pieces) tem `veil` com afixo `hp` e `reson` com `xp` — **provisório/errado**; o canon é Veil=defesa, Resonance(reson)=APS. Corrigir no wiring.
 
-⏳ **Resta só calibração:** valor por sabor/afixo, nº de slots por raridade, motor sem-teto exato.
+### Calibração (Camada 3) ✅ 2026-06-11 — validada em `tools/sim/gear.mjs`
+**Orçamento:** Gear carrega **~10 décadas** de dano (e HP/defesa análogos) no jogo todo (§14B). Modelo da curva (por afixo de dano; o total das peças soma ao orçamento):
+```
+gear_mult(L,R) = (1 + L × pctRate × rarityMult[R])      // sabor % (toda raridade) — linear, early/mid
+               × multBase ^ L   (se R ≥ Luminous)        // sabor × — EXPONENCIAL, o motor sem-teto
+   pctRate   = 0.02          rarityMult = [1, 1.5, 2.25, 3.5, 5]   (Faded→Converged)
+   multBase  = 1.008/nível   (sabor × liga em Luminous, idx 2)
+   capPerAsc = +500 níveis no teto a cada Ascension (a Ascension é o motor sem-teto)
+```
+**Jornada validada** (1 peça de dano): Faded ×1.5 → Luminous ×12 → Converged ×338 → **pós-A4 ×21 bi (10.3 déc)** → pós-A5 ×1.4 tri (12.1 déc). **Monotônica = nunca morre.** Salto ~2 décadas por Ascension.
+**Early gentil, late exponencial:** Faded/Kindled modestos (flat/%); o motor × liga em Luminous.
+
+**Veil (defesa) — fecha o alvo da Camada 2:** `def = hp_max × veilFactor`. Veil maximizado → `veilFactor ≈ 0.18` → **def ≈ 4× packDps (80% mitigação)**. Sem Veil → ~0 (você morre na entrada de mapa). Tabela: vf 0.045→1×packDps(50%) · 0.09→2×(67%) · 0.18→4×(80%).
+
+⏳ Resta (fino): nº exato de slots por raridade, custo de nível em Lumens (Camada 4 cuida do gate de material), split do gear_dano entre Edge primário e secundários.
 
 ## 13B. CRAFT / MATERIAIS (🟡 EM DESIGN 2026-06-11 — sistema BASE, early/mid)
 

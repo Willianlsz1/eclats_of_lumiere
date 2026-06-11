@@ -349,7 +349,10 @@ Tudo abaixo está **decidido** (travado com o Willian, registrado no GDD), mas o
 > **📐 Calibração em andamento** (sessão 2026-06-11, simulador em `tools/sim/`):
 > - ✅ **Camada 1 (Caps):** APS 15 + sub-cap AGI 3.75× · kills extras 50% · mobs `[2,4,6,9,12]` teto ~24 · crit distribuído.
 > - ✅ **Camada 2 (Sobrevivência):** dano dos mobs = **0.02×HP** constante + alvo de Defesa `def≈1-4×packDps`. *(já no `constants.js`: dano + packSizes; `apsCap` e Defesa esperam o wiring dos sistemas de suporte.)*
-> - ⏳ **Próximas:** 3 Gear · 4 Craft · 5 Passivas · 6 Mémoires · 7 Convergence+Dificuldades.
+> - ✅ **Camada 3 (Gear):** orçamento **~10 décadas** (de 100); modelo `(1+L×0.02×rarityMult) × 1.008^L` (× liga em Luminous), **+500 níveis/Ascension** = sem-teto; **Veil maximizado = 80% mit** (`tools/sim/gear.mjs`). Sobe de ×1.5 a ×1.4 tri — nunca morre.
+> - ⏳ **Próximas:** 4 Craft · 5 Passivas · 6 Mémoires · 7 Convergence+Dificuldades.
+
+> **Orçamento de poder** (`tools/sim/budget.mjs`): dano cresce **~95 décadas** no jogo. Split: Mémoires 70 · Gear 10 · Passivas 8 · Gold Stats 4 · Convergence 4 · Ascension 3.8 · Level 1 = ~100. HP segue o mesmo.
 
 ### 10.5.1 Defesa / Mitigação (GDD §4) 🎯
 Antes o dano batia direto no HP. Fechado:
