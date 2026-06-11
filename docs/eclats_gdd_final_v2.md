@@ -425,11 +425,11 @@ Duas fontes, ambas liberadas pela **A1**:
 | 3 | de la Marche | 1 | +8% XP (a Mémoire dedicada de XP — double-dip level+Convergence) | ✅ travado 2026-06-11 |
 | 4 | de la Forme | 2 | +8% Crit Damage (nunca satura — casa com o transbordo de crit, §14B) | ✅ travado 2026-06-11 |
 | 5 | du Façonnage | 2 | **+% materiais dropados** *(troca de "+6% efeito de Gear")* — "façonnage"=forjar; alimenta o Craft (§13B) | ✅ travado 2026-06-11 |
-| 6 | des Profondeurs | 2 | +10% offline | ⏳ rever |
-| 7 | de la Chute | 3 | +12% dano em boss | ⏳ rever |
-| 8 | des Cendres | 3 | +10% Vestiges | ⏳ rever |
-| 9 | du Dernier Chant | 3 | +1 ponto de Convergence/run a cada 5 níveis | ⏳ rever |
-| 10 | de la Blessure | 4 | ×1.10 dano (multiplicativo entre níveis) | ⏳ rever |
+| 6 | des Profondeurs | 2 | +10% offline (respeita teto 24h / ≤ ativo) | ✅ travado 2026-06-11 |
+| 7 | de la Chute | 3 | +12% dano em boss (acelera materiais+Éclats — bosses são a fonte) | ✅ travado 2026-06-11 |
+| 8 | des Cendres | 3 | +10% Vestiges (arquétipo (a): acelera a Convergence) | ✅ travado 2026-06-11 |
+| 9 | du Dernier Chant | 3 | +1 ponto de Convergence/run a cada 5 níveis | ✅ travado 2026-06-11 |
+| 10 | de la Blessure | 4 | ×1.10 dano (multiplicativo entre níveis) — apex (c) | ✅ travado 2026-06-11 |
 | 11 | de la Résistance | 4 | +12% HP e regen | ⏳ rever |
 | 12 | du Temps Brisé | 4 | +15% Éclats do gotejamento | ⏳ rever |
 | 13 | du Vide | 5 | −1% HP de inimigos (cap 50) | ⏳ rever |
