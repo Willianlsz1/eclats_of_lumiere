@@ -25,7 +25,11 @@ const budget = [
   ['Passivas',                      8, 'mecânicas + poder'],
   ['Gold Stats',                    4, 'rodinhas do early (depois somem)'],
   ['Convergence',                   4, 'bola de neve composta'],
-  ['Ascension',  +ascDecades.toFixed(1), 'salto por mapa (×6250)'],
+  // ⏳ PENDÊNCIA DE CALIBRAÇÃO (validação 2026-06-12, Decisão 2): a linha "Ascension 3.8"
+  // será substituída por DESPERTAR 2.8 (×5^4=×625) + ASCENSION 1.2 (×2^4=×16) = 4.0 combinados.
+  // O asc_mult cai de ×6250 → ×16; o salto de poder por mapa migra para o Despertar. NÃO alterado
+  // aqui ainda — atualizar quando a calibração do asc_mult/DESPERTAR.mult fechar (sessão de Escala).
+  ['Ascension',  +ascDecades.toFixed(1), 'salto por mapa (×6250 → ×16 pendente; +Despertar 2.8)'],
   ['Level bonus',                   1, 'menor'],
 ];
 

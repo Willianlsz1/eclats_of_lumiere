@@ -343,9 +343,9 @@ teto **30 dias**, mínimo **60s** para mostrar o resumo. Garante que o jogador *
 
 ---
 
-## 10.5 🎯 DESIGN FECHADO NA SESSÃO 2026-06-11 (aguarda calibração + código)
+## 10.5 ✅ DESIGN FECHADO (2026-06-11) · ✅ WIRADO NO CÓDIGO (Passos 1-7) · ⏳ calibração fina (§11)
 
-Tudo abaixo está **decidido** (travado com o Willian, registrado no GDD), mas o **código ainda não reflete**. É o backlog de implementação. Ordem sugerida: **calibração numérica única** → **wiring**.
+O design abaixo foi **decidido** (sessão 2026-06-11), **wirado no código** (7 passos de wiring, 2026-06) e **revalidado** na sessão de validação 2026-06-12 (6 decisões, ver notas ✅ VALIDADO). Resta a **calibração fina única** (§11) e dois itens de código novos da validação: **Eco do Seeker (A3)** e **asc_mult ×2**.
 
 > **📐 Calibração em andamento** (sessão 2026-06-11, simulador em `tools/sim/`):
 > - ✅ **Camada 1 (Caps):** APS 15 + sub-cap AGI 3.75× · kills extras 50% · mobs `[2,4,6,9,12]` teto ~24 · crit distribuído.
@@ -382,17 +382,19 @@ dano_recebido = Σdano × Σdano / (defesa + Σdano)            // nunca 100%, a
 4. **Leveling MANUAL, por peça, independente** (sem auto-level); raridade só com tier anterior maximizado, em ordem. **Vestige Pull** turbina material.
 - ⚠️ Código hoje: `custo_raridade` em **Lumens** (§9.2). Muda para **materiais**; criar recurso `materiais[tier]` + drop nos kills/bosses + tela da Forja.
 
-### 10.5.3 Fate Keepers + Dificuldades (GDD §8) 🎯
+### 10.5.3 Fate Keepers + Dificuldades (GDD §8) — ✅ VALIDADO 2026-06-12
+**Escada dos Fate Keepers** (A1 automatiza o early · A2 reabre o passado · A3 desdobra o jogador · A4 adensa o presente · A5 transcende):
 | A | Fate Keeper |
 |---|---|
-| A1 | Automação básica (auto-Gold Stats + auto-Convergir) |
-| A2 | Auto-progressão + **abre o SISTEMA de dificuldades** (escolha por sub-área; modos altos gateados por PODER, não por Ascension) |
-| A3 | Motor de Éclats (drip mapa atual + offline 24h cheio) |
-| A4 | **+Cap global de mobs na tela** |
-| A5 | Transcendência (loop infinito pós-Nihel + meta-mult) |
+| A1 | Automação básica (auto-Gold Stats + auto-Convergir) — *codado (Passo 5)* |
+| A2 | Auto-progressão + **abre o SISTEMA de dificuldades** (seleção **GLOBAL**; modos altos gateados por PODER) — *codado* |
+| A3 | **Eco do Seeker** 🔁 (substitui "Motor de Éclats"): um eco farma **em 2º plano** um mapa já limpo, rendendo materiais/Lumens/Vestiges a **25-40%** (⏳ calibrar). Precursor dos **Echoes (pets)** pós-MVP. **⏳ código pendente** |
+| A4 | **+Cap global de mobs na tela** — *codado* |
+| A5 | Transcendência (pós-MVP) — *flag* |
 
-**Dificuldades:** Difícil · Nightmare · Tormento — re-rodar mapas limpos com HP/dano muito maiores + recompensas (materiais/Éclats). Escolha **por sub-área**. Brackets = calibração (re-escalar curvas, decisão tomada).
-**Despertar/Tier (gate de poder):** o tier T1→T5 vira gate no **meio do mapa** (Sub 3 + vencer o Guardião) → ×poder permanente; arte lê o tier de Despertar (não nº de ascensions). ⚠️ Código hoje: tier = nº de ascensions.
+**Dificuldades:** Difícil · Nightmare · Tormento — re-rodar mapas com HP/dano maiores + recompensas. ✅ **seleção GLOBAL** (não por sub-área — código do Passo 5 já é assim; corrigido no GDD). Endgame ancora no **Map 4** (Tormento ×1e30 cabe em 1e100); **Map 5 = Normal-only** até break_infinity, **por design**.
+**Despertar/Tier (✅ codado — Passo 7):** tier T1→T5 = **mudança de classe** (insp. Grand Chase), **×5 poder/tier** + arte + rank; Sub 3 dos Maps 1-4 (T2-T5); **Map 5 sem Despertar** (já Lumière). Desacoplado das ascensions (`state.despertares`). `DESPERTAR.mult=×5` ⏳ provisório.
+**Ascension (✅ validado):** asc_mult **passa de ×10/×5/×5/×5 (×6250) → ×2/mapa (×16)** — ⏳ **lista de calibração, código não alterado**. Bolsas (100/300/900/2700) **simbólicas por design** (perdem relevância vs drip — não é bug).
 
 ### 10.5.4 Mémoires — 4 efeitos revisados (GDD §11) 🎯
 Os 15 efeitos foram revisados item-a-item (pesquisa: TT2/Synergism/Gaiadon). **Mudaram 4** vs o §9.4 atual:
@@ -428,24 +430,29 @@ Os outros 11 mantidos. Os efeitos exóticos ainda contam só via Clarté no cód
 
 ## 11. O que FALTA / pendências
 
-### 🎯 Design fechado, aguarda código (sessão 2026-06-11 — detalhe na §10.5)
-- **Defesa/Mitigação** (razão/armadura) — não existe no código (dano bate direto no HP).
-- **Craft/Materiais** — recurso `materiais[tier]` + drop + Forja; raridade muda de Lumens→materiais.
-- **Fate Keepers (A1-A5) + Dificuldades** (Difícil/Nightmare/Tormento por sub-área) — não existem.
-- **Despertar/Tier** como gate de poder na Sub 3 (hoje tier = nº de ascensions).
-- **Mémoires #5/#11/#12/#13** efeitos novos; **catálogo de 12 afixos** + identidade das 6 peças.
+### ✅ Design da §10.5 — CODADO (Passos 1-7 do wiring, 2026-06)
+- ✅ **Defesa/Mitigação** (razão/armadura) · **Craft/Materiais + Forja** · **catálogo de 12 afixos + identidade** · **Fate Keepers A1/A2/A4 + Dificuldades (seleção global)** · **Mémoires (4 novos + 8 exóticos wirados; #14 stub)** · **Despertar/Tier (Passo 7)**.
+- ⏳ **Falta codar:** **Fate Keeper A3 = Eco do Seeker** (validado 2026-06-12, novo — substitui "Motor de Éclats"); **asc_mult ×2** (decisão, código ainda ×10/×5); **offline 24h cap** (código ainda 30d).
 
-### 🔒 Não implementado
-- **Echoes (pets)** — pós-MVP, standby (Art Direction §8e). Sem conceito/arte.
-- **Convergence relics / árvore de relíquias** — a tela do Player mostra `0/15` placeholder.
+### 🔒 Não implementado (pós-MVP)
+- **Echoes (pets)** — herdam o sistema do **Eco do Seeker (A3)** quando implementados. **break_infinity** (libera Nightmare/Tormento + Map 5 alto). **A5 Transcendência**. **Convergence relics**.
 
-### ⏳ Provisório (recalibrar / definir cânon) — a CALIBRAÇÃO ÚNICA (por último)
-- **Dano dos mobs Maps 2-5** (§16.1) — extrapolado; falta calibração de sobrevivência.
-- **Gear:** rates/caps/custos, nº de slots por raridade, valor por sabor, motor sem-teto.
-- **Passivas:** `groupMult`, `maxLevel` e os **45 efeitos individuais** (§16.3) — hoje agregados.
-- **Mémoires:** valor por nível de cada efeito.
-- **Crit:** valores de lck, base e transbordo (§16.6).
-- **Defesa/Craft/Dificuldades:** todas as curvas/brackets/custos.
+### ⏳ LISTA DE CALIBRAÇÃO FINA ÚNICA (sessão de Escala / calibração final — por último)
+Consolidada — tudo que ficou como provisório/hook ao longo do wiring e da validação:
+| Item | Pendência |
+|---|---|
+| **f(xp_run)** | a função de pontos da Convergence: paredes longas, retorno decrescente + bônus do boss, **~50 pts de pico/era** (requisito da sessão de Escala) |
+| **asc_mult** | ×10/×5/×5/×5 → **×2/mapa (×16)**; mexe no orçamento (Asc 1.2 + **Despertar 2.8** = 4.0) — `tools/sim/budget.mjs` |
+| **DESPERTAR.mult** | ×5/tier provisório (gate de poder do Despertar) |
+| **Eco do Seeker (A3)** | fração de rendimento **25-40%** do farm em 2º plano |
+| **veilScale** | escala da Defesa (Veil → veilFactor; alvo: maximizado ≈ 80% mit) |
+| **afixo Materiais (gear)** | mapeamento **amortecido** — a curva crua do gear é forte demais; **"Farm = sem motor ×"** (aditivo). Hoje hook = 1 |
+| **apsCap = 15 + fontes de APS** | apsCap ainda 1.25 no código; wirar AGI(sub-cap)+Fracture Pulse(passiva)+Resonance(gear) |
+| **Passivas individuais** | aplicar o **esquema da Camada 5** aos 45 valores (hoje +5% agregado); `groupMult`, `maxLevel 12` |
+| **Mémoires** | valor por nível de cada um dos 15 (efeitos já wirados; magnitudes provisórias) |
+| **#14 de la Lumière Entière** | `MEMOIRE_CLARTE_EXP_PER` = **0 (stub desarmado)** — a alavanca mais perigosa; calibrar com cuidado extremo |
+| **Crit** | lck, base e transbordo (§16.6) |
+| **Dano dos mobs / Defesa / Craft / Dificuldades** | curvas/brackets/custos finos (a malha §3 e o 0.02×HP já valem) |
 
 ### Arte — estado atual
 - ✅ **Mobs:** todos os 5 trios + guardiões + 5 bosses finais (incl. Nihel = `fallen_angel`) e o Map 4 completo (Fissure Stalker, Sundered Titan, Claimed Vanguard).
