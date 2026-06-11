@@ -6,6 +6,7 @@ import { ECONOMY, NUMBER_CAP, BOSS_LUMEN_MULT, VESTIGES } from '../data/constant
 import { frtTotal, wisTotal } from './stats.js';
 import { gearLumensMult, gearXpMult } from './gear.js';
 import { passiveEcoMult } from './passives.js';
+import { memoireLumensMult, memoireXpMult, memoireVestigeMult } from './memoires.js';
 
 // §7: vestiges_por_kill = ceil(subárea × 0.5) × 3^(índice_do_mapa)
 // Map 1 (índice 0): [1, 1, 2, 2, 3] nas Subs 1-5
@@ -17,12 +18,12 @@ export function awardKill(state, mob) {
   // §12: o ×5 de boss só se aplica a Lumens; o XP já escala pelo HP ×15
   const bossMult = mob.isBoss ? BOSS_LUMEN_MULT : 1;
   const eco = passiveEcoMult(state); // §7 Vestige tree (Lumens/XP) — provisório
-  state.lumens = Math.min(NUMBER_CAP, state.lumens + mob.hpMax * ECONOMY.goldRatio * frtTotal(state) * bossMult * gearLumensMult(state) * eco);
-  const xp = mob.hpMax * ECONOMY.xpRatio * wisTotal(state) * gearXpMult(state) * eco;
+  state.lumens = Math.min(NUMBER_CAP, state.lumens + mob.hpMax * ECONOMY.goldRatio * frtTotal(state) * bossMult * gearLumensMult(state) * eco * memoireLumensMult(state));
+  const xp = mob.hpMax * ECONOMY.xpRatio * wisTotal(state) * gearXpMult(state) * eco * memoireXpMult(state);
   state.xpTotal = Math.min(NUMBER_CAP, state.xpTotal + xp); // vida (level display)
   state.xpRun = Math.min(NUMBER_CAP, state.xpRun + xp);     // run (parede de Convergence)
   // §7: Vestiges nunca resetam; boss paga ×10
-  const vest = vestigesPerKill(state) * (mob.isBoss ? VESTIGES.bossMult : 1);
+  const vest = vestigesPerKill(state) * (mob.isBoss ? VESTIGES.bossMult : 1) * memoireVestigeMult(state);
   state.vestiges = Math.min(NUMBER_CAP, state.vestiges + vest);
   state.killsTotal += 1;
 }

@@ -1,8 +1,8 @@
 // UI — casca Éclats (unificação). Mantém o contrato que src/main.js consome:
 // setupUI / renderUI / showOfflineSummary.
 // Chrome do mockup: nav (topo-esq) + moedas (topo-dir) + stage 1920×1080.
-// Combate, Mapa, Player, Gear e Passivas são telas reais ligadas ao motor.
-// Restam Mémoires/Ascension como placeholder (pós-MVP).
+// Combate, Mapa, Player, Gear, Passivas e Mémoires são telas reais ligadas ao
+// motor. Resta só Ascension como placeholder (pós-MVP).
 
 import './tokens.css';
 import './shell.css';
@@ -11,6 +11,7 @@ import './map.css';
 import './player.css';
 import './gear.css';
 import './passives.css';
+import './memoires.css';
 import { formatNumber } from '../core/format.js';
 import { picture, bg } from '../data/assets.js';
 import { buildCombatView, renderCombat } from './combat.js';
@@ -18,14 +19,17 @@ import { buildMapView, renderMap } from './map.js';
 import { buildPlayerView, renderPlayer } from './player.js';
 import { buildGearView, renderGear } from './gear.js';
 import { buildPassivesView, renderPassives } from './passives.js';
+import { buildMemoiresView, renderMemoires } from './memoires.js';
 
 const $ = (sel, root = document) => root.querySelector(sel);
 
 // moedas do topo — leem o state real
+// 3ª moeda = Éclats (§10), fonte das Mémoires. Usa o ícone de convergence
+// (branco-azul) como placeholder até haver ícone próprio. TODO(canon): ícone Éclats.
 const COINS = [
-  { id: 'lumens',      icon: 'icons.currency.lumens',      name: 'Lumens',      get: (s) => formatNumber(s.lumens) },
-  { id: 'vestiges',    icon: 'icons.currency.vestiges',    name: 'Vestiges',    get: (s) => formatNumber(s.vestiges) },
-  { id: 'convergence', icon: 'icons.currency.convergence', name: 'Convergence', get: (s) => formatNumber(s.convergences) },
+  { id: 'lumens',   icon: 'icons.currency.lumens',      name: 'Lumens',   get: (s) => formatNumber(s.lumens) },
+  { id: 'vestiges', icon: 'icons.currency.vestiges',    name: 'Vestiges', get: (s) => formatNumber(s.vestiges) },
+  { id: 'eclats',   icon: 'icons.currency.convergence', name: 'Éclats',   get: (s) => formatNumber(s.eclats) },
 ];
 
 // telas. icon = id de nav confirmado pelo Willian. locked = pós-MVP da main.
@@ -35,7 +39,7 @@ const VIEWS = [
   { id: 'player',    label: 'Seeker',    icon: 'icons.nav.1' },
   { id: 'gear',      label: 'Gear',      icon: 'icons.nav.4' },
   { id: 'passives',  label: 'Passivas',  icon: 'icons.nav.3' },
-  { id: 'memoires',  label: 'Mémoires',  icon: 'icons.nav.6', locked: true },
+  { id: 'memoires',  label: 'Mémoires',  icon: 'icons.nav.6' },
   { id: 'ascension', label: 'Ascension', icon: 'icons.nav.7', locked: true },
 ];
 
@@ -111,8 +115,15 @@ function buildViews(state) {
       buildPassivesView(view, state);
       continue;
     }
+    // Mémoires: 15 relíquias upáveis com Éclats; Clarté é o motor (pós-MVP).
+    if (v.id === 'memoires') {
+      view.className = 'view';
+      main.appendChild(view);
+      buildMemoiresView(view, state);
+      continue;
+    }
 
-    // Só telas pós-MVP chegam aqui (Mémoires/Ascension).
+    // Só telas pós-MVP chegam aqui (Ascension).
     view.className = 'view placeholder';
     const glyph = v.glyph
       ? `<div class="glyph" style="font-size:96px;display:grid;place-items:center;opacity:.5">${v.glyph}</div>`
@@ -154,6 +165,7 @@ export function renderUI(state) {
   else if (current === 'player') renderPlayer(state);
   else if (current === 'gear') renderGear(state);
   else if (current === 'passives') renderPassives(state);
+  else if (current === 'memoires') renderMemoires(state);
 }
 
 // Resumo de progresso offline (§15) — toast simples sobre a casca

@@ -14,6 +14,11 @@ export function createInitialState() {
     // Vestiges (§7) — nunca resetam
     vestiges: 0,
 
+    // Éclats (§10) — moeda-relíquia; fonte é a Ascension (A1). Nunca resetam.
+    eclats: 0,
+    ascensions: 0, // marcos de Ascension concluídos (§9) — gate das Mémoires por era
+    memoires: new Array(15).fill(0), // níveis das 15 Mémoires (§11); 0 = bloqueada. PERSISTE.
+
     // Convergence (§6) — persistem para sempre
     convergences: 0,
     convPoints: 0,
@@ -91,6 +96,12 @@ export function applySnapshot(snapshot) {
   state.convergences = snapshot.convergences ?? 0;
   state.convPoints = snapshot.convPoints ?? 0;
   state.bestSubareaRun = snapshot.bestSubareaRun ?? state.subarea;
+  // Éclats / Ascension / Mémoires persistem
+  state.eclats = snapshot.eclats ?? 0;
+  state.ascensions = snapshot.ascensions ?? 0;
+  if (Array.isArray(snapshot.memoires)) {
+    for (let i = 0; i < state.memoires.length; i++) state.memoires[i] = snapshot.memoires[i] ?? 0;
+  }
   // Passivas persistem; saves antigos (sem passives) mantêm tudo bloqueado
   if (snapshot.passives) {
     for (const tree of Object.keys(state.passives)) {
@@ -129,5 +140,8 @@ export function toSnapshot() {
     bestSubareaRun: state.bestSubareaRun,
     gear: JSON.parse(JSON.stringify(state.gear)),         // persiste sempre (§13)
     passives: JSON.parse(JSON.stringify(state.passives)), // persiste sempre (§7)
+    eclats: state.eclats,                                 // §10
+    ascensions: state.ascensions,                         // §9
+    memoires: [...state.memoires],                        // §11
   };
 }

@@ -7,9 +7,11 @@
 export function applyDevUnlock(state) {
   state.lumens   = Math.max(state.lumens, 1e12);   // Gold Stats + Gear à vontade
   state.vestiges = Math.max(state.vestiges, 1e9);  // Passivas à vontade
+  state.eclats   = Math.max(state.eclats, 1e9);    // Mémoires à vontade
   state.xpTotal  = Math.max(state.xpTotal, 1e7);   // nível do Seeker decente
 
   state.convergences = Math.max(state.convergences, 1); // libera as Passivas
+  state.ascensions   = Math.max(state.ascensions, 5);   // libera todas as Mémoires
   state.convPoints   = Math.max(state.convPoints, 20);  // conv_factor folgado
   state.unlockedSubarea = 5;                            // mapa todo navegável
   state.bossDefeated = [true, true, true, true, true];
