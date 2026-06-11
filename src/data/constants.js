@@ -132,29 +132,34 @@ export const VESTIGES = {
 export const GEAR_RARITIES = ['faded', 'kindled', 'luminous', 'radiant', 'converged'];
 export const GEAR_RARITY_LABELS = ['Faded', 'Kindled', 'Luminous', 'Radiant', 'Converged'];
 export const GEAR = {
-  // 6 peças canônicas (Art Direction §8h). affix = primário (§13: Edge=dano · Vigil=HP ·
-  // Veil=defesa · Grasp=crit · Resonance=APS · Band=Lumens). Secundários = wiring futuro.
+  // 6 peças canônicas (§10.5.5). Cada peça: PRIMÁRIO inerente + SECUNDÁRIOS que a raridade
+  // destrava em ordem (secondary[i] ativo quando rarity ≥ i+1). Determinístico.
+  // Pool de afixos: dmg · hp · defesa · crit · critDmg · aps · regen · bossDmg · lumens · xp · materiais
+  //                 (+ erosao = future, só reservado — penetração de defesa de inimigos, sem consumidor).
   pieces: [
-    { key: 'edge',  name: 'The Waning Edge',      slot: 'Arma',     affix: 'dmg' },
-    { key: 'vigil', name: 'The Silent Vigil',     slot: 'Elmo',     affix: 'hp' },
-    { key: 'veil',  name: 'Veil of Cinders',      slot: 'Manto',    affix: 'defesa' },
-    { key: 'grasp', name: 'Grasp of the Unnamed', slot: 'Manoplas', affix: 'crit' },
-    { key: 'reson', name: 'The Last Resonance',   slot: 'Amuleto',  affix: 'aps' },
-    { key: 'band',  name: 'Band of Dusk',         slot: 'Anel',     affix: 'lumens' },
+    { key: 'edge',  name: 'The Waning Edge',      slot: 'Arma',     primary: 'dmg',    secondary: ['critDmg', 'bossDmg', 'erosao'] },
+    { key: 'vigil', name: 'The Silent Vigil',     slot: 'Elmo',     primary: 'hp',     secondary: ['defesa', 'regen'] },
+    { key: 'veil',  name: 'Veil of Cinders',      slot: 'Manto',    primary: 'defesa', secondary: ['hp', 'regen', 'erosao'] },
+    { key: 'grasp', name: 'Grasp of the Unnamed', slot: 'Manoplas', primary: 'crit',   secondary: ['critDmg', 'aps', 'dmg'] },
+    { key: 'reson', name: 'The Last Resonance',   slot: 'Amuleto',  primary: 'aps',    secondary: ['crit', 'regen', 'dmg'] },
+    { key: 'band',  name: 'Band of Dusk',         slot: 'Anel',     primary: 'lumens', secondary: ['xp', 'materiais'] },
   ],
   // por raridade (índice 0..4): força do afixo sobe, cap de nível sobe, custo sobe
   rarityMult: [1, 1.5, 2.25, 3.5, 5],
   levelCap:   [25, 50, 100, 175, 300],
   costMult:   [1, 4, 16, 64, 256],
-  // afixo multiplicativo (dmg/hp/xp/lumens) = 1 + nível × perLevel × rarityMult
-  affixPerLevel: 0.02,
-  // afixo de crit (grasp) = nível × critPerLevel × rarityMult (chance plana)
-  critPerLevel: 0.0004,
+  // ── Modelo de valor calibrado (Camada 3 / `tools/sim/gear.mjs`) ──
+  affixPctRate: 0.02,        // sabor %: 1 + nível × 0.02 × rarityMult  (linear, toda raridade)
+  affixMultBase: 1.0039,     // sabor ×: 1.0039^nível (a partir de Luminous) — agregado de dano ≈ 10 déc
+  affixMultFromRarity: 2,    // Luminous (idx 2) destrava o sabor × (motor sem-teto)
+  secondaryExp: 0.30,        // afixo SECUNDÁRIO = primário^0.30 (30% das décadas; crit/critDmg = 30% do valor plano)
+  capPerAsc: 500,            // a Ascension soma +500 ao cap de nível da raridade TOPO (Converged) — sem-teto
+  critPerLevel: 0.0004,      // afixo crit (chance plana) = nível × critPerLevel × rarityMult
+  critDmgPerLevel: 0.01,     // afixo critDmg (bônus plano sobre a base ×2) = nível × critDmgPerLevel × rarityMult
   // custo de upar 1 nível = base × ramp^nível × costMult[raridade]
   levelCostBase: 50,
   levelCostRamp: 1.12,
-  // custo (Lumens) p/ subir à raridade índice i (materiais de boss = pós-MVP).
-  // Requer a peça no nível máximo da raridade atual.
+  // custo (Lumens) p/ subir à raridade índice i. ⏳ Passo 4 troca por MATERIAIS (gate duplo).
   rarityUpCost: [0, 6000, 90_000, 1.5e6, 3e7],
 };
 

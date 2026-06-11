@@ -9,7 +9,8 @@ import { formatNumber } from '../core/format.js';
 import { picture } from '../data/assets.js';
 import { GEAR, GEAR_RARITIES, GEAR_RARITY_LABELS } from '../data/constants.js';
 import {
-  affixMult, critAdd, levelCost, atLevelCap, rarityUpCost, canRarityUp,
+  primaryMult, secondaryMult, critOf, critDmgOf, activeSecondaries, levelCapFor,
+  levelCost, atLevelCap, rarityUpCost, canRarityUp,
   buyLevels, doRarityUp, gearDamageMult, gearHpMult, gearLumensMult, gearCritAdd,
   gearDefesaMult, gearApsMult,
 } from '../game/gear.js';
@@ -18,11 +19,27 @@ const $ = (id) => document.getElementById(id);
 const pieceDef = (key) => GEAR.pieces.find((p) => p.key === key);
 const rarityName = (r) => GEAR_RARITIES[r];
 
-// Texto do efeito de uma peça conforme o afixo
+// Rótulos dos tipos de afixo do pool (§10.5.5)
+const AFFIX_LABELS = {
+  dmg: 'dano', hp: 'HP', defesa: 'defesa', crit: 'crit', critDmg: 'crit dmg',
+  aps: 'APS', regen: 'regen', bossDmg: 'dano boss', lumens: 'Lumens', xp: 'XP',
+  materiais: 'materiais', erosao: 'erosão',
+};
+// Descrição de UM afixo (primário ou secundário a 30%)
+function affixDesc(type, level, rarity, isSec) {
+  const w = isSec ? 0.30 : 1;
+  if (type === 'crit') return `+${(critOf(level, rarity) * w * 100).toFixed(2)}% crit`;
+  if (type === 'critDmg') return `+${(critDmgOf(level, rarity) * w * 100).toFixed(0)}% crit dmg`;
+  const m = isSec ? secondaryMult(level, rarity) : primaryMult(level, rarity);
+  return `×${formatNumber(m)} ${AFFIX_LABELS[type]}`;
+}
+// Efeito de uma peça = primário + secundários ATIVOS (destravados pela raridade)
 function affixText(def, piece) {
-  if (def.affix === 'crit') return `+${(critAdd(piece) * 100).toFixed(2)}% crit`;
-  const labels = { dmg: 'dano', hp: 'HP', defesa: 'defesa', aps: 'APS', xp: 'XP', lumens: 'Lumens' };
-  return `×${affixMult(piece).toFixed(2)} ${labels[def.affix]}`;
+  const parts = [affixDesc(def.primary, piece.level, piece.rarity, false)];
+  for (const sec of activeSecondaries(def, piece.rarity)) {
+    parts.push(affixDesc(sec, piece.level, piece.rarity, true));
+  }
+  return parts.join(' · ');
 }
 
 const MULTS = [1, 10, 100, 1000];
@@ -145,7 +162,7 @@ function updateDetail(state) {
   const def = pieceDef(selectedKey);
   const piece = state.gear[selectedKey];
   const rar = rarityName(piece.rarity);
-  const capped = atLevelCap(piece);
+  const capped = atLevelCap(piece, state);
 
   const art = $('gr-d-art');
   if (art.dataset.rar !== rar) {
@@ -156,7 +173,7 @@ function updateDetail(state) {
   rarEl.textContent = GEAR_RARITY_LABELS[piece.rarity];
   rarEl.className = `r-${rar}`;
 
-  const cap = GEAR.levelCap[piece.rarity];
+  const cap = levelCapFor(piece, state);
   $('gr-d-fill').style.width = `${(piece.level / cap) * 100}%`;
   $('gr-d-lvl').textContent = `Nível ${piece.level} / ${cap}`;
   $('gr-d-eff').textContent = affixText(def, piece);
