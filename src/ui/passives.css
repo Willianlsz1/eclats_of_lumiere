@@ -1,0 +1,73 @@
+/* ============================================================
+   Éclats of Lumière — Tela de Passivas (pós-MVP)
+   3 abas (Éclat/Vestige/Fracture) · 3 grupos de 5 por árvore ·
+   gate por maximização · estados maximizado ✦ / em progresso / bloqueado.
+   ============================================================ */
+
+.view.passives { display: flex; flex-direction: column; padding: 100px 40px 32px; overflow: hidden; }
+
+/* ---------------- Abas ---------------- */
+.pv-tabs { display: flex; gap: 14px; margin-bottom: 18px; }
+.pv-tab {
+  flex: 1; cursor: pointer; appearance: none; text-align: left;
+  background: color-mix(in srgb, var(--panel) 86%, transparent);
+  border: var(--border); border-top: 3px solid var(--line); border-radius: var(--radius);
+  padding: 12px 18px; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 2px 12px;
+  transition: border-color .15s ease, background .15s ease;
+}
+.pv-tab b { font-family: var(--font-display); font-size: var(--fs-xl); grid-column: 1; }
+.pv-tab-sub { grid-column: 1; grid-row: 2; font-size: var(--fs-xs); color: var(--dim);
+  text-transform: uppercase; letter-spacing: .12em; }
+.pv-tab-count { grid-column: 2; grid-row: 1 / 3; font-size: var(--fs-md); font-weight: 600;
+  color: var(--ink); font-variant-numeric: tabular-nums; }
+.pv-tab:hover { background: var(--panel-2); }
+.pv-tab.t-eclat b { color: var(--eclat); } .pv-tab.t-eclat.active { border-top-color: var(--eclat); }
+.pv-tab.t-vest b  { color: var(--vest); }  .pv-tab.t-vest.active  { border-top-color: var(--vest); }
+.pv-tab.t-frac b  { color: var(--frac); }  .pv-tab.t-frac.active  { border-top-color: var(--frac); }
+.pv-tab.active { background: var(--panel-2); }
+
+/* ---------------- Corpo (3 grupos) ---------------- */
+.pv-body { display: flex; flex-direction: column; gap: 14px; flex: 1; min-height: 0; }
+.pv-group { background: color-mix(in srgb, var(--panel) 70%, transparent);
+  border: var(--border-soft); border-radius: var(--radius); padding: 12px 14px; }
+.pv-group-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.pv-group-head span:first-child { font-family: var(--font-display); font-size: var(--fs-md);
+  color: var(--dim); text-transform: uppercase; letter-spacing: .14em; }
+.pv-group-lock { font-size: var(--fs-xs); color: var(--faint); }
+.pv-group.locked { opacity: .5; }
+
+.pv-cards { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+.pv-card {
+  cursor: pointer; appearance: none; position: relative;
+  background: color-mix(in srgb, var(--panel) 88%, transparent);
+  border: 2px solid var(--line); border-radius: var(--radius-sm);
+  padding: 10px 10px 12px; display: flex; flex-direction: column; align-items: center; gap: 4px;
+  transition: transform .1s ease, border-color .14s ease, box-shadow .14s ease;
+}
+.pv-card:hover { transform: translateY(-2px); }
+.pv-art { width: 100%; height: 92px; display: grid; place-items: center; }
+.pv-art picture, .pv-art img { max-width: 100%; max-height: 92px; object-fit: contain;
+  filter: drop-shadow(0 4px 10px #000a); }
+.pv-name { font-family: var(--font-display); font-size: var(--fs-md); color: var(--ink);
+  text-align: center; line-height: 1.1; }
+.pv-lvl { font-size: var(--fs-xs); color: var(--dim); font-variant-numeric: tabular-nums; }
+.pv-cost { font-size: 10px; color: var(--vest); text-align: center; font-variant-numeric: tabular-nums; }
+
+/* estados */
+.pv-group.locked .pv-card { filter: grayscale(.8); cursor: not-allowed; }
+.pv-card.owned { border-color: color-mix(in srgb, var(--eclat) 55%, var(--line)); }
+.pv-card.buyable { border-color: var(--vest); box-shadow: 0 0 0 1px var(--vest), var(--glow-vest); }
+.pv-card.maxed { border-color: var(--gold); box-shadow: var(--glow-gold); }
+.pv-card.maxed .pv-art picture, .pv-card.maxed .pv-art img {
+  filter: drop-shadow(0 0 14px color-mix(in srgb, var(--gold) 60%, transparent)); }
+.pv-card.maxed .pv-lvl { color: var(--gold); font-weight: 700; }
+.pv-card:not(.owned):not(.maxed):not(.buyable) .pv-art { opacity: .5; }
+
+/* ---------------- Sistema bloqueado (pré-Convergence) ---------------- */
+.pv-lock { position: absolute; inset: 0; z-index: 10; display: grid; place-content: center;
+  text-align: center; padding: 60px; }
+.pv-lock .glyph { font-size: 96px; color: var(--eclat); filter: drop-shadow(var(--glow-eclat)); margin-bottom: 12px; }
+.pv-lock h2 { margin: 0 0 8px; font-family: var(--font-display); font-weight: 700; font-size: var(--fs-xxl); color: var(--ink); }
+.pv-lock p { max-width: 520px; margin: 0 auto; color: var(--dim); font-size: var(--fs-lg);
+  font-family: var(--font-display); font-style: italic; line-height: 1.4; }
+.pv-lock b { color: var(--eclat); font-style: normal; }

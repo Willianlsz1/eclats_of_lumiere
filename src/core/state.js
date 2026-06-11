@@ -22,6 +22,14 @@ export function createInitialState() {
     // Gold Stats (§5) — resetam na Convergence (CP-E)
     stats: { str: 0, vit: 0, agi: 0, lck: 0, frt: 0, wis: 0 },
 
+    // Passivas (§7) — 3 árvores × 15 níveis (0 = bloqueada). PERSISTE sempre;
+    // desbloqueia na 1ª Convergence. Índice = ordem canônica do GDD.
+    passives: {
+      eclat:    new Array(15).fill(0),
+      vestige:  new Array(15).fill(0),
+      fracture: new Array(15).fill(0),
+    },
+
     // Gear (§13) — 6 peças fixas, cada uma com nível + raridade. PERSISTE sempre
     // (não reseta na Convergence). rarity = índice em GEAR_RARITIES (0=Faded).
     gear: {
@@ -81,6 +89,15 @@ export function applySnapshot(snapshot) {
   state.convergences = snapshot.convergences ?? 0;
   state.convPoints = snapshot.convPoints ?? 0;
   state.bestSubareaRun = snapshot.bestSubareaRun ?? state.subarea;
+  // Passivas persistem; saves antigos (sem passives) mantêm tudo bloqueado
+  if (snapshot.passives) {
+    for (const tree of Object.keys(state.passives)) {
+      const arr = snapshot.passives[tree];
+      if (Array.isArray(arr)) {
+        for (let i = 0; i < state.passives[tree].length; i++) state.passives[tree][i] = arr[i] ?? 0;
+      }
+    }
+  }
   // Gear persiste; saves antigos (sem gear) mantêm o default (tudo Faded nível 0)
   if (snapshot.gear) {
     for (const key of Object.keys(state.gear)) {
@@ -108,6 +125,7 @@ export function toSnapshot() {
     convergences: state.convergences,
     convPoints: state.convPoints,
     bestSubareaRun: state.bestSubareaRun,
-    gear: JSON.parse(JSON.stringify(state.gear)), // persiste sempre (§13)
+    gear: JSON.parse(JSON.stringify(state.gear)),         // persiste sempre (§13)
+    passives: JSON.parse(JSON.stringify(state.passives)), // persiste sempre (§7)
   };
 }
