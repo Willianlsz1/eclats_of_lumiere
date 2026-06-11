@@ -134,6 +134,30 @@ Interpolação igual à do HP. Dano recebido = Σ dano dos mobs ativos no pack. 
 ### Morte (🔒)
 Morrer **recua uma subárea** e respawna em segundos, sem perda de recursos. Offline, a simulação só avança até o ponto sustentável — o jogador nunca abre o app morto. Morte é muro de posicionamento, não punição.
 
+### DEFESA / MITIGAÇÃO (✅ DESIGN FECHADO 2026-06-11 — sessão de design)
+Antes a defesa não existia (dano batia direto no HP); o afixo **Veil** e as passivas defensivas não tinham fórmula. Fechado:
+
+**Forma = RAZÃO / armadura** (decisão do Willian — padrão ARPG, auto-escala):
+```
+mitigação    = defesa / (defesa + Σdano_do_pack)
+dano_recebido = Σdano × Σdano / (defesa + Σdano)        // = Σdano × (1 − mitigação)
+```
+- **defesa = Σdano → 50%** mitigado; **defesa ≫ dano → perto de 100% mas NUNCA 100%** (sempre toma um fio → morte por se arriscar continua existindo, casa com "morte = muro de posicionamento").
+- **Auto-escala pela RAZÃO** defesa/dano → defesa nunca morre nem trivializa, **sem teto** (encaixa na regra de ouro §4).
+- Aplica sobre o **Σ dano do pack** por tick; **regen** (1%/s + 2%/kill) cura por cima, inalterado.
+
+**Sobrevivência em DOIS eixos** (decisão do Willian — defesa só de Gear+Passivas, sem stat nova no §5):
+- **VIT** (Gold Stat) = **poça de HP** (`hp_max`) — segura o early; pode morrer no late como toda gold stat.
+- **Veil** (afixo de Gear) = **defesa** (a mitigação) — motor de longo prazo, cresce com o gear.
+- **Passivas** reforçam os dois. Duas sub-camadas:
+  1. passivas/gear que dão **defesa** → alimentam a fórmula de razão;
+  2. passivas de **"reduz dano recebido"** (Nihel's Shadow) → **redução % à parte, aplicada DEPOIS** da armadura (armadura + DR separado, estilo ARPG).
+  - **Last Light** (sobrevive a golpe fatal) e **Void Endurance** (+HP/regen sem teto) seguem como já definidos (§7).
+
+**Defesa dos INIMIGOS** (sistema irmão — §14B): a MESMA fórmula virada → `dano_no_mob = seu_dano × seu_dano / (def_inimigo + seu_dano)`. **Void Piercing** (Éclat) fura X% da def; **Weakened Void** (Fracture) reduz; **Shard Disruption** estilhaça temporário. ✅ *forma* travada; se/quando mobs têm defesa relevante (early ≈ 0) = calibração.
+
+⏳ **Calibração (por último):** curva de `defesa` por nível de Veil, % de cada passiva de DR, def dos inimigos por mapa/dificuldade, % do Void Piercing/Weakened Void.
+
 ### Pack size (mobs simultâneos por subárea) — herdado do BALANCE
 ```
         Sub1  Sub2  Sub3  Sub4  Sub5
@@ -503,7 +527,8 @@ Seção dedicada: os tetos do jogo interagem (APS × kills/ataque × mobs na tel
 | **Mobs na tela (onda)** | [1,2,4,6,8] por sub-área | base + passiva **Void Awareness** (aumenta o cap) | ⏳ definir base e teto |
 | **Crit (distribuição)** | LCK domina | **distribuído** (como APS): LCK (Gold Stat) dá fração mínima; o resto (chance e damage) vem de passivas (Luminal Edge…) + gear (Grasp) | ✅ direção 2026-06-11 |
 | **Crit chance (teto)** | 100% | ✅ **transbordo confirmado**: acima de 100% (geralmente via gear) o excedente vira crit damage (~101% → +1% dmg). Valores finos ⏳ §16.6 | ✅ direção |
-| **Defesa de inimigos** | 🔒 não existe | **novo sistema a implementar:** mobs/bosses mitigam dano; **Void Piercing** (Éclat) penetra, **Weakened Void** (Fracture) reduz. Definir forma (plana? %? escala?) | ⏳ a desenhar |
+| **Defesa (sua, mitigação)** | 🔒 não existia | ✅ **FECHADO 2026-06-11:** forma = **razão/armadura** `mit = def/(def+dano)`, nunca 100%, auto-escala. Fonte = **Veil (gear) + passivas** (sem stat nova); VIT segue como poça de HP. Ver §4 "Defesa/Mitigação" | ✅ design / valores ⏳ |
+| **Defesa de inimigos** | 🔒 não existe | ✅ **forma travada 2026-06-11:** mesma razão virada (`seu_dano/(def_inim+seu_dano)`); **Void Piercing** fura, **Weakened Void** reduz. Se/quando mobs têm def relevante (early ≈ 0) = calibração | ✅ forma / valores ⏳ |
 | **Tier do Seeker (Despertar)** | tier = nº de ascensions (código) | 🔄 vira gate de poder na **Sub 3** (vencer o Guardião) → ×poder permanente; arte/rank leem o tier de Despertar, não ascensions | ✅ direção / impl. pendente |
 | **Loot / coleta** | direta no kill | **automático, sem drop no chão** (confirmado) — não haverá passivas de "raio de coleta" | ✅ |
 | **Materiais** | 🔒 não existe | **novo recurso a desenhar:** materiais de boss para subir **raridade de gear** (§13); passiva **Vestige Pull** turbina o ganho. Definir: o quê, de onde (bosses?), por mapa? | ⏳ a desenhar |
