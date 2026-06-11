@@ -413,7 +413,9 @@ Duas fontes, ambas liberadas pela **A1**:
 
 ---
 
-## 11. MÉMOIRES (✅ motor · ✅ efeitos fechados 2026-06-11 · ⏳ só calibração)
+## 11. MÉMOIRES (✅ motor · ✅ efeitos fechados · ✅ CALIBRADO Camada 6 2026-06-11)
+
+> **✅ Calibração (Camada 6):** Clarté **1.07** entrega ~**70 décadas** em ~159 níveis/Mémoire (alcançados no Map 5 no ritmo certo). **Custo corrigido p/ `2×3.0^n`** (o `1.10^n` era um bug: renda > custo por ~80 ordens → instantâneo). Drip `0.1×HP^0.9`, unlocks `10/30/90/270/810` e os 15 efeitos inalterados. Validado em `tools/sim/memoires.mjs`.
 
 15 relíquias, 3 por era, desbloqueadas pela Ascension da era. Cada compra revela um texto de memória — **a meta-progressão é o veículo da narrativa**. Nomes/eras são **canônicos** (lore bible); o **motor** (Clarté, custos) está calibrado; os **efeitos** estão recebendo o mesmo tratamento item-a-item das passivas.
 
@@ -422,7 +424,7 @@ Duas fontes, ambas liberadas pela **A1**:
 > **Referências de recompensa-forte** (pesquisa 2026-06-11 — TT2, Synergism, Gaiadon): os arquétipos de recompensa mais potentes do gênero são, em ordem: **(a) acelerar a própria meta-moeda** (TT2 *Book of Shadows* = +relíquias/prestige; Synergism *Quark Hepteract*) → nossa âncora é o **ganho de Éclats** (#12); **(b) multiplicador GLOBAL amplo** (TT2 *All Hero Damage / All Gold*) > bônus estreito; **(c) multiplicativo sem teto** (Synergism *Way Too Many Multipliers*) = nossas Mémoires ×1.10/nível; **(d) compressão de TEMPO** (Chronos/Portar/offline) = #6 offline; **(e) APEX = amplificar o próprio motor / todas as outras recompensas** (boost de expoente) = #14 (expoente da Clarté) e #15 (+% a todas as Mémoires). ⇒ a estrutura atual **já contém os arquétipos apex nas Eras 4-5** — a pesquisa valida a direção.
 
 - **Desbloqueio:** 10 / 30 / 90 / 270 / 810 Éclats (por Mémoire, conforme era)
-- **Evolução:** nível n custa `2 × 1.10^n` Éclats
+- **Evolução:** nível n custa **`2 × 3.0^n`** Éclats 🔧 (Camada 6, 2026-06-11: era `1.10^n` — raso demais vs o drip → maximizava instantâneo e trivializava o jogo; **3.0** paceia o leveling pela profundidade, validado em `tools/sim/memoires.mjs`)
 - **Clarté (motor global):** dano ×`1.07^(soma de todos os níveis de Mémoires)`
 - **Mémoires multiplicativas (×1.10/nível):** a partir da **A3**, ~metade dos níveis novos (la Blessure e similares) — o turbo do endgame. As Mémoires carregam ~75 das 99 décadas do jogo.
 

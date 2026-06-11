@@ -273,7 +273,7 @@ passive_hp   = 1 + 0.04 × Σ(níveis Fracture)    // Fracture = HP
 ```
 CLARTÉ (motor global): dano × 1.07 ^ (Σ todos os níveis de Mémoires)
 custo_desbloqueio = [10, 30, 90, 270, 810] Éclats   (por era 1..5)
-custo_evolução(nível) = 2 × 1.10^(nível+1) Éclats
+custo_evolução(nível) = 2 × 3.0^n Éclats   🔧 Camada 6 (era 1.10 — bug: maximizava instantâneo)
 ```
 
 | # | Mémoire | Era | Efeito por nível | Ligado? |
@@ -352,7 +352,8 @@ Tudo abaixo está **decidido** (travado com o Willian, registrado no GDD), mas o
 > - ✅ **Camada 3 (Gear):** orçamento **~10 décadas** (de 100); modelo `(1+L×0.02×rarityMult) × 1.008^L` (× liga em Luminous), **+500 níveis/Ascension** = sem-teto; **Veil maximizado = 80% mit** (`tools/sim/gear.mjs`). Sobe de ×1.5 a ×1.4 tri — nunca morre.
 > - ✅ **Camada 4 (Craft/Materiais):** material = **~1% drop/mob** (tier=tier do mapa) **+0.1% tier seguinte**; **240 mat = 6 peças/tier** (~8-27 min); **Converged no Map 4**; raridade **independe de dificuldade**; refino 12:1 (`tools/sim/material.mjs` + pesquisa de gênero).
 > - ✅ **Camada 5 (Passivas):** maxLevel **12**, custo grupo **[1,10,100]×**; ~8 déc/árvore (maioria % aditivo + **3 motores no grupo 3** ×1.52/nv); alavancas Fracture Pulse(APS)/Luminal Edge(crit)/Void Awareness(mobs)/Vestige Pull(mat) (`tools/sim/passives.mjs`).
-> - ⏳ **Próximas:** 6 Mémoires · 7 Convergence+Dificuldades.
+> - ✅ **Camada 6 (Mémoires):** Clarté **1.07** = ~70 décadas (~159 niv/Mémoire); **custo corrigido 1.10→3.0** (era bug: maximizava instantâneo) — paceia pela profundidade (`tools/sim/memoires.mjs`). *(já no `constants.js`: MEMOIRE_EVO_RAMP=3.0.)*
+> - ⏳ **Próxima:** 7 Convergence + Dificuldades.
 
 > **Orçamento de poder** (`tools/sim/budget.mjs`): dano cresce **~95 décadas** no jogo. Split: Mémoires 70 · Gear 10 · Passivas 8 · Gold Stats 4 · Convergence 4 · Ascension 3.8 · Level 1 = ~100. HP segue o mesmo.
 

@@ -195,7 +195,7 @@ export const ECLATS_DRIP = { coef: 0.1, exp: 0.9 };
 // exibidos mas ainda contam só via Clarté (efeito específico em CP futuro).
 export const MEMOIRE_CLARTE_BASE = 1.07;        // Clarté: dano × 1.07^(Σ níveis)
 export const MEMOIRE_UNLOCK = [10, 30, 90, 270, 810]; // §11: desbloqueio por era
-export const MEMOIRE_EVO_BASE = 2, MEMOIRE_EVO_RAMP = 1.10; // §11: evolução = 2 × 1.10^n
+export const MEMOIRE_EVO_BASE = 2, MEMOIRE_EVO_RAMP = 3.0; // §11: evolução = 2 × 3.0^n (Camada 6: 1.10 era raso → maximizava instantâneo; 3.0 paceia pela profundidade)
 // Nomes das eras (Épopées) — ⏳ TODO(canon): placeholders L'Aube…Le Choix.
 export const MEMOIRE_ERAS = ['L’Aube', 'Le Façonnage', 'La Chute', 'La Blessure', 'Le Choix'];
 export const MEMOIRES = [
