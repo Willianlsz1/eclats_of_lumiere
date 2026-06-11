@@ -1,0 +1,74 @@
+/* ============================================================
+   Éclats of Lumière — Design tokens (CP-1)
+   Fonte: paleta do plano de implementação + cânon de cores da Lore Bible
+   (dourado = luz presa/fragmentada · branco-azul = convergência).
+   Sem seletores além de :root — só variáveis.
+   ============================================================ */
+:root {
+  /* — superfícies / neutros — */
+  --bg:        #080b11;   /* fundo do letterbox (fora do stage) */
+  --bg-stage:  #0b0f16;   /* fundo base do stage */
+  --panel:     #141a25;   /* cartões / painéis */
+  --panel-2:   #1b2230;   /* painel elevado / hover */
+  --line:      #283344;   /* bordas / divisores */
+  --line-soft: #1d2533;   /* divisores sutis */
+  --ink:       #e8eef7;   /* texto principal */
+  --dim:       #8a98ac;   /* texto secundário */
+  --faint:     #5a6678;   /* texto terciário / placeholder */
+
+  /* — identidade da luz (cânon) — */
+  --eclat: #aac8ff;   /* branco-azul frio: Éclats / Convergence */
+  --vest:  #3fd0b6;   /* teal: Vestiges (essência dos corrompidos) */
+  --frac:  #9d7bdb;   /* violeta: Fracture / o vazio */
+  --gold:  #d9a441;   /* dourado quente: luz presa, fragmentada, corrompida */
+
+  /* — raridades de gear: Faded → Converged — */
+  --r-faded:     #6b7280;
+  --r-kindled:   #c96a2a;
+  --r-luminous:  #d9a441;
+  --r-radiant:   #f0d9a0;
+  --r-converged: #aac8ff;
+
+  /* — tipografia — */
+  --font-display: 'Cormorant Garamond', 'Georgia', serif;  /* títulos / nomes / lore */
+  --font-ui:      'Inter', system-ui, -apple-system, sans-serif; /* números / UI */
+  --fs-xxl: 44px; --fs-xl: 32px; --fs-lg: 22px; --fs-md: 16px;
+  --fs-sm: 13px;  --fs-xs: 11px;
+  --tracking: .02em;
+
+  /* — forma dos cards / padrões — */
+  --radius:    14px;
+  --radius-sm: 9px;
+  --radius-lg: 20px;
+  --border:      1px solid var(--line);
+  --border-soft: 1px solid var(--line-soft);
+
+  /* glows padrão (usam color-mix p/ derivar da cor de cada contexto) */
+  --glow-eclat: 0 0 26px -8px color-mix(in srgb, var(--eclat) 70%, transparent);
+  --glow-vest:  0 0 26px -8px color-mix(in srgb, var(--vest)  70%, transparent);
+  --glow-frac:  0 0 26px -8px color-mix(in srgb, var(--frac)  70%, transparent);
+  --glow-gold:  0 0 26px -8px color-mix(in srgb, var(--gold)  70%, transparent);
+
+  /* sombra padrão dos painéis */
+  --shadow-panel: 0 8px 28px -14px #000c, 0 2px 6px -4px #000a;
+  --shadow-card:  0 4px 18px -10px #000c;
+
+  /* espaçamento base */
+  --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px;
+  --sp-5: 24px; --sp-6: 32px; --sp-7: 48px;
+
+  /* dimensões do stage de referência (desktop 1920×1080) */
+  --stage-w: 1920px;
+  --stage-h: 1080px;
+}
+
+/* utilitários de cor de texto por raridade / identidade (cross-view) */
+.t-eclat { color: var(--eclat); }
+.t-vest  { color: var(--vest);  }
+.t-frac  { color: var(--frac);  }
+.t-gold  { color: var(--gold);  }
+.r-faded     { color: var(--r-faded); }
+.r-kindled   { color: var(--r-kindled); }
+.r-luminous  { color: var(--r-luminous); }
+.r-radiant   { color: var(--r-radiant); }
+.r-converged { color: var(--r-converged); }
