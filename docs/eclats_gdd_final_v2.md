@@ -315,7 +315,24 @@ A Ascension vira o **loop de prestige de cima** (a Convergence é o de baixo):
 - **Fate Keepers = game-changers / recompensas muito fortes** (5 mecânicas, 1 por Ascension) — quais 5: pesquisa + escolha numa sessão dedicada.
 - ⏳ **Pendente (registrado):** as **15 Mémoires precisam do mesmo tratamento das passivas** (pesquisa + efeito de cada uma) — tópico próprio.
 
-### Tier do Seeker = DESPERTAR (✅ TRAVADO 2026-06-11 — separado da Ascension)
+### FATE KEEPERS + MODOS DE DIFICULDADE (🟡 EM DEBATE 2026-06-11 — insp. Grand Chase)
+
+**Modos de dificuldade** (a "expansão do que já tenho" — re-usa os 5 mapas, sem lore novo):
+- Re-rodar mapas limpos em dificuldade maior → mobs com **HP e dano muito maiores** + **recompensas melhores** (materiais, Éclats, drip). É o endgame de farm.
+- Nomes (sujeitos a mudança): **Difícil · Nightmare · Tormento**.
+- **Desbloqueados por Ascension:** A2 → Difícil · A3 → Nightmare · A4 → Tormento.
+- Cada tier estende a faixa de HP/dano (ex. ilustrativo do Willian: Normal ~→1e50 · Nightmare ~1e50–1e190 · Tormento ~1e190–1e300 → **rumo a 1e300 = território break_infinity no endgame**). ⏳ brackets exatos + recompensas = calibração (pode re-escalar a curva base do §3).
+
+**Os 5 Fate Keepers (1 por Ascension) — proposta tied às dificuldades:**
+| A | Fate Keeper | Conteúdo |
+|---|---|---|
+| **A1** | **Automação básica** | auto-comprar Gold Stats + auto-Convergir (destrava o idle) |
+| **A2** | **Auto-progressão + Difícil** | auto-limpar sub-áreas/auto-Despertar + desbloqueia o modo **Difícil** |
+| **A3** | **Nightmare + motor** | desbloqueia **Nightmare** + (drip no mapa atual / offline 24h cheio) |
+| **A4** | **Tormento + Craft** | desbloqueia **Tormento** + reforja/craft de materiais |
+| **A5** | **Transcendência** | loop infinito pós-Nihel (§16.7) + meta-multiplicador permanente |
+
+**Expansão de sub-áreas (futuro):** o nº de sub-áreas por mapa CRESCE (ex.: Map 1 ~6 → Map 5 ~11-14) p/ suavizar a curva de HP (ideia 4). A **Auto-progressão (A2)** escala com isso. *(§3 hoje fixa 5/mapa — será variável.)*
 > O tier (T1→T5) deixa de ser recompensa de Ascension e vira um **gate de poder no MEIO do mapa** (estilo "awakening" do Idle Blade): você chega à região do boss final **já evoluído**, e sem despertar os mobs ficam tanky/letais demais (parede natural).
 - **Quando:** ao alcançar a **Sub-área 3** do mapa + **requisito**.
 - **Requisito:** **(a) derrotar o Guardião da Sub 3** (teste do despertar — só combate). ⏳ **Futuro: escalar para (b) + custo de material** (quando o sistema de craft de materiais existir — decisão do Willian).
