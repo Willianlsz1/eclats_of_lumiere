@@ -326,7 +326,13 @@ Nota de calibração: no simulador as passivas entram como agregado (+5% dano/n�
 | **Vestige** | Lumen's Blessing · Wisdom of Ruins · Remnant Harvest · Scavenger · Echo of Greed | Awakened Harvest · Hoarder · Dreamwalker · Beast Caller · **Vestige Pull (materiais)** | **Void Scavenger** · Eternal Vestige · Fractured Soul · Luminal Cache · The Collector |
 | **Fracture** | Fracture Pulse (APS) · Void Haste · Fracture Sense · Void Awareness · Last Light | Weakened Void · Shard Disruption · Nihel's Shadow · Éclat Attunement · The Fracture's Gift | Void Collapse · La Fracture's Echo · Claimed Domination · Nil's Embrace · Void Endurance |
 
-> **✅ SISTEMA DE PASSIVAS — DESIGN COMPLETO** (efeitos + posicionamento). Resta só **calibração numérica**: valor por nível de cada efeito, custos (já há fórmula §7), maxLevel por passiva, e os caps relacionados (mobs na tela, APS, defesa — §14B). E o **wiring no código** (hoje as 45 são +5% agregado placeholder).
+> **✅ SISTEMA DE PASSIVAS — DESIGN COMPLETO** (efeitos + posicionamento).
+>
+> **✅ CALIBRAÇÃO (Camada 5) 2026-06-11** — `tools/sim/passives.mjs`. Esquema (não 45 números soltos):
+> - **maxLevel = 12** p/ toda passiva (capado → o gate grupo→grupo sempre funciona); **custo por grupo = [1,10,100]× Vestiges**.
+> - **Orçamento ~8 décadas** por árvore (Éclat=dano, Fracture=HP): a **maioria** são **% aditivos** (g1 5% · g2 10% · g3 20% por nível) ⇒ ×~14; e **3 passivas "motor" no grupo 3** (×1.52/nível, capadas) ⇒ ×3.5M. Total **~7.7 décadas** ✅. Respeita §14B (grupo 3 concentra as mais fortes: Fractured Soul, Or Ein Sof's Touch, Luminal Explosion…).
+> - **Alavancas funcionais:** Fracture Pulse → APS ~1.5→10 (gear fecha p/ 15) · Luminal Edge → crit p/ 100% · Void Awareness → +cap mobs (→24) · Void Piercing/Weakened Void → def inimigos · Vestige Pull → × material.
+> - ⏳ resta: aplicar o esquema aos 45 valores no `constants.js` (wiring; hoje +5% agregado placeholder).
 
 ---
 
