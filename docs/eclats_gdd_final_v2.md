@@ -564,12 +564,12 @@ Seção dedicada: os tetos do jogo interagem (APS × kills/ataque × mobs na tel
 
 | Cap | Valor atual (código) | Decisão | Status |
 |---|---|---|---|
-| **APS (teto global)** | 1.25 | subir p/ **~15** (Tópico 2.4) — nº exato a calibrar | 🟡 direção ✅, valor ⏳ |
-| **APS por AGI (sub-cap)** | sem sub-cap (per 0.04) | AGI sobe só até um **teto pequeno**; o grosso vem da passiva **Fracture Pulse** (chave p/ bater o teto) + gear | ⏳ definir o sub-cap |
-| **Kills por ataque** | 1 (fixo) | base 1; passivas (Overkill/Execute/Luminal Explosion) furam, extras pagam ~50% | 🟡 regra ✅, máx de extras ⏳ |
-| **Mobs na tela (onda)** | [1,2,4,6,8] por sub-área | base + passiva **Void Awareness** (aumenta o cap) | ⏳ definir base e teto |
-| **Crit (distribuição)** | LCK domina | **distribuído** (como APS): LCK (Gold Stat) dá fração mínima; o resto (chance e damage) vem de passivas (Luminal Edge…) + gear (Grasp) | ✅ direção 2026-06-11 |
-| **Crit chance (teto)** | 100% | ✅ **transbordo confirmado**: acima de 100% (geralmente via gear) o excedente vira crit damage (~101% → +1% dmg). Valores finos ⏳ §16.6 | ✅ direção |
+| **APS (teto global)** | 1.25 | ✅ **CALIBRADO 2026-06-11 = 15.0** (intervalo mín ~0.067s). Cap duro. | ✅ |
+| **APS por AGI (sub-cap)** | sem sub-cap (per 0.04) | ✅ **agiSubCap = 3.75×** → AGI sozinho leva o APS só até **~1.5** (a "rodinha" early). O grosso (1.5→15) vem de **Fracture Pulse** (passiva, o motor) × **Resonance** (gear), multiplicativo. Ninguém sozinho chega a 15 | ✅ CALIBRADO |
+| **Kills por ataque** | 1 (fixo) | ✅ **base 1**; Overkill/Execute/Luminal Explosion furam, **extra paga 50%**; **sem cap rígido** — limitado pelos maxLevel (capados) das passivas (~+1 a +3 no late) | ✅ CALIBRADO |
+| **Mobs na tela (onda)** | [1,2,4,6,8] por sub-área | ✅ **base = `[2,4,6,9,12]`** (Sub1-5); **Void Awareness** (passiva) + **Fate Keeper A4** somam; **teto global ~24**. Mais mobs = mais farm E mais Σdano | ✅ CALIBRADO |
+| **Crit (distribuição)** | LCK domina | **distribuído** (como APS): LCK (Gold Stat) dá fração mínima (~15-20% sozinho); o resto até 100% vem de passivas (Luminal Edge…) + gear (Grasp) | ✅ CALIBRADO (forma); valor/nível §16.6 |
+| **Crit chance (teto)** | 100% | ✅ **transbordo**: acima de 100% (geralmente via gear) o excedente vira crit damage. **Crit damage base ×2**, sem teto (de la Forme + afixo Crit Damage). Valores finos ⏳ §16.6 | ✅ direção |
 | **Defesa (sua, mitigação)** | 🔒 não existia | ✅ **FECHADO 2026-06-11:** forma = **razão/armadura** `mit = def/(def+dano)`, nunca 100%, auto-escala. Fonte = **Veil (gear) + passivas** (sem stat nova); VIT segue como poça de HP. Ver §4 "Defesa/Mitigação" | ✅ design / valores ⏳ |
 | **Defesa de inimigos** | 🔒 não existe | ✅ **forma travada 2026-06-11:** mesma razão virada (`seu_dano/(def_inim+seu_dano)`); **Void Piercing** fura, **Weakened Void** reduz. Se/quando mobs têm def relevante (early ≈ 0) = calibração | ✅ forma / valores ⏳ |
 | **Tier do Seeker (Despertar)** | tier = nº de ascensions (código) | 🔄 vira gate de poder na **Sub 3** (vencer o Guardião) → ×poder permanente; arte/rank leem o tier de Despertar, não ascensions | ✅ direção / impl. pendente |
@@ -583,7 +583,7 @@ Seção dedicada: os tetos do jogo interagem (APS × kills/ataque × mobs na tel
 | **Ascension** | 5 na vida | = 5 mapas | ✅ |
 | **Convergence** | ~81 na vida (soft) | cadência, não cap rígido | ✅ |
 
-⏳ Prioridade de decisão (bloqueiam o design das passivas): **APS exato + sub-cap do AGI · máx de kills extras · cap de mobs na tela (base e teto)**. O resto é calibração ou já decidido.
+✅ **Camada 1 da calibração FECHADA 2026-06-11** (APS 15 + sub-cap AGI 3.75× · kills extras 50% sem cap · mobs base `[2,4,6,9,12]` teto ~24 · crit distribuído, dmg base ×2). Próximo: **Camada 2 — Sobrevivência** (dano dos mobs M2-5 × Defesa, via simulador).
 
 ---
 
