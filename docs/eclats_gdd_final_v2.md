@@ -473,9 +473,15 @@ Tela própria com as 6 peças + painel de refino.
 - **(b) Refino** = converter **N de tier baixo → 1 de tier alto** (só pra cima; dá uso ao excedente de T1 do farm de mob). Idle-friendly.
 - ⏳ *calibração:* nº de níveis por raridade, custo de material por salto, razão do refino.
 
-### Pontos em debate (próximos)
-- **Ponto 4 — Automação/idle:** botão "subir tudo" + passiva **Vestige Pull** (turbina ganho, já travada §14B). ⏳ travar.
-- ⏳ **Calibração (por último):** quantidade por salto × 6 peças, taxa de drop, multiplicadores de dificuldade, custo do refino.
+### Ponto 4 — Leveling & automação ✅ TRAVADO 2026-06-11
+**Leveling é MANUAL** (decisão do Willian — "nível depende do usuário"):
+- **Nível: manual, por peça, INDEPENDENTE.** O jogador escolhe em qual das 6 peças gasta Lumens; cada peça tem seu próprio nível. O Gear vira ponto de **decisão** (onde investir), não auto-invisível. QoL "maximizar esta peça" (jogar Lumens disponíveis numa peça) é aceitável — a escolha de QUAL peça continua do jogador.
+- **SEM auto-level.** Automação de Gear ficou fora de tudo (nem base, nem Fate Keeper — A4 virou +cap de mobs). *(Auto-level = possível QoL futura, fora de escopo.)*
+- **Raridade:** sobe só com o **tier anterior MAXIMIZADO** (nível máx) **+ material** — reconfirma o gate duplo (ponto 3); tiers em ordem, sem pular.
+- **Vestige Pull** (passiva, §14B) turbina o ganho de material.
+
+### ✅ Craft/Materiais — DESIGN FECHADO 2026-06-11 (4 pontos)
+Falta só **calibração (por último):** nº de níveis por raridade, custo de material por salto × 6 peças, taxa de drop por boss/mob, multiplicadores de dificuldade, razão do refino, nomes de lore.
 
 ---
 
