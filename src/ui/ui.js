@@ -1,17 +1,19 @@
 // UI — casca Éclats (unificação). Mantém o contrato que src/main.js consome:
 // setupUI / renderUI / showOfflineSummary.
 // Chrome do mockup: nav (topo-esq) + moedas (topo-dir) + stage 1920×1080.
-// Combate (U-2) e Mapa (U-3) já são telas reais ligadas ao motor;
-// Player segue placeholder até U-4. Moedas leem o state REAL.
+// Combate (U-2), Mapa (U-3) e Player (U-4) são telas reais ligadas ao motor.
+// Restam só as telas pós-MVP (Gear/Passivas/Mémoires/Ascension) como placeholder.
 
 import './tokens.css';
 import './shell.css';
 import './combat.css';
 import './map.css';
+import './player.css';
 import { formatNumber } from '../core/format.js';
 import { picture, bg } from '../data/assets.js';
 import { buildCombatView, renderCombat } from './combat.js';
 import { buildMapView, renderMap } from './map.js';
+import { buildPlayerView, renderPlayer } from './player.js';
 
 const $ = (sel, root = document) => root.querySelector(sel);
 
@@ -84,13 +86,20 @@ function buildViews(state) {
       buildMapView(view, state, () => show('combat'));
       continue;
     }
+    // Player: retrato + Gold Stats + Convergence lendo o state (U-4).
+    if (v.id === 'player') {
+      view.className = 'view';
+      main.appendChild(view);
+      buildPlayerView(view, state);
+      continue;
+    }
 
+    // Só telas pós-MVP chegam aqui (Gear/Passivas/Mémoires/Ascension).
     view.className = 'view placeholder';
     const glyph = v.glyph
       ? `<div class="glyph" style="font-size:96px;display:grid;place-items:center;opacity:.5">${v.glyph}</div>`
       : `<div class="glyph">${picture(v.icon, { alt: v.label })}</div>`;
-    const sub = v.locked ? 'pós-MVP' : 'em construção · U-4';
-    view.innerHTML = `<div>${glyph}<h2>${v.label}</h2><div class="cp">${sub}</div></div>`;
+    view.innerHTML = `<div>${glyph}<h2>${v.label}</h2><div class="cp">pós-MVP</div></div>`;
     main.appendChild(view);
   }
 }
@@ -124,6 +133,7 @@ export function renderUI(state) {
   // só renderiza a tela ativa (por custo)
   if (current === 'combat') renderCombat(state);
   else if (current === 'map') renderMap(state);
+  else if (current === 'player') renderPlayer(state);
 }
 
 // Resumo de progresso offline (§15) — toast simples sobre a casca
