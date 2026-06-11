@@ -55,9 +55,8 @@ export function currentRank(state) {
   return { name: a.rank, tier: a.tier };
 }
 
-// Moldura do card do Seeker conforme o tier. ⏳ T4 reusa a moldura radiante
-// (981) até confirmar se ela é T4 ou T5. TODO(canon): tier exato de cada moldura.
-const TIER_FRAME = { I: 'frames.tier1', II: 'frames.tier2', III: 'frames.tier3', IV: 'frames.tier5', V: 'frames.tier5' };
+// Moldura do card do Seeker conforme o tier (T1..T5, todas confirmadas).
+const TIER_FRAME = { I: 'frames.tier1', II: 'frames.tier2', III: 'frames.tier3', IV: 'frames.tier4', V: 'frames.tier5' };
 export const seekerFrame = (state) => TIER_FRAME[currentRank(state).tier] || 'frames.tier1';
 
 // Retrato do Seeker conforme o tier (T1..T5) — agora as 5 artes existem.

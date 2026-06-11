@@ -30,6 +30,7 @@ const DATA = {
     "tier1": "frames/frame_tier1_alpha",
     "tier2": "frames/frame_tier2_alpha",
     "tier3": "frames/frame_tier3_alpha",
+    "tier4": "frames/frame_tier4_alpha",
     "tier5": "frames/frame_tier5_alpha",
     "boss_m1": "frames/frame_boss_m1",
     "boss_m2": "frames/frame_boss_m2",

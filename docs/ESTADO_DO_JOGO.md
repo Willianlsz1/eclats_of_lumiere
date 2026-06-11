@@ -346,7 +346,7 @@ teto **30 dias**, mínimo **60s** para mostrar o resumo. Garante que o jogador *
 - ✅ **Retratos do Seeker T1-T5** (avatar evolui com o tier/Ascension).
 - ✅ **Bordas de inimigo:** moldura comum (universal) + 5 bordas de boss (M1-M5), aplicadas no card de combate.
 - ✅ **Backgrounds** dos 5 mapas (Map 2 em high-res).
-- ⏳ **Molduras do card do Seeker:** T1, T2 (cantos estrelados), T3 (volutas), e a radiante. **`TODO(canon)`: a radiante é T4 ou T5?** (hoje reusada em IV e V; a outra falta).
+- ✅ **Molduras do card do Seeker T1-T5** (T4 = radiante, T5 = Lumière — confirmadas).
 
 ### `TODO(canon)` (nomes / posições / outros)
 - **Sem arte própria por design:** Guardiões das Subs 1-4 usam um mob do mapa como placeholder (o GDD não define arte de sub-boss).
