@@ -304,7 +304,8 @@ Nota de calibração: no simulador as passivas entram como agregado (+5% dano/n�
 
 ---
 
-## 8. ASCENSION (✅ CALIBRADO)
+## 8. ASCENSION (🔄 EM REDESENHO — sessão de design 2026-06-11)
+> A tabela abaixo é o estado **atual** (implementado). **Será redesenhada:** a Ascension passa a (1) **subir o nível máximo do Gear** (motor sem-teto, §13) e (2) trazer **Fate Keepers / game-changers** (pedido do Willian — desbloqueios que mudam a qualidade do jogo, não só números). Tópico aberto a seguir.
 
 | Ascension | Requisito | Custo (Vestiges) | asc_mult | Éclats (bolsa) | Rank desbloqueado |
 |---|---|---|---|---|---|
@@ -395,6 +396,13 @@ Renda e custo de stats crescem em paridade → tempo por compra constante em qua
 - ⏳ **Em debate:** catálogo de afixos (primário por peça + pool secundário; now vs future), motor sem-teto exato, sistema de materiais.
 
 > *(Estrutura herdada do DESIGN.md §26-28 fica como histórico; substituída pelo modelo acima.)*
+
+### Decisões 2026-06-11 (cont.) — inspiração: equipment do Gaiadon (print do Willian)
+- ✅ **Motor SEM-TETO = a Ascension sobe o nível máximo do Gear** (igual ao "Transcendence increases max level" do Gaiadon). Entre Ascensions a peça bate o teto; ao ascender, o teto sobe → Gear nunca morre + salto por mapa. **⚠️ Implica REDESENHAR a Ascension** (§8) — ela ganha esse papel (e o pedido do Willian de Fate Keepers/game-changers).
+- ❌ **Synergy** (bônus por subir todas as peças parelho) — **descartado** (decisão do Willian).
+- ✅ **Stats em camadas (multi-flavor, estilo Gaiadon):** cada stat de afixo vem em "sabores" que empilham — **flat (+X) · bônus (+%) · multiplicador (×) · mastery (% lento)**. **A raridade desbloqueia sabores mais fortes** (Faded = flat/%; Converged = também × e mastery), além de mais afixos. Empilham estilo ARPG (`flat → ×(1+Σ%) → ×Π mult → ×(1+mastery)`). [forma exata na calibração]
+- 🔮 **Gems / Set bonus** — camada FUTURA (colecionável, set 2/3/4/5; pode encaixar com Echoes). Pesquisar via prints do Willian (Steam bloqueia fetch).
+- Afixos primários por peça ✅ (Edge=dano · Vigil=HP · Veil=defesa · Grasp=crit · Resonance=APS · Band=Lumens). Pool secundário "agora" aprovado; "futuros" a pesquisar.
 
 ## 14. ECHOES (🔒 estrutura herdada · ⏳ lista e recalibração)
 
