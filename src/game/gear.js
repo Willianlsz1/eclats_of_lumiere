@@ -30,6 +30,10 @@ export const gearDamageMult = (s) => gearMult(s, 'dmg');
 export const gearHpMult     = (s) => gearMult(s, 'hp');
 export const gearXpMult     = (s) => gearMult(s, 'xp');
 export const gearLumensMult = (s) => gearMult(s, 'lumens');
+// Afixos novos (canon §10.5.5, Passo 1): agregados e EXPOSTOS, ainda SEM consumidor.
+// Veil=defesa (consumido na mitigação — Passo 2) · Resonance=APS (consumido no apsCap — passo futuro).
+export const gearDefesaMult = (s) => gearMult(s, 'defesa');
+export const gearApsMult    = (s) => gearMult(s, 'aps');
 
 // Crit é soma plana das peças de crit (grasp)
 export function gearCritAdd(state) {

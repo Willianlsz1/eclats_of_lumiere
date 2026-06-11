@@ -118,17 +118,18 @@ export const VESTIGES = {
 // O GDD §13 fixa a ESTRUTURA (6 peças, 5 raridades, 2 eixos: nível+raridade),
 // mas marca os VALORES como "a definir" (§16.4) e o DESIGN.md §26-28 não está
 // no repo. Tudo abaixo é PLACEHOLDER para recalibrar na malha v2 — não é cânon.
-// TODO(canon): rates/caps por raridade, custos, e o afixo real de cada peça.
+// TODO(canon): rates/caps por raridade, custos. ✅ Afixo PRIMÁRIO de cada peça = canon (§10.5.5, Passo 1).
 export const GEAR_RARITIES = ['faded', 'kindled', 'luminous', 'radiant', 'converged'];
 export const GEAR_RARITY_LABELS = ['Faded', 'Kindled', 'Luminous', 'Radiant', 'Converged'];
 export const GEAR = {
-  // 6 peças canônicas (Art Direction §8h). affix = stat afetado (provisório).
+  // 6 peças canônicas (Art Direction §8h). affix = primário (§13: Edge=dano · Vigil=HP ·
+  // Veil=defesa · Grasp=crit · Resonance=APS · Band=Lumens). Secundários = wiring futuro.
   pieces: [
     { key: 'edge',  name: 'The Waning Edge',      slot: 'Arma',     affix: 'dmg' },
     { key: 'vigil', name: 'The Silent Vigil',     slot: 'Elmo',     affix: 'hp' },
-    { key: 'veil',  name: 'Veil of Cinders',      slot: 'Manto',    affix: 'hp' },
+    { key: 'veil',  name: 'Veil of Cinders',      slot: 'Manto',    affix: 'defesa' },
     { key: 'grasp', name: 'Grasp of the Unnamed', slot: 'Manoplas', affix: 'crit' },
-    { key: 'reson', name: 'The Last Resonance',   slot: 'Amuleto',  affix: 'xp' },
+    { key: 'reson', name: 'The Last Resonance',   slot: 'Amuleto',  affix: 'aps' },
     { key: 'band',  name: 'Band of Dusk',         slot: 'Anel',     affix: 'lumens' },
   ],
   // por raridade (índice 0..4): força do afixo sobe, cap de nível sobe, custo sobe

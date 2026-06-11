@@ -10,7 +10,8 @@ import { picture } from '../data/assets.js';
 import { GEAR, GEAR_RARITIES, GEAR_RARITY_LABELS } from '../data/constants.js';
 import {
   affixMult, critAdd, levelCost, atLevelCap, rarityUpCost, canRarityUp,
-  buyLevels, doRarityUp, gearDamageMult, gearHpMult, gearXpMult, gearLumensMult, gearCritAdd,
+  buyLevels, doRarityUp, gearDamageMult, gearHpMult, gearLumensMult, gearCritAdd,
+  gearDefesaMult, gearApsMult,
 } from '../game/gear.js';
 
 const $ = (id) => document.getElementById(id);
@@ -20,7 +21,7 @@ const rarityName = (r) => GEAR_RARITIES[r];
 // Texto do efeito de uma peça conforme o afixo
 function affixText(def, piece) {
   if (def.affix === 'crit') return `+${(critAdd(piece) * 100).toFixed(2)}% crit`;
-  const labels = { dmg: 'dano', hp: 'HP', xp: 'XP', lumens: 'Lumens' };
+  const labels = { dmg: 'dano', hp: 'HP', defesa: 'defesa', aps: 'APS', xp: 'XP', lumens: 'Lumens' };
   return `×${affixMult(piece).toFixed(2)} ${labels[def.affix]}`;
 }
 
@@ -37,8 +38,9 @@ export function buildGearView(root, state) {
       <dl class="gr-totals">
         <div><dt>Dano</dt><dd id="gr-t-dmg">×1</dd></div>
         <div><dt>HP</dt><dd id="gr-t-hp">×1</dd></div>
+        <div><dt>Defesa</dt><dd id="gr-t-defesa">×1</dd></div>
         <div><dt>Crit</dt><dd id="gr-t-crit">+0%</dd></div>
-        <div><dt>XP</dt><dd id="gr-t-xp">×1</dd></div>
+        <div><dt>APS</dt><dd id="gr-t-aps">×1</dd></div>
         <div><dt>Lumens</dt><dd id="gr-t-lumens">×1</dd></div>
       </dl>
       <p class="gr-note">⏳ Valores provisórios — recalibram na malha v2.</p>
@@ -113,8 +115,9 @@ export function renderGear(state) {
   // Resumo
   $('gr-t-dmg').textContent = `×${formatNumber(gearDamageMult(state))}`;
   $('gr-t-hp').textContent = `×${formatNumber(gearHpMult(state))}`;
+  $('gr-t-defesa').textContent = `×${formatNumber(gearDefesaMult(state))}`;
   $('gr-t-crit').textContent = `+${(gearCritAdd(state) * 100).toFixed(2)}%`;
-  $('gr-t-xp').textContent = `×${formatNumber(gearXpMult(state))}`;
+  $('gr-t-aps').textContent = `×${formatNumber(gearApsMult(state))}`;
   $('gr-t-lumens').textContent = `×${formatNumber(gearLumensMult(state))}`;
 
   // Slots
