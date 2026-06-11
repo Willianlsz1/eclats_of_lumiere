@@ -217,6 +217,7 @@ pontos_da_run = f(xp_run)  +  bônus_boss_final     // f com retorno decrescente
 - **Anti-cheese:** spam de trash da Sub 1 dá luz desprezível; ir fundo é exponencialmente melhor. **Escala entre mapas:** mob do Map 2 dá ~1e10× mais luz → convergir lá vale ordens de grandeza mais (com o `asc_mult`, é o que faz "tudo do Map 1 não bastar pro Map 2").
 - ✅ **DIREÇÃO TRAVADA (Tópico 2.1): recompensa COMPOSTA, não aditiva.** `conv_factor ≈ base^Σpontos` — primeiros pontos valem pouco, pontos do late disparam (bola de neve estilo Synergism). `f(xp_run)` usa **retorno decrescente** → dilema "converter cedo e frequente vs farmar mais fundo".
 - ✅ **CALIBRADO (Camada 7, 2026-06-11)** — `tools/sim/convergence.mjs`: `conv_factor = (1 + 0.04 × 1.38^ascensions)^(Σ pontos)`. A Ascension **zera os pontos mas AMPLIFICA a base** (§8 aninhado): base **1.04 (A0) → 1.20 (A5)**; pico por era **0.85 → 3.96 décadas** (era final = orçamento ~4). O aditivo antigo `1+0.15×pts` era um **bug** (morria em 1.57 déc).
+- ⚠️ **DEPENDÊNCIA ABERTA (auditoria 2026-06-11):** o pico de ~4 décadas assume **~50 pontos de pico por era**, mas os pontos vêm de **`f(xp_run)`** — função **ainda não desenhada**. **Requisito de design p/ a futura sessão de Escala:** calibrar `f(xp_run)` (retorno decrescente + bônus do boss) para entregar **~50 pontos de pico por era** entre duas Ascensions; senão as 4 décadas não se sustentam.
 
 **1ª Convergence:** requisito = **só encher a parede** (~1.500 XP, sem gate extra); alvo de pacing ~5-10 min de jogo ativo. Desbloqueia as Passivas (lore: a Semente desperta) + concede os Vestiges da run.
 
@@ -525,20 +526,21 @@ Cada peça **prioriza** seus secundários-assinatura nas raridades baixas (ident
 - ⚠️ **Fix de implementação:** o código (`constants.js` GEAR.pieces) tem `veil` com afixo `hp` e `reson` com `xp` — **provisório/errado**; o canon é Veil=defesa, Resonance(reson)=APS. Corrigir no wiring.
 
 ### Calibração (Camada 3) ✅ 2026-06-11 — validada em `tools/sim/gear.mjs`
-**Orçamento:** Gear carrega **~10 décadas** de dano (e HP/defesa análogos) no jogo todo (§14B). Modelo da curva (por afixo de dano; o total das peças soma ao orçamento):
+**Orçamento:** Gear carrega **~10 décadas** de dano (e HP/defesa análogos) no jogo todo (§14B).
+> 🔧 **CORREÇÃO DE AUDITORIA 2026-06-11 (orçamento AGREGADO, não por peça):** `gear_dano` é o **PRODUTO dos afixos de DANO**, e no catálogo novo o Dano é **primário na arma (Edge)** e **secundário em Grasp e Resonance**. As 10 décadas são o **TOTAL agregado das 3 peças**, não de 1. **Split** (peças multiplicam → décadas somam): **secundário = 30% das décadas do primário** (faixa de design 25-35%). ⇒ primário (Edge) ~**6.25 déc**, cada secundário ~**1.88 déc** × 2 = **~10.00 déc** pós-A4. O `multBase` foi reajustado de 1.008 (premissa antiga "1 peça = total") p/ **1.0039** (o agregado é que bate 10).
 ```
-gear_mult(L,R) = (1 + L × pctRate × rarityMult[R])      // sabor % (toda raridade) — linear, early/mid
-               × multBase ^ L   (se R ≥ Luminous)        // sabor × — EXPONENCIAL, o motor sem-teto
-   pctRate   = 0.02          rarityMult = [1, 1.5, 2.25, 3.5, 5]   (Faded→Converged)
-   multBase  = 1.008/nível   (sabor × liga em Luminous, idx 2)
-   capPerAsc = +500 níveis no teto a cada Ascension (a Ascension é o motor sem-teto)
+gear_mult(L,R) por AFIXO = (1 + L × pctRate × rarityMult[R])      // sabor % (toda raridade) — linear
+                         × multBase ^ L   (se R ≥ Luminous)        // sabor × — EXPONENCIAL, sem-teto
+   pctRate = 0.02   rarityMult = [1,1.5,2.25,3.5,5]   multBase = 1.0039/nível (× liga em Luminous)
+   capPerAsc = +500 níveis no teto a cada Ascension   secondaryWeight = 0.30   N_secundário = 2 (Grasp+Resonance)
+   gear_dano_AGREGADO_déc = primário_déc × (1 + 2×0.30)  // ×1.6
 ```
-**Jornada validada** (1 peça de dano): Faded ×1.5 → Luminous ×12 → Converged ×338 → **pós-A4 ×21 bi (10.3 déc)** → pós-A5 ×1.4 tri (12.1 déc). **Monotônica = nunca morre.** Salto ~2 décadas por Ascension.
+**Jornada AGREGADA validada:** Faded 0.28 déc → Luminous 1.46 → Converged 3.20 → **pós-A4 10.00 déc** → pós-A5 11.49. **Monotônica = nunca morre.** Salto ~1.7 déc por Ascension.
 **Early gentil, late exponencial:** Faded/Kindled modestos (flat/%); o motor × liga em Luminous.
 
 **Veil (defesa) — fecha o alvo da Camada 2:** `def = hp_max × veilFactor`. Veil maximizado → `veilFactor ≈ 0.18` → **def ≈ 4× packDps (80% mitigação)**. Sem Veil → ~0 (você morre na entrada de mapa). Tabela: vf 0.045→1×packDps(50%) · 0.09→2×(67%) · 0.18→4×(80%).
 
-⏳ Resta (fino): nº exato de slots por raridade, custo de nível em Lumens (Camada 4 cuida do gate de material), split do gear_dano entre Edge primário e secundários.
+⏳ Resta (fino): nº exato de slots por raridade, custo de nível em Lumens (Camada 4 cuida do gate de material). ✅ *Split do gear_dano (Edge primário + secundários) resolvido na correção de auditoria acima.*
 
 ## 13B. CRAFT / MATERIAIS (🟡 EM DESIGN 2026-06-11 — sistema BASE, early/mid)
 
@@ -584,7 +586,8 @@ Tela própria com as 6 peças + painel de refino.
 ### Calibração (Camada 4) ✅ 2026-06-11 — `tools/sim/material.mjs` + pesquisa de gênero
 **Pesquisa** (Idle Slayer ~10% drop · Melvor tabelas de peso + Luck · materiais de progressão = comuns, "caça" = raros): o gênero usa **% de drop**; o nº certo depende do **ritmo de kills**. Como matamos 15-50 mobs/s (Idle Slayer mata devagar), **~1% aqui ≈ ~10% deles** (normalizado). Validado.
 - **Drop = % por MOB**, do **tier do MAPA atual** (Map 1→T1 … Map 4→T4): **~1%** do tier do mapa **+ ~0.1%** do **tier seguinte** (tabela com peso, estilo Melvor — deixa pré-estocar). **Vestige Pull** (passiva) + futuros bônus tipo Luck **multiplicam** a taxa.
-- **Custo p/ subir 1 peça um tier ≈ 40** material → **240 p/ as 6 peças**. Subir a raridade do mapa todo ≈ **24k mob kills** ≈ **8 min** (ref. 180k/h) a **27 min** (piso 15 APS).
+- **Custo p/ subir 1 peça um tier ≈ 40** material → **240 p/ as 6 peças**. Subir a raridade do mapa todo ≈ **24k mob kills** ≈ **~27 min** de farm.
+  - 🔧 **Correção de âncora (auditoria 2026-06-11):** o cenário "180k kills/h" foi **removido** — viola a âncora física (1 kill/ataque × APS 15 = **máx 54k kills/h**). O **teto real é 54k/h**, então o pacing canônico é **~27 min/tier** (não "8-27 min"). *(Multi-kill de passivas pode subir um pouco, mas paga 50% e não é a base.)*
 - **Bosses** (Guardião/final): bônus garantido (~+30) + chance melhor do tier seguinte — **aceleram, nunca são requisito**.
 - **Decisões do Willian:** (1) raridade **independe de dificuldade** — tudo farmável no **Normal**; dificuldade (×3/×10/×30) só **acelera**. (2) **Converged abre no Map 4** (último tier pronto antes do Map 5). (3) material = **% do mob** (mata-se muitos).
 - **Refino:** 12:1 entre tiers (usa excedente; rushar tier alto cedo é proibitivo — mantém o ritmo).
@@ -628,6 +631,8 @@ Seção dedicada: os tetos do jogo interagem (APS × kills/ataque × mobs na tel
 **Orçamento de poder fecha:** Mémoires 70 + Gear 10 + Passivas 8 + Gold 4 + Conv 4 + Asc 3.8 + Level 1 ≈ **100 décadas** (alvo ~95).
 
 ### DURAÇÃO & RITMO (registrado 2026-06-11 — `tools/sim/playtime.mjs` + pesquisa de gênero)
+> ⚠️ **ESTIMATIVA DE BAIXA CONFIANÇA (auditoria externa 2026-06-11):** o `CLIMB_OVERHEAD` do sim foi **AJUSTADO para reproduzir** o alvo do §9 (~14d/~41d) → a duração é **premissa circular, não derivação** (o overhead foi escolhido para casar com o número que ele "valida"). Derivar de verdade exige um **simulador END-TO-END** (tick econômico real: combate→renda→compras→prestígio), que **NÃO existe ainda**. Tratar os números abaixo como **ordem de grandeza**, pendentes desse simulador.
+
 **Duração do jogo base (5 mapas), por arquétipo** (cross-check com o orçamento §9: ~14d ótimo / ~41d realista):
 | Arquétipo | Padrão | Duração |
 |---|---|---|

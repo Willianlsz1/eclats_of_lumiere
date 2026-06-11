@@ -4,7 +4,11 @@
 // PICO da era final. Uso: node tools/sim/convergence.mjs
 
 const dec = (x) => Math.log10(x).toFixed(2);
-const PEAK_POINTS = 50;            // pontos de pico numa era (entre 2 Ascensions)
+// ⚠️ DEPENDÊNCIA NÃO DEFINIDA (auditoria 2026-06-11): os ~4 décadas assumem 50 pontos
+// de pico por era, mas os pontos vêm de f(xp_run) — função AINDA NÃO DESENHADA. Isto é
+// um REQUISITO DE DESIGN p/ a futura sessão de Escala: f(xp_run) deve ser calibrada
+// para entregar ~50 pontos de pico por era (senão as 4 décadas não se sustentam).
+const PEAK_POINTS = 50;            // pontos de pico numa era (entre 2 Ascensions) — REQUISITO p/ f(xp_run)
 // base sobe por Ascension: base = 1 + b0 × growth^asc  (o "amplifica a Convergence")
 const b0 = 0.04, growth = 1.38;
 const baseFor = (asc) => 1 + b0 * growth ** asc;

@@ -1,6 +1,14 @@
 // DURAÇÃO DO JOGO por arquétipo de jogador. Estimativa com premissas explícitas.
 // Relógio-mestre = custos de Ascension em Vestiges (§8); + overhead do "climb" de
 // poder; + offline capado 24h (≤ ativo). Uso: node tools/sim/playtime.mjs
+//
+// ⚠️ ESTIMATIVA DE BAIXA CONFIANÇA (auditoria externa 2026-06-11):
+//   O CLIMB_OVERHEAD foi AJUSTADO para reproduzir o alvo do GDD §9 (~14d/~41d).
+//   Portanto a duração de ~14 dias é PREMISSA, não derivação — há CIRCULARIDADE
+//   (o overhead foi escolhido para casar com o número que ele "valida").
+//   Derivar o overhead de verdade exige um SIMULADOR END-TO-END (tick econômico
+//   real: combate→renda→compras→prestígio), que NÃO existe ainda. Tratar os
+//   números abaixo como ordem de grandeza, pendentes desse simulador.
 
 import { ASCENSIONS } from '../../src/data/constants.js';
 
@@ -9,9 +17,9 @@ import { ASCENSIONS } from '../../src/data/constants.js';
 const ascCost = [500000, 1900000, 4000000, 8000000]; // A1-A4 (A5 = grátis, só vencer Nihel)
 const vestPerKill = (mapN) => 3 ** mapN;             // Map1=3 … Map4=81
 const EFF_KILLS_PER_SEC = 5;   // média no climb (cap 15, mas boa parte sob-poder em vários hits)
-const CLIMB_OVERHEAD = 6.0;    // o grosso do tempo é SUBIR as ~95 décadas (Mémoires/Conv/Gear),
-                               // não farmar Vestige — fator sobre o relógio-mestre.
-                               // 6.0 reproduz o orçamento do GDD §9 (~14d ótimo / ~41d realista) = cross-check
+const CLIMB_OVERHEAD = 6.0;    // ⚠️ PREMISSA CIRCULAR, não derivada (ver cabeçalho): 6.0 foi
+                               // ESCOLHIDO p/ reproduzir o orçamento do GDD §9 (~14d/~41d), não
+                               // calculado a partir da economia. Pendente de simulador end-to-end.
 
 // horas ATIVAS-equivalentes p/ completar (floor do relógio × overhead do climb)
 let vestHours = 0;

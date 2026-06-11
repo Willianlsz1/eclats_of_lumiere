@@ -17,8 +17,10 @@ const upgradePerPiece = 40;       // → 240 p/ as 6 peças por tier
 const refino = 12;
 const diffMult = { Normal: 1, Difícil: 3, Nightmare: 10, Tormento: 30 };
 
-// referências de kills/hora
-const KR = { 'seu ref (180k/h)': 180000, 'piso 15 APS (54k/h)': 54000 };
+// TETO de kills/hora = ÂNCORA FÍSICA: 1 kill/ataque × APS 15 = 15 kills/s = 54.000/h.
+// 🔧 Correção de auditoria 2026-06-11: o cenário antigo "180k/h" (=50 kills/s) VIOLAVA
+// a âncora (excede o cap de 15 kills/s) e foi REMOVIDO. 54k/h é o teto canônico.
+const KILLS_PER_HOUR_CEIL = 54000;
 
 const totalPerTier = PIECES * upgradePerPiece;   // 240
 const killsNeeded = totalPerTier / dropChance;   // 24.000 mobs
@@ -27,11 +29,10 @@ console.log(`Drop: ${dropChance*100}% por mob (tier = tier do MAPA). Boss bônus
 console.log(`Custo p/ subir TODAS as 6 peças 1 tier: ${totalPerTier} materiais.`);
 console.log(`→ ${killsNeeded.toLocaleString('en')} mob kills (sem contar bônus de boss).\n`);
 
-console.log('TEMPO p/ subir a raridade do mapa (todas as 6 peças), por ritmo de kill:');
-for (const [name, perHour] of Object.entries(KR)) {
-  const min = (killsNeeded / perHour) * 60;
-  console.log(`  ${name.padEnd(22)} → ${min.toFixed(0)} min de farm`);
-}
+console.log('TEMPO p/ subir a raridade do mapa (todas as 6 peças):');
+const minCeil = (killsNeeded / KILLS_PER_HOUR_CEIL) * 60;
+console.log(`  teto 15 APS (${KILLS_PER_HOUR_CEIL/1000}k kills/h) → ~${minCeil.toFixed(0)} min de farm  ← pacing canônico`);
+console.log(`  (multi-kill de passivas sobe um pouco, mas paga 50% e não é a base)`);
 
 console.log('\nPACING por mapa (raridade alvo de cada mapa, no Normal):');
 const plan = [['Map 1','Kindled (T1)'],['Map 2','Luminous (T2) — motor × liga'],
