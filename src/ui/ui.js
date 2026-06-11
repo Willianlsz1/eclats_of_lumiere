@@ -1,15 +1,17 @@
 // UI — casca Éclats (unificação). Mantém o contrato que src/main.js consome:
 // setupUI / renderUI / showOfflineSummary.
 // Chrome do mockup: nav (topo-esq) + moedas (topo-dir) + stage 1920×1080.
-// Combate já é a cena real ligada ao motor (U-2, em src/ui/combat.js);
-// Mapa e Player seguem placeholders até U-3/U-4. Moedas leem o state REAL.
+// Combate (U-2) e Mapa (U-3) já são telas reais ligadas ao motor;
+// Player segue placeholder até U-4. Moedas leem o state REAL.
 
 import './tokens.css';
 import './shell.css';
 import './combat.css';
+import './map.css';
 import { formatNumber } from '../core/format.js';
 import { picture, bg } from '../data/assets.js';
 import { buildCombatView, renderCombat } from './combat.js';
+import { buildMapView, renderMap } from './map.js';
 
 const $ = (sel, root = document) => root.querySelector(sel);
 
@@ -68,11 +70,18 @@ function buildViews(state) {
     const view = document.createElement('div');
     view.id = 'view-' + v.id;
 
-    // Combate: cena real ligada ao motor (U-2). Map/Player ainda placeholders (U-3/U-4).
+    // Combate: cena real ligada ao motor (U-2).
     if (v.id === 'combat') {
       view.className = 'view';
       main.appendChild(view);
       buildCombatView(view, state);
+      continue;
+    }
+    // Mapa: mundo + continente lendo o state (U-3). Entrar → volta ao Combate.
+    if (v.id === 'map') {
+      view.className = 'view';
+      main.appendChild(view);
+      buildMapView(view, state, () => show('combat'));
       continue;
     }
 
@@ -80,7 +89,7 @@ function buildViews(state) {
     const glyph = v.glyph
       ? `<div class="glyph" style="font-size:96px;display:grid;place-items:center;opacity:.5">${v.glyph}</div>`
       : `<div class="glyph">${picture(v.icon, { alt: v.label })}</div>`;
-    const sub = v.locked ? 'pós-MVP' : 'em construção · U-3…U-4';
+    const sub = v.locked ? 'pós-MVP' : 'em construção · U-4';
     view.innerHTML = `<div>${glyph}<h2>${v.label}</h2><div class="cp">${sub}</div></div>`;
     main.appendChild(view);
   }
@@ -112,8 +121,9 @@ export function renderUI(state) {
     const el = document.getElementById('coin-' + c.id);
     if (el) el.textContent = c.get(state);
   }
-  // tela de combate ligada ao motor (só renderiza a ativa, por custo)
+  // só renderiza a tela ativa (por custo)
   if (current === 'combat') renderCombat(state);
+  else if (current === 'map') renderMap(state);
 }
 
 // Resumo de progresso offline (§15) — toast simples sobre a casca

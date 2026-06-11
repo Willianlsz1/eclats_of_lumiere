@@ -110,7 +110,13 @@ function onBossKill(state) {
 
 // Navegação entre subáreas, respeitando o gate (boss abre a próxima)
 export function changeSubarea(state, delta) {
-  const next = Math.min(state.unlockedSubarea, Math.max(1, state.subarea + delta));
+  enterSubarea(state, state.subarea + delta);
+}
+
+// Entra direto numa subárea n (1-indexada), respeitando o gate da maior
+// desbloqueada. Usado pela tela de Mapa (U-3) e pelas setas do Combate.
+export function enterSubarea(state, n) {
+  const next = Math.min(state.unlockedSubarea, Math.max(1, n));
   if (next === state.subarea) return;
   state.subarea = next;
   state.killsInSubarea = 0; // threshold conta kills na subárea atual

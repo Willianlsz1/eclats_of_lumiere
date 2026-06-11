@@ -1,0 +1,135 @@
+/* ============================================================
+   Éclats of Lumière — Tela de Mapa (U-3)
+   Nível 1: Mapa-Múndi (atlas + 5 pinos). Nível 2: Continente
+   (crop + 5 nós de sub-área + painel direito). Chrome branco/azul frio.
+   ============================================================ */
+
+.view.map { display: block; padding: 0; overflow: hidden; }
+.map-world, .map-continent { position: absolute; inset: 0; }
+
+.map-bg {
+  position: absolute; inset: 0; z-index: 0;
+  background-size: cover; background-position: center;
+}
+.map-bg::after {
+  content: ""; position: absolute; inset: 0;
+  background: radial-gradient(120% 90% at 50% 30%, transparent 40%, rgba(5,7,15,.6));
+}
+
+/* título do mundo */
+.map-title {
+  position: absolute; z-index: 3; top: 104px; left: 0; right: 0; text-align: center;
+  text-shadow: 0 2px 12px #000c;
+}
+.map-title b { display: block; font-family: var(--font-display); font-weight: 700;
+  font-size: var(--fs-xxl); letter-spacing: .04em; color: var(--ink); }
+.map-title span { font-size: var(--fs-sm); color: var(--dim);
+  text-transform: uppercase; letter-spacing: .24em; }
+
+/* ---------------- Pinos do mundo ---------------- */
+.map-pins { position: absolute; inset: 0; z-index: 4; }
+.map-pin {
+  position: absolute; transform: translate(-50%, -50%);
+  appearance: none; background: none; border: 0; cursor: pointer;
+  display: grid; justify-items: center; gap: 8px; padding: 0;
+}
+.map-pin .dot {
+  width: 26px; height: 26px; border-radius: 50%;
+  background: var(--eclat); border: 3px solid #06101f;
+  box-shadow: var(--glow-eclat), 0 0 0 4px color-mix(in srgb, var(--eclat) 30%, transparent);
+  transition: transform .14s ease;
+}
+.map-pin .lbl {
+  font-family: var(--font-display); font-size: var(--fs-lg); color: var(--ink);
+  background: color-mix(in srgb, var(--panel) 80%, transparent);
+  border: var(--border-soft); border-radius: 999px; padding: 3px 14px;
+  white-space: nowrap; backdrop-filter: blur(4px);
+}
+.map-pin:hover .dot { transform: scale(1.18); }
+.map-pin.locked { cursor: not-allowed; }
+.map-pin.locked .dot { background: var(--faint); box-shadow: none;
+  border-color: #06101f; }
+.map-pin.locked .lbl { color: var(--dim); }
+
+/* ---------------- Continente ---------------- */
+.map-back {
+  position: absolute; z-index: 5; top: 104px; left: 40px;
+  appearance: none; cursor: pointer; padding: 10px 18px;
+  background: var(--panel); border: var(--border); border-radius: 12px;
+  color: var(--ink); font-size: var(--fs-md); font-family: var(--font-ui);
+  transition: border-color .15s ease, background .15s ease;
+}
+.map-back:hover { border-color: var(--eclat); background: var(--panel-2); }
+
+/* nós das sub-áreas */
+.map-nodes { position: absolute; inset: 0; z-index: 4; }
+.sub-node {
+  position: absolute; transform: translate(-50%, -50%);
+  width: 76px; height: 76px; cursor: pointer; padding: 0;
+  appearance: none; background: none; border: 0;
+  display: grid; place-items: center;
+}
+.sub-node .ring {
+  position: absolute; inset: 0; border-radius: 50%;
+  border: 3px solid var(--eclat); background: color-mix(in srgb, var(--panel) 70%, transparent);
+  box-shadow: var(--glow-eclat); backdrop-filter: blur(3px);
+  transition: transform .14s ease;
+}
+.sub-node .num {
+  position: relative; font-family: var(--font-display); font-weight: 700;
+  font-size: 28px; color: var(--ink);
+}
+.sub-node:hover .ring { transform: scale(1.1); }
+.sub-node.selected .ring { border-color: #fff; box-shadow: 0 0 24px -4px var(--eclat); }
+.sub-node.current .ring { border-color: var(--gold); box-shadow: var(--glow-gold); }
+.sub-node.current .num { color: var(--gold); }
+.sub-node.cleared .ring { background: color-mix(in srgb, var(--vest) 28%, var(--panel)); }
+.sub-node.locked .ring { border-color: var(--faint); box-shadow: none; }
+.sub-node.locked .num { color: var(--faint); }
+.sub-node.locked { cursor: not-allowed; }
+
+/* ---------------- Painel direito ---------------- */
+.map-panel {
+  position: absolute; z-index: 5; top: 104px; right: 40px; bottom: 40px;
+  width: 380px; padding: 0 0 22px;
+  background: color-mix(in srgb, var(--panel) 90%, transparent);
+  border: var(--border); border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-panel); backdrop-filter: blur(8px);
+  overflow: hidden;
+}
+.map-panel .cover {
+  height: 150px; background-size: cover; background-position: center;
+  border-bottom: var(--border);
+  -webkit-mask-image: linear-gradient(#000 60%, transparent);
+          mask-image: linear-gradient(#000 60%, transparent);
+}
+.map-panel h2 {
+  margin: -34px 22px 4px; position: relative;
+  font-family: var(--font-display); font-weight: 700; font-size: var(--fs-xl);
+  color: var(--ink); letter-spacing: .03em; text-shadow: 0 2px 10px #000c;
+}
+.map-panel .sub-name {
+  margin: 0 22px 16px; font-size: var(--fs-sm); color: var(--eclat);
+  text-transform: uppercase; letter-spacing: .14em;
+}
+.map-panel .facts { margin: 0 22px 18px; padding: 0; display: grid; gap: 10px; }
+.map-panel .facts > div {
+  display: flex; justify-content: space-between; align-items: baseline;
+  border-bottom: var(--border-soft); padding-bottom: 8px;
+}
+.map-panel .facts dt { font-size: var(--fs-xs); color: var(--dim);
+  text-transform: uppercase; letter-spacing: .12em; }
+.map-panel .facts dd { margin: 0; font-size: var(--fs-md); font-weight: 600;
+  color: var(--ink); font-variant-numeric: tabular-nums; }
+
+.enter-btn {
+  display: block; margin: 0 22px; width: calc(100% - 44px); padding: 14px;
+  cursor: pointer; border: 0; border-radius: 12px;
+  background: var(--eclat); color: #06101f; font-weight: 700; font-size: var(--fs-md);
+  box-shadow: var(--glow-eclat); transition: filter .14s ease, transform .1s ease;
+}
+.enter-btn:hover:not(:disabled) { filter: brightness(1.08); transform: translateY(-1px); }
+.enter-btn:disabled { background: var(--panel-2); color: var(--faint);
+  box-shadow: none; cursor: not-allowed; }
+.map-panel .hint { margin: 12px 22px 0; font-size: var(--fs-xs); color: var(--faint);
+  font-style: italic; font-family: var(--font-display); }
