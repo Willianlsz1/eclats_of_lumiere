@@ -218,7 +218,8 @@ boss:  level = máximo da sub-área,  HP × 15,  dano × 3
 parede(c)   = 1500 × Π(i=0..c-1) [ 1.5 × 1.06^i ]      // c = nº de convergências
 pode_convergir = xp_run ≥ parede(convergences)
 pontos_da_run  = bestSubareaRun (sub-área mais funda alcançada na run)
-conv_factor    = 1 + 0.15 × convPoints                 // entra em dano e HP
+conv_factor    = (1 + 0.04 × 1.38^ascensions)^convPoints  // COMPOSTO+ANINHADO 🔧 Camada 7
+               // (era 1+0.15×pts aditivo = bug; Ascension zera pontos mas amplifica a base)
 ```
 Hoje ao convergir: ganha `pontos_da_run`, **reseta a run** (Lumens, Gold Stats, **e o mapa→Sub 1** — isto será removido), preserva o resto. **A 1ª Convergence desbloqueia as Passivas.**
 
@@ -353,7 +354,8 @@ Tudo abaixo está **decidido** (travado com o Willian, registrado no GDD), mas o
 > - ✅ **Camada 4 (Craft/Materiais):** material = **~1% drop/mob** (tier=tier do mapa) **+0.1% tier seguinte**; **240 mat = 6 peças/tier** (~8-27 min); **Converged no Map 4**; raridade **independe de dificuldade**; refino 12:1 (`tools/sim/material.mjs` + pesquisa de gênero).
 > - ✅ **Camada 5 (Passivas):** maxLevel **12**, custo grupo **[1,10,100]×**; ~8 déc/árvore (maioria % aditivo + **3 motores no grupo 3** ×1.52/nv); alavancas Fracture Pulse(APS)/Luminal Edge(crit)/Void Awareness(mobs)/Vestige Pull(mat) (`tools/sim/passives.mjs`).
 > - ✅ **Camada 6 (Mémoires):** Clarté **1.07** = ~70 décadas (~159 niv/Mémoire); **custo corrigido 1.10→3.0** (era bug: maximizava instantâneo) — paceia pela profundidade (`tools/sim/memoires.mjs`). *(já no `constants.js`: MEMOIRE_EVO_RAMP=3.0.)*
-> - ⏳ **Próxima:** 7 Convergence + Dificuldades.
+> - ✅ **Camada 7 (Convergence + Dificuldades):** conv_factor **aditivo→composto+aninhado** `(1+0.04×1.38^asc)^pts` (era bug: morria em 1.57 déc; agora pico ~4 déc na era final, base sobe por Ascension). Dificuldades ×HP/dano 1e5/1e15/1e30, ×recompensa 3/10/30 (Nightmare+ = break_infinity futuro). *(constants.js + stats.js atualizados; `tools/sim/convergence.mjs`.)*
+> - 🎉 **AS 7 CAMADAS DE CALIBRAÇÃO ESTÃO FECHADAS.**
 
 > **Orçamento de poder** (`tools/sim/budget.mjs`): dano cresce **~95 décadas** no jogo. Split: Mémoires 70 · Gear 10 · Passivas 8 · Gold Stats 4 · Convergence 4 · Ascension 3.8 · Level 1 = ~100. HP segue o mesmo.
 

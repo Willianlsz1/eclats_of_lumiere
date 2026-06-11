@@ -215,7 +215,8 @@ pontos_da_run = f(xp_run)  +  bônus_boss_final     // f com retorno decrescente
 - A run rende pela **"luz juntada" = `xp_run`** (já é HP destruído × 0.08 × wis → pondera profundidade: mob fundo vale ordens de grandeza mais). O retorno decrescente cria o dilema *convergir cedo e frequente* vs *farmar mais fundo*.
 - **Bônus único** por matar o **Boss final do mapa** na run — objetivo de run (prêmio extra, não requisito da Convergence).
 - **Anti-cheese:** spam de trash da Sub 1 dá luz desprezível; ir fundo é exponencialmente melhor. **Escala entre mapas:** mob do Map 2 dá ~1e10× mais luz → convergir lá vale ordens de grandeza mais (com o `asc_mult`, é o que faz "tudo do Map 1 não bastar pro Map 2").
-- ✅ **DIREÇÃO TRAVADA (Tópico 2.1, 2026-06-11): recompensa COMPOSTA, não aditiva.** O `conv_factor` multiplica em juros compostos (`≈ base^Σpontos`, ex. ilustrativo `1.05^Σ`) — primeiros pontos valem pouco, pontos do late disparam (bola de neve estilo Synergism). E `f(xp_run)` usa **retorno decrescente** (≈ `√transbordo da parede`) → dilema "converter cedo e frequente vs farmar mais fundo". ⏳ A **base exata** (o "5%") é provisória — calibrada contra todas as camadas juntas.
+- ✅ **DIREÇÃO TRAVADA (Tópico 2.1): recompensa COMPOSTA, não aditiva.** `conv_factor ≈ base^Σpontos` — primeiros pontos valem pouco, pontos do late disparam (bola de neve estilo Synergism). `f(xp_run)` usa **retorno decrescente** → dilema "converter cedo e frequente vs farmar mais fundo".
+- ✅ **CALIBRADO (Camada 7, 2026-06-11)** — `tools/sim/convergence.mjs`: `conv_factor = (1 + 0.04 × 1.38^ascensions)^(Σ pontos)`. A Ascension **zera os pontos mas AMPLIFICA a base** (§8 aninhado): base **1.04 (A0) → 1.20 (A5)**; pico por era **0.85 → 3.96 décadas** (era final = orçamento ~4). O aditivo antigo `1+0.15×pts` era um **bug** (morria em 1.57 déc).
 
 **1ª Convergence:** requisito = **só encher a parede** (~1.500 XP, sem gate extra); alvo de pacing ~5-10 min de jogo ativo. Desbloqueia as Passivas (lore: a Semente desperta) + concede os Vestiges da run.
 
@@ -354,7 +355,14 @@ A Ascension vira o **loop de prestige de cima** (a Convergence é o de baixo):
 - Nomes (sujeitos a mudança): **Difícil · Nightmare · Tormento**.
 - **Desbloqueio = UM gate só, na A2.** A A2 abre o **SISTEMA de dificuldades inteiro** — não libera um modo por Ascension. A partir daí o **jogador escolhe a dificuldade por sub-área** (cada sub-área roda no modo que ele quiser).
 - **O gate real das dificuldades mais altas é o PODER do jogador**, não a Ascension: como cada modo multiplica MUITO o HP/dano dos mobs, você simplesmente não consegue limpar Nightmare/Tormento sem estar forte o bastante. A progressão se auto-regula (você sobe de modo quando aguenta), sem trancar atrás de marcos.
-- Cada tier estende a faixa de HP/dano (ex. ilustrativo do Willian: Normal ~→1e50 · Nightmare ~1e50–1e190 · Tormento ~1e190–1e300 → **rumo a 1e300 = território break_infinity no endgame**). ⏳ brackets exatos + recompensas = calibração (**re-escalar as curvas** é decisão tomada — pode re-escalar a curva base do §3).
+- Cada tier estende a faixa de HP/dano (ex. ilustrativo do Willian: Normal ~→1e50 · Nightmare ~1e50–1e190 · Tormento ~1e190–1e300 → **rumo a 1e300 = território break_infinity no endgame**).
+- ✅ **CALIBRADO (Camada 7, 2026-06-11)** — `tools/sim/convergence.mjs`. Multiplicadores por tier (×HP **e** ×dano dos mobs / ×recompensa material+Éclats):
+  | Tier | ×HP/dano | ×recompensa | Teto |
+  |---|---|---|---|
+  | **Difícil** | ×1e5 | ×3 | cabe dentro de 1e100 (jogável no base) |
+  | **Nightmare** | ×1e15 | ×10 | ⚠️ passa de 1e100 → **break_infinity (CP futuro)** |
+  | **Tormento** | ×1e30 | ×30 | ⚠️ **break_infinity (CP futuro)** |
+  A renda já sobe naturalmente com o ×HP; o ×recompensa é **bônus por cima**. No jogo base só **Difícil** cabe inteiro; Nightmare/Tormento ficam prontos no design pra quando o break_infinity entrar.
 
 **Craft/Materiais = sistema BASE, NÃO Ascension** (🔁 decisão 2026-06-11): evoluir Gear (subir raridade via materiais) precisa estar disponível **cedo** no jogo, não trancado atrás de uma Ascension tardia. Sai dos Fate Keepers. Vira sistema próprio (early/mid) — sessão de design dedicada.
 

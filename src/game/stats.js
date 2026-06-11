@@ -83,9 +83,12 @@ export function levelBonus(xpTotal) {
   return 1 + Math.sqrt(heroLevel(xpTotal)) * 0.20;
 }
 
-// conv_factor = 1 + 0.15 × Σ pontos de Convergence (§6)
+// conv_factor = (1 + base × growth^ascensions)^(Σ pontos) — COMPOSTO + ANINHADO (§6/§8, Camada 7).
+// Entra em dano e HP. A Ascension zera convPoints mas AMPLIFICA a base composta
+// ("perde os multiplicadores, mas agora são maiores"). Pico ~4 décadas na era final.
 export function convFactor(state) {
-  return 1 + CONVERGENCE.pointBonus * state.convPoints;
+  const base = 1 + CONVERGENCE.pointBonusBase * CONVERGENCE.pointBonusGrowth ** state.ascensions;
+  return base ** state.convPoints;
 }
 
 // dano_por_hit = baseDmg × str_total × level_bonus × conv_factor × gear_bonus × ... (§4)

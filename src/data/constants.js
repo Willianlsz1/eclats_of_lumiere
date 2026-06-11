@@ -101,7 +101,11 @@ export const CONVERGENCE = {
   wallBase: 1500,        // parede da 1ª run
   wallRatio: 1.5,        // razão base entre paredes
   wallRatioGrowth: 1.06, // a razão cresce 6% a cada Convergence
-  pointBonus: 0.15,      // conv_factor = 1 + 0.15 × Σ pontos
+  // conv_factor = (1 + pointBonusBase × pointBonusGrowth^ascensions)^(Σ pontos) — COMPOSTO + ANINHADO.
+  // Camada 7: o aditivo 1+0.15×pts morria (1.57 déc). A Ascension zera os pontos mas
+  // AMPLIFICA a base (§8): base sobe 1.04 (A0) → 1.20 (A5), pico ~4 décadas na era final.
+  pointBonusBase: 0.04,   // base inicial = 1.04
+  pointBonusGrowth: 1.38, // a base composta sobe ×1.38 a cada Ascension
 };
 
 // §7 — Vestiges (renda; gasto em Passivas/Ascension é pós-MVP)
