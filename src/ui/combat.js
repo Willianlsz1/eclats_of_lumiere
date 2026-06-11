@@ -17,17 +17,17 @@ import { getCurrentMap, subareaLevelRange } from '../game/enemies.js';
 
 const $ = (id) => document.getElementById(id);
 
-// Mapeamento criatura→arte do Map 1. As artes ainda têm sufixo VERIFICAR e o
-// vínculo nome↔arte não é canônico — placeholder até o Willian confirmar.
-// TODO(canon): identidades dos assets VERIFICAR (handoff §8.1).
+// Mapeamento criatura→arte do Map 1 — identidades CONFIRMADAS pela Art Direction
+// v3 §6 + imagens de referência do Willian (2026-06-11). O sufixo VERIFICAR nos
+// nomes de arquivo é só pendência de renomeação (U-final), não de identidade.
 const ENEMY_ART = {
-  'Candlewisp Shade': 'enemies.map1.moth_lantern',
-  'Mothlight Herald': 'enemies.map1.constellation_weaver',
-  'Dreamhorn Warden': 'enemies.map1.deer_spirit',
+  'Candlewisp Shade': 'enemies.map1.constellation_weaver', // chama branco-azul, corpo de constelações
+  'Mothlight Herald': 'enemies.map1.moth_lantern',         // cavaleiro-mariposa com lanterna
+  'Dreamhorn Warden': 'enemies.map1.deer_spirit',          // deidade-cervo com chifres
 };
 const ENEMY_ART_FALLBACK = 'enemies.map1.deer_spirit';
-// Boss do Map 1 (The Gilded Hollow): arte dedicada ainda não existe; usamos a
-// "golden_figure" como placeholder dourado. TODO(canon): boss M1 (handoff §8.7).
+// Boss do Map 1: The Gilded Hollow — arte confirmada (figura de vestes claras,
+// rosto-vazio, filigrana e cabelo de chama dourados, orbe anelado na mão).
 const BOSS_ART = 'enemies.map1.golden_figure';
 
 // Pontos de spawn fixos dentro da arena (%) — pack ≤ 8 (packSizes do GDD),
