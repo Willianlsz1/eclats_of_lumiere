@@ -317,19 +317,22 @@ A Ascension vira o **loop de prestige de cima** (a Convergence é o de baixo):
 
 ### FATE KEEPERS + MODOS DE DIFICULDADE (🟡 EM DEBATE 2026-06-11 — insp. Grand Chase)
 
-**Modos de dificuldade** (a "expansão do que já tenho" — re-usa os 5 mapas, sem lore novo):
+**Modos de dificuldade** (🔁 REVISADO 2026-06-11 — a "expansão do que já tenho", re-usa os 5 mapas, sem lore novo):
 - Re-rodar mapas limpos em dificuldade maior → mobs com **HP e dano muito maiores** + **recompensas melhores** (materiais, Éclats, drip). É o endgame de farm.
 - Nomes (sujeitos a mudança): **Difícil · Nightmare · Tormento**.
-- **Desbloqueados por Ascension:** A2 → Difícil · A3 → Nightmare · A4 → Tormento.
-- Cada tier estende a faixa de HP/dano (ex. ilustrativo do Willian: Normal ~→1e50 · Nightmare ~1e50–1e190 · Tormento ~1e190–1e300 → **rumo a 1e300 = território break_infinity no endgame**). ⏳ brackets exatos + recompensas = calibração (pode re-escalar a curva base do §3).
+- **Desbloqueio = UM gate só, na A2.** A A2 abre o **SISTEMA de dificuldades inteiro** — não libera um modo por Ascension. A partir daí o **jogador escolhe a dificuldade por sub-área** (cada sub-área roda no modo que ele quiser).
+- **O gate real das dificuldades mais altas é o PODER do jogador**, não a Ascension: como cada modo multiplica MUITO o HP/dano dos mobs, você simplesmente não consegue limpar Nightmare/Tormento sem estar forte o bastante. A progressão se auto-regula (você sobe de modo quando aguenta), sem trancar atrás de marcos.
+- Cada tier estende a faixa de HP/dano (ex. ilustrativo do Willian: Normal ~→1e50 · Nightmare ~1e50–1e190 · Tormento ~1e190–1e300 → **rumo a 1e300 = território break_infinity no endgame**). ⏳ brackets exatos + recompensas = calibração (**re-escalar as curvas** é decisão tomada — pode re-escalar a curva base do §3).
 
-**Os 5 Fate Keepers (1 por Ascension) — proposta tied às dificuldades:**
+**Craft/Materiais = sistema BASE, NÃO Ascension** (🔁 decisão 2026-06-11): evoluir Gear (subir raridade via materiais) precisa estar disponível **cedo** no jogo, não trancado atrás de uma Ascension tardia. Sai dos Fate Keepers. Vira sistema próprio (early/mid) — sessão de design dedicada.
+
+**Os 5 Fate Keepers (1 por Ascension):**
 | A | Fate Keeper | Conteúdo |
 |---|---|---|
 | **A1** | **Automação básica** | auto-comprar Gold Stats + auto-Convergir (destrava o idle) |
-| **A2** | **Auto-progressão + Difícil** | auto-limpar sub-áreas/auto-Despertar + desbloqueia o modo **Difícil** |
-| **A3** | **Nightmare + motor** | desbloqueia **Nightmare** + (drip no mapa atual / offline 24h cheio) |
-| **A4** | **Tormento + Craft** | desbloqueia **Tormento** + reforja/craft de materiais |
+| **A2** | **Auto-progressão + abre as Dificuldades** | auto-limpar sub-áreas/auto-Despertar + desbloqueia o **SISTEMA de dificuldades** (escolha por sub-área; modos altos gateados por poder, não por Ascension) |
+| **A3** | **Motor de Éclats** | drip no mapa atual + offline 24h cheio (o "idle engine" do mid/late) |
+| **A4** | **🟡 a definir** | candidatos: automação de Gear · +cap global de mobs na tela · desbloquear Echoes — escolha do Willian |
 | **A5** | **Transcendência** | loop infinito pós-Nihel (§16.7) + meta-multiplicador permanente |
 
 **Expansão de sub-áreas (futuro):** o nº de sub-áreas por mapa CRESCE (ex.: Map 1 ~6 → Map 5 ~11-14) p/ suavizar a curva de HP (ideia 4). A **Auto-progressão (A2)** escala com isso. *(§3 hoje fixa 5/mapa — será variável.)*
