@@ -424,7 +424,7 @@ Duas fontes, ambas liberadas pela **A1**:
 | 2 | des Rires | 1 | +10% Lumens (acelera o re-stat a cada Convergence) | ✅ travado 2026-06-11 |
 | 3 | de la Marche | 1 | +8% XP (a Mémoire dedicada de XP — double-dip level+Convergence) | ✅ travado 2026-06-11 |
 | 4 | de la Forme | 2 | +8% Crit Damage (nunca satura — casa com o transbordo de crit, §14B) | ✅ travado 2026-06-11 |
-| 5 | du Façonnage | 2 | **+% materiais dropados** *(troca proposta: era "+6% efeito de Gear")* — "façonnage"=forjar; alimenta o Craft (§13B) | 🟡 proposta (aguarda OK) |
+| 5 | du Façonnage | 2 | **+% materiais dropados** *(troca de "+6% efeito de Gear")* — "façonnage"=forjar; alimenta o Craft (§13B) | ✅ travado 2026-06-11 |
 | 6 | des Profondeurs | 2 | +10% offline | ⏳ rever |
 | 7 | de la Chute | 3 | +12% dano em boss | ⏳ rever |
 | 8 | des Cendres | 3 | +10% Vestiges | ⏳ rever |
