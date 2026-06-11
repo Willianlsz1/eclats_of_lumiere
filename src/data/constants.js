@@ -142,6 +142,20 @@ export const PASSIVES = {
   },
 };
 
+// §8 — ASCENSION (✅ CALIBRADO). Marco por mapa: derrotar o boss final do mapa
+// + custo em Vestiges → asc_mult (dano E HP), bolsa de Éclats, rank da Ordre e
+// o próximo mapa. A1 libera o sistema de Éclats/Mémoires + o drip. Só Map 1
+// existe no MVP, então só A1 é completável; A2-A5 aguardam Maps 2-5.
+export const ASCENSIONS = [
+  { id: 1, mapBoss: 1, req: 'Boss do Map 1',  cost: 500_000,   mult: 10, eclats: 100,  rank: 'Illuminate', tier: 'II' },
+  { id: 2, mapBoss: 2, req: 'Boss do Map 2',  cost: 1_900_000, mult: 5,  eclats: 300,  rank: 'Éclairé',    tier: 'III' },
+  { id: 3, mapBoss: 3, req: 'Boss do Map 3',  cost: 4_000_000, mult: 5,  eclats: 900,  rank: 'L’Éveillé',  tier: 'IV' },
+  { id: 4, mapBoss: 4, req: 'Boss do Map 4',  cost: 8_000_000, mult: 5,  eclats: 2700, rank: 'Lumière',    tier: 'V' },
+  { id: 5, mapBoss: 5, req: 'Derrotar Nihel', cost: 0,         mult: 1,  eclats: 0,    rank: 'Lumière',    tier: 'V' },
+];
+// §10 — drip de Éclats (liberado pela A1): éclats_por_hora = 0.1 × HP_frontier^0.9
+export const ECLATS_DRIP = { coef: 0.1, exp: 0.9 };
+
 // §10/§11 — ÉCLATS + MÉMOIRES (✅ motor canônico do GDD). 15 relíquias, 3 por era,
 // desbloqueadas pela Ascension da era; moeda = Éclats. Clarté é o motor global.
 // Os efeitos `wired:true` já somam aos fatores memoire_*; os `wired:false` são

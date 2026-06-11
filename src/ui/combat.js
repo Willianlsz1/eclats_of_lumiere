@@ -14,6 +14,7 @@ import {
 } from '../game/stats.js';
 import { changeSubarea } from '../game/combat.js';
 import { getCurrentMap, subareaLevelRange } from '../game/enemies.js';
+import { currentRank } from '../game/ascension.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -56,7 +57,7 @@ export function buildCombatView(root, state) {
         ${picture('frames.tier1', { className: 'cb-frame', alt: '' })}
       </div>
       <h2 class="cb-name">The Seeker</h2>
-      <div class="cb-tier">Ordre des Veilleurs · Tier I</div>
+      <div class="cb-tier" id="cb-tier">Ordre des Veilleurs · Tier I</div>
       <div class="cb-hpbar"><i class="cb-hp-fill" id="cb-hp-fill"></i>
         <span class="cb-hp-text" id="cb-hp-text">—</span></div>
       <div class="cb-status" id="cb-status" hidden></div>
@@ -105,6 +106,8 @@ export function renderCombat(state) {
   const hpMax = playerHpMax(state);
 
   // ── Card do Seeker ──
+  const rank = currentRank(state);
+  $('cb-tier').textContent = `${rank.name} · Tier ${rank.tier}`;
   $('cb-hp-fill').style.width = `${Math.max(0, (state.player.hp / hpMax) * 100)}%`;
   $('cb-hp-text').textContent =
     `${formatNumber(Math.max(0, state.player.hp))} / ${formatNumber(hpMax)}`;

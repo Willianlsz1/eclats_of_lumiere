@@ -6,6 +6,7 @@ import { COMBAT, GOLD_STATS, CRIT, CONVERGENCE } from '../data/constants.js';
 import { gearDamageMult, gearHpMult, gearCritAdd } from './gear.js';
 import { passiveDmgMult, passiveHpMult } from './passives.js';
 import { memoireDmgMult, memoireHpMult, memoireCritDmgMult } from './memoires.js';
+import { ascMult } from './ascension.js';
 
 // ───── Gold Stats (§5) ─────
 
@@ -89,7 +90,7 @@ export function convFactor(state) {
 
 // dano_por_hit = baseDmg × str_total × level_bonus × conv_factor × gear_bonus × ... (§4)
 export function damagePerHit(state) {
-  return COMBAT.baseDmg * strTotal(state) * levelBonus(state.xpTotal) * convFactor(state) * gearDamageMult(state) * passiveDmgMult(state) * memoireDmgMult(state);
+  return COMBAT.baseDmg * strTotal(state) * levelBonus(state.xpTotal) * convFactor(state) * gearDamageMult(state) * passiveDmgMult(state) * memoireDmgMult(state) * ascMult(state);
 }
 
 // DPS exibido: valor esperado incluindo crit
@@ -100,5 +101,5 @@ export function dps(state) {
 
 // hp_max = playerBaseHp × vit_total × level_bonus × conv_factor × gear_hp × ... (§4)
 export function playerHpMax(state) {
-  return COMBAT.playerBaseHp * vitTotal(state) * levelBonus(state.xpTotal) * convFactor(state) * gearHpMult(state) * passiveHpMult(state) * memoireHpMult(state);
+  return COMBAT.playerBaseHp * vitTotal(state) * levelBonus(state.xpTotal) * convFactor(state) * gearHpMult(state) * passiveHpMult(state) * memoireHpMult(state) * ascMult(state);
 }

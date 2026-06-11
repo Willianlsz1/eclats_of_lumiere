@@ -14,6 +14,7 @@ import {
   statCostNext, buyStat, buyStatMax,
 } from '../game/stats.js';
 import { xpWall, canConverge, runPoints, doConverge } from '../game/convergence.js';
+import { currentRank } from '../game/ascension.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -45,7 +46,7 @@ export function buildPlayerView(root, state) {
         ${picture('frames.tier1', { className: 'pl-frame', alt: '' })}
       </div>
       <h2 class="pl-name">The Seeker</h2>
-      <div class="pl-tier">Ordre des Veilleurs · Tier I</div>
+      <div class="pl-tier" id="pl-tier">Ordre des Veilleurs · Tier I</div>
       <p class="pl-lore">« Ele carrega a luz — ainda não é a luz. »</p>
 
       <div class="pl-vital">
@@ -125,8 +126,10 @@ export function buildPlayerView(root, state) {
 
 export function renderPlayer(state) {
   const hpMax = playerHpMax(state);
+  const rank = currentRank(state);
 
   // Vitais
+  $('pl-tier').textContent = `${rank.name} · Tier ${rank.tier}`;
   $('pl-level').textContent = formatNumber(heroLevel(state.xpTotal));
   $('pl-hp-fill').style.width = `${Math.max(0, (state.player.hp / hpMax) * 100)}%`;
   $('pl-hp-text').textContent = `${formatNumber(Math.max(0, state.player.hp))} / ${formatNumber(hpMax)}`;

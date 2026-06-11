@@ -11,10 +11,11 @@
 // - Boss (CP-D): após o kill threshold (oculto), a próxima onda é o Guardião
 //   (sozinho); derrotá-lo abre o gate da próxima subárea e vira loop recorrente.
 
-import { COMBAT } from '../data/constants.js';
+import { COMBAT, NUMBER_CAP } from '../data/constants.js';
 import { spawnPack, spawnBoss, getCurrentMap } from './enemies.js';
 import { damagePerHit, currentAPS, playerHpMax, critChance, critDamageMult } from './stats.js';
 import { awardKill } from './economy.js';
+import { eclatsDripPerSec } from './ascension.js';
 
 // Monta a onda da subárea. Se já bateu o threshold, o Guardião entra JUNTO,
 // substituindo 1 mob do pack (§4); na Sub 1 (pack de 1) ele vem sozinho.
@@ -78,6 +79,10 @@ export function combatTick(state, dt) {
 
   // --- Regen contínuo de 1% HP máx/s ---
   player.hp = Math.min(hpMax, player.hp + hpMax * COMBAT.regenPerSec * dt);
+
+  // --- Drip de Éclats (§10): renda passiva após a A1, escala com o frontier ---
+  const drip = eclatsDripPerSec(state);
+  if (drip > 0) state.eclats = Math.min(NUMBER_CAP, state.eclats + drip * dt);
 
   // --- Morte: recua uma subárea e a onda reinicia ---
   if (player.hp <= 0) {

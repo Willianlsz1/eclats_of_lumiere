@@ -11,9 +11,11 @@ export function applyDevUnlock(state) {
   state.xpTotal  = Math.max(state.xpTotal, 1e7);   // nível do Seeker decente
 
   state.convergences = Math.max(state.convergences, 1); // libera as Passivas
-  state.ascensions   = Math.max(state.ascensions, 5);   // libera todas as Mémoires
   state.convPoints   = Math.max(state.convPoints, 20);  // conv_factor folgado
   state.unlockedSubarea = 5;                            // mapa todo navegável
+  // boss final batido → A1 fica disponível pra testar a Ascension (não força
+  // ascensions: assim dá pra clicar Ascender e ver o fluxo). Mémoires abrem
+  // por era conforme você ascende.
   state.bossDefeated = [true, true, true, true, true];
   state.bestSubareaRun = Math.max(state.bestSubareaRun, 5);
 

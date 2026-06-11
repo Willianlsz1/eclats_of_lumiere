@@ -1,8 +1,8 @@
 // UI — casca Éclats (unificação). Mantém o contrato que src/main.js consome:
 // setupUI / renderUI / showOfflineSummary.
 // Chrome do mockup: nav (topo-esq) + moedas (topo-dir) + stage 1920×1080.
-// Combate, Mapa, Player, Gear, Passivas e Mémoires são telas reais ligadas ao
-// motor. Resta só Ascension como placeholder (pós-MVP).
+// Todas as 7 telas (Combate, Mapa, Player, Gear, Passivas, Mémoires, Ascension)
+// são reais e ligadas ao motor. Nenhuma nav fica mais bloqueada.
 
 import './tokens.css';
 import './shell.css';
@@ -12,6 +12,7 @@ import './player.css';
 import './gear.css';
 import './passives.css';
 import './memoires.css';
+import './ascension.css';
 import { formatNumber } from '../core/format.js';
 import { picture, bg } from '../data/assets.js';
 import { buildCombatView, renderCombat } from './combat.js';
@@ -20,6 +21,7 @@ import { buildPlayerView, renderPlayer } from './player.js';
 import { buildGearView, renderGear } from './gear.js';
 import { buildPassivesView, renderPassives } from './passives.js';
 import { buildMemoiresView, renderMemoires } from './memoires.js';
+import { buildAscensionView, renderAscension } from './ascension.js';
 
 const $ = (sel, root = document) => root.querySelector(sel);
 
@@ -40,7 +42,7 @@ const VIEWS = [
   { id: 'gear',      label: 'Gear',      icon: 'icons.nav.4' },
   { id: 'passives',  label: 'Passivas',  icon: 'icons.nav.3' },
   { id: 'memoires',  label: 'Mémoires',  icon: 'icons.nav.6' },
-  { id: 'ascension', label: 'Ascension', icon: 'icons.nav.7', locked: true },
+  { id: 'ascension', label: 'Ascension', icon: 'icons.nav.7' },
 ];
 
 let current = 'combat';
@@ -122,8 +124,15 @@ function buildViews(state) {
       buildMemoiresView(view, state);
       continue;
     }
+    // Ascension: marcos da Ordre — boss + Vestiges → asc_mult + Éclats (pós-MVP).
+    if (v.id === 'ascension') {
+      view.className = 'view';
+      main.appendChild(view);
+      buildAscensionView(view, state);
+      continue;
+    }
 
-    // Só telas pós-MVP chegam aqui (Ascension).
+    // (todas as telas têm implementação real; nada cai mais no placeholder)
     view.className = 'view placeholder';
     const glyph = v.glyph
       ? `<div class="glyph" style="font-size:96px;display:grid;place-items:center;opacity:.5">${v.glyph}</div>`
@@ -166,6 +175,7 @@ export function renderUI(state) {
   else if (current === 'gear') renderGear(state);
   else if (current === 'passives') renderPassives(state);
   else if (current === 'memoires') renderMemoires(state);
+  else if (current === 'ascension') renderAscension(state);
 }
 
 // Resumo de progresso offline (§15) — toast simples sobre a casca

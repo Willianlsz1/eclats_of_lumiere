@@ -1,0 +1,52 @@
+/* ============================================================
+   Éclats of Lumière — Tela de Ascension (pós-MVP)
+   Cabeçalho (rank + asc_mult + drip) + escada de 5 marcos.
+   ============================================================ */
+
+.view.ascension { display: flex; flex-direction: column; padding: 100px 40px 32px; gap: 18px; overflow: hidden; }
+
+.as-head { display: flex; gap: 16px; }
+.as-head > div {
+  flex: 1; display: grid; grid-template-rows: auto auto auto; gap: 2px;
+  background: color-mix(in srgb, var(--panel) 88%, transparent);
+  border: var(--border); border-radius: var(--radius); padding: 14px 20px;
+}
+.as-lbl { font-size: var(--fs-xs); color: var(--dim); text-transform: uppercase; letter-spacing: .14em; }
+.as-head b { font-family: var(--font-display); font-weight: 700; font-size: var(--fs-xl); color: var(--ink);
+  font-variant-numeric: tabular-nums; }
+.as-sub { font-size: var(--fs-xs); color: var(--faint); }
+
+/* ---------------- Escada ---------------- */
+.as-ladder { display: flex; flex-direction: column; gap: 12px; flex: 1; min-height: 0; }
+.as-step {
+  display: grid; grid-template-columns: 72px 1fr auto; align-items: center; gap: 18px;
+  background: color-mix(in srgb, var(--panel) 86%, transparent);
+  border: var(--border); border-left: 4px solid var(--line); border-radius: var(--radius); padding: 14px 20px;
+}
+.as-step-id { font-family: var(--font-display); font-weight: 700; font-size: var(--fs-xxl);
+  color: var(--faint); text-align: center; }
+.as-step-body { display: grid; gap: 3px; }
+.as-step-rank { font-family: var(--font-display); font-size: var(--fs-lg); color: var(--ink); }
+.as-step-req { font-size: var(--fs-sm); color: var(--dim); }
+.as-step-rew { font-size: var(--fs-sm); color: var(--gold); }
+.as-step-side { display: grid; justify-items: end; gap: 6px; text-align: right; }
+.as-step-cost { font-size: var(--fs-sm); color: var(--vest); font-variant-numeric: tabular-nums; }
+.as-step-state { font-size: var(--fs-xs); color: var(--faint); }
+
+.as-step-btn {
+  appearance: none; cursor: pointer; padding: 10px 22px; border: 0; border-radius: 10px;
+  background: var(--eclat); color: #06101f; font-weight: 700; font-size: var(--fs-md);
+  box-shadow: var(--glow-eclat); transition: filter .14s ease, transform .1s ease;
+}
+.as-step-btn:hover:not(:disabled) { filter: brightness(1.08); transform: translateY(-1px); }
+.as-step-btn:disabled { background: var(--panel-2); color: var(--faint); box-shadow: none; cursor: not-allowed; }
+
+/* estados */
+.as-step.done { border-left-color: var(--gold); }
+.as-step.done .as-step-id { color: var(--gold); }
+.as-step.next { border-left-color: var(--eclat); box-shadow: 0 0 0 1px var(--eclat), var(--glow-eclat); }
+.as-step.next .as-step-id { color: var(--eclat); }
+.as-step.locked { opacity: .5; }
+
+.as-note { text-align: center; font-family: var(--font-display); font-style: italic;
+  font-size: var(--fs-lg); color: var(--dim); margin: 0; }
