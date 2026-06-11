@@ -29,7 +29,7 @@ Cinco camadas, cada moeda com exatamente uma casa:
 | Camada | Loop | Moeda | Reseta em |
 |---|---|---|---|
 | **Run** | minutos–horas | Lumens → Gold Stats | Convergence |
-| **Convergence** | ~4h em média (81 na vida) | dá **pontos** (aditivo vs composto → sessão de Escala) | — |
+| **Convergence** | ~4h em média (81 na vida) | dá **pontos** (recompensa COMPOSTA, ✅ 2026-06-11) | — |
 | **Passivas** | permanente | **Vestiges** | nunca |
 | **Ascension** | 1 por mapa (5 na vida) | custa Vestiges, libera **Éclats** | — |
 | **Mémoires** | permanente | **Éclats** | nunca |
@@ -165,7 +165,7 @@ pontos_da_run = f(xp_run)  +  bônus_boss_final     // f com retorno decrescente
 - A run rende pela **"luz juntada" = `xp_run`** (já é HP destruído × 0.08 × wis → pondera profundidade: mob fundo vale ordens de grandeza mais). O retorno decrescente cria o dilema *convergir cedo e frequente* vs *farmar mais fundo*.
 - **Bônus único** por matar o **Boss final do mapa** na run — objetivo de run (prêmio extra, não requisito da Convergence).
 - **Anti-cheese:** spam de trash da Sub 1 dá luz desprezível; ir fundo é exponencialmente melhor. **Escala entre mapas:** mob do Map 2 dá ~1e10× mais luz → convergir lá vale ordens de grandeza mais (com o `asc_mult`, é o que faz "tudo do Map 1 não bastar pro Map 2").
-- ⏳ **A forma de `f` e o `conv_factor` (aditivo `1+0.15×pts` vs composto `×1.15^pts`) ficam para a sessão de Escala.**
+- ✅ **DIREÇÃO TRAVADA (Tópico 2.1, 2026-06-11): recompensa COMPOSTA, não aditiva.** O `conv_factor` multiplica em juros compostos (`≈ base^Σpontos`, ex. ilustrativo `1.05^Σ`) — primeiros pontos valem pouco, pontos do late disparam (bola de neve estilo Synergism). E `f(xp_run)` usa **retorno decrescente** (≈ `√transbordo da parede`) → dilema "converter cedo e frequente vs farmar mais fundo". ⏳ A **base exata** (o "5%") é provisória — calibrada contra todas as camadas juntas.
 
 **1ª Convergence:** requisito = **só encher a parede** (~1.500 XP, sem gate extra); alvo de pacing ~5-10 min de jogo ativo. Desbloqueia as Passivas (lore: a Semente desperta) + concede os Vestiges da run.
 
