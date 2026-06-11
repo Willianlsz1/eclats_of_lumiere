@@ -14,7 +14,8 @@
   - **`redesign/curve-sim`** = a **CARA** (pipeline de assets + design system + telas pixel-fiéis) — mas sem motor real.
 - **Decisão do Willian (dono):** base = **`main`** (o motor); trazer a arte + telas pra dentro dela; **escopo = MVP da main** (só Map 1; Gear/Passivas/Mémoires/Ascension são **pós-MVP**, ficam como nav bloqueada).
 - **Branch de trabalho:** `unify/eclats` (parte da `main`). A `redesign/curve-sim` fica **intacta como backup**.
-- **Já feito:** U-0 (assets), U-1 (casca), **U-2 (combate)**, **U-3 (mapa)**, **U-4 (player: Gold Stats + Convergence)** — todas as telas do MVP ligadas ao motor real. **Falta:** só o **U-final** (reconciliar nomes de assets `VERIFICAR`→kebab-case do `assets/README.md` — depende de cânon do Willian).
+- **Já feito:** U-0 (assets), U-1 (casca), **U-2 (combate)**, **U-3 (mapa)**, **U-4 (player: Gold Stats + Convergence)**, **U-final (limpeza/QA/docs)** — **MVP do Map 1 completo e na `main`**.
+- **Única tarefa futura (adiada por decisão do Willian em 2026-06-11):** renomear os assets `VERIFICAR`/underscore para o kebab-case do `assets/README.md`. Os nomes atuais funcionam; a renomeação espera o cânon de identidades dos Maps 2-5 fechar (refactor amplo: ~270 arquivos + manifesto `assets.js` + referências no código).
 - **Rodar:** `npm install` (já feito) → `npm run dev` → `localhost:5173`. **Deploy:** push na `main` → GitHub Pages (`willianlsz1.github.io/Game-Teste`). Toda a unificação já está na `main`.
 
 > **Atualização 2026-06-11 (U-2..U-4 concluídos):** Combate, Mapa e Player são telas reais
