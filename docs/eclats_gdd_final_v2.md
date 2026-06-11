@@ -319,6 +319,29 @@ Sistema mantido do DESIGN.md §21-24 (5 raridades Hollow→Sovereign, 3 categori
 
 ---
 
+## 14B. CAPS & TETOS (🟡 EM DEFINIÇÃO — sessão de design 2026-06-11)
+
+Seção dedicada: os tetos do jogo interagem (APS × kills/ataque × mobs na tela definem o **teto de renda**), então são decididos juntos, não dentro de cada sistema.
+
+| Cap | Valor atual (código) | Decisão | Status |
+|---|---|---|---|
+| **APS (teto global)** | 1.25 | subir p/ **~15** (Tópico 2.4) — nº exato a calibrar | 🟡 direção ✅, valor ⏳ |
+| **APS por AGI (sub-cap)** | sem sub-cap (per 0.04) | AGI sobe só até um **teto pequeno**; resto = passiva + gear | ⏳ definir o sub-cap |
+| **Kills por ataque** | 1 (fixo) | base 1; passivas (Overkill/Execute/Luminal Explosion) furam, extras pagam ~50% | 🟡 regra ✅, máx de extras ⏳ |
+| **Mobs na tela (onda)** | [1,2,4,6,8] por sub-área | base + **passiva que aumenta o cap** (ideia do Willian) | ⏳ definir base e teto |
+| **Crit chance** | 100% (excedente → crit dmg) | manter transbordo? valores | ⏳ §16.6 |
+| **Gear: nível por raridade** | 25/50/100/175/300 | provisório | ⏳ calibrar |
+| **Passiva: nível máximo** | 5 (provisório) | economia deve ser **sem teto** → resolver: quais passivas têm cap, quais não | ⏳ decidir |
+| **Mémoires: nível** | sem teto | proposital (motor do late) | ✅ |
+| **Número do jogo** | 1e100 (JS estoura ~1e308) | break_infinity além de 1e308 (CP próprio) | ✅ decidido |
+| **Offline** | 30 dias | guarda de engenharia | ✅ |
+| **Ascension** | 5 na vida | = 5 mapas | ✅ |
+| **Convergence** | ~81 na vida (soft) | cadência, não cap rígido | ✅ |
+
+⏳ Prioridade de decisão (bloqueiam o design das passivas): **APS exato + sub-cap do AGI · máx de kills extras · cap de mobs na tela (base e teto)**. O resto é calibração ou já decidido.
+
+---
+
 ## 15. MODELO DE TEMPO (🔒 atualizado)
 
 | Relógio | O que é | Duração |
