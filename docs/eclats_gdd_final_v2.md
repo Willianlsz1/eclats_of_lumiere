@@ -402,7 +402,7 @@ Seção dedicada: os tetos do jogo interagem (APS × kills/ataque × mobs na tel
 | **Loot / coleta** | direta no kill | **automático, sem drop no chão** (confirmado) — não haverá passivas de "raio de coleta" | ✅ |
 | **Materiais** | 🔒 não existe | **novo recurso a desenhar:** materiais de boss para subir **raridade de gear** (§13); passiva **Vestige Pull** turbina o ganho. Definir: o quê, de onde (bosses?), por mapa? | ⏳ a desenhar |
 | **Gear: nível por raridade** | 25/50/100/175/300 | provisório | ⏳ calibrar |
-| **Passiva: nível máximo** | 5 (provisório) | economia deve ser **sem teto** → resolver: quais passivas têm cap, quais não | ⏳ decidir |
+| **Passiva: nível máximo** | 5 (provisório) | ✅ **RESOLVIDO 2026-06-11:** TODA passiva tem nível máx (o gate "maximizar grupo → abre o próximo" sempre funciona). O crescimento sem teto vem de (1) os **grupos 3 (late) concentram as mais fortes** + (2) passivas cujo **efeito escala com o JOGO, não com o nível** (Hoarder=cofre · Eternal Vestige=nº de Convergences · Fractured Soul=seu dano) — nível capado, efeito sobe sozinho. Valor do maxLevel ⏳ calibrar | ✅ regra |
 | **Mémoires: nível** | sem teto | proposital (motor do late) | ✅ |
 | **Número do jogo** | 1e100 (JS estoura ~1e308) | break_infinity além de 1e308 (CP próprio) | ✅ decidido |
 | **Offline** | 30 dias (código) | 🔄 **cap = 24h** + **renda ≤ 100% do ativo** (nunca rende mais que jogar) + base generosa (não-fraco); **Dreamwalker** leva ao teto. Implementação pendente (código ainda faz 30d) | 🟡 direção ✅ |
