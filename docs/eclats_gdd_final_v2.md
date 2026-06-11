@@ -75,8 +75,25 @@ goldRatio    = 0.10     xpRatio   = 0.08
 ```
 
 ### ⚡ Regra física fundamental: cap de kill rate
-**Máximo de 1 kill por ataque.** Kill rate máximo absoluto = APS atual (teto 1.25/s).
-Consequência de design: toda renda de farm (Lumens, XP, Vestiges, Éclats) tem teto proporcional ao **HP do mob mais fundo que você mata**, nunca à velocidade de spam. É a constraint que ancora a economia inteira.
+**Máximo de 1 kill por ataque (base).** Kill rate máximo = APS atual.
+
+> 🔄 **REVISTO 2026-06-11 (Tópico 2.4):** o teto de APS sobe de 1.25 para **~15** (estilo Gaiadon).
+> A âncora **sobrevive** porque o que ancora a economia é o teto **existir**, não ser baixo: a renda
+> (Lumens/XP/Vestiges/Éclats) continua proporcional ao **HP do mob mais fundo que você mata × teto de
+> kills/s** — profundidade, nunca spam. O número exato (15? 12?) é calibração de escala.
+>
+> **Distribuição do APS (decisão do Willian):** nenhuma fonte sozinha chega ao teto.
+> - **AGI (Gold Stat):** sobe o APS só até um **teto pequeno próprio** (sub-cap baixo);
+> - **1 passiva (Void Haste, árvore Fracture):** contribui mais APS;
+> - **Gear:** contribui APS (afixo dedicado);
+> - As três juntas alcançam o ~15 → todas relevantes a vida toda (conserta o AGI, que era inútil pelo cap 1.25).
+>
+> **Multi-kill:** "1 kill/ataque" continua a regra base, mas passivas específicas (Overkill, Execute,
+> Luminal Explosion) podem furá-la — com os **kills extras pagando renda reduzida (~50%)** para serem
+> ganho de poder, não exploit econômico.
+>
+> **Cadência (não-flash):** sensação de "muitos kills/s, mas agradável" é trabalho **visual** (mob morto
+> some com fade ~0.2s + ritmo de spawn da onda), não de segurar o APS baixo.
 
 ### Fórmula de dano do jogador
 ```
