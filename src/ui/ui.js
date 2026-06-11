@@ -96,7 +96,9 @@ function show(id) {
 function fit() {
   const s = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
   $('#stage').style.transform = `scale(${s})`;
-  $('#toosmall').style.display = s < 0.22 ? 'grid' : 'none';
+  // Corte baixo só para janelas realmente minúsculas — celulares (mesmo em
+  // retrato, ~0.21) passam. Mobile é só para visualizar/testar; o alvo é desktop.
+  $('#toosmall').style.display = s < 0.12 ? 'grid' : 'none';
 }
 
 export function renderUI(state) {
