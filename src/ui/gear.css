@@ -1,0 +1,103 @@
+/* ============================================================
+   Éclats of Lumière — Tela de Gear (pós-MVP)
+   Resumo dos afixos (esq) · grade de 6 slots (centro) · detalhe + controles (dir).
+   Borda 3px da cor da raridade + badge LVL (estilo gacha do mockup).
+   ============================================================ */
+
+.view.gear {
+  display: grid; grid-template-columns: 320px 1fr 400px; gap: 24px;
+  padding: 108px 40px 40px; overflow: hidden;
+}
+.gear > * { min-height: 0; }
+
+.gr-panel, .gr-summary, .gr-detail {
+  background: color-mix(in srgb, var(--panel) 88%, transparent);
+  border: var(--border); border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-panel); padding: 20px;
+}
+
+/* ---------------- Resumo (afixos ativos) ---------------- */
+.gr-summary h3, .gr-detail h2 { margin: 0 0 14px; font-family: var(--font-display);
+  font-weight: 700; color: var(--ink); letter-spacing: .02em; }
+.gr-summary h3 { font-size: var(--fs-xl); }
+.gr-totals { margin: 0; display: grid; gap: 10px; }
+.gr-totals > div { display: flex; justify-content: space-between; align-items: baseline;
+  background: var(--panel-2); border: var(--border-soft); border-radius: var(--radius-sm); padding: 10px 14px; }
+.gr-totals dt { font-size: var(--fs-xs); color: var(--dim);
+  text-transform: uppercase; letter-spacing: .12em; }
+.gr-totals dd { margin: 0; font-size: var(--fs-lg); font-weight: 600; color: var(--gold);
+  font-variant-numeric: tabular-nums; }
+.gr-note { margin-top: 18px; font-size: var(--fs-xs); color: var(--faint);
+  font-style: italic; font-family: var(--font-display); }
+
+/* ---------------- Grade de slots ---------------- */
+.gr-slots { display: grid; grid-template-columns: repeat(3, 1fr); grid-auto-rows: 1fr; gap: 18px; }
+.gr-slot {
+  position: relative; cursor: pointer; appearance: none;
+  background: color-mix(in srgb, var(--panel) 86%, transparent);
+  border: 3px solid var(--line); border-radius: var(--radius);
+  padding: 14px; display: flex; flex-direction: column; align-items: center; gap: 6px;
+  transition: transform .12s ease, box-shadow .14s ease;
+}
+.gr-slot:hover { transform: translateY(-2px); }
+.gr-slot.selected { box-shadow: 0 0 0 2px var(--eclat), var(--glow-eclat); }
+.gr-art { width: 100%; flex: 1; min-height: 90px; display: grid; place-items: center; }
+.gr-art picture, .gr-art img { max-width: 100%; max-height: 150px; object-fit: contain;
+  filter: drop-shadow(0 6px 14px #000a); }
+.gr-lvl { position: absolute; top: 8px; right: 8px; font-size: var(--fs-xs); font-weight: 700;
+  background: #06101fcc; border: var(--border-soft); border-radius: 999px; padding: 2px 9px;
+  color: var(--ink); font-variant-numeric: tabular-nums; }
+.gr-pname { font-family: var(--font-display); font-size: var(--fs-md); color: var(--ink);
+  text-align: center; line-height: 1.1; }
+.gr-prar { font-size: var(--fs-xs); text-transform: uppercase; letter-spacing: .14em; color: var(--dim); }
+
+/* borda + nome da raridade pela cor canônica */
+.gr-slot.r-faded     { border-color: var(--r-faded); }     .gr-slot.r-faded .gr-prar { color: var(--r-faded); }
+.gr-slot.r-kindled   { border-color: var(--r-kindled); }   .gr-slot.r-kindled .gr-prar { color: var(--r-kindled); }
+.gr-slot.r-luminous  { border-color: var(--r-luminous); }  .gr-slot.r-luminous .gr-prar { color: var(--r-luminous); }
+.gr-slot.r-radiant   { border-color: var(--r-radiant); }   .gr-slot.r-radiant .gr-prar { color: var(--r-radiant); }
+.gr-slot.r-converged { border-color: var(--r-converged); } .gr-slot.r-converged .gr-prar { color: var(--r-converged); }
+
+/* ---------------- Detalhe ---------------- */
+.gr-detail { display: flex; flex-direction: column; }
+.gr-d-art { width: 100%; height: 230px; display: grid; place-items: center; margin-bottom: 8px; }
+.gr-d-art picture, .gr-d-art img { max-width: 100%; max-height: 230px; object-fit: contain;
+  filter: drop-shadow(0 8px 20px #000b); }
+.gr-detail h2 { font-size: var(--fs-xl); margin-bottom: 2px; text-align: center; }
+.gr-d-slot { text-align: center; font-size: var(--fs-sm); color: var(--dim);
+  text-transform: uppercase; letter-spacing: .12em; margin-bottom: 14px; }
+.gr-d-slot b { font-weight: 700; }
+
+.gr-d-bar { position: relative; height: 22px; border-radius: 11px;
+  background: #0c1119; border: var(--border-soft); overflow: hidden; margin-bottom: 14px; }
+.gr-d-bar i { position: absolute; inset: 0; width: 0;
+  background: linear-gradient(90deg, var(--gold), #f0d9a0); transition: width .14s ease; }
+.gr-d-bar span { position: absolute; inset: 0; display: grid; place-items: center;
+  font-size: var(--fs-xs); font-weight: 600; color: var(--ink); text-shadow: 0 1px 2px #000a;
+  font-variant-numeric: tabular-nums; }
+
+.gr-d-facts { display: grid; gap: 8px; margin: 0 0 14px; }
+.gr-d-facts > div { display: flex; justify-content: space-between; align-items: baseline;
+  border-bottom: var(--border-soft); padding-bottom: 7px; }
+.gr-d-facts dt { font-size: var(--fs-xs); color: var(--dim);
+  text-transform: uppercase; letter-spacing: .1em; }
+.gr-d-facts dd { margin: 0; font-size: var(--fs-md); font-weight: 600; color: var(--ink);
+  font-variant-numeric: tabular-nums; }
+
+.gr-mults { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-bottom: 12px; }
+.gr-mults button { appearance: none; cursor: pointer; padding: 8px 0; font-size: var(--fs-sm);
+  font-weight: 600; border: var(--border); border-radius: 8px; background: var(--panel); color: var(--dim);
+  transition: all .12s ease; }
+.gr-mults button:hover { border-color: var(--eclat); color: var(--ink); }
+.gr-mults button.active { background: var(--eclat); color: #06101f; border-color: var(--eclat); }
+
+.gr-up, .gr-rarity { appearance: none; cursor: pointer; width: 100%; padding: 13px;
+  border-radius: 12px; font-weight: 700; font-size: var(--fs-md); margin-top: auto; }
+.gr-up { border: 0; background: var(--gold); color: #1a1206; box-shadow: var(--glow-gold); }
+.gr-up:hover:not(:disabled) { filter: brightness(1.08); }
+.gr-rarity { margin-top: 10px; border: var(--border); background: var(--panel-2); color: var(--eclat); }
+.gr-rarity:hover:not(:disabled) { border-color: var(--eclat); }
+.gr-up:disabled, .gr-rarity:disabled { opacity: .4; cursor: not-allowed; box-shadow: none;
+  background: var(--panel-2); color: var(--faint); }
+.gr-d-lore { margin: 12px 0 0; text-align: center; font-size: var(--fs-xs); color: var(--faint);
+  font-style: italic; font-family: var(--font-display); }

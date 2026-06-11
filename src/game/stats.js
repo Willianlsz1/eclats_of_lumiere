@@ -3,6 +3,7 @@
 // Mémoires) valem 1 até seus CPs chegarem.
 
 import { COMBAT, GOLD_STATS, CRIT, CONVERGENCE } from '../data/constants.js';
+import { gearDamageMult, gearHpMult, gearCritAdd } from './gear.js';
 
 // ───── Gold Stats (§5) ─────
 
@@ -55,7 +56,7 @@ export function currentAPS(state) {
 // ⏳ Crit provisório (GDD §16.6): rate = lck × 1.5%, sem milestones;
 // excedente acima de 100% transborda 1:1 para crit damage sobre a base ×2.
 export function critChanceRaw(state) {
-  return CRIT.baseChance + state.stats.lck * GOLD_STATS.per.lck;
+  return CRIT.baseChance + state.stats.lck * GOLD_STATS.per.lck + gearCritAdd(state);
 }
 
 export function critChance(state) {
@@ -84,9 +85,9 @@ export function convFactor(state) {
   return 1 + CONVERGENCE.pointBonus * state.convPoints;
 }
 
-// dano_por_hit = baseDmg × str_total × level_bonus × conv_factor × asc_mult × ... (§4)
+// dano_por_hit = baseDmg × str_total × level_bonus × conv_factor × gear_bonus × ... (§4)
 export function damagePerHit(state) {
-  return COMBAT.baseDmg * strTotal(state) * levelBonus(state.xpTotal) * convFactor(state);
+  return COMBAT.baseDmg * strTotal(state) * levelBonus(state.xpTotal) * convFactor(state) * gearDamageMult(state);
 }
 
 // DPS exibido: valor esperado incluindo crit
@@ -95,7 +96,7 @@ export function dps(state) {
   return damagePerHit(state) * currentAPS(state) * critBonus;
 }
 
-// hp_max = playerBaseHp × vit_total × level_bonus × conv_factor × ... (§4)
+// hp_max = playerBaseHp × vit_total × level_bonus × conv_factor × gear_hp × ... (§4)
 export function playerHpMax(state) {
-  return COMBAT.playerBaseHp * vitTotal(state) * levelBonus(state.xpTotal) * convFactor(state);
+  return COMBAT.playerBaseHp * vitTotal(state) * levelBonus(state.xpTotal) * convFactor(state) * gearHpMult(state);
 }

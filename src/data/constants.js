@@ -77,6 +77,39 @@ export const VESTIGES = {
   bossMult: 10,
 };
 
+// §13 — GEAR · ⏳ PROVISÓRIO (aprovado pelo Willian, 2026-06-11)
+// O GDD §13 fixa a ESTRUTURA (6 peças, 5 raridades, 2 eixos: nível+raridade),
+// mas marca os VALORES como "a definir" (§16.4) e o DESIGN.md §26-28 não está
+// no repo. Tudo abaixo é PLACEHOLDER para recalibrar na malha v2 — não é cânon.
+// TODO(canon): rates/caps por raridade, custos, e o afixo real de cada peça.
+export const GEAR_RARITIES = ['faded', 'kindled', 'luminous', 'radiant', 'converged'];
+export const GEAR_RARITY_LABELS = ['Faded', 'Kindled', 'Luminous', 'Radiant', 'Converged'];
+export const GEAR = {
+  // 6 peças canônicas (Art Direction §8h). affix = stat afetado (provisório).
+  pieces: [
+    { key: 'edge',  name: 'The Waning Edge',      slot: 'Arma',     affix: 'dmg' },
+    { key: 'vigil', name: 'The Silent Vigil',     slot: 'Elmo',     affix: 'hp' },
+    { key: 'veil',  name: 'Veil of Cinders',      slot: 'Manto',    affix: 'hp' },
+    { key: 'grasp', name: 'Grasp of the Unnamed', slot: 'Manoplas', affix: 'crit' },
+    { key: 'reson', name: 'The Last Resonance',   slot: 'Amuleto',  affix: 'xp' },
+    { key: 'band',  name: 'Band of Dusk',         slot: 'Anel',     affix: 'lumens' },
+  ],
+  // por raridade (índice 0..4): força do afixo sobe, cap de nível sobe, custo sobe
+  rarityMult: [1, 1.5, 2.25, 3.5, 5],
+  levelCap:   [25, 50, 100, 175, 300],
+  costMult:   [1, 4, 16, 64, 256],
+  // afixo multiplicativo (dmg/hp/xp/lumens) = 1 + nível × perLevel × rarityMult
+  affixPerLevel: 0.02,
+  // afixo de crit (grasp) = nível × critPerLevel × rarityMult (chance plana)
+  critPerLevel: 0.0004,
+  // custo de upar 1 nível = base × ramp^nível × costMult[raridade]
+  levelCostBase: 50,
+  levelCostRamp: 1.12,
+  // custo (Lumens) p/ subir à raridade índice i (materiais de boss = pós-MVP).
+  // Requer a peça no nível máximo da raridade atual.
+  rarityUpCost: [0, 6000, 90_000, 1.5e6, 3e7],
+};
+
 // §15 — Offline: simulação real do combate enquanto fora.
 // Teto de 30 dias é guarda de engenharia (custo de CPU), não balanceamento.
 export const OFFLINE = {

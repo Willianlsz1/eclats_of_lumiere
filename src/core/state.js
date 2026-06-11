@@ -22,6 +22,17 @@ export function createInitialState() {
     // Gold Stats (§5) — resetam na Convergence (CP-E)
     stats: { str: 0, vit: 0, agi: 0, lck: 0, frt: 0, wis: 0 },
 
+    // Gear (§13) — 6 peças fixas, cada uma com nível + raridade. PERSISTE sempre
+    // (não reseta na Convergence). rarity = índice em GEAR_RARITIES (0=Faded).
+    gear: {
+      edge:  { level: 0, rarity: 0 },
+      vigil: { level: 0, rarity: 0 },
+      veil:  { level: 0, rarity: 0 },
+      grasp: { level: 0, rarity: 0 },
+      reson: { level: 0, rarity: 0 },
+      band:  { level: 0, rarity: 0 },
+    },
+
     // Posição no mundo
     map: 1,
     subarea: 1,         // 1..5
@@ -70,6 +81,13 @@ export function applySnapshot(snapshot) {
   state.convergences = snapshot.convergences ?? 0;
   state.convPoints = snapshot.convPoints ?? 0;
   state.bestSubareaRun = snapshot.bestSubareaRun ?? state.subarea;
+  // Gear persiste; saves antigos (sem gear) mantêm o default (tudo Faded nível 0)
+  if (snapshot.gear) {
+    for (const key of Object.keys(state.gear)) {
+      const g = snapshot.gear[key];
+      if (g) state.gear[key] = { level: g.level ?? 0, rarity: g.rarity ?? 0 };
+    }
+  }
 }
 
 // Extrai só o que deve ser persistido (pack e timers são reconstruídos no load)
@@ -90,5 +108,6 @@ export function toSnapshot() {
     convergences: state.convergences,
     convPoints: state.convPoints,
     bestSubareaRun: state.bestSubareaRun,
+    gear: JSON.parse(JSON.stringify(state.gear)), // persiste sempre (§13)
   };
 }

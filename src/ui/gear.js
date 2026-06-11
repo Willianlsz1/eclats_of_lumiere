@@ -1,0 +1,176 @@
+// Tela de Gear (pós-MVP) — 6 peças fixas, cada uma com nível + raridade,
+// upadas com Lumens. ⏳ valores PROVISÓRIOS (ver GEAR em constants.js).
+// Layout: resumo dos afixos à esquerda · grade de 6 slots no centro ·
+// detalhe + controles (multiplicadores x1..MAX, upar, subir raridade) à direita.
+//
+// Contrato: buildGearView(root, state) monta o DOM; renderGear(state) atualiza.
+
+import { formatNumber } from '../core/format.js';
+import { picture } from '../data/assets.js';
+import { GEAR, GEAR_RARITIES, GEAR_RARITY_LABELS } from '../data/constants.js';
+import {
+  affixMult, critAdd, levelCost, atLevelCap, rarityUpCost, canRarityUp,
+  buyLevels, doRarityUp, gearDamageMult, gearHpMult, gearXpMult, gearLumensMult, gearCritAdd,
+} from '../game/gear.js';
+
+const $ = (id) => document.getElementById(id);
+const pieceDef = (key) => GEAR.pieces.find((p) => p.key === key);
+const rarityName = (r) => GEAR_RARITIES[r];
+
+// Texto do efeito de uma peça conforme o afixo
+function affixText(def, piece) {
+  if (def.affix === 'crit') return `+${(critAdd(piece) * 100).toFixed(2)}% crit`;
+  const labels = { dmg: 'dano', hp: 'HP', xp: 'XP', lumens: 'Lumens' };
+  return `×${affixMult(piece).toFixed(2)} ${labels[def.affix]}`;
+}
+
+const MULTS = [1, 10, 100, 1000];
+let selectedKey = 'edge';
+let mult = 10;
+
+export function buildGearView(root, state) {
+  root.classList.remove('placeholder');
+  root.classList.add('gear');
+  root.innerHTML = `
+    <aside class="gr-summary">
+      <h3>Afixos ativos</h3>
+      <dl class="gr-totals">
+        <div><dt>Dano</dt><dd id="gr-t-dmg">×1</dd></div>
+        <div><dt>HP</dt><dd id="gr-t-hp">×1</dd></div>
+        <div><dt>Crit</dt><dd id="gr-t-crit">+0%</dd></div>
+        <div><dt>XP</dt><dd id="gr-t-xp">×1</dd></div>
+        <div><dt>Lumens</dt><dd id="gr-t-lumens">×1</dd></div>
+      </dl>
+      <p class="gr-note">⏳ Valores provisórios — recalibram na malha v2.</p>
+    </aside>
+
+    <div class="gr-slots" id="gr-slots"></div>
+
+    <aside class="gr-detail" id="gr-detail"></aside>
+  `;
+
+  const slots = $('gr-slots');
+  for (const def of GEAR.pieces) {
+    const slot = document.createElement('button');
+    slot.type = 'button';
+    slot.className = 'gr-slot';
+    slot.dataset.key = def.key;
+    slot.innerHTML = `
+      <span class="gr-art"></span>
+      <span class="gr-lvl"></span>
+      <span class="gr-pname">${def.name}</span>
+      <span class="gr-prar"></span>
+    `;
+    slot.addEventListener('click', () => selectPiece(state, def.key));
+    slots.appendChild(slot);
+  }
+
+  selectPiece(state, selectedKey);
+}
+
+// (Re)constrói o painel de detalhe ao trocar de peça (controles + listeners)
+function selectPiece(state, key) {
+  selectedKey = key;
+  const def = pieceDef(key);
+  const detail = $('gr-detail');
+  detail.innerHTML = `
+    <div class="gr-d-art" id="gr-d-art"></div>
+    <h2 id="gr-d-name">${def.name}</h2>
+    <div class="gr-d-slot">${def.slot} · <b id="gr-d-rar"></b></div>
+    <div class="gr-d-bar"><i id="gr-d-fill"></i><span id="gr-d-lvl"></span></div>
+    <dl class="gr-d-facts">
+      <div><dt>Efeito</dt><dd id="gr-d-eff"></dd></div>
+      <div><dt>Próximo nível</dt><dd id="gr-d-next"></dd></div>
+    </dl>
+    <div class="gr-mults" id="gr-mults">
+      ${MULTS.map((m) => `<button type="button" data-m="${m}">×${m}</button>`).join('')}
+      <button type="button" data-m="max">MAX</button>
+    </div>
+    <button type="button" class="gr-up" id="gr-up">Upar nível</button>
+    <button type="button" class="gr-rarity" id="gr-rarity">Subir raridade</button>
+    <p class="gr-d-lore">« Afixo fixo da peça — efeito final aguarda cânon. »</p>
+  `;
+  // multiplicadores
+  detail.querySelectorAll('.gr-mults button').forEach((b) => {
+    b.classList.toggle('active', String(mult) === b.dataset.m);
+    b.addEventListener('click', () => {
+      mult = b.dataset.m === 'max' ? 'max' : Number(b.dataset.m);
+      detail.querySelectorAll('.gr-mults button').forEach((x) => x.classList.toggle('active', x === b));
+      updateDetail(state);
+    });
+  });
+  $('gr-up').addEventListener('click', () => {
+    buyLevels(state, selectedKey, mult === 'max' ? 1e9 : mult);
+  });
+  $('gr-rarity').addEventListener('click', () => doRarityUp(state, selectedKey));
+
+  document.querySelectorAll('.gr-slot').forEach((el) =>
+    el.classList.toggle('selected', el.dataset.key === key));
+  updateDetail(state);
+}
+
+export function renderGear(state) {
+  // Resumo
+  $('gr-t-dmg').textContent = `×${formatNumber(gearDamageMult(state))}`;
+  $('gr-t-hp').textContent = `×${formatNumber(gearHpMult(state))}`;
+  $('gr-t-crit').textContent = `+${(gearCritAdd(state) * 100).toFixed(2)}%`;
+  $('gr-t-xp').textContent = `×${formatNumber(gearXpMult(state))}`;
+  $('gr-t-lumens').textContent = `×${formatNumber(gearLumensMult(state))}`;
+
+  // Slots
+  for (const def of GEAR.pieces) {
+    const slot = document.querySelector(`.gr-slot[data-key="${def.key}"]`);
+    if (!slot) continue;
+    const piece = state.gear[def.key];
+    const rar = rarityName(piece.rarity);
+    slot.className = `gr-slot r-${rar}` + (def.key === selectedKey ? ' selected' : '');
+    const art = slot.querySelector('.gr-art');
+    if (art.dataset.rar !== rar) {
+      art.dataset.rar = rar;
+      art.innerHTML = picture(`gear.${def.key}_${rar}`, { alt: def.name });
+    }
+    slot.querySelector('.gr-lvl').textContent = `Lv ${piece.level}`;
+    slot.querySelector('.gr-prar').textContent = GEAR_RARITY_LABELS[piece.rarity];
+  }
+
+  updateDetail(state);
+}
+
+// Atualiza só os números do painel de detalhe (sem reconstruir/relistar)
+function updateDetail(state) {
+  if (!$('gr-detail') || !$('gr-d-name')) return;
+  const def = pieceDef(selectedKey);
+  const piece = state.gear[selectedKey];
+  const rar = rarityName(piece.rarity);
+  const capped = atLevelCap(piece);
+
+  const art = $('gr-d-art');
+  if (art.dataset.rar !== rar) {
+    art.dataset.rar = rar;
+    art.innerHTML = picture(`gear.${def.key}_${rar}`, { alt: def.name });
+  }
+  const rarEl = $('gr-d-rar');
+  rarEl.textContent = GEAR_RARITY_LABELS[piece.rarity];
+  rarEl.className = `r-${rar}`;
+
+  const cap = GEAR.levelCap[piece.rarity];
+  $('gr-d-fill').style.width = `${(piece.level / cap) * 100}%`;
+  $('gr-d-lvl').textContent = `Nível ${piece.level} / ${cap}`;
+  $('gr-d-eff').textContent = affixText(def, piece);
+  $('gr-d-next').textContent = capped ? '— no máximo desta raridade' : `${formatNumber(levelCost(piece))} Lumens`;
+
+  const up = $('gr-up');
+  up.disabled = capped || state.lumens < levelCost(piece);
+  up.textContent = capped ? 'Nível máximo' : `Upar ${mult === 'max' ? 'MAX' : '×' + mult}`;
+
+  const rb = $('gr-rarity');
+  const top = piece.rarity >= GEAR_RARITIES.length - 1;
+  rb.hidden = false;
+  if (top) { rb.disabled = true; rb.textContent = 'Raridade máxima'; }
+  else {
+    rb.disabled = !canRarityUp(state, selectedKey);
+    rb.textContent = capped
+      ? `Subir raridade (${formatNumber(rarityUpCost(piece))})`
+      : 'Maximize o nível para subir raridade';
+  }
+}

@@ -4,6 +4,7 @@
 
 import { ECONOMY, NUMBER_CAP, BOSS_LUMEN_MULT, VESTIGES } from '../data/constants.js';
 import { frtTotal, wisTotal } from './stats.js';
+import { gearLumensMult, gearXpMult } from './gear.js';
 
 // §7: vestiges_por_kill = ceil(subárea × 0.5) × 3^(índice_do_mapa)
 // Map 1 (índice 0): [1, 1, 2, 2, 3] nas Subs 1-5
@@ -14,8 +15,8 @@ export function vestigesPerKill(state) {
 export function awardKill(state, mob) {
   // §12: o ×5 de boss só se aplica a Lumens; o XP já escala pelo HP ×15
   const bossMult = mob.isBoss ? BOSS_LUMEN_MULT : 1;
-  state.lumens = Math.min(NUMBER_CAP, state.lumens + mob.hpMax * ECONOMY.goldRatio * frtTotal(state) * bossMult);
-  const xp = mob.hpMax * ECONOMY.xpRatio * wisTotal(state);
+  state.lumens = Math.min(NUMBER_CAP, state.lumens + mob.hpMax * ECONOMY.goldRatio * frtTotal(state) * bossMult * gearLumensMult(state));
+  const xp = mob.hpMax * ECONOMY.xpRatio * wisTotal(state) * gearXpMult(state);
   state.xpTotal = Math.min(NUMBER_CAP, state.xpTotal + xp); // vida (level display)
   state.xpRun = Math.min(NUMBER_CAP, state.xpRun + xp);     // run (parede de Convergence)
   // §7: Vestiges nunca resetam; boss paga ×10

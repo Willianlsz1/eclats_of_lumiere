@@ -1,19 +1,21 @@
 // UI — casca Éclats (unificação). Mantém o contrato que src/main.js consome:
 // setupUI / renderUI / showOfflineSummary.
 // Chrome do mockup: nav (topo-esq) + moedas (topo-dir) + stage 1920×1080.
-// Combate (U-2), Mapa (U-3) e Player (U-4) são telas reais ligadas ao motor.
-// Restam só as telas pós-MVP (Gear/Passivas/Mémoires/Ascension) como placeholder.
+// Combate (U-2), Mapa (U-3), Player (U-4) e Gear (pós-MVP) são telas reais
+// ligadas ao motor. Restam Passivas/Mémoires/Ascension como placeholder.
 
 import './tokens.css';
 import './shell.css';
 import './combat.css';
 import './map.css';
 import './player.css';
+import './gear.css';
 import { formatNumber } from '../core/format.js';
 import { picture, bg } from '../data/assets.js';
 import { buildCombatView, renderCombat } from './combat.js';
 import { buildMapView, renderMap } from './map.js';
 import { buildPlayerView, renderPlayer } from './player.js';
+import { buildGearView, renderGear } from './gear.js';
 
 const $ = (sel, root = document) => root.querySelector(sel);
 
@@ -29,7 +31,7 @@ const VIEWS = [
   { id: 'combat',    label: 'Combate',   icon: 'icons.nav.2' },
   { id: 'map',       label: 'Mapa',      icon: 'icons.nav.5' },
   { id: 'player',    label: 'Seeker',    icon: 'icons.nav.1' },
-  { id: 'gear',      label: 'Gear',      glyph: '🛡',         locked: true },
+  { id: 'gear',      label: 'Gear',      icon: 'icons.nav.4' },
   { id: 'passives',  label: 'Passivas',  icon: 'icons.nav.3', locked: true },
   { id: 'memoires',  label: 'Mémoires',  icon: 'icons.nav.6', locked: true },
   { id: 'ascension', label: 'Ascension', icon: 'icons.nav.7', locked: true },
@@ -93,8 +95,15 @@ function buildViews(state) {
       buildPlayerView(view, state);
       continue;
     }
+    // Gear: 6 peças upáveis com Lumens (pós-MVP, valores provisórios).
+    if (v.id === 'gear') {
+      view.className = 'view';
+      main.appendChild(view);
+      buildGearView(view, state);
+      continue;
+    }
 
-    // Só telas pós-MVP chegam aqui (Gear/Passivas/Mémoires/Ascension).
+    // Só telas pós-MVP chegam aqui (Passivas/Mémoires/Ascension).
     view.className = 'view placeholder';
     const glyph = v.glyph
       ? `<div class="glyph" style="font-size:96px;display:grid;place-items:center;opacity:.5">${v.glyph}</div>`
@@ -134,6 +143,7 @@ export function renderUI(state) {
   if (current === 'combat') renderCombat(state);
   else if (current === 'map') renderMap(state);
   else if (current === 'player') renderPlayer(state);
+  else if (current === 'gear') renderGear(state);
 }
 
 // Resumo de progresso offline (§15) — toast simples sobre a casca
