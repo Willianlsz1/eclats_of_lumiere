@@ -2,12 +2,12 @@
 
 import '../style.css';
 import { state } from './core/state.js';
-import { load, setupAutosave } from './core/save.js';
+import { load, save, setupAutosave } from './core/save.js';
 import { startLoop } from './core/loop.js';
 import { combatTick, resetPack } from './game/combat.js';
 import { playerHpMax } from './game/stats.js';
 import { simulateOffline } from './game/offline.js';
-import { maybeApplyDevUnlock, showDevBadge } from './core/dev.js';
+import { maybeApplyDevUnlock, showDevBadge, setupDevButton } from './core/dev.js';
 import { setupUI, renderUI, showOfflineSummary } from './ui/ui.js';
 
 // Carrega o save (se houver) e reconstrói o runtime
@@ -17,7 +17,9 @@ state.player.hp = playerHpMax(state);
 resetPack(state);
 
 setupUI(state);
+// Modo de teste: por URL (?dev) já vem ativo; senão, botão "DEV 🔓" para ativar
 if (devMode) showDevBadge();
+else setupDevButton(state, () => { save(); renderUI(state); }); // salva + refresca na hora
 
 // Progresso offline (§15): simula o tempo ausente antes do loop começar
 if (snapshot?.savedAt) {
