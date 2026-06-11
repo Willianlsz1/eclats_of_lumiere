@@ -307,6 +307,14 @@ Nota de calibração: no simulador as passivas entram como agregado (+5% dano/n�
 ## 8. ASCENSION (🔄 EM REDESENHO — sessão de design 2026-06-11)
 > A tabela abaixo é o estado **atual** (implementado). **Será redesenhada:** a Ascension passa a (1) **subir o nível máximo do Gear** (motor sem-teto, §13) e (2) trazer **Fate Keepers / game-changers** (pedido do Willian — desbloqueios que mudam a qualidade do jogo, não só números). Tópico aberto a seguir.
 
+### Redesenho — DIREÇÃO TRAVADA 2026-06-11 (prestige aninhado, insp. AD/Synergism)
+A Ascension vira o **loop de prestige de cima** (a Convergence é o de baixo):
+- **🔻 Setback:** a Ascension **reseta a camada da Convergence** (pontos → 0, `conv_factor` → 1) + recomeça o mapa. *(Revisa o antigo "Ascension não reseta nada".)*
+- **🔺 Leap permanente:** (1) **amplifica a Convergence** — cada ponto passa a valer mais (base composta sobe), re-subir fica mais rápido E mais forte ("perde os multiplicadores, mas agora são maiores"); (2) **`asc_mult`** (×dano/HP); (3) **sobe o teto do Gear**; (4) **desbloqueia 1 MECÂNICA nova** (Fate Keeper / game-changer); (5) **Éclats + materiais**.
+- **Frequência: mantém 5 (1 por mapa)** — a Convergence é o loop frequente; a Ascension é o raro/épico (estrutura saudável dos idles: camada de cima rara).
+- **Fate Keepers = game-changers / recompensas muito fortes** (5 mecânicas, 1 por Ascension) — quais 5: pesquisa + escolha numa sessão dedicada.
+- ⏳ **Pendente (registrado):** as **15 Mémoires precisam do mesmo tratamento das passivas** (pesquisa + efeito de cada uma) — tópico próprio.
+
 | Ascension | Requisito | Custo (Vestiges) | asc_mult | Éclats (bolsa) | Rank desbloqueado |
 |---|---|---|---|---|---|
 | A1 | Boss Map 1 | **500.000** | **×10** | 100 + desbloqueia drip | Illuminate |
