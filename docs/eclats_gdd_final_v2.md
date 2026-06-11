@@ -405,7 +405,7 @@ Duas fontes, ambas liberadas pela **A1**:
 
 ---
 
-## 11. MÉMOIRES (✅ motor · 🟡 efeitos em revisão de design 2026-06-11)
+## 11. MÉMOIRES (✅ motor · ✅ efeitos fechados 2026-06-11 · ⏳ só calibração)
 
 15 relíquias, 3 por era, desbloqueadas pela Ascension da era. Cada compra revela um texto de memória — **a meta-progressão é o veículo da narrativa**. Nomes/eras são **canônicos** (lore bible); o **motor** (Clarté, custos) está calibrado; os **efeitos** estão recebendo o mesmo tratamento item-a-item das passivas.
 
@@ -430,11 +430,11 @@ Duas fontes, ambas liberadas pela **A1**:
 | 8 | des Cendres | 3 | +10% Vestiges (arquétipo (a): acelera a Convergence) | ✅ travado 2026-06-11 |
 | 9 | du Dernier Chant | 3 | +1 ponto de Convergence/run a cada 5 níveis | ✅ travado 2026-06-11 |
 | 10 | de la Blessure | 4 | ×1.10 dano (multiplicativo entre níveis) — apex (c) | ✅ travado 2026-06-11 |
-| 11 | de la Résistance | 4 | +12% HP e regen | ⏳ rever |
-| 12 | du Temps Brisé | 4 | +15% Éclats do gotejamento | ⏳ rever |
-| 13 | du Vide | 5 | −1% HP de inimigos (cap 50) | ⏳ rever |
-| 14 | de la Lumière Entière | 5 | amplifica o expoente da Clarté | ⏳ rever |
-| 15 | du Choix | 5 | +5% a todos os efeitos de Mémoires | ⏳ rever |
+| 11 | de la Résistance | 4 | **+% sobrevivência: HP, regen E defesa** *(ampliado de "+12% HP e regen")* — engata na Defesa (§4) | ✅ travado 2026-06-11 |
+| 12 | du Temps Brisé | 4 | **+% a TODOS os Éclats** (gotejamento + bolsas de Ascension) *(ampliado de "só gotejamento")* — o "Book of Shadows", arquétipo (a) | ✅ travado 2026-06-11 |
+| 13 | du Vide | 5 | **+% recompensas nas dificuldades altas** *(troca do "−1% HP cap 50" quebrado)* — engata nas Dificuldades (§8), sem teto | ✅ travado 2026-06-11 |
+| 14 | de la Lumière Entière | 5 | amplifica o expoente da Clarté — apex (e), forma exata na calibração | ✅ travado 2026-06-11 |
+| 15 | du Choix | 5 | +5% a todos os efeitos de Mémoires — apex (e), clímax narrativo | ✅ travado 2026-06-11 |
 
 ---
 
