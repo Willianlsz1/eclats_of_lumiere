@@ -120,16 +120,18 @@ hp_max = playerBaseHp × vit_total × level_bonus × conv_factor × asc_mult × 
 - **Gold Stats podem morrer no late** (são as "rodinhas" do early — ok).
 - Cada andar tem um **tema** (Gear=bruto/dano · Passivas=mecânicas · Mémoires=motor global · Convergence=bola de neve · Ascension=o salto entre mapas) para a escolha do jogador ter identidade.
 
-### Dano dos mobs — curva própria, desacoplada do HP deles (🔒 décadas por mapa, ⏳ validação fina)
-| Mapa | Dano do mob (range) |
-|---|---|
-| 1 | 1 → 1e4 |
-| 2 | 1e4 → 1e12 |
-| 3 | 1e12 → 1e26 |
-| 4 | 1e26 → 1e46 |
-| 5 | 1e46 → 1e75 |
+### Dano dos mobs — RAZÃO CONSTANTE do HP (✅ CALIBRADO 2026-06-11, Camada 2)
+> 🔄 **REVISTO 2026-06-11:** abandonada a curva "desacoplada / 75-80% das décadas" (tornava o dano irrelevante no fundo → Defesa decorativa). Decisão do Willian: **dano dos mobs = `0.02 × HP do mob`, CONSTANTE em todos os mapas** (`dmgLo=hpLo×0.02, dmgHi=hpHi×0.02`).
 
-Interpolação igual à do HP. Dano recebido = Σ dano dos mobs ativos no pack. Décadas de dano ≈ 75-80% das décadas de HP por mapa → a pressão de sobrevivência cresce dentro do mapa e relaxa a cada Ascension (HP ganha o asc_mult).
+```
+mob_dmg(L) = 0.02 × hp(L)          // por mob, por segundo (contínuo)
+dano_recebido = Σ mob_dmg dos vivos do pack, MITIGADO pela Defesa (razão/armadura)
+```
+**Por que 0.02** (validado em `tools/sim/survival.mjs`): mantém o mob sempre ameaçador proporcional ao próprio HP → a **Defesa decide vida/morte na entrada de cada mapa**. Resultado da simulação:
+- **Farmado** (mob aguenta ~3 hits): seguro, HP cheio.
+- **Mapa novo** (mob aguenta ~10 hits): **MORRE sem Defesa / SOBREVIVE com Veil** (`def≈packDps` → ~50% mit, HP mín ~50%).
+- **Muito fraco** (~30+ hits): parede real (farmar / Ascender / Despertar).
+- Independe da calibração de Gear/Passivas/Mémoires (sai de razão+packs+regen+HP≈5.4×dano).
 
 ### Morte (🔒)
 Morrer **recua uma subárea** e respawna em segundos, sem perda de recursos. Offline, a simulação só avança até o ponto sustentável — o jogador nunca abre o app morto. Morte é muro de posicionamento, não punição.
@@ -570,7 +572,7 @@ Seção dedicada: os tetos do jogo interagem (APS × kills/ataque × mobs na tel
 | **Mobs na tela (onda)** | [1,2,4,6,8] por sub-área | ✅ **base = `[2,4,6,9,12]`** (Sub1-5); **Void Awareness** (passiva) + **Fate Keeper A4** somam; **teto global ~24**. Mais mobs = mais farm E mais Σdano | ✅ CALIBRADO |
 | **Crit (distribuição)** | LCK domina | **distribuído** (como APS): LCK (Gold Stat) dá fração mínima (~15-20% sozinho); o resto até 100% vem de passivas (Luminal Edge…) + gear (Grasp) | ✅ CALIBRADO (forma); valor/nível §16.6 |
 | **Crit chance (teto)** | 100% | ✅ **transbordo**: acima de 100% (geralmente via gear) o excedente vira crit damage. **Crit damage base ×2**, sem teto (de la Forme + afixo Crit Damage). Valores finos ⏳ §16.6 | ✅ direção |
-| **Defesa (sua, mitigação)** | 🔒 não existia | ✅ **FECHADO 2026-06-11:** forma = **razão/armadura** `mit = def/(def+dano)`, nunca 100%, auto-escala. Fonte = **Veil (gear) + passivas** (sem stat nova); VIT segue como poça de HP. Ver §4 "Defesa/Mitigação" | ✅ design / valores ⏳ |
+| **Defesa (sua, mitigação)** | 🔒 não existia | ✅ **FECHADO 2026-06-11:** forma = **razão/armadura** `mit = def/(def+dano)`, nunca 100%. Fonte = **Veil (gear) + passivas**. **Alvo (Camada 2):** build de sobrevivência alcança `def ≈ 1-4× packDps` (50-80% mit) — curva do Veil sai na Camada 3 | ✅ design + alvo / curva Camada 3 |
 | **Defesa de inimigos** | 🔒 não existe | ✅ **forma travada 2026-06-11:** mesma razão virada (`seu_dano/(def_inim+seu_dano)`); **Void Piercing** fura, **Weakened Void** reduz. Se/quando mobs têm def relevante (early ≈ 0) = calibração | ✅ forma / valores ⏳ |
 | **Tier do Seeker (Despertar)** | tier = nº de ascensions (código) | 🔄 vira gate de poder na **Sub 3** (vencer o Guardião) → ×poder permanente; arte/rank leem o tier de Despertar, não ascensions | ✅ direção / impl. pendente |
 | **Loot / coleta** | direta no kill | **automático, sem drop no chão** (confirmado) — não haverá passivas de "raio de coleta" | ✅ |
@@ -583,7 +585,9 @@ Seção dedicada: os tetos do jogo interagem (APS × kills/ataque × mobs na tel
 | **Ascension** | 5 na vida | = 5 mapas | ✅ |
 | **Convergence** | ~81 na vida (soft) | cadência, não cap rígido | ✅ |
 
-✅ **Camada 1 da calibração FECHADA 2026-06-11** (APS 15 + sub-cap AGI 3.75× · kills extras 50% sem cap · mobs base `[2,4,6,9,12]` teto ~24 · crit distribuído, dmg base ×2). Próximo: **Camada 2 — Sobrevivência** (dano dos mobs M2-5 × Defesa, via simulador).
+✅ **Camada 1 FECHADA** (APS 15 + sub-cap AGI 3.75× · kills extras 50% · mobs `[2,4,6,9,12]` teto ~24 · crit distribuído, dmg ×2).
+✅ **Camada 2 (Sobrevivência) FECHADA 2026-06-11** (simulador `tools/sim/`): **dano dos mobs = 0.02 × HP constante** (§4) + **alvo de Defesa** `def≈1-4× packDps`. Restrição p/ Camada 3: progressão deve entrar em mapa novo na faixa "~10 hits" (sobrevivível com Veil). **Nihel (boss M5)** fica em ~1.5e101 (limiar do break_infinity, aceito).
+**Código:** já aplicados `constants.js` dano 0.02×HP + packSizes `[2,4,6,9,12]`. **Próximo: Camada 3 — Gear.**
 
 ---
 

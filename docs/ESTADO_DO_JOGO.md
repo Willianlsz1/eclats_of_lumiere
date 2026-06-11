@@ -192,8 +192,8 @@ vestiges_por_kill = ceil(subárea × 0.5) × 3^(mapa−1) × boss(×10) × memoi
 | 4 | The Fractured Peaks | 10M – 100M | 1e34 – 1e62 | 500 | 1e33 – 1e60 |
 | 5 | Nil Aeternum | 100M – 1e9 | 1e62 – 1e100 | 800 | 1e61 – 1e98 |
 
-- **5 sub-áreas por mapa**, `packSizes = [1,2,4,6,8]` (Sub1..Sub5) em todos.
-- ⏳ **Dano dos mobs Maps 2-5 é provisório** (pendência GDD §16.1): extrapolado mantendo a razão dano/HP do Map 1 (calibrado): `dmgLo = hpLo×0.1`, `dmgHi = hpHi×0.01`.
+- **5 sub-áreas por mapa**, `packSizes = [2,4,6,9,12]` ✅ (Camada 1 da calibração; era `[1,2,4,6,8]`).
+- ✅ **Dano dos mobs = `0.02 × HP`** (Camada 2, 2026-06-11) — razão constante em todos os mapas. Mitigado pela Defesa (razão/armadura). Validado em `tools/sim/survival.mjs`.
 
 ### Fórmulas da malha
 ```
@@ -345,6 +345,11 @@ teto **30 dias**, mínimo **60s** para mostrar o resumo. Garante que o jogador *
 ## 10.5 🎯 DESIGN FECHADO NA SESSÃO 2026-06-11 (aguarda calibração + código)
 
 Tudo abaixo está **decidido** (travado com o Willian, registrado no GDD), mas o **código ainda não reflete**. É o backlog de implementação. Ordem sugerida: **calibração numérica única** → **wiring**.
+
+> **📐 Calibração em andamento** (sessão 2026-06-11, simulador em `tools/sim/`):
+> - ✅ **Camada 1 (Caps):** APS 15 + sub-cap AGI 3.75× · kills extras 50% · mobs `[2,4,6,9,12]` teto ~24 · crit distribuído.
+> - ✅ **Camada 2 (Sobrevivência):** dano dos mobs = **0.02×HP** constante + alvo de Defesa `def≈1-4×packDps`. *(já no `constants.js`: dano + packSizes; `apsCap` e Defesa esperam o wiring dos sistemas de suporte.)*
+> - ⏳ **Próximas:** 3 Gear · 4 Craft · 5 Passivas · 6 Mémoires · 7 Convergence+Dificuldades.
 
 ### 10.5.1 Defesa / Mitigação (GDD §4) 🎯
 Antes o dano batia direto no HP. Fechado:
