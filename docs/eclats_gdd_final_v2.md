@@ -405,32 +405,36 @@ Duas fontes, ambas liberadas pela **A1**:
 
 ---
 
-## 11. MÉMOIRES (✅ motor · 🔒 lista)
+## 11. MÉMOIRES (✅ motor · 🟡 efeitos em revisão de design 2026-06-11)
 
-15 relíquias, 3 por era, desbloqueadas pela Ascension da era. Cada compra revela um texto de memória — **a meta-progressão é o veículo da narrativa**.
+15 relíquias, 3 por era, desbloqueadas pela Ascension da era. Cada compra revela um texto de memória — **a meta-progressão é o veículo da narrativa**. Nomes/eras são **canônicos** (lore bible); o **motor** (Clarté, custos) está calibrado; os **efeitos** estão recebendo o mesmo tratamento item-a-item das passivas.
+
+> **Princípios dos efeitos** (sessão 2026-06-11): (1) **tema = motor global** — efeitos são *amplificadores amplos* (dano, renda, outros sistemas), não mecânicas novas (mecânica = Passivas); (2) **casam com o NOME** (narrativa é o veículo); (3) **sem teto / não saturam** (nível é infinito — nada de "+X% chance" que estoura 100%); (4) **podem alimentar os sistemas novos** (materiais, defesa, dificuldades).
+>
+> **Referências de recompensa-forte** (pesquisa 2026-06-11 — TT2, Synergism, Gaiadon): os arquétipos de recompensa mais potentes do gênero são, em ordem: **(a) acelerar a própria meta-moeda** (TT2 *Book of Shadows* = +relíquias/prestige; Synergism *Quark Hepteract*) → nossa âncora é o **ganho de Éclats** (#12); **(b) multiplicador GLOBAL amplo** (TT2 *All Hero Damage / All Gold*) > bônus estreito; **(c) multiplicativo sem teto** (Synergism *Way Too Many Multipliers*) = nossas Mémoires ×1.10/nível; **(d) compressão de TEMPO** (Chronos/Portar/offline) = #6 offline; **(e) APEX = amplificar o próprio motor / todas as outras recompensas** (boost de expoente) = #14 (expoente da Clarté) e #15 (+% a todas as Mémoires). ⇒ a estrutura atual **já contém os arquétipos apex nas Eras 4-5** — a pesquisa valida a direção.
 
 - **Desbloqueio:** 10 / 30 / 90 / 270 / 810 Éclats (por Mémoire, conforme era)
 - **Evolução:** nível n custa `2 × 1.10^n` Éclats
 - **Clarté (motor global):** dano ×`1.07^(soma de todos os níveis de Mémoires)`
 - **Mémoires multiplicativas (×1.10/nível):** a partir da **A3**, ~metade dos níveis novos (la Blessure e similares) — o turbo do endgame. As Mémoires carregam ~75 das 99 décadas do jogo.
 
-| # | Mémoire | Era | Efeito por nível |
-|---|---|---|---|
-| 1 | du Premier Matin | 1 | +10% dano global |
-| 2 | des Rires | 1 | +10% Lumens |
-| 3 | de la Marche | 1 | +8% XP |
-| 4 | de la Forme | 2 | +8% Crit Damage |
-| 5 | du Façonnage | 2 | +6% efeito de Gear |
-| 6 | des Profondeurs | 2 | +10% offline |
-| 7 | de la Chute | 3 | +12% dano em boss |
-| 8 | des Cendres | 3 | +10% Vestiges |
-| 9 | du Dernier Chant | 3 | +1 ponto de Convergence/run a cada 5 níveis |
-| 10 | de la Blessure | 4 | ×1.10 dano (multiplicativo entre níveis) |
-| 11 | de la Résistance | 4 | +12% HP e regen |
-| 12 | du Temps Brisé | 4 | +15% Éclats do gotejamento |
-| 13 | du Vide | 5 | −1% HP de inimigos (cap 50) |
-| 14 | de la Lumière Entière | 5 | amplifica o expoente da Clarté |
-| 15 | du Choix | 5 | +5% a todos os efeitos de Mémoires |
+| # | Mémoire | Era | Efeito por nível | Status |
+|---|---|---|---|---|
+| 1 | du Premier Matin | 1 | +10% dano global | ✅ 2026-06-11 |
+| 2 | des Rires | 1 | +10% Lumens *(opção: +% a toda renda early)* | ✅ 2026-06-11 |
+| 3 | de la Marche | 1 | +8% XP (a Mémoire dedicada de XP — double-dip level+Convergence) | ✅ 2026-06-11 |
+| 4 | de la Forme | 2 | +8% Crit Damage (nunca satura — casa com o transbordo de crit, §14B) | ✅ 2026-06-11 |
+| 5 | du Façonnage | 2 | **+% materiais dropados** *(troca: era "+6% efeito de Gear")* — "façonnage"=forjar; alimenta o Craft (§13B) | ✅ 2026-06-11 |
+| 6 | des Profondeurs | 2 | +10% offline | ⏳ rever |
+| 7 | de la Chute | 3 | +12% dano em boss | ⏳ rever |
+| 8 | des Cendres | 3 | +10% Vestiges | ⏳ rever |
+| 9 | du Dernier Chant | 3 | +1 ponto de Convergence/run a cada 5 níveis | ⏳ rever |
+| 10 | de la Blessure | 4 | ×1.10 dano (multiplicativo entre níveis) | ⏳ rever |
+| 11 | de la Résistance | 4 | +12% HP e regen | ⏳ rever |
+| 12 | du Temps Brisé | 4 | +15% Éclats do gotejamento | ⏳ rever |
+| 13 | du Vide | 5 | −1% HP de inimigos (cap 50) | ⏳ rever |
+| 14 | de la Lumière Entière | 5 | amplifica o expoente da Clarté | ⏳ rever |
+| 15 | du Choix | 5 | +5% a todos os efeitos de Mémoires | ⏳ rever |
 
 ---
 
