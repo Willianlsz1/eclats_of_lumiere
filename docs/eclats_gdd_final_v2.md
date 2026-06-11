@@ -200,6 +200,15 @@ Map 1: [1, 1, 2, 2, 3] por kill nas Subs 1-5 (onboarding: a 1ª Convergence já 
 
 Nota de calibração: no simulador as passivas entram como agregado (+5% dano/nível de passiva); a distribuição individual dos 45 efeitos deve somar a esse envelope por era.
 
+### 🟡 DIREÇÃO DAS PASSIVAS (✅ TRAVADA 2026-06-11 — Tópico 2.3)
+> **Passivas = o andar das MECÂNICAS e dos multiplicadores de economia.** Cada uma das 45 tem **efeito único** (não o "+5% genérico" do placeholder atual).
+- **Éclat (combate):** mecânicas agressivas (Execute, Overkill, Momentum, Crit Cascade…). ⚠️ As que furam o cap de 1 kill/ataque (Execute/Overkill) só entram após a decisão "15 APS + âncora de kills".
+- **Vestige (economia):** multiplicadores de ganhos (Lumens/XP/Vestiges) com **crescimento sem teto** (regra de ouro §4).
+- **Fracture (utilidade):** QoL e defesa (HP, regen, velocidade, offline…).
+- Mantidos: moeda = Vestiges · gate por grupo (max 5 → abre próximos 5) · nunca resetam.
+- **Ideias do Willian já registradas como candidatas:** aumentar o **cap de mobs na tela**; aumentar **recursos** (incl. futuros, ainda não implementados); **stats extras**.
+- ⏳ Tabela dos 45 efeitos: em construção — catálogo de referências (Synergism · Gaiadon skill/apoteose · Tap Titans 2) em pesquisa; tabela final aprovada pelo Willian antes de produção.
+
 ---
 
 ## 8. ASCENSION (✅ CALIBRADO)
