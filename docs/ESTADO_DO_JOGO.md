@@ -21,8 +21,11 @@
 | **Mémoires** | ✅ (Clarté canônica; 8 efeitos exóticos ⏳) | Éclats |
 | **Ascension** | ✅ (A1 jogável; A2-A5 ao chegar nos mapas) | Vestiges |
 
-**As 5 fases do MVP (Map 1) + todos os sistemas pós-MVP estão implementados.**
-Faltam: Echoes (🔒 standby), artes definitivas, e calibração fina (ver §11).
+**As 7 telas, os 5 mapas e todos os sistemas (MVP + pós-MVP) estão implementados e jogáveis.**
+
+- **Conteúdo:** 5 mapas jogáveis ponta a ponta (The Dreaming Wood → Nil Aeternum), progressão por Ascension (A1→A5).
+- **Arte:** ✅ **completa** para tudo que existe no jogo — 5 trios + guardiões + 5 bosses (incl. Nihel), backgrounds dos 5 mapas, retratos do Seeker T1-T5, molduras do card T1-T5, e bordas de inimigo (universal + 5 bosses).
+- **Falta:** Echoes (🔒 standby, decisão do Willian) e **calibração de números** (dano dos mobs Maps 2-5, 8 efeitos exóticos das Mémoires, valores de Gear/Passivas) — ver §11.
 
 ---
 
@@ -354,7 +357,7 @@ teto **30 dias**, mínimo **60s** para mostrar o resumo. Garante que o jogador *
 - **Posições** dos pinos no worldmap e dos nós no continente (provisórias).
 - **Reconciliar nomes de assets** `VERIFICAR`/underscore → kebab-case do `assets/README.md` (adiado por decisão do Willian).
 - **Ícone próprio de Éclats** (hoje usa o de Convergence).
-- **Pipeline webp:** o bg high-res do Map 2 entrou como PNG (sem cwebp/PIL no ambiente); gerar webp depois.
+- **Pipeline webp:** os assets novos (bg Map 2, retratos T2-T5, molduras T2-T5, bordas de boss, mobs do Map 4) entraram como **PNG** — sem cwebp/PIL no ambiente, o `<source webp>` cai no fallback PNG. Gerar os `.webp` pelo pipeline quando houver acesso ao PC.
 
 ---
 
