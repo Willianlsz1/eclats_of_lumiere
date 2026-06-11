@@ -50,8 +50,20 @@
   filter: drop-shadow(0 4px 10px #000a); }
 .pv-name { font-family: var(--font-display); font-size: var(--fs-md); color: var(--ink);
   text-align: center; line-height: 1.1; }
-.pv-lvl { font-size: var(--fs-xs); color: var(--dim); font-variant-numeric: tabular-nums; }
+.pv-eff { font-size: var(--fs-xs); font-weight: 600; text-align: center; font-variant-numeric: tabular-nums; }
+.pv-lvl { font-size: 10px; color: var(--dim); font-variant-numeric: tabular-nums; }
 .pv-cost { font-size: 10px; color: var(--vest); text-align: center; font-variant-numeric: tabular-nums; }
+/* cor do efeito = identidade da árvore */
+.pv-body.t-eclat .pv-eff { color: var(--eclat); }
+.pv-body.t-vest  .pv-eff { color: var(--vest); }
+.pv-body.t-frac  .pv-eff { color: var(--frac); }
+
+/* resumo do bônus agregado da árvore */
+.pv-summary { padding: 8px 14px; margin-bottom: 2px; border-radius: var(--radius-sm);
+  background: var(--panel-2); border: var(--border-soft); font-size: var(--fs-sm); color: var(--dim); }
+.pv-summary b { color: var(--ink); }
+.pv-summary .pv-total { font-weight: 700; font-variant-numeric: tabular-nums; color: var(--gold); }
+.pv-summary .pv-prov { color: var(--faint); font-size: var(--fs-xs); font-style: italic; margin-left: 6px; }
 
 /* estados */
 .pv-group.locked .pv-card { filter: grayscale(.8); cursor: not-allowed; }

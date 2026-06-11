@@ -9,11 +9,17 @@ import { picture } from '../data/assets.js';
 import { PASSIVES, PASSIVE_TREES } from '../data/constants.js';
 import {
   passivesUnlocked, nextCost, canBuy, buyPassive, groupUnlocked, isMax, treeProgress,
+  passiveDmgMult, passiveEcoMult, passiveHpMult,
 } from '../game/passives.js';
 
 const $ = (id) => document.getElementById(id);
 const GROUP_SIZE = 5;
 let activeTab = 'eclat';
+
+// ⏳ efeitos individuais a definir (GDD §7); por ora cada nível soma ao
+// envelope agregado da árvore. Stat e função de total por árvore:
+const TREE_STAT = { eclat: 'dano', vestige: 'Lumens & XP', fracture: 'HP' };
+const TREE_MULT = { eclat: passiveDmgMult, vestige: passiveEcoMult, fracture: passiveHpMult };
 
 export function buildPassivesView(root, state) {
   root.classList.remove('placeholder');
@@ -51,7 +57,7 @@ function switchTab(state, tree) {
   const t = PASSIVES.trees[tree];
   const body = $('pv-body');
   body.className = `pv-body ${t.cls}`;
-  body.innerHTML = '';
+  body.innerHTML = `<div class="pv-summary" id="pv-summary"></div>`;
 
   for (let g = 0; g < 3; g++) {
     const group = document.createElement('div');
@@ -69,6 +75,7 @@ function switchTab(state, tree) {
       card.innerHTML = `
         <span class="pv-art">${picture(`passives.${tree}.${key}`, { alt: name })}</span>
         <span class="pv-name">${name}</span>
+        <span class="pv-eff"></span>
         <span class="pv-lvl"></span>
         <span class="pv-cost"></span>
       `;
@@ -99,6 +106,17 @@ export function renderPassives(state) {
 function updateCards(state) {
   const tree = activeTab;
   const t = PASSIVES.trees[tree];
+  const perLevel = PASSIVES.effectPerLevel[tree];
+  const stat = TREE_STAT[tree];
+
+  // resumo do bônus agregado da árvore (⏳ efeitos individuais a definir)
+  const summary = $('pv-summary');
+  if (summary) {
+    const total = TREE_MULT[tree](state);
+    summary.innerHTML = `Bônus <b>${t.label}</b>: <span class="pv-total">×${total.toFixed(2)} ${stat}</span>`
+      + ` <span class="pv-prov">+${(perLevel * 100).toFixed(0)}% por nível · efeito agregado ⏳ provisório</span>`;
+  }
+
   document.querySelectorAll('#pv-body .pv-group').forEach((groupEl) => {
     const g = Number(groupEl.dataset.group);
     const gUnlocked = groupUnlocked(state, tree, g);
@@ -115,6 +133,10 @@ function updateCards(state) {
     card.classList.toggle('maxed', maxed);
     card.classList.toggle('buyable', buyable);
     card.classList.toggle('owned', level > 0 && !maxed);
+    // efeito: contribuição atual da carta (nível × % da árvore) + por-nível
+    card.querySelector('.pv-eff').textContent = level > 0
+      ? `+${(level * perLevel * 100).toFixed(0)}% ${stat}`
+      : `+${(perLevel * 100).toFixed(0)}% ${stat}/nível`;
     card.querySelector('.pv-lvl').textContent = maxed
       ? `✦ Máx (${PASSIVES.maxLevel})`
       : (level > 0 ? `Nível ${level}/${PASSIVES.maxLevel}` : 'Bloqueada');
