@@ -339,7 +339,7 @@ A Ascension vira o **loop de prestige de cima** (a Convergence é o de baixo):
 - **Fate Keepers = game-changers / recompensas muito fortes** (5 mecânicas, 1 por Ascension) — quais 5: pesquisa + escolha numa sessão dedicada.
 - ⏳ **Pendente (registrado):** as **15 Mémoires precisam do mesmo tratamento das passivas** (pesquisa + efeito de cada uma) — tópico próprio.
 
-### FATE KEEPERS + MODOS DE DIFICULDADE (🟡 EM DEBATE 2026-06-11 — insp. Grand Chase)
+### FATE KEEPERS + MODOS DE DIFICULDADE (✅ FECHADO 2026-06-11 — insp. Grand Chase)
 
 **Modos de dificuldade** (🔁 REVISADO 2026-06-11 — a "expansão do que já tenho", re-usa os 5 mapas, sem lore novo):
 - Re-rodar mapas limpos em dificuldade maior → mobs com **HP e dano muito maiores** + **recompensas melhores** (materiais, Éclats, drip). É o endgame de farm.
@@ -447,7 +447,7 @@ Renda e custo de stats crescem em paridade → tempo por compra constante em qua
 
 ---
 
-## 13. GEAR (🔄 REVISTO na sessão de design 2026-06-11)
+## 13. GEAR (✅ DESIGN FECHADO 2026-06-11 — ⏳ só calibração + wiring)
 
 ### Modelo aprovado (2026-06-11)
 - **6 peças FIXAS** (sempre equipadas; sem inventário/loot/comparar — idle-friendly). Expansível p/ mais peças no futuro.
@@ -491,7 +491,22 @@ Renda e custo de stats crescem em paridade → tempo por compra constante em qua
 
 **Exclusões deliberadas** (decisão do Willian 2026-06-11): **Vestiges, Éclats e Offline ficam FORA do Gear**. Linha de design: **Gear acelera FARM** (Lumens/XP/Materiais); **moedas de prestígio (Vestiges/Éclats) e Offline vêm de Passivas/Mémoires** — evita empilhar fontes da mesma moeda de prestígio (inflação) e dá identidade a cada andar.
 
-⏳ **Próximo (passada leve):** assignment determinístico — **qual secundário cada uma das 6 peças ganha** conforme sobe de raridade (dá identidade às peças). ⏳ **Calibração:** valor por sabor/afixo, nº de slots por raridade.
+### Identidade das 6 peças ✅ FECHADO 2026-06-11
+Cada peça **prioriza** seus secundários-assinatura nas raridades baixas (identidade clara); nas raridades altas pode ampliar (rumo aos ~6-7 afixos). O conjunto cobre os 12 afixos.
+
+| Peça | Slot | Primário | Lean | Secundários-assinatura |
+|---|---|---|---|---|
+| **The Waning Edge** | Arma | Dano | gume ofensivo / matador | **Crit Damage · Dano em Boss · Erosão do Vazio** |
+| **Grasp of the Unnamed** | Manoplas | Crit Chance | precisão | **Crit Damage · APS · Dano** |
+| **The Last Resonance** | Amuleto | APS | ritmo/tempo | **Crit Chance · Regen · Dano** |
+| **The Silent Vigil** | Elmo | HP | núcleo tank | **Defesa · Regen** |
+| **Veil of Cinders** | Manto | Defesa | mitigação | **HP · Regen · Erosão do Vazio** |
+| **Band of Dusk** | Anel | Lumens | economia | **XP · Materiais** |
+
+- **Toda a economia (Lumens/XP/Materiais) concentra no Anel** → cria a decisão de leveling manual ("subo o Anel por farm ou a Arma por dano?", §13B ponto 4). Crit chance+damage andam juntos (Grasp+Edge), como a pesquisa idle recomenda.
+- ⚠️ **Fix de implementação:** o código (`constants.js` GEAR.pieces) tem `veil` com afixo `hp` e `reson` com `xp` — **provisório/errado**; o canon é Veil=defesa, Resonance(reson)=APS. Corrigir no wiring.
+
+⏳ **Resta só calibração:** valor por sabor/afixo, nº de slots por raridade, motor sem-teto exato.
 
 ## 13B. CRAFT / MATERIAIS (🟡 EM DESIGN 2026-06-11 — sistema BASE, early/mid)
 
