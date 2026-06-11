@@ -226,6 +226,19 @@ Nota de calibração: no simulador as passivas entram como agregado (+5% dano/n�
 - **Ideias do Willian já registradas como candidatas:** aumentar o **cap de mobs na tela**; aumentar **recursos** (incl. futuros, ainda não implementados); **stats extras**.
 - ⏳ Tabela dos 45 efeitos: em construção — catálogo de referências (Synergism · Gaiadon skill/apoteose · Tap Titans 2) em pesquisa; tabela final aprovada pelo Willian antes de produção.
 
+#### Tabela de efeitos — EM CONSTRUÇÃO (sessão in-chat, 2026-06-11)
+> Grupo: G1 = early (simples) · G2 = mid · G3 = late (game-changers). Posições finais (quais 5 em cada grupo) fechadas quando todos os 15 da árvore estiverem definidos.
+
+**Éclat (combate) — Grupo 1 aprovado:**
+| Passiva | Efeito aprovado | Timing |
+|---|---|---|
+| **Radiant Strike** | +X% dano/nível — motor de dano direto, sem teto (âncora da árvore) | G1 |
+| **Luminal Edge** | +crit damage/nível (LCK dá fração mínima; resto = aqui + gear) | G1 |
+| **Éclat Surge** | a cada X s, o próximo ataque é massivamente amplificado (carga/pulso) | G1 |
+| **Shard Burst** | a cada N ataques, dano numa fração da onda (não mata extra; só espalha) | **G2 (mid)** |
+| **Resonant Force** | Momentum: +dano acumulando por kill seguido (zera ao parar/morrer) | **mid/late** |
+| *(2 vagas de G1)* | a preencher com passivas dos grupos seguintes que subam | — |
+
 ---
 
 ## 8. ASCENSION (✅ CALIBRADO)
@@ -329,7 +342,8 @@ Seção dedicada: os tetos do jogo interagem (APS × kills/ataque × mobs na tel
 | **APS por AGI (sub-cap)** | sem sub-cap (per 0.04) | AGI sobe só até um **teto pequeno**; resto = passiva + gear | ⏳ definir o sub-cap |
 | **Kills por ataque** | 1 (fixo) | base 1; passivas (Overkill/Execute/Luminal Explosion) furam, extras pagam ~50% | 🟡 regra ✅, máx de extras ⏳ |
 | **Mobs na tela (onda)** | [1,2,4,6,8] por sub-área | base + **passiva que aumenta o cap** (ideia do Willian) | ⏳ definir base e teto |
-| **Crit chance** | 100% (excedente → crit dmg) | manter transbordo? valores | ⏳ §16.6 |
+| **Crit (distribuição)** | LCK domina | **distribuído** (como APS): LCK (Gold Stat) dá fração mínima; o resto (chance e damage) vem de passivas (Luminal Edge…) + gear (Grasp) | ✅ direção 2026-06-11 |
+| **Crit chance (teto)** | 100% (excedente → crit dmg) | manter transbordo? valores | ⏳ §16.6 |
 | **Gear: nível por raridade** | 25/50/100/175/300 | provisório | ⏳ calibrar |
 | **Passiva: nível máximo** | 5 (provisório) | economia deve ser **sem teto** → resolver: quais passivas têm cap, quais não | ⏳ decidir |
 | **Mémoires: nível** | sem teto | proposital (motor do late) | ✅ |
