@@ -623,9 +623,20 @@ Seção dedicada: os tetos do jogo interagem (APS × kills/ataque × mobs na tel
 | **Ascension** | 5 na vida | = 5 mapas | ✅ |
 | **Convergence** | ~81 na vida (soft) | cadência, não cap rígido | ✅ |
 
-✅ **Camada 1 FECHADA** (APS 15 + sub-cap AGI 3.75× · kills extras 50% · mobs `[2,4,6,9,12]` teto ~24 · crit distribuído, dmg ×2).
-✅ **Camada 2 (Sobrevivência) FECHADA 2026-06-11** (simulador `tools/sim/`): **dano dos mobs = 0.02 × HP constante** (§4) + **alvo de Defesa** `def≈1-4× packDps`. Restrição p/ Camada 3: progressão deve entrar em mapa novo na faixa "~10 hits" (sobrevivível com Veil). **Nihel (boss M5)** fica em ~1.5e101 (limiar do break_infinity, aceito).
-**Código:** já aplicados `constants.js` dano 0.02×HP + packSizes `[2,4,6,9,12]`. **Próximo: Camada 3 — Gear.**
+✅ **AS 7 CAMADAS DE CALIBRAÇÃO FECHADAS 2026-06-11** (simuladores em `tools/sim/`):
+1. Caps (APS 15, mobs `[2,4,6,9,12]` teto 24, kills extra 50%, crit distribuído) · 2. Sobrevivência (dano = **0.02×HP** constante, Veil até 80% mit) · 3. Gear (**~10 décadas**, sem-teto `1.008^L`+500niv/Asc) · 4. Craft (**1% drop/mob**, tier=mapa, Converged no Map 4) · 5. Passivas (maxLevel 12, ~8 déc, 3 motores no g3) · 6. Mémoires (Clarté 1.07 ~70 déc, **custo 1.10→3.0** [era bug]) · 7. Convergence (**composto+aninhado** `(1+0.04×1.38^asc)^pts` [era bug aditivo]) + Dificuldades (×1e5/1e15/1e30).
+**Orçamento de poder fecha:** Mémoires 70 + Gear 10 + Passivas 8 + Gold 4 + Conv 4 + Asc 3.8 + Level 1 ≈ **100 décadas** (alvo ~95).
+
+### DURAÇÃO & RITMO (registrado 2026-06-11 — `tools/sim/playtime.mjs` + pesquisa de gênero)
+**Duração do jogo base (5 mapas), por arquétipo** (cross-check com o orçamento §9: ~14d ótimo / ~41d realista):
+| Arquétipo | Padrão | Duração |
+|---|---|---|
+| Intenso | ~6h/dia, loga 3×/dia | **~14 dias** |
+| **Casual (alvo = jogador-padrão do gênero)** | ~1.5h/dia, loga 1×/dia | **~15 dias** |
+| Leve | ~2 logins/semana | **~41 dias** |
+- **Insight:** o offline generoso (24h, 70%) faz o **casual quase empatar com o intenso** (bom p/ o alvo); o **leve** perde pelo **cap de 24h** desperdiçar ausências longas.
+- **Benchmark do gênero** (pesquisa): Gaiadon = "um dos idles mais lentos" (2-3 dias/nível de Transcendence no mid) → **meses**; Synergism = ~294h só p/ a 1ª Singularity → **meses/anos**; NGU = endgame em "**alguns meses**". ⇒ "alguns meses" é a **norma do gênero**, e o **jogador-padrão do gênero = nosso CASUAL** (não o intenso).
+- **Conclusão (decisão do Willian):** o jogo de **5 mapas ≈ 2 semanas** é um "**Ato 1**" — curto p/ a norma. O alongamento p/ "**alguns meses**" vem de **MAIS CONTEÚDO, não inflar custos**: (1) **mais mapas** (CP futuro) + (2) **expansão de sub-áreas** (§8: 6→11-14/mapa) → mapas tardios levam **semanas cada**. A calibração é **uniforme/escalável** → estender as tabelas, **sem re-calibrar**. Projeção: ~7-8 mapas + sub-áreas crescentes ≈ **2-3 meses** p/ o jogador-padrão.
 
 ---
 

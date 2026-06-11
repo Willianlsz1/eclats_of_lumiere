@@ -356,6 +356,11 @@ Tudo abaixo está **decidido** (travado com o Willian, registrado no GDD), mas o
 > - ✅ **Camada 6 (Mémoires):** Clarté **1.07** = ~70 décadas (~159 niv/Mémoire); **custo corrigido 1.10→3.0** (era bug: maximizava instantâneo) — paceia pela profundidade (`tools/sim/memoires.mjs`). *(já no `constants.js`: MEMOIRE_EVO_RAMP=3.0.)*
 > - ✅ **Camada 7 (Convergence + Dificuldades):** conv_factor **aditivo→composto+aninhado** `(1+0.04×1.38^asc)^pts` (era bug: morria em 1.57 déc; agora pico ~4 déc na era final, base sobe por Ascension). Dificuldades ×HP/dano 1e5/1e15/1e30, ×recompensa 3/10/30 (Nightmare+ = break_infinity futuro). *(constants.js + stats.js atualizados; `tools/sim/convergence.mjs`.)*
 > - 🎉 **AS 7 CAMADAS DE CALIBRAÇÃO ESTÃO FECHADAS.**
+>
+> **📅 Duração do jogo base (5 mapas)** — `tools/sim/playtime.mjs` (cross-check c/ orçamento §9 do GDD):
+> Intenso **~14d** · **Casual (alvo) ~15d** · Leve **~41d**. Offline generoso faz casual≈intenso; o leve perde pelo cap 24h.
+> **Benchmark do gênero** (pesquisa): Gaiadon/Synergism/NGU = **meses** pro endgame; o **jogador-padrão do gênero = nosso CASUAL**.
+> **Decisão:** 5 mapas ≈ 2 semanas = "Ato 1". "Alguns meses" vem de **mais conteúdo** (mais mapas + sub-áreas crescentes §8), **não** de inflar custos — calibração é escalável, estende sem re-calibrar. (Detalhe no GDD §14B "Duração & Ritmo".)
 
 > **Orçamento de poder** (`tools/sim/budget.mjs`): dano cresce **~95 décadas** no jogo. Split: Mémoires 70 · Gear 10 · Passivas 8 · Gold Stats 4 · Convergence 4 · Ascension 3.8 · Level 1 = ~100. HP segue o mesmo.
 
