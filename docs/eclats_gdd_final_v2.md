@@ -251,6 +251,16 @@ Nota de calibração: no simulador as passivas entram como agregado (+5% dano/n�
 
 **✅ Árvore Éclat 15/15 definida (efeitos).** Posicionamento (grupos) na passada dedicada.
 
+**Vestige (economia) — efeitos definidos** *(loot é AUTOMÁTICO — renda direta no kill, sem coleta no chão):*
+| Passiva | Efeito aprovado | Hint |
+|---|---|---|
+| **Lumen's Blessing** | +X% Lumens/nível — sem teto (âncora de economia) | early |
+| **Wisdom of Ruins** | +X% XP/nível — acelera a parede de Convergence (motor indireto) | early |
+| **Remnant Harvest** | +X% Vestiges/nível (⚠️ leve laço Vestige→Vestige — conter na calibração) | early |
+| **Scavenger** | chance de um kill render **em dobro** (saque; ×2, não +%) | early |
+| **Vestige Pull** | ⏳ **redirecionada para MATERIAIS** (recurso de boss p/ subir raridade de gear, §13): +ganho de materiais. Efeito e o sistema de materiais a desenhar | — |
+| *(Dreamwalker, Beast Caller, Hoarder, Awakened Harvest, Echo of Greed, Void Scavenger, Eternal Vestige, Fractured Soul, Luminal Cache, The Collector)* | ⏳ a definir | — |
+
 ---
 
 ## 8. ASCENSION (✅ CALIBRADO)
@@ -357,6 +367,8 @@ Seção dedicada: os tetos do jogo interagem (APS × kills/ataque × mobs na tel
 | **Crit (distribuição)** | LCK domina | **distribuído** (como APS): LCK (Gold Stat) dá fração mínima; o resto (chance e damage) vem de passivas (Luminal Edge…) + gear (Grasp) | ✅ direção 2026-06-11 |
 | **Crit chance (teto)** | 100% | ✅ **transbordo confirmado**: acima de 100% (geralmente via gear) o excedente vira crit damage (~101% → +1% dmg). Valores finos ⏳ §16.6 | ✅ direção |
 | **Defesa de inimigos** | 🔒 não existe | **novo sistema a implementar:** mobs/bosses mitigam dano do jogador; Void Piercing penetra. Definir forma (plana? %? escala com level/mapa?) | ⏳ a desenhar |
+| **Loot / coleta** | direta no kill | **automático, sem drop no chão** (confirmado) — não haverá passivas de "raio de coleta" | ✅ |
+| **Materiais** | 🔒 não existe | **novo recurso a desenhar:** materiais de boss para subir **raridade de gear** (§13); passiva **Vestige Pull** turbina o ganho. Definir: o quê, de onde (bosses?), por mapa? | ⏳ a desenhar |
 | **Gear: nível por raridade** | 25/50/100/175/300 | provisório | ⏳ calibrar |
 | **Passiva: nível máximo** | 5 (provisório) | economia deve ser **sem teto** → resolver: quais passivas têm cap, quais não | ⏳ decidir |
 | **Mémoires: nível** | sem teto | proposital (motor do late) | ✅ |
