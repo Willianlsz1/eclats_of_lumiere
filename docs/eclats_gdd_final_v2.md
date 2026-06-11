@@ -259,7 +259,12 @@ Nota de calibração: no simulador as passivas entram como agregado (+5% dano/n�
 | **Remnant Harvest** | +X% Vestiges/nível (⚠️ leve laço Vestige→Vestige — conter na calibração) | early |
 | **Scavenger** | chance de um kill render **em dobro** (saque; ×2, não +%) | early |
 | **Vestige Pull** | ⏳ **redirecionada para MATERIAIS** (recurso de boss p/ subir raridade de gear, §13): +ganho de materiais. Efeito e o sistema de materiais a desenhar | — |
-| *(Dreamwalker, Beast Caller, Hoarder, Awakened Harvest, Echo of Greed, Void Scavenger, Eternal Vestige, Fractured Soul, Luminal Cache, The Collector)* | ⏳ a definir | — |
+| **Dreamwalker** | aumenta a eficiência do **progresso offline** até o teto de **100% do ativo** (nunca acima; cap de acúmulo 24h) | mid |
+| **Beast Caller** | gancho de **Echoes** (futuro): fortalece o bônus deles. Ponte sem Echoes: +% de Vestiges de **bosses** | mid |
+| **Hoarder** | **juros sobre o cofre**: quanto mais Vestiges guardados, +% Lumens/XP (X turbina Y, sem teto) | mid |
+| **Awakened Harvest** | multiplicador **global** de toda a colheita (Lumens+XP+Vestiges) — o "guarda-chuva" | mid |
+| **Echo of Greed** | a cada X s, **explosão de Lumens** (pulso dourado de renda, estilo Heart of Midas) | mid |
+| *(Void Scavenger, Eternal Vestige, Fractured Soul, Luminal Cache, The Collector)* | ⏳ a definir | — |
 
 ---
 
@@ -373,7 +378,7 @@ Seção dedicada: os tetos do jogo interagem (APS × kills/ataque × mobs na tel
 | **Passiva: nível máximo** | 5 (provisório) | economia deve ser **sem teto** → resolver: quais passivas têm cap, quais não | ⏳ decidir |
 | **Mémoires: nível** | sem teto | proposital (motor do late) | ✅ |
 | **Número do jogo** | 1e100 (JS estoura ~1e308) | break_infinity além de 1e308 (CP próprio) | ✅ decidido |
-| **Offline** | 30 dias | guarda de engenharia | ✅ |
+| **Offline** | 30 dias (código) | 🔄 **cap = 24h** + **renda ≤ 100% do ativo** (nunca rende mais que jogar) + base generosa (não-fraco); **Dreamwalker** leva ao teto. Implementação pendente (código ainda faz 30d) | 🟡 direção ✅ |
 | **Ascension** | 5 na vida | = 5 mapas | ✅ |
 | **Convergence** | ~81 na vida (soft) | cadência, não cap rígido | ✅ |
 
