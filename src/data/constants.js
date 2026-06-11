@@ -21,15 +21,16 @@ export const ECONOMY = {
 };
 
 // §3 — Malha geométrica dos 5 mapas (✅ levels/HP/threshold canônicos).
-// packSizes do §4 reusado em todos os mapas. Nomes de criatura/boss = Art
-// Direction §3. ⏳ PROVISÓRIO: dmgLo/dmgHi por mapa (pendência §16.1 — extrapolados
-// mantendo a razão dano/HP do Map 1, que é calibrado: dmgLo=hpLo×0.1, dmgHi=hpHi×0.01)
-// e o vínculo nome↔arte dos Maps 2-5 (TODO canon; arte de alguns trios incompleta).
-const PACK = [1, 2, 4, 6, 8];
+// ✅ CALIBRADO 2026-06-11 (Camada 2): dano dos mobs = RAZÃO CONSTANTE 0.02 × HP em
+// TODOS os mapas (dmgLo=hpLo×0.02, dmgHi=hpHi×0.02). Validado no simulador
+// (tools/sim/survival.mjs): a Defesa decide vida/morte na entrada de cada mapa.
+// ✅ packSizes = [2,4,6,9,12] (Camada 1: densidade de mobs calibrada).
+// TODO canon: vínculo nome↔arte dos Maps 2-5 (arte de alguns trios incompleta).
+const PACK = [2, 4, 6, 9, 12];
 export const MAPS = [
   {
     id: 1, name: 'The Dreaming Wood', continent: 'worldmap.continent1', bg: 'backgrounds.map1',
-    lvlLo: 1, lvlHi: 1000, hpLo: 10, hpHi: 1e6, dmgLo: 1, dmgHi: 1e4,
+    lvlLo: 1, lvlHi: 1000, hpLo: 10, hpHi: 1e6, dmgLo: 0.2, dmgHi: 2e4,
     subareaCount: 5, packSizes: PACK, bossKillThreshold: 100,
     enemyNames: ['Candlewisp Shade', 'Mothlight Herald', 'Dreamhorn Warden'],
     enemyArts: ['enemies.map1.constellation_weaver', 'enemies.map1.moth_lantern', 'enemies.map1.deer_spirit'],
@@ -38,7 +39,7 @@ export const MAPS = [
   },
   {
     id: 2, name: 'Cavernes Luminis', continent: 'worldmap.continent2', bg: 'backgrounds.map2',
-    lvlLo: 1000, lvlHi: 1e5, hpLo: 1e6, hpHi: 1e16, dmgLo: 1e5, dmgHi: 1e14,
+    lvlLo: 1000, lvlHi: 1e5, hpLo: 1e6, hpHi: 1e16, dmgLo: 2e4, dmgHi: 2e14,
     subareaCount: 5, packSizes: PACK, bossKillThreshold: 200,
     enemyNames: ['Crystalbound Husk', 'Luminis Pilgrim', 'Hollowflame Adept'],
     enemyArts: ['enemies.map2.crystal_being', 'enemies.map2.cyan_ghost', 'enemies.map2.teal_flame'],
@@ -47,7 +48,7 @@ export const MAPS = [
   },
   {
     id: 3, name: 'The Ashen Ruins', continent: 'worldmap.continent3', bg: 'backgrounds.map3',
-    lvlLo: 1e5, lvlHi: 1e7, hpLo: 1e16, hpHi: 1e34, dmgLo: 1e15, dmgHi: 1e32,
+    lvlLo: 1e5, lvlHi: 1e7, hpLo: 1e16, hpHi: 1e34, dmgLo: 2e14, dmgHi: 2e32,
     subareaCount: 5, packSizes: PACK, bossKillThreshold: 350,
     enemyNames: ['Ember Revenant', 'Emberhorn Penitent', 'Ash Choir'],
     enemyArts: ['enemies.map3.thorn_sentinel', 'enemies.map3.horned_statue', 'enemies.map3.three_faces'],
@@ -56,7 +57,7 @@ export const MAPS = [
   },
   {
     id: 4, name: 'The Fractured Peaks', continent: 'worldmap.continent4', bg: 'backgrounds.map4',
-    lvlLo: 1e7, lvlHi: 1e8, hpLo: 1e34, hpHi: 1e62, dmgLo: 1e33, dmgHi: 1e60,
+    lvlLo: 1e7, lvlHi: 1e8, hpLo: 1e34, hpHi: 1e62, dmgLo: 2e32, dmgHi: 2e60,
     subareaCount: 5, packSizes: PACK, bossKillThreshold: 500,
     enemyNames: ['Fissure Stalker', 'Sundered Titan', 'Claimed Vanguard'],
     enemyArts: ['enemies.map4.fissure_stalker', 'enemies.map4.chained_giant', 'enemies.map4.claimed_vanguard'],
@@ -65,7 +66,7 @@ export const MAPS = [
   },
   {
     id: 5, name: 'Nil Aeternum', continent: 'worldmap.continent5', bg: 'backgrounds.map5',
-    lvlLo: 1e8, lvlHi: 1e9, hpLo: 1e62, hpHi: 1e100, dmgLo: 1e61, dmgHi: 1e98,
+    lvlLo: 1e8, lvlHi: 1e9, hpLo: 1e62, hpHi: 1e100, dmgLo: 2e60, dmgHi: 2e98,
     subareaCount: 5, packSizes: PACK, bossKillThreshold: 800,
     enemyNames: ['Pale Courtier', 'Crownless King', 'Crimson Wyrmlord'],
     enemyArts: ['enemies.map5.white_mask_priest', 'enemies.map5.crown_bearer', 'enemies.map5.dragon_lancer'],
@@ -100,7 +101,11 @@ export const CONVERGENCE = {
   wallBase: 1500,        // parede da 1ª run
   wallRatio: 1.5,        // razão base entre paredes
   wallRatioGrowth: 1.06, // a razão cresce 6% a cada Convergence
-  pointBonus: 0.15,      // conv_factor = 1 + 0.15 × Σ pontos
+  // conv_factor = (1 + pointBonusBase × pointBonusGrowth^ascensions)^(Σ pontos) — COMPOSTO + ANINHADO.
+  // Camada 7: o aditivo 1+0.15×pts morria (1.57 déc). A Ascension zera os pontos mas
+  // AMPLIFICA a base (§8): base sobe 1.04 (A0) → 1.20 (A5), pico ~4 décadas na era final.
+  pointBonusBase: 0.04,   // base inicial = 1.04
+  pointBonusGrowth: 1.38, // a base composta sobe ×1.38 a cada Ascension
 };
 
 // §7 — Vestiges (renda; gasto em Passivas/Ascension é pós-MVP)
@@ -194,7 +199,7 @@ export const ECLATS_DRIP = { coef: 0.1, exp: 0.9 };
 // exibidos mas ainda contam só via Clarté (efeito específico em CP futuro).
 export const MEMOIRE_CLARTE_BASE = 1.07;        // Clarté: dano × 1.07^(Σ níveis)
 export const MEMOIRE_UNLOCK = [10, 30, 90, 270, 810]; // §11: desbloqueio por era
-export const MEMOIRE_EVO_BASE = 2, MEMOIRE_EVO_RAMP = 1.10; // §11: evolução = 2 × 1.10^n
+export const MEMOIRE_EVO_BASE = 2, MEMOIRE_EVO_RAMP = 3.0; // §11: evolução = 2 × 3.0^n (Camada 6: 1.10 era raso → maximizava instantâneo; 3.0 paceia pela profundidade)
 // Nomes das eras (Épopées) — ⏳ TODO(canon): placeholders L'Aube…Le Choix.
 export const MEMOIRE_ERAS = ['L’Aube', 'Le Façonnage', 'La Chute', 'La Blessure', 'Le Choix'];
 export const MEMOIRES = [
