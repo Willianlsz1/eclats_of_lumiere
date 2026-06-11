@@ -2,10 +2,14 @@
 
 > Documento técnico do que está implementado, como o jogo flui e **todas as fórmulas**
 > dos sistemas. Fonte: o código real em `src/` (não o GDD em abstrato).
-> Última atualização: **2026-06-11**.
+> Última atualização: **2026-06-11** (sessão de design — ver §10.5).
 >
 > Legenda: ✅ implementado e ligado ao motor · ⏳ provisório (valor placeholder, recalibrar)
-> · 🔒 não implementado / pós-MVP · `TODO(canon)` aguarda decisão do Willian.
+> · 🔒 não implementado / pós-MVP · 🎯 **design fechado, aguarda calibração+código** · `TODO(canon)` aguarda decisão do Willian.
+>
+> ⚠️ **Importante:** as §§1-10 descrevem o **código atual**. A **§10.5** consolida as **decisões de
+> design travadas na sessão 2026-06-11** (Defesa, Craft/Materiais, Fate Keepers, Mémoires revisadas,
+> catálogo de Gear) que **ainda NÃO estão no código** — é o próximo trabalho (calibração → implementação).
 
 ---
 
@@ -25,7 +29,8 @@
 
 - **Conteúdo:** 5 mapas jogáveis ponta a ponta (The Dreaming Wood → Nil Aeternum), progressão por Ascension (A1→A5).
 - **Arte:** ✅ **completa** para tudo que existe no jogo — 5 trios + guardiões + 5 bosses (incl. Nihel), backgrounds dos 5 mapas, retratos do Seeker T1-T5, molduras do card T1-T5, e bordas de inimigo (universal + 5 bosses).
-- **Falta:** Echoes (🔒 standby, decisão do Willian) e **calibração de números** (dano dos mobs Maps 2-5, 8 efeitos exóticos das Mémoires, valores de Gear/Passivas) — ver §11.
+- **Design dos sistemas: ✅ COMPLETO** (sessão 2026-06-11 — Defesa, Craft/Materiais, Fate Keepers, Mémoires, Gear todos fechados, ver §10.5). Echoes fica pós-MVP (🔒 standby).
+- **Falta agora:** (1) **calibração numérica única** (curvas/custos/brackets) e (2) **implementar no código** o design fechado da §10.5 — várias coisas hoje são placeholder/agregado.
 
 ---
 
@@ -292,6 +297,9 @@ custo_evolução(nível) = 2 × 1.10^(nível+1) Éclats
 > **Nota:** os 8 efeitos ⏳ ainda **contam via Clarté** (cada nível dá ×1.07 no dano), mas o
 > efeito específico (ex.: dano em boss, drip, HP de inimigo) ainda não está ligado — fica
 > para um passe futuro. Os 7 ✅ somam aos fatores `memoire_*`.
+>
+> 🎯 **A tabela acima é o CÓDIGO atual.** O **design dos efeitos foi revisado em 2026-06-11**: os
+> Mémoires **#5, #11, #12, #13 mudaram** (ver §10.5.4). Ao fazer o wiring, usar os efeitos novos.
 
 ```
 memoire_dano        = Clarté × (1 + Σ%dano [Premier Matin]) × Π(×1.10 [Blessure])
@@ -334,19 +342,92 @@ teto **30 dias**, mínimo **60s** para mostrar o resumo. Garante que o jogador *
 
 ---
 
+## 10.5 🎯 DESIGN FECHADO NA SESSÃO 2026-06-11 (aguarda calibração + código)
+
+Tudo abaixo está **decidido** (travado com o Willian, registrado no GDD), mas o **código ainda não reflete**. É o backlog de implementação. Ordem sugerida: **calibração numérica única** → **wiring**.
+
+### 10.5.1 Defesa / Mitigação (GDD §4) 🎯
+Antes o dano batia direto no HP. Fechado:
+```
+mitigação     = defesa / (defesa + Σdano_do_pack)          // razão/armadura
+dano_recebido = Σdano × Σdano / (defesa + Σdano)            // nunca 100%, auto-escala, sem teto
+```
+- **Dois eixos de sobrevivência:** VIT (Gold Stat) = poça de HP · **Veil (Gear) = defesa**. Sem stat nova.
+- **Duas camadas:** afixos/passivas de **defesa** alimentam a razão; passivas de **"reduz dano recebido"** (Nihel's Shadow) = redução % à parte, DEPOIS da armadura.
+- **Defesa de inimigos** = mesma fórmula virada (`seu_dano/(def_inim+seu_dano)`); **Void Piercing** fura, **Weakened Void** reduz. Early ≈ 0.
+- ⚠️ Código hoje: dano direto no HP (sem `defesa`). Falta o termo `defesa` no cálculo de dano recebido + o afixo Veil real.
+
+### 10.5.2 Craft / Materiais (GDD §13B) — sistema BASE, early/mid 🎯
+1. **Material TIERED por raridade:** T1→Kindled · T2→Luminous · T3→Radiant · T4→Converged.
+2. **Drop:** **T1 (comum) de mobs normais**; **T2-4 (raros) só de bosses** (Guardião=médios, boss final=altos+chance do próximo). **Dificuldade** multiplica qtd e empurra o tier.
+3. **Forja:** subir raridade = **gate duplo** (peça no nível MÁX da raridade **+** pagar material); **refino** = N tier baixo → 1 tier alto (só pra cima).
+4. **Leveling MANUAL, por peça, independente** (sem auto-level); raridade só com tier anterior maximizado, em ordem. **Vestige Pull** turbina material.
+- ⚠️ Código hoje: `custo_raridade` em **Lumens** (§9.2). Muda para **materiais**; criar recurso `materiais[tier]` + drop nos kills/bosses + tela da Forja.
+
+### 10.5.3 Fate Keepers + Dificuldades (GDD §8) 🎯
+| A | Fate Keeper |
+|---|---|
+| A1 | Automação básica (auto-Gold Stats + auto-Convergir) |
+| A2 | Auto-progressão + **abre o SISTEMA de dificuldades** (escolha por sub-área; modos altos gateados por PODER, não por Ascension) |
+| A3 | Motor de Éclats (drip mapa atual + offline 24h cheio) |
+| A4 | **+Cap global de mobs na tela** |
+| A5 | Transcendência (loop infinito pós-Nihel + meta-mult) |
+
+**Dificuldades:** Difícil · Nightmare · Tormento — re-rodar mapas limpos com HP/dano muito maiores + recompensas (materiais/Éclats). Escolha **por sub-área**. Brackets = calibração (re-escalar curvas, decisão tomada).
+**Despertar/Tier (gate de poder):** o tier T1→T5 vira gate no **meio do mapa** (Sub 3 + vencer o Guardião) → ×poder permanente; arte lê o tier de Despertar (não nº de ascensions). ⚠️ Código hoje: tier = nº de ascensions.
+
+### 10.5.4 Mémoires — 4 efeitos revisados (GDD §11) 🎯
+Os 15 efeitos foram revisados item-a-item (pesquisa: TT2/Synergism/Gaiadon). **Mudaram 4** vs o §9.4 atual:
+| # | Mémoire | Efeito NOVO (era) |
+|---|---|---|
+| 5 | du Façonnage | **+% materiais dropados** (era "+6% efeito de Gear") — engata no Craft |
+| 11 | de la Résistance | **+% sobrevivência: HP, regen E defesa** (era só "+HP/regen") — engata na Defesa |
+| 12 | du Temps Brisé | **+% a TODOS os Éclats** (drip + bolsas de Ascension) (era "só drip") — o "Book of Shadows" |
+| 13 | du Vide | **+% recompensas nas dificuldades altas** (era "−1% HP cap 50" quebrado) — sem teto |
+Os outros 11 mantidos. Os efeitos exóticos ainda contam só via Clarté no código — falta o wiring individual.
+
+### 10.5.5 Gear — catálogo de afixos + identidade das peças (GDD §13) 🎯
+**Modelo:** primário inerente por peça + raridade abre slots do **pool**; cada afixo nos 4 sabores (flat·%·×·mastery), determinístico.
+
+**Pool (12 afixos):**
+- **Combate (now):** Dano · HP · Defesa · Crit Chance · Crit Damage · APS · Regen
+- **Anti-inimigo:** Dano em Boss (now) · Erosão do Vazio / penetração (future)
+- **Farm (now):** Lumens · XP · Materiais (+% drop, modesto)
+- **FORA do Gear (decisão):** Vestiges · Éclats · Offline (vêm de Passivas/Mémoires)
+
+**Identidade das 6 peças** (primário + secundários-assinatura):
+| Peça | Primário | Secundários |
+|---|---|---|
+| The Waning Edge (Arma) | Dano | Crit Damage · Dano em Boss · Erosão |
+| Grasp of the Unnamed (Manoplas) | Crit Chance | Crit Damage · APS · Dano |
+| The Last Resonance (Amuleto) | APS | Crit Chance · Regen · Dano |
+| The Silent Vigil (Elmo) | HP | Defesa · Regen |
+| Veil of Cinders (Manto) | Defesa | HP · Regen · Erosão |
+| Band of Dusk (Anel) | Lumens | XP · Materiais |
+- ⚠️ **Fix de código:** `constants.js` GEAR.pieces tem `veil` afixo `hp` e `reson` afixo `xp` — **errado**; canon é **Veil=defesa, Resonance=APS**.
+
+---
+
 ## 11. O que FALTA / pendências
 
+### 🎯 Design fechado, aguarda código (sessão 2026-06-11 — detalhe na §10.5)
+- **Defesa/Mitigação** (razão/armadura) — não existe no código (dano bate direto no HP).
+- **Craft/Materiais** — recurso `materiais[tier]` + drop + Forja; raridade muda de Lumens→materiais.
+- **Fate Keepers (A1-A5) + Dificuldades** (Difícil/Nightmare/Tormento por sub-área) — não existem.
+- **Despertar/Tier** como gate de poder na Sub 3 (hoje tier = nº de ascensions).
+- **Mémoires #5/#11/#12/#13** efeitos novos; **catálogo de 12 afixos** + identidade das 6 peças.
+
 ### 🔒 Não implementado
-- **Echoes (pets)** — em standby por decisão do Willian (Art Direction §8e). Sem conceito/arte definidos.
-- **Reforja de Gear na Ascension** (desconto com material) — §13 menciona, não implementado.
+- **Echoes (pets)** — pós-MVP, standby (Art Direction §8e). Sem conceito/arte.
 - **Convergence relics / árvore de relíquias** — a tela do Player mostra `0/15` placeholder.
 
-### ⏳ Provisório (recalibrar / definir cânon)
+### ⏳ Provisório (recalibrar / definir cânon) — a CALIBRAÇÃO ÚNICA (por último)
 - **Dano dos mobs Maps 2-5** (§16.1) — extrapolado; falta calibração de sobrevivência.
-- **Gear:** rates/caps/custos/afixos de peça (`TODO(canon)`).
+- **Gear:** rates/caps/custos, nº de slots por raridade, valor por sabor, motor sem-teto.
 - **Passivas:** `groupMult`, `maxLevel` e os **45 efeitos individuais** (§16.3) — hoje agregados.
-- **Mémoires:** os **8 efeitos exóticos** ⏳ (contam só via Clarté).
+- **Mémoires:** valor por nível de cada efeito.
 - **Crit:** valores de lck, base e transbordo (§16.6).
+- **Defesa/Craft/Dificuldades:** todas as curvas/brackets/custos.
 
 ### Arte — estado atual
 - ✅ **Mobs:** todos os 5 trios + guardiões + 5 bosses finais (incl. Nihel = `fallen_angel`) e o Map 4 completo (Fissure Stalker, Sundered Titan, Claimed Vanguard).
