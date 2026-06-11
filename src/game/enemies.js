@@ -51,6 +51,7 @@ export function spawnMob(map, subarea) {
     id,
     name: map.enemyNames[k],
     art: map.enemyArts[k],
+    frame: 'frames.enemy_universal', // moldura comum dos inimigos (§8d)
     level,
     hpMax,
     hp: hpMax,
@@ -68,6 +69,8 @@ export function spawnBoss(map, subarea) {
     id: nextEnemyId++,
     name: isFinal ? map.bossName : `Guardião — Subárea ${subarea}`,
     art: isFinal ? map.bossArt : map.guardianArt,
+    // boss final = moldura própria do mapa (§8d); guardião = moldura comum
+    frame: isFinal ? `frames.boss_m${map.id}` : 'frames.enemy_universal',
     isBoss: true,
     isFinalBoss: isFinal,
     level,

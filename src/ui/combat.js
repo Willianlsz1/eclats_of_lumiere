@@ -14,7 +14,7 @@ import {
 } from '../game/stats.js';
 import { changeSubarea } from '../game/combat.js';
 import { getCurrentMap, subareaLevelRange } from '../game/enemies.js';
-import { currentRank, seekerFrame } from '../game/ascension.js';
+import { currentRank, seekerFrame, seekerPortrait } from '../game/ascension.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -34,14 +34,21 @@ const BOSS_POINT = { x: 60, y: 50 };
 // Janela de suavização das taxas do HUD (EMA simples)
 let rates = null;
 
-// Troca a moldura do retrato do Seeker conforme o tier (só quando muda)
-function updateSeekerFrame(seekerEl, frameId) {
+// Troca o retrato e a moldura do Seeker conforme o tier (só quando muda)
+function updateSeekerCard(seekerEl, portraitId, frameId) {
   const port = seekerEl.querySelector('.cb-portrait');
-  if (!port || port.dataset.frame === frameId) return;
-  port.dataset.frame = frameId;
-  const old = port.querySelector('.cb-frame');
-  if (old) old.remove();
-  port.insertAdjacentHTML('beforeend', picture(frameId, { className: 'cb-frame', alt: '' }));
+  if (!port) return;
+  if (port.dataset.portrait !== portraitId) {
+    port.dataset.portrait = portraitId;
+    const img = port.querySelector('picture:not(.cb-frame)');
+    if (img) img.outerHTML = picture(portraitId, { alt: 'The Seeker' });
+  }
+  if (port.dataset.frame !== frameId) {
+    port.dataset.frame = frameId;
+    const old = port.querySelector('.cb-frame');
+    if (old) old.remove();
+    port.insertAdjacentHTML('beforeend', picture(frameId, { className: 'cb-frame', alt: '' }));
+  }
 }
 
 export function buildCombatView(root, state) {
@@ -107,7 +114,7 @@ export function renderCombat(state) {
   // ── Card do Seeker ──
   const rank = currentRank(state);
   $('cb-tier').textContent = `${rank.name} · Tier ${rank.tier}`;
-  updateSeekerFrame($('cb-seeker'), seekerFrame(state));
+  updateSeekerCard($('cb-seeker'), seekerPortrait(state), seekerFrame(state));
   $('cb-hp-fill').style.width = `${Math.max(0, (state.player.hp / hpMax) * 100)}%`;
   $('cb-hp-text').textContent =
     `${formatNumber(Math.max(0, state.player.hp))} / ${formatNumber(hpMax)}`;
@@ -202,13 +209,17 @@ function buildEnemyCard(mob, i) {
   const pos = mob.isBoss ? BOSS_POINT : SPAWN_POINTS[i % SPAWN_POINTS.length];
   const artId = mob.art || ENEMY_ART_FALLBACK; // arte vem do mapa (enemies.js)
 
+  const frameId = mob.frame || 'frames.enemy_universal';
   const card = document.createElement('article');
   card.className = mob.isBoss ? 'cb-enemy boss' : 'cb-enemy';
   card.dataset.mobId = mob.id;
   card.style.left = `${pos.x}%`;
   card.style.top = `${pos.y}%`;
   card.innerHTML = `
-    <div class="cb-e-art">${picture(artId, { alt: mob.name })}</div>
+    <div class="cb-e-art">
+      ${picture(artId, { alt: mob.name })}
+      ${picture(frameId, { className: 'cb-e-frame', alt: '' })}
+    </div>
     <div class="cb-e-name">${mob.isBoss ? '👑 ' : ''}${mob.name}</div>
     <div class="cb-e-meta">Lv ${formatNumber(mob.level)}${mob.isBoss ? ' · GUARDIÃO' : ''}</div>
     <div class="cb-e-bar"><i class="cb-e-fill"></i></div>

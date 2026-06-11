@@ -18,14 +18,24 @@ const DATA = {
     "atlas": "worldmap/worldmap"
   },
   "seeker": {
-    "t1": "characters/seeker/seeker_t1"
+    "t1": "characters/seeker/seeker_t1",
+    "t2": "characters/seeker/seeker_t2",
+    "t3": "characters/seeker/seeker_t3",
+    "t4": "characters/seeker/seeker_t4",
+    "t5": "characters/seeker/seeker_t5"
   },
   "frames": {
     "enemy": "frames/frame_enemy_alpha",
+    "enemy_universal": "frames/frame_enemy_universal",
     "tier1": "frames/frame_tier1_alpha",
     "tier2": "frames/frame_tier2_alpha",
     "tier3": "frames/frame_tier3_alpha",
-    "tier5": "frames/frame_tier5_alpha"
+    "tier5": "frames/frame_tier5_alpha",
+    "boss_m1": "frames/frame_boss_m1",
+    "boss_m2": "frames/frame_boss_m2",
+    "boss_m3": "frames/frame_boss_m3",
+    "boss_m4": "frames/frame_boss_m4",
+    "boss_m5": "frames/frame_boss_m5"
   },
   "icons": {
     "nav": {

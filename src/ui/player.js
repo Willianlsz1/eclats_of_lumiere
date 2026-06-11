@@ -14,7 +14,7 @@ import {
   statCostNext, buyStat, buyStatMax,
 } from '../game/stats.js';
 import { xpWall, canConverge, runPoints, doConverge } from '../game/convergence.js';
-import { currentRank, seekerFrame } from '../game/ascension.js';
+import { currentRank, seekerFrame, seekerPortrait } from '../game/ascension.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -130,14 +130,22 @@ export function renderPlayer(state) {
 
   // Vitais
   $('pl-tier').textContent = `${rank.name} · Tier ${rank.tier}`;
-  // moldura do retrato conforme o tier (só troca quando muda)
+  // retrato + moldura conforme o tier (só trocam quando mudam)
   const port = document.querySelector('#view-player .pl-portrait');
-  const frameId = seekerFrame(state);
-  if (port && port.dataset.frame !== frameId) {
-    port.dataset.frame = frameId;
-    const old = port.querySelector('.pl-frame');
-    if (old) old.remove();
-    port.insertAdjacentHTML('beforeend', picture(frameId, { className: 'pl-frame', alt: '' }));
+  if (port) {
+    const portraitId = seekerPortrait(state);
+    if (port.dataset.portrait !== portraitId) {
+      port.dataset.portrait = portraitId;
+      const img = port.querySelector('picture:not(.pl-frame)');
+      if (img) img.outerHTML = picture(portraitId, { alt: 'The Seeker' });
+    }
+    const frameId = seekerFrame(state);
+    if (port.dataset.frame !== frameId) {
+      port.dataset.frame = frameId;
+      const old = port.querySelector('.pl-frame');
+      if (old) old.remove();
+      port.insertAdjacentHTML('beforeend', picture(frameId, { className: 'pl-frame', alt: '' }));
+    }
   }
   $('pl-level').textContent = formatNumber(heroLevel(state.xpTotal));
   $('pl-hp-fill').style.width = `${Math.max(0, (state.player.hp / hpMax) * 100)}%`;

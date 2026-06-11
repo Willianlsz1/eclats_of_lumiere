@@ -341,8 +341,14 @@ teto **30 dias**, mínimo **60s** para mostrar o resumo. Garante que o jogador *
 - **Mémoires:** os **8 efeitos exóticos** ⏳ (contam só via Clarté).
 - **Crit:** valores de lck, base e transbordo (§16.6).
 
-### `TODO(canon)` (arte / nomes / posições)
-- **Arte genuinamente faltando:** no **Map 4**, do trio só existe **Sundered Titan** (`chained_giant`); **Fissure Stalker** e **Claimed Vanguard** faltam (reuso `chained_giant`). Faltam também retratos **Seeker T2-T5** e molduras T2-T5. *(Confirmado no repo: trios dos Maps 1-3 e 5, **Nihel** = `fallen_angel`, e todos os bosses finais.)*
+### Arte — estado atual
+- ✅ **Mobs:** todos os 5 trios + guardiões + 5 bosses finais (incl. Nihel = `fallen_angel`) e o Map 4 completo (Fissure Stalker, Sundered Titan, Claimed Vanguard).
+- ✅ **Retratos do Seeker T1-T5** (avatar evolui com o tier/Ascension).
+- ✅ **Bordas de inimigo:** moldura comum (universal) + 5 bordas de boss (M1-M5), aplicadas no card de combate.
+- ✅ **Backgrounds** dos 5 mapas (Map 2 em high-res).
+- ⏳ **Molduras do card do Seeker:** T1, T2 (cantos estrelados), T3 (volutas), e a radiante. **`TODO(canon)`: a radiante é T4 ou T5?** (hoje reusada em IV e V; a outra falta).
+
+### `TODO(canon)` (nomes / posições / outros)
 - **Sem arte própria por design:** Guardiões das Subs 1-4 usam um mob do mapa como placeholder (o GDD não define arte de sub-boss).
 - **Nomes das sub-áreas** (placeholder "Sub-área N").
 - **Posições** dos pinos no worldmap e dos nós no continente (provisórias).
