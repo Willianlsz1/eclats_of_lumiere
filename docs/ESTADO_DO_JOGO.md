@@ -342,7 +342,8 @@ teto **30 dias**, mínimo **60s** para mostrar o resumo. Garante que o jogador *
 - **Crit:** valores de lck, base e transbordo (§16.6).
 
 ### `TODO(canon)` (arte / nomes / posições)
-- **Artes faltando:** Guardiões das Subs 1-4 (todos os mapas, usam placeholder); **Nihel** (boss Map 5 → placeholder `fallen_angel`); **Map 4** só tem 1 arte de trio (reusada nos 3); retratos **Seeker T2-T5** e molduras T2-T5.
+- **Arte genuinamente faltando:** no **Map 4**, do trio só existe **Sundered Titan** (`chained_giant`); **Fissure Stalker** e **Claimed Vanguard** faltam (reuso `chained_giant`). Faltam também retratos **Seeker T2-T5** e molduras T2-T5. *(Confirmado no repo: trios dos Maps 1-3 e 5, **Nihel** = `fallen_angel`, e todos os bosses finais.)*
+- **Sem arte própria por design:** Guardiões das Subs 1-4 usam um mob do mapa como placeholder (o GDD não define arte de sub-boss).
 - **Nomes das sub-áreas** (placeholder "Sub-área N").
 - **Posições** dos pinos no worldmap e dos nós no continente (provisórias).
 - **Reconciliar nomes de assets** `VERIFICAR`/underscore → kebab-case do `assets/README.md` (adiado por decisão do Willian).

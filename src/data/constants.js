@@ -50,8 +50,8 @@ export const MAPS = [
     lvlLo: 1e5, lvlHi: 1e7, hpLo: 1e16, hpHi: 1e34, dmgLo: 1e15, dmgHi: 1e32,
     subareaCount: 5, packSizes: PACK, bossKillThreshold: 350,
     enemyNames: ['Ember Revenant', 'Emberhorn Penitent', 'Ash Choir'],
-    enemyArts: ['enemies.map3.thorn_sentinel', 'enemies.map3.three_faces', 'enemies.map3.vortex'],
-    guardianArt: 'enemies.map3.horned_statue',
+    enemyArts: ['enemies.map3.thorn_sentinel', 'enemies.map3.horned_statue', 'enemies.map3.three_faces'],
+    guardianArt: 'enemies.map3.vortex',
     bossName: 'The Ashen King', bossArt: 'bosses.m3_ashen_king',
   },
   {
@@ -68,9 +68,9 @@ export const MAPS = [
     lvlLo: 1e8, lvlHi: 1e9, hpLo: 1e62, hpHi: 1e100, dmgLo: 1e61, dmgHi: 1e98,
     subareaCount: 5, packSizes: PACK, bossKillThreshold: 800,
     enemyNames: ['Pale Courtier', 'Crownless King', 'Crimson Wyrmlord'],
-    enemyArts: ['enemies.map5.crown_bearer', 'enemies.map5.hooded_redeyes', 'enemies.map5.dragon_lancer'],
-    guardianArt: 'enemies.map5.white_mask_priest',
-    bossName: 'Nihel, The Fracture', bossArt: 'enemies.map5.fallen_angel', // ⏳ sem arte de Nihel — placeholder
+    enemyArts: ['enemies.map5.white_mask_priest', 'enemies.map5.crown_bearer', 'enemies.map5.dragon_lancer'],
+    guardianArt: 'enemies.map5.hooded_redeyes',
+    bossName: 'Nihel, The Fracture', bossArt: 'enemies.map5.fallen_angel', // fallen_angel = Nihel (arte real)
   },
 ];
 export const MAP_1 = MAPS[0]; // compat
