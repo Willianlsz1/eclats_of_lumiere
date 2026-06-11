@@ -264,7 +264,13 @@ Nota de calibração: no simulador as passivas entram como agregado (+5% dano/n�
 | **Hoarder** | **juros sobre o cofre**: quanto mais Vestiges guardados, +% Lumens/XP (X turbina Y, sem teto) | mid |
 | **Awakened Harvest** | multiplicador **global** de toda a colheita (Lumens+XP+Vestiges) — o "guarda-chuva" | mid |
 | **Echo of Greed** | a cada X s, **explosão de Lumens** (pulso dourado de renda, estilo Heart of Midas) | mid |
-| *(Void Scavenger, Eternal Vestige, Fractured Soul, Luminal Cache, The Collector)* | ⏳ a definir | — |
+| **Void Scavenger** | saque duplo (Scavenger) que **escala com a profundidade** — premia farmar fundo | late |
+| **Eternal Vestige** | cada **Convergence feita** dá bônus permanente de ganhos (prestige→economia, sem teto) | late |
+| **Fractured Soul** | uma fração do **dano causado** vira Lumens bônus (combate ↔ economia) | late |
+| **Luminal Cache** | **cofre** que acumula % da renda e você coleta ao voltar (sinergia c/ Dreamwalker, cap 24h) | late |
+| **The Collector** | meta: **fortalece todas as outras passivas de economia** (% por nível) — fecho da árvore | late |
+
+**✅ Árvore Vestige 15/15 definida.** Nota XP: cobertura proposital de 1 dedicada (**Wisdom of Ruins**) + globais (Awakened Harvest, Hoarder, Scavenger/Void Scavenger) + Mémoire "de la Marche" — XP é "double-dip" (nível do Seeker **e** parede de Convergence), logo potente por ponto; não se inunda de passivas de XP de propósito. *(Willian pode pedir +peso em XP.)*
 
 ---
 
