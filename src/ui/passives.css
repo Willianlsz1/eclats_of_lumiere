@@ -66,6 +66,9 @@
 /* ---------------- Sistema bloqueado (pré-Convergence) ---------------- */
 .pv-lock { position: absolute; inset: 0; z-index: 10; display: grid; place-content: center;
   text-align: center; padding: 60px; }
+/* o atributo [hidden] precisa vencer o display:grid acima (mesma especificidade) —
+   senão o overlay transparente fica por cima e bloqueia cliques nas abas/cartas */
+.pv-lock[hidden] { display: none; }
 .pv-lock .glyph { font-size: 96px; color: var(--eclat); filter: drop-shadow(var(--glow-eclat)); margin-bottom: 12px; }
 .pv-lock h2 { margin: 0 0 8px; font-family: var(--font-display); font-weight: 700; font-size: var(--fs-xxl); color: var(--ink); }
 .pv-lock p { max-width: 520px; margin: 0 auto; color: var(--dim); font-size: var(--fs-lg);
