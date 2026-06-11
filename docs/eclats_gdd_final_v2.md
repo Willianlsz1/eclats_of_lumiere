@@ -223,6 +223,7 @@ Nota de calibração: no simulador as passivas entram como agregado (+5% dano/n�
 - **Vestige (economia):** multiplicadores de ganhos (Lumens/XP/Vestiges) com **crescimento sem teto** (regra de ouro §4).
 - **Fracture (utilidade):** QoL e defesa (HP, regen, velocidade, offline…).
 - Mantidos: moeda = Vestiges · gate por grupo (max 5 → abre próximos 5) · nunca resetam.
+- **🟢 PRINCÍPIO (2026-06-11): passivas são PURO-POSITIVO, sem trade-offs.** Todas são desbloqueadas/maximizadas com o tempo (não há escolha de build), então nenhuma passiva tem lado ruim/custo de oportunidade — cada uma é só "uma coisa boa que você vai ter". Vale para as 3 árvores.
 - **Ideias do Willian já registradas como candidatas:** aumentar o **cap de mobs na tela**; aumentar **recursos** (incl. futuros, ainda não implementados); **stats extras**.
 - ⏳ Tabela dos 45 efeitos: em construção — catálogo de referências (Synergism · Gaiadon skill/apoteose · Tap Titans 2) em pesquisa; tabela final aprovada pelo Willian antes de produção.
 
@@ -241,12 +242,14 @@ Nota de calibração: no simulador as passivas entram como agregado (+5% dano/n�
 | **Execute** | mobs abaixo de X% HP morrem na hora — ⚠️ kill por Execute paga ~50% | mid/late |
 | **Overkill** | dano excedente do kill vaza p/ o próximo mob — ⚠️ extra paga ~50% | mid/late |
 | **Crit Cascade** | um crit **aumenta a chance do próximo** (acumula até um não-crit) | mid |
-| **Momentum** | ⏳ a redefinir (era conflito c/ Resonant Force — proposta: streak→crit chance) | — |
-| **Luminal Explosion** | ⏳ a definir | — |
-| **Or Ein Sof's Touch** | ⏳ a definir | — |
-| **Shattered Light** | ⏳ a definir | — |
-| **Fracture Weakness** | ⏳ a definir | — |
-| **Void Piercing** | ⏳ a definir | — |
+| **Momentum** | **streak→crit chance**: +crit chance por kill seguido. Ao passar de 100% (com gear), o excedente vira **crit damage** (overflow §14B). Par do Resonant Force | mid |
+| **Luminal Explosion** | ao matar, **chance de detonar dano em TODA a onda viva** — ⚠️ kills da explosão pagam ~50% | late |
+| **Or Ein Sof's Touch** | a bênção dourada (única branco-dourado da árvore): **multiplicador global de dano sem teto** — passiva-prêmio do fim | late |
+| **Shattered Light** | **+crit damage elevado/nível** (amplificador forte de crit; sem trade-off — todas as passivas são desbloqueadas) | late |
+| **Fracture Weakness** | aplica **fraqueza**: inimigos recebem +X% de dano (debuff; vetor que multiplica com o resto) | mid/late |
+| **Void Piercing** | **penetra X% da DEFESA** dos inimigos (anti-tank) — ⚠️ requer o sistema de **defesa de inimigos** (a implementar) | late |
+
+**✅ Árvore Éclat 15/15 definida (efeitos).** Posicionamento (grupos) na passada dedicada.
 
 ---
 
@@ -352,7 +355,8 @@ Seção dedicada: os tetos do jogo interagem (APS × kills/ataque × mobs na tel
 | **Kills por ataque** | 1 (fixo) | base 1; passivas (Overkill/Execute/Luminal Explosion) furam, extras pagam ~50% | 🟡 regra ✅, máx de extras ⏳ |
 | **Mobs na tela (onda)** | [1,2,4,6,8] por sub-área | base + **passiva que aumenta o cap** (ideia do Willian) | ⏳ definir base e teto |
 | **Crit (distribuição)** | LCK domina | **distribuído** (como APS): LCK (Gold Stat) dá fração mínima; o resto (chance e damage) vem de passivas (Luminal Edge…) + gear (Grasp) | ✅ direção 2026-06-11 |
-| **Crit chance (teto)** | 100% (excedente → crit dmg) | manter transbordo? valores | ⏳ §16.6 |
+| **Crit chance (teto)** | 100% | ✅ **transbordo confirmado**: acima de 100% (geralmente via gear) o excedente vira crit damage (~101% → +1% dmg). Valores finos ⏳ §16.6 | ✅ direção |
+| **Defesa de inimigos** | 🔒 não existe | **novo sistema a implementar:** mobs/bosses mitigam dano do jogador; Void Piercing penetra. Definir forma (plana? %? escala com level/mapa?) | ⏳ a desenhar |
 | **Gear: nível por raridade** | 25/50/100/175/300 | provisório | ⏳ calibrar |
 | **Passiva: nível máximo** | 5 (provisório) | economia deve ser **sem teto** → resolver: quais passivas têm cap, quais não | ⏳ decidir |
 | **Mémoires: nível** | sem teto | proposital (motor do late) | ✅ |
