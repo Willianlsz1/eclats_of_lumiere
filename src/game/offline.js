@@ -7,10 +7,12 @@ import { TICK_SECONDS, OFFLINE } from '../data/constants.js';
 import { combatTick, resetPack } from './combat.js';
 import { automationTick } from './fatekeepers.js';
 import { playerHpMax } from './stats.js';
+import { memoireOfflineMult } from './memoires.js';
 
 // Simula `seconds` de ausência. Retorna o resumo dos ganhos (ou null se curto).
 export function simulateOffline(state, seconds) {
-  const simSeconds = Math.min(Math.max(0, seconds), OFFLINE.maxSeconds);
+  // #6 des Profondeurs amplia o tempo offline efetivo (capado pelo teto de engenharia)
+  const simSeconds = Math.min(Math.max(0, seconds) * memoireOfflineMult(state), OFFLINE.maxSeconds);
   if (simSeconds < OFFLINE.minSecondsToReport) return null;
 
   const before = {

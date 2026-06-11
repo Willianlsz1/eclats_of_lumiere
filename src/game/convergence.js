@@ -8,6 +8,7 @@
 import { CONVERGENCE } from '../data/constants.js';
 import { playerHpMax } from './stats.js';
 import { resetPack } from './combat.js';
+import { memoireConvPointBonus } from './memoires.js';
 
 // parede_da_run(c) = 1500 × Π(i=0..c-1) [1.5 × 1.06^i]
 export function xpWall(convergences) {
@@ -22,9 +23,9 @@ export function canConverge(state) {
   return state.xpRun >= xpWall(state.convergences);
 }
 
-// pontos_da_run = índice global da subárea mais funda (Map 1: 1-5)
+// pontos_da_run = subárea mais funda alcançada + #9 du Dernier Chant (+1 a cada 5 níveis)
 export function runPoints(state) {
-  return state.bestSubareaRun;
+  return state.bestSubareaRun + memoireConvPointBonus(state);
 }
 
 export function doConverge(state) {

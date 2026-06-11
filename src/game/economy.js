@@ -6,14 +6,14 @@ import { ECONOMY, NUMBER_CAP, BOSS_LUMEN_MULT, VESTIGES, CRAFT, mapMaterialTier 
 import { frtTotal, wisTotal } from './stats.js';
 import { gearLumensMult, gearXpMult } from './gear.js';
 import { passiveEcoMult } from './passives.js';
-import { memoireLumensMult, memoireXpMult, memoireVestigeMult } from './memoires.js';
+import { memoireLumensMult, memoireXpMult, memoireVestigeMult, memoireMateriaisMult, memoireDiffRewardMult } from './memoires.js';
 import { effectiveDifficulty } from './difficulty.js';
 
-// Multiplicador de YIELD de material (§13B): DIFICULDADE ×rewardMult (×3/×10/×30).
-// ⛓️ hooks reservados (= 1 por ora): Vestige Pull (passiva) · Mémoire du Façonnage (Passo 6)
-//   · afixo Materiais do gear (⏳ precisa de mapeamento amortecido — a curva crua é forte demais).
+// Multiplicador de YIELD de material (§13B): DIFICULDADE ×rewardMult (×3/×10/×30) ×
+//   #13 du Vide (recompensa de dificuldade) × #5 du Façonnage (+% materiais, aditivo, sem motor ×).
+// ⛓️ hooks reservados (= 1): Vestige Pull (passiva) · afixo Materiais do gear (⏳ amortecer a curva).
 function materialYieldMult(state) {
-  return effectiveDifficulty(state).rewardMult;
+  return effectiveDifficulty(state).rewardMult * memoireDiffRewardMult(state) * memoireMateriaisMult(state);
 }
 
 // §13B: drop de materiais no kill. 1% do tier do MAPA + 0.1% do tier seguinte; boss = chunk garantido.

@@ -5,7 +5,7 @@
 import { COMBAT, GOLD_STATS, CRIT, CONVERGENCE, DEFENSE } from '../data/constants.js';
 import { gearDamageMult, gearHpMult, gearCritAdd, gearDefesaMult } from './gear.js';
 import { passiveDmgMult, passiveHpMult } from './passives.js';
-import { memoireDmgMult, memoireHpMult, memoireCritDmgMult } from './memoires.js';
+import { memoireDmgMult, memoireHpMult, memoireCritDmgMult, memoireSurvivalMult } from './memoires.js';
 import { ascMult } from './ascension.js';
 
 // ───── Gold Stats (§5) ─────
@@ -113,7 +113,7 @@ export function playerHpMax(state) {
 export function veilFactor(state) {
   const fromVeil = Math.max(0, gearDefesaMult(state) - 1) * DEFENSE.veilScale;
   const fromPassives = 0; // ⛓️ hook reservado (passivas de defesa) — sem fonte ainda
-  return fromVeil + fromPassives;
+  return (fromVeil + fromPassives) * memoireSurvivalMult(state); // #11 de la Résistance amplia a defesa
 }
 
 // def = hp_max × veilFactor → escala com o poder, mantendo def/packDps ~constante (§4).

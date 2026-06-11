@@ -5,6 +5,7 @@
 
 import { ASCENSIONS, ECLATS_DRIP, MAPS } from '../data/constants.js';
 import { hpForLevel, subareaLevelRange, getCurrentMap } from './enemies.js';
+import { memoireEclatsAllMult } from './memoires.js';
 
 // Próximo marco de Ascension (ou null se já no fim)
 export const nextAscension = (state) =>
@@ -35,7 +36,7 @@ export function doAscend(state) {
   const a = nextAscension(state);
   state.vestiges -= a.cost;
   state.ascensions += 1;
-  state.eclats += a.eclats; // bolsa da cerimônia (§10)
+  state.eclats += a.eclats * memoireEclatsAllMult(state); // bolsa da cerimônia (§10) × #12 (todos os Éclats)
   // Avança para o próximo mapa (§8) e reinicia o progresso do mapa. A onda é
   // recriada pelo chamador (resetPack) — evita ciclo de import com combat.js.
   if (a.mapBoss < MAPS.length) {

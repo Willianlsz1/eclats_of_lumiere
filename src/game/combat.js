@@ -17,6 +17,11 @@ import { damagePerHit, currentAPS, playerHpMax, critChance, critDamageMult, play
 import { awardKill } from './economy.js';
 import { eclatsDripPerSec } from './ascension.js';
 import { effectiveDifficulty } from './difficulty.js';
+import { gearBossDmgMult, gearRegenMult } from './gear.js';
+import { memoireSurvivalMult, memoireBossDmgMult, memoireEclatsAllMult, memoireDiffRewardMult } from './memoires.js';
+
+// Regen efetivo (§4): COMBAT.regenPerSec × afixo Regen do gear × #11 de la Résistance
+const regenFactor = (state) => gearRegenMult(state) * memoireSurvivalMult(state);
 
 // Monta a onda da subárea. Se já bateu o threshold, o Guardião entra JUNTO,
 // substituindo 1 mob do pack (§4); na Sub 1 (pack de 1) ele vem sozinho.
@@ -92,12 +97,14 @@ export function combatTick(state, dt) {
   const armored = packDps > 0 ? (packDps * packDps) / (def + packDps) : 0;
   player.hp -= armored * postArmorDR(state) * dt;
 
-  // --- Regen contínuo de 1% HP máx/s ---
-  player.hp = Math.min(hpMax, player.hp + hpMax * COMBAT.regenPerSec * dt);
+  // --- Regen contínuo de 1% HP máx/s (× afixo Regen do gear × #11 Résistance) ---
+  player.hp = Math.min(hpMax, player.hp + hpMax * COMBAT.regenPerSec * regenFactor(state) * dt);
 
   // --- Drip de Éclats (§10): renda passiva após a A1, escala com o frontier ---
-  // §8: a dificuldade multiplica a recompensa (×3 Difícil etc.)
-  const drip = eclatsDripPerSec(state) * effectiveDifficulty(state).rewardMult;
+  // §8 dificuldade ×rewardMult · #13 du Vide amplia a recompensa · #12 du Temps Brisé = todos os Éclats
+  const drip = eclatsDripPerSec(state)
+    * effectiveDifficulty(state).rewardMult * memoireDiffRewardMult(state)
+    * memoireEclatsAllMult(state);
   if (drip > 0) state.eclats = Math.min(NUMBER_CAP, state.eclats + drip * dt);
 
   // --- Morte: recua uma subárea e a onda reinicia ---
@@ -122,7 +129,9 @@ function playerAttack(state, hpMax) {
 
   // Crit ⏳ provisório (GDD §16.6): rola por ataque, multiplica o hit
   const isCrit = Math.random() < critChance(state);
-  const raw = damagePerHit(state) * (isCrit ? critDamageMult(state) : 1);
+  // Dano em boss (§13/§11): afixo bossDmg do gear × #7 de la Chute (só em boss)
+  const bossMult = target.isBoss ? gearBossDmgMult(state) * memoireBossDmgMult(state) : 1;
+  const raw = damagePerHit(state) * (isCrit ? critDamageMult(state) : 1) * bossMult;
   // Defesa de INIMIGOS (§4, razão virada): hit = raw² / (def_inimigo + raw).
   // Early (def_inimigo=0) → hit = raw = comportamento original.
   const edef = enemyDefesa(state, target);
@@ -132,8 +141,8 @@ function playerAttack(state, hpMax) {
   if (state.fx.length < 50) state.fx.push({ mobId: target.id, amount: hit, isCrit });
   if (target.hp <= 0) {
     awardKill(state, target);
-    // Regen on-kill: 2% do HP máx
-    state.player.hp = Math.min(hpMax, state.player.hp + hpMax * COMBAT.regenOnKill);
+    // Regen on-kill: 2% do HP máx (× afixo Regen × #11 Résistance)
+    state.player.hp = Math.min(hpMax, state.player.hp + hpMax * COMBAT.regenOnKill * regenFactor(state));
     if (target.isBoss) {
       onBossKill(state);
     } else {
