@@ -22,7 +22,10 @@ const DATA = {
   },
   "frames": {
     "enemy": "frames/frame_enemy_alpha",
-    "tier1": "frames/frame_tier1_alpha"
+    "tier1": "frames/frame_tier1_alpha",
+    "tier2": "frames/frame_tier2_alpha",
+    "tier3": "frames/frame_tier3_alpha",
+    "tier5": "frames/frame_tier5_alpha"
   },
   "icons": {
     "nav": {
@@ -161,7 +164,9 @@ const DATA = {
       "vortex": "enemies/map3/enemy_VERIFICAR_vortex"
     },
     "map4": {
-      "chained_giant": "enemies/map4/enemy_VERIFICAR_chained_giant"
+      "chained_giant": "enemies/map4/enemy_VERIFICAR_chained_giant",
+      "fissure_stalker": "enemies/map4/enemy_VERIFICAR_fissure_stalker",
+      "claimed_vanguard": "enemies/map4/enemy_VERIFICAR_claimed_vanguard"
     },
     "map5": {
       "crown_bearer": "enemies/map5/enemy_VERIFICAR_crown_bearer",

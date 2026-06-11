@@ -59,7 +59,7 @@ export const MAPS = [
     lvlLo: 1e7, lvlHi: 1e8, hpLo: 1e34, hpHi: 1e62, dmgLo: 1e33, dmgHi: 1e60,
     subareaCount: 5, packSizes: PACK, bossKillThreshold: 500,
     enemyNames: ['Fissure Stalker', 'Sundered Titan', 'Claimed Vanguard'],
-    enemyArts: ['enemies.map4.chained_giant', 'enemies.map4.chained_giant', 'enemies.map4.chained_giant'], // ⏳ só 1 arte
+    enemyArts: ['enemies.map4.fissure_stalker', 'enemies.map4.chained_giant', 'enemies.map4.claimed_vanguard'],
     guardianArt: 'enemies.map4.chained_giant',
     bossName: 'The Claimed Queen', bossArt: 'bosses.m4_claimed_queen',
   },

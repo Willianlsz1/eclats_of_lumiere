@@ -14,7 +14,7 @@ import {
 } from '../game/stats.js';
 import { changeSubarea } from '../game/combat.js';
 import { getCurrentMap, subareaLevelRange } from '../game/enemies.js';
-import { currentRank } from '../game/ascension.js';
+import { currentRank, seekerFrame } from '../game/ascension.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -33,6 +33,16 @@ const BOSS_POINT = { x: 60, y: 50 };
 
 // Janela de suavização das taxas do HUD (EMA simples)
 let rates = null;
+
+// Troca a moldura do retrato do Seeker conforme o tier (só quando muda)
+function updateSeekerFrame(seekerEl, frameId) {
+  const port = seekerEl.querySelector('.cb-portrait');
+  if (!port || port.dataset.frame === frameId) return;
+  port.dataset.frame = frameId;
+  const old = port.querySelector('.cb-frame');
+  if (old) old.remove();
+  port.insertAdjacentHTML('beforeend', picture(frameId, { className: 'cb-frame', alt: '' }));
+}
 
 export function buildCombatView(root, state) {
   root.classList.remove('placeholder');
@@ -97,6 +107,7 @@ export function renderCombat(state) {
   // ── Card do Seeker ──
   const rank = currentRank(state);
   $('cb-tier').textContent = `${rank.name} · Tier ${rank.tier}`;
+  updateSeekerFrame($('cb-seeker'), seekerFrame(state));
   $('cb-hp-fill').style.width = `${Math.max(0, (state.player.hp / hpMax) * 100)}%`;
   $('cb-hp-text').textContent =
     `${formatNumber(Math.max(0, state.player.hp))} / ${formatNumber(hpMax)}`;

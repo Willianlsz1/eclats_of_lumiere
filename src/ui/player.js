@@ -14,7 +14,7 @@ import {
   statCostNext, buyStat, buyStatMax,
 } from '../game/stats.js';
 import { xpWall, canConverge, runPoints, doConverge } from '../game/convergence.js';
-import { currentRank } from '../game/ascension.js';
+import { currentRank, seekerFrame } from '../game/ascension.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -130,6 +130,15 @@ export function renderPlayer(state) {
 
   // Vitais
   $('pl-tier').textContent = `${rank.name} · Tier ${rank.tier}`;
+  // moldura do retrato conforme o tier (só troca quando muda)
+  const port = document.querySelector('#view-player .pl-portrait');
+  const frameId = seekerFrame(state);
+  if (port && port.dataset.frame !== frameId) {
+    port.dataset.frame = frameId;
+    const old = port.querySelector('.pl-frame');
+    if (old) old.remove();
+    port.insertAdjacentHTML('beforeend', picture(frameId, { className: 'pl-frame', alt: '' }));
+  }
   $('pl-level').textContent = formatNumber(heroLevel(state.xpTotal));
   $('pl-hp-fill').style.width = `${Math.max(0, (state.player.hp / hpMax) * 100)}%`;
   $('pl-hp-text').textContent = `${formatNumber(Math.max(0, state.player.hp))} / ${formatNumber(hpMax)}`;
