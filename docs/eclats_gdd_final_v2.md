@@ -381,13 +381,20 @@ Renda e custo de stats crescem em paridade → tempo por compra constante em qua
 
 ---
 
-## 13. GEAR (🔒 estrutura herdada · ⏳ recalibrar valores na malha v2)
+## 13. GEAR (🔄 REVISTO na sessão de design 2026-06-11)
 
-- 6 peças (The Waning Edge, Veil of Cinders, The Silent Vigil, Grasp of the Unnamed, The Last Resonance, Band of Dusk) com afixos fixos por peça e Legendary exclusivo — tabelas do DESIGN.md §26-28 permanecem válidas como estrutura. *(Rename aprovado no Art Direction v3: "Crown of Hollow Stars" → "The Silent Vigil" — coroa virou linguagem de reis caídos. Raridades na lore: Faded → Kindled → Luminous → Radiant → Converged.)*
-- Dois eixos: item level (Lumens) + raridade (Lumens + materiais de boss), com regressão intencional de taxa ao subir raridade (Common 0.5%/lv cap 100 → Legendary 0.025%/lv cap alto).
-- **Persiste em tudo**; reforja na Ascension é opcional (material/desconto).
-- No simulador, gear entra como ×2 por Ascension (envelope ~×32 na vida). Os valores de afixo da malha v2 devem somar a esse envelope. ⏳ recalibrar tabela de rates/caps.
-- Gloves diversificada e crit camada única: decisões mantidas.
+### Modelo aprovado (2026-06-11)
+- **6 peças FIXAS** (sempre equipadas; sem inventário/loot/comparar — idle-friendly). Expansível p/ mais peças no futuro.
+- Começa **Faded · LV 1 · afixos baixos**. Evolui por dois eixos:
+  - **Item level** (Lumens) — escala os afixos. *Motor sem-teto:* leveling continua sempre (custo crescente) → Gear nunca "morre" (conserta a violação da regra de ouro). [forma exata na calibração]
+  - **Raridade** (Faded→Kindled→Luminous→Radiant→Converged) — paga **MATERIAIS** (recurso de boss, §14B; Vestige Pull turbina). Cada raridade **adiciona afixos** à peça.
+- **Nº de afixos cresce com a raridade:** ~1 no Faded → **~6-7 no Converged** (estilo Gaiadon/Grand Chase). Determinístico (sem re-roll).
+- Afixos **iguais somam** (regra de ouro: somam dentro da categoria, multiplicam entre). Tema do Gear = **multiplicadores brutos** (mecânicas ficam nas Passivas).
+- Raridades futuras possíveis (Art Direction): **Primordial · Ein Sof** (extensão do teto no endgame).
+- Persiste sempre (não reseta).
+- ⏳ **Em debate:** catálogo de afixos (primário por peça + pool secundário; now vs future), motor sem-teto exato, sistema de materiais.
+
+> *(Estrutura herdada do DESIGN.md §26-28 fica como histórico; substituída pelo modelo acima.)*
 
 ## 14. ECHOES (🔒 estrutura herdada · ⏳ lista e recalibração)
 
