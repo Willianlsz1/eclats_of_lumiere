@@ -15,21 +15,22 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* viewport: centraliza o stage + letterbox */
+/* viewport: contém o stage + letterbox */
 #screen {
   position: fixed; inset: 0;
-  display: grid; place-items: center;
   background:
     radial-gradient(1400px 900px at 50% -20%, #16223a44, transparent 60%),
     #05070f;
   overflow: hidden;
 }
 
-/* palco de referência — full-bleed, escalado por fit() */
+/* palco de referência — posicionado e escalado por fit() via translate+scale
+   (origem no canto: centralizar via grid falha em alguns navegadores móveis
+   quando o palco 1920×1080 é maior que a viewport). */
 #stage {
-  position: relative;
+  position: absolute; top: 0; left: 0;
   width: var(--stage-w); height: var(--stage-h);
-  transform-origin: center center;
+  transform-origin: top left;
   background: var(--bg-stage);
   overflow: hidden;
   box-shadow: 0 0 0 1px var(--line-soft), 0 30px 90px -30px #000;

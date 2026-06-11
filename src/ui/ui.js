@@ -94,8 +94,13 @@ function show(id) {
 }
 
 function fit() {
-  const s = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
-  $('#stage').style.transform = `scale(${s})`;
+  const W = window.innerWidth, H = window.innerHeight;
+  const s = Math.min(W / 1920, H / 1080);
+  // Centraliza explicitamente (origem top-left): evita o bug de centralização
+  // via grid em telas menores que o palco (celular renderizava o palco fora da área).
+  const x = (W - 1920 * s) / 2;
+  const y = (H - 1080 * s) / 2;
+  $('#stage').style.transform = `translate(${x}px, ${y}px) scale(${s})`;
   // Corte baixo só para janelas realmente minúsculas — celulares (mesmo em
   // retrato, ~0.21) passam. Mobile é só para visualizar/testar; o alvo é desktop.
   $('#toosmall').style.display = s < 0.12 ? 'grid' : 'none';

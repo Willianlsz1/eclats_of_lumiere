@@ -9,38 +9,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-  <!-- DIAGNÓSTICO (temporário) — mostra erros de boot na tela em vez de ficar preto.
-       Script clássico (não-módulo): roda mesmo se o bundle falhar ao carregar. -->
-  <script>
-  (function () {
-    function showErr(title, detail) {
-      var d = document.getElementById('boot-error');
-      if (!d) { d = document.createElement('div'); d.id = 'boot-error'; }
-      d.style.cssText = 'position:fixed;inset:0;z-index:99999;background:#10040a;color:#ffd479;' +
-        'padding:18px;margin:0;font:12px/1.5 ui-monospace,monospace;white-space:pre-wrap;overflow:auto;';
-      d.textContent = '⚠ ' + title + '\n\n' + (detail || '');
-      (document.body || document.documentElement).appendChild(d);
-    }
-    window.__eclatsShowErr = showErr;
-    window.addEventListener('error', function (e) {
-      showErr('Erro de JavaScript', (e.message || '') + '\n' +
-        ((e.filename || '') + ':' + (e.lineno || '') + ':' + (e.colno || '')) + '\n\n' +
-        (e.error && e.error.stack || ''));
-    });
-    window.addEventListener('unhandledrejection', function (e) {
-      var r = e.reason; showErr('Promise rejeitada', (r && (r.stack || r.message)) || String(r));
-    });
-    setTimeout(function () {
-      if (!window.__ECLATS_BOOTED__) {
-        showErr('Bootstrap nao executou em 6s',
-          'O modulo do jogo nao rodou (provavel 404 do script ou erro de carregamento).\n' +
-          'location: ' + location.href + '\n' +
-          'scripts: ' + Array.prototype.map.call(document.scripts, function (s) { return s.src || '(inline)'; }).join('\n'));
-      }
-    }, 6000);
-  })();
-  </script>
-
   <div id="screen">
     <div id="stage">
       <div id="stage-backdrop"></div>
