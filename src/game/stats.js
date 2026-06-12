@@ -3,7 +3,7 @@
 // Mémoires) valem 1 até seus CPs chegarem.
 
 import { COMBAT, GOLD_STATS, CRIT, CONVERGENCE, DEFENSE } from '../data/constants.js';
-import { gearDamageMult, gearHpMult, gearCritAdd, gearDefesaMult } from './gear.js';
+import { gearDamageMult, gearHpMult, gearCritAdd, gearDefesaMult, gearCritDmgAdd } from './gear.js';
 import { passiveDmgMult, passiveHpMult, passiveCritAdd, passiveEnemyPen, passiveEnemyReduce } from './passives.js';
 import { memoireDmgMult, memoireHpMult, memoireCritDmgMult, memoireSurvivalMult } from './memoires.js';
 import { ascMult, despertarMult } from './ascension.js';
@@ -67,8 +67,9 @@ export function critChance(state) {
 }
 
 export function critDamageMult(state) {
-  const overflow = Math.max(0, critChanceRaw(state) - 1);
-  return (CRIT.baseDamageMult + overflow * CRIT.overflowFactor) * memoireCritDmgMult(state);
+  const overflow = Math.max(0, critChanceRaw(state) - 1); // crit chance > 100% transborda p/ crit damage
+  // base ×2 + transbordo 1:1 + afixo Crit Damage do gear (Edge/Grasp) × Mémoire #4 de la Forme
+  return (CRIT.baseDamageMult + overflow * CRIT.overflowFactor + gearCritDmgAdd(state)) * memoireCritDmgMult(state);
 }
 
 // ───── Fórmulas do jogador (§4 e §6) ─────

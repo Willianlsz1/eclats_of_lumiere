@@ -82,7 +82,7 @@ export const BOSS_LUMEN_MULT = 5; // §12: lumens_por_kill de boss ×5
 export const GOLD_STATS = {
   costBase: 10,
   costRamp: 1.15,
-  per: { str: 0.08, vit: 0.06, agi: 0.04, lck: 0.015, frt: 0.05, wis: 0.05 },
+  per: { str: 0.08, vit: 0.06, agi: 0.04, lck: 0.002, frt: 0.05, wis: 0.05 }, // ✅ lck 0.015→0.002 (Bloco 5: LCK = fração MÍNIMA de crit; o grosso vem de Grasp + Luminal Edge)
   // Milestones geométricos (não se aplicam a agi — cap duro de APS — nem a lck)
   milestones: [[10, 2], [25, 2.5], [50, 3], [100, 4], [200, 4.5], [400, 5], [800, 5.5], [1600, 6], [3200, 6.5]],
 };
@@ -155,7 +155,7 @@ export const GEAR = {
   affixMultFromRarity: 2,    // Luminous (idx 2) destrava o sabor × (motor sem-teto)
   secondaryExp: 0.30,        // afixo SECUNDÁRIO = primário^0.30 (30% das décadas; crit/critDmg = 30% do valor plano)
   capPerAsc: 500,            // a Ascension soma +500 ao cap de nível da raridade TOPO (Converged) — sem-teto
-  critPerLevel: 0.0004,      // afixo crit (chance plana) = nível × critPerLevel × rarityMult
+  critPerLevel: 0.0015,      // ✅ CALIBRADO (Bloco 5): afixo crit (chance) — Grasp + Luminal Edge fecham 100% no mid
   critDmgPerLevel: 0.01,     // afixo critDmg (bônus plano sobre a base ×2) = nível × critDmgPerLevel × rarityMult
   // custo de upar 1 nível = base × ramp^nível × costMult[raridade]
   levelCostBase: 50,
