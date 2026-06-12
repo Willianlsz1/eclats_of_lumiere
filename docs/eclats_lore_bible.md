@@ -1,9 +1,19 @@
-# ✦ Éclats of Lumière — Lore Bible Completo (v2)
+# ✦ Éclats of Lumière — Lore Bible Completo (v3)
 
 **Fonte da verdade única da narrativa.**
-Consolida: Lore Bible original + Revisão Consolidada (jun/2026) + canon estabelecido na sessão de design de arte (Maps 1-4, bosses, sistema de cor da luz, arco do Seeker).
-Companheiros: GDD Final v2 (sistemas) · Art Direction v2 (visual).
-Data: 2026-06-10
+Consolida: Lore Bible original + Revisão Consolidada (jun/2026) + canon da sessão de arte (Maps 1-4, bosses, cor da luz, arco do Seeker) + **sessão de validação de lore (jun/2026): 8 decisões de lore, gear em duas camadas, revisão de nomenclatura**.
+Companheiros: GDD Final v2 (sistemas) · Art Direction v2 (visual) · **Bestiário (`eclats_bestiary_reference.md`)**.
+Data: 2026-06-12 (v3)
+
+---
+
+## ✅ REGRA GLOBAL — IDIOMA DO JOGO (VALIDADO — sessão de lore jun/2026)
+
+**O jogo é em INGLÊS.** Toda a UI, as Mémoires, descrições, tooltips — tudo em inglês.
+A **Regra dos Idiomas** (Apêndice A) **permanece como camadas de nomes próprios DENTRO do texto inglês** — não troca o idioma da interface, e sim de onde vêm os *nomes* (criaturas em inglês, o mundo de hoje em francês, a verdade primordial em hebraico, o Nada em latim).
+
+- **Marca da taxonomia de criaturas:** sempre **"The" + capitalização**. *The Consumed*, nunca "consumed ones" nem "the consumed". O "The" é parte do nome próprio da classe.
+- *(Esta lore bible é o documento de design e segue em português; o que vira texto in-game é em inglês.)*
 
 ---
 
@@ -123,7 +133,13 @@ A coleta da Ordre só se torna reparação — só se torna **Tikkun Olam** — 
 ### Os ranks da Ordre
 
 **Seeker → Illuminate → Éclairé → L'Éveillé → Lumière.**
-Cada Ascension do jogador é uma cerimônia de rank. No mundo, pouquíssimos passam de Éclairé. Ninguém na história documentada alcançou Lumière — porque alcançar Lumière de verdade exige o que só a Semente permite.
+Cada Ascension do jogador é uma cerimônia de rank (a comissão da Ordre, Parte VI-C). No mundo, pouquíssimos passam de Éclairé. Ninguém na história documentada alcançou Lumière — porque alcançar Lumière de verdade exige o que só a Semente permite.
+
+✅ **A escada de ranks SOBE pelas camadas de idioma (VALIDADO — sessão de lore jun/2026):**
+- **Estágios comuns → INGLÊS** (*Seeker, Illuminate*) — a língua do mundo de hoje e das criaturas.
+- **Estágios raros → a língua da era radiante, o FRANCÊS** (*Éclairé, L'Éveillé, Lumière*) — quanto mais raro o estado, mais ele fala a língua de Lumière.
+- **LUMIÈRE = duplo sentido canônico:** é **a era/civilização primeira** *e* **o rank máximo**. Alcançar o rank é **ser chamado pelo nome do que o mundo era** — você não vira "iluminado", vira *a própria Lumière*.
+- **Regra prática de nomenclatura de títulos:** títulos altos novos → **francês**; títulos comuns → **inglês**; **hebraico só em texto morto / Mémoires** (a verdade que o mundo esqueceu).
 
 ---
 
@@ -169,6 +185,73 @@ No último tier, o jogador olha para o próprio card e vê algo desconfortavelme
 
 ---
 
+## PARTE VI-B — O QUE O SEEKER VESTE: AS DUAS CAMADAS (✅ VALIDADO — sessão de lore jun/2026)
+
+A força do Seeker tem duas naturezas, e o equipamento as encarna.
+
+### Camada 1 — as 6 peças de Éclat (*o que você é*)
+As **6 peças permanentes** (The Waning Edge, The Silent Vigil, Veil of Cinders, Grasp of the Unnamed, The Last Resonance, Band of Dusk). São nomeadas, eternas, o **motor que nunca morre** — a luz reunida tecida na própria forma do Seeker. Crescem para sempre (nível, raridade, Awakening). São *o que você é*.
+
+### Camada 2 — os RELIQUATS (*o que você venceu*)
+**Reliquats** são **sets de área dropáveis** de Guardiões e bosses. Quando um Eidola cai, a **luz (ou o vazio) que sustentava a forma dele se condensa nos seus contornos** — uma coroa, um selo, uma máscara. **Vestir o set é vestir a forma da coisa vencida.**
+
+- **Finitos e obsoletos por design:** *o que você venceu não cresce — você sim.* Um Reliquat do Map 2 é poderoso no Map 2 e fica para trás depois. Não há tristeza nisso: é a diferença entre carregar um troféu e *ser* a luz.
+- **Ressonância local:** sets antigos **ressoam com a região de origem** — bônus de utilidade locais / ligação com o **Echo** (Parte VI-C). Voltar a uma região convergida com o Reliquat dela acende algo.
+- **Expansão aditiva (Ato 2):** Reliquats são conteúdo **somado** sobre o sistema atual. **Convergence e calibração permanecem intactas** — as 6 peças continuam sendo o eixo.
+
+> Tema: a Camada 1 é a luz que o Seeker *tornou-se*; a Camada 2 é a luz dos que ele *parou*. Uma cresce com ele; a outra fica para trás — como deve ser.
+
+---
+
+## PARTE VI-C — AS FACULDADES DA SEMENTE (✅ VALIDADO — sessão de lore jun/2026)
+
+A Semente não dá poder de uma vez. Ela *desperta* — e a Ordre, séculos atrasada, tenta nomear o que vê.
+
+### AWAKEN — o despertar (sistema/botão: *Awaken*; evento: *Awakening*)
+
+Ao vencer o **Guardião da Sub-área 3** de um mapa, a luz densa liberada **converge num limiar novo via Semente** — um salto **físico, visível, sem cerimônia**. É interno: a Semente reorganiza o que o Seeker é. Não há plateia, não há diploma; só a luz subindo de patamar.
+
+- **Os ranks (Seeker → Illuminate → Éclairé → L'Éveillé → Lumière) são uma taxonomia DESCRITIVA da Ordre** — nomes que a instituição deu a estados que ela *observa há séculos sem entender nem conseguir produzir*. A Ordre cataloga; a Semente faz.
+- **A ressonância de *L'Éveillé* (rank 4) com o ato de *Awakening* é canônica e intencional:** o quarto rank leva, na língua antiga, o nome do próprio ato — "o Desperto". A Ordre nomeou o estágio com a palavra certa sem entender por quê.
+- **Awaken ≠ Ascension.** O Awakening é o que a *luz* faz (meio do mapa). A **Ascension é o ato institucional/geográfico**: a Ordre **comissiona** o Seeker para a fronteira seguinte — certificando, *atrasada*, o que a luz já fez. O **pagamento de Vestiges na Ascension** é a **prestação de contas das essências coletadas na região** — burocracia Belle Époque, papelada da corte iluminada.
+
+### GATEKEEPERS — as guardiãs (ex-"Fate Keepers")
+
+A cada região convergida (cada Ascension), uma **faculdade da Semente desperta**: um **Gatekeeper**. Elas **não abrem caminho — GUARDAM o que ficou atrás dos portões já cruzados.**
+
+| Gatekeeper | Ascension | O que guarda |
+|---|---|---|
+| **O Ritmo** | A1 | auto-converge / auto-stats — a Semente assume o pulso do início |
+| **A Vigília** | A2 | percebe as **marés da corte refluindo** sobre regiões convergidas (= sistema de **dificuldades**) |
+| **O Echo** | A3 | projeção de luz com a forma do Seeker numa região convergida (ver abaixo) |
+| **A Atração** | A4 | o Seeker pulsa como um **Éclat gigante**; o corrompido é atraído (= +mobs na tela) |
+| **A Transcendência** | A5 | *(reservado — pós-MVP)* |
+
+> **Tema canônico:** quanto mais alto o Seeker sobe, **menos ele faz e mais a luz faz por ele**. A automação é a **erosão da humanidade** — espelha exatamente o arco visual dos tiers (o rosto que se esvazia). Ganhar poder é perder-se.
+
+### ECHO — a primeira projeção (ex-"Eco do Seeker")
+
+A Gatekeeper **A3 concede o primeiro Echo: a forma do próprio Seeker**, projetada numa região convergida para farmar em 2º plano. É da **família narrativa do Hollowed Pilgrim** — uma casca com a forma do Seeker, mantida pela luz à distância.
+
+- **Pets futuros (pós-MVP) = Echoes de OUTRAS formas** que a Semente aprende a sustentar — formas de **Eidola derrotados**. Família unificada, **sem retcon**: o primeiro Echo é você; os próximos são as coisas que você venceu, agora sustentadas pela sua luz.
+
+---
+
+## PARTE VI-D — AS MOEDAS DA LUZ (✅ VALIDADO — sessão de lore jun/2026)
+
+Há uma **hierarquia canônica** do que se colhe dos corrompidos — de posse a memória:
+
+| Moeda | O que é | Permanência |
+|---|---|---|
+| **Lumens** | **poeira de luz solta** — matéria luminosa **sem memória** que se desprende dos corrompidos | **temporária** (dispersa na Convergence) |
+| **Vestiges** | a **essência do que a criatura foi** | **permanente** |
+| **Éclats** | **fragmentos com memória** (pedaços do mundo inteiro) | **permanente** |
+
+- **Lumens** se **tece no corpo** (Gold Stats) e **dispersa na Convergence porque é POSSE, não aprendizado** — você não *aprendeu* nada com ela, só a carregou. O que é aprendizado (Vestiges, Éclats, a Semente) fica.
+- Hierarquia: **Lumens (posse) < Vestiges (essência) < Éclats (memória).**
+
+---
+
 ## PARTE VII — A TAXONOMIA DAS CRIATURAS
 
 Tudo o que vaga entre os dois mundos é nomeado em inglês — a camada das criaturas:
@@ -203,9 +286,10 @@ Habitantes: The Fragmented — Candlewisp Shade, Mothlight Herald, Dreamhorn War
 *Cavernas de cristais azuis e violetas que brilham com luz própria; refrações em prisma; o tempo parece mais lento.*
 
 A lição: **a luz tenta se reconstituir.** Os cristais são Éclats cristalizados — luz que tentou se reunir longe de qualquer testemunha.
+✅ **Segunda linha (VALIDADO — sessão de lore jun/2026): "a luz tenta se reconstituir — e o que ela consegue sozinha é isto."** A reunião **sem o índice (a Semente) sai ERRADA** — bela e vazia de sentido.
 Habitantes: Crystalbound Husk, Luminis Pilgrim, Hollowflame Adept.
 
-**Boss — The Pale Reunion (The Eidola):** no fundo das Cavernes, longe de qualquer Seeker, os Éclats cristalizados tentaram se reunir sozinhos — e quase conseguiram. Um ser radiante branco-azul de rosto vazio e auréola dupla: uma convergência incompleta, bela, serena e errada. É também — propositalmente — o eco visual exato do que o Seeker se tornará no tier Lumière. O jogador enfrenta no Map 2, sem saber, uma prévia de si mesmo.
+**Boss — The Pale Reunion (The Eidola):** no fundo das Cavernes, longe de qualquer Seeker, os Éclats cristalizados tentaram se reunir sozinhos — e quase conseguiram. Tiveram **quietude, proximidade e milênios** — tudo, menos a Semente. E **sem a Semente não há ordem**: fragmentos colados na **sequência errada**. Um ser radiante branco-azul de rosto vazio e auréola dupla: belo, sereno, **vazio de sentido**. É a **prova da regra da Parte II** (absorção/reunião sem o índice é contenção, não reparação), não uma exceção. É também — propositalmente — o **eco visual exato** do que o Seeker se tornará no tier **Lumière** (a reunião COM índice). O jogador enfrenta no Map 2, sem saber, **os dois finais possíveis de si mesmo lado a lado**: esta reunião cega, e a que ele pode ser.
 
 ### Map 3 — The Ashen Ruins
 *As ruínas colossais da primeira civilização: colunas quebradas, espinhos negros com veias de brasa dourada rastejando por tudo, névoa cinza prismática, brasas que nunca apagam.*
@@ -234,6 +318,26 @@ A lição: **o Nada tem uma corte. E um rosto.**
 Habitantes: a nobreza do vazio — Qliphoth Shell, Claimed Knight, e os nobres-dragão da corte carmesim (Crimson Wyrmlord e seus pares). Reis, cavaleiros e wyrms que ajoelharam.
 
 **Boss final — NIHEL, THE FRACTURE:** a entidade alada no centro do vórtice, cercada por um anel de luz. Seus olhos e o anel brilham **dourado** — o único dourado em todo o Map 5 — porque até o Nada carrega, presa dentro de si, a luz que o criou. Belo e aterrorizante ao mesmo tempo. O jogador passou o jogo inteiro associando dourado a progresso e luz; quando a cor some do mundo e reaparece apenas dentro do monstro final, a simetria trágica vira linguagem visual.
+
+---
+
+## PARTE VIII-B — OS HOLLOWS (as dungeons) (✅ VALIDADO — sessão de lore jun/2026)
+
+Os **Hollows** são **bolsões de Nil Aeternum vertendo por fissuras fundas da Fratura** — a Fratura que **nunca parou** (a lição do Map 4). Onde a ferida do mundo é funda o bastante, o Nada vaza e forma um lugar.
+
+- **Cada Hollow é ancorado por um nobre da corte**, que firma ali seu domínio. A **Ordre sela e cataloga cada um como "incidente"** — mais uma verdade nomeada de leve para não ser entendida.
+- **REGRA DE COR (canon visual):** o **vermelho fora do Map 5 só existe DENTRO dos Hollows.** Cruzar a entrada de um Hollow = o vermelho aparece. É um **aviso visual sem texto**: você saiu do mundo e entrou no território dele.
+- **Mais difíceis** (é o território *dele*), **repetíveis** (a fissura não fecha — são as **marés da Vigília**, o Gatekeeper A2), e **fonte dos Reliquats exclusivos daquele nobre** (Parte VI-B).
+- **Expansões = novos domínios / nobres / sets / histórias locais.** É a **fórmula de escada de antagonistas**: a corte do Nada é um **reservatório de vilões** — *Crimson Wyrmlord e seus pares*. Cada Hollow novo é um nobre novo, com seu set e sua tragédia.
+
+### A regra dupla do termo HOLLOW (canonizada)
+**Hollow = o que resta quando o Nada esvazia algo.** A palavra serve a duas naturezas, e só a estas:
+- **Um SER** esvaziado: *The Gilded Hollow* (boss Map 1), *Hollowed Pilgrim* (Map 4), *Hollowflame Adept* (Map 2).
+- **Um LUGAR** esvaziado: *os Hollows* (as dungeons).
+
+> **Proibido uso novo acidental da palavra** "hollow" fora dessas duas naturezas. Se algo se chama Hollow, foi esvaziado pelo Nada.
+
+**Costura opcional (canon leve):** o **Fissure Stalker** (Map 4 — uma *ferida viva* no ar) e os **Hollows** (feridas que viraram *lugar*) são o mesmo fenômeno em dois estágios — a fissura que respira e a fissura que se tornou um mundo.
 
 ---
 
@@ -269,7 +373,15 @@ Ele se quebra.
 
 Diante da reunião completa, o Seeker dispersa voluntariamente a luz que reuniu — devolvendo os fragmentos ao mundo, perdendo quase tudo o que se tornou, mantendo apenas a Semente. E recomeça.
 
-É exatamente o que Or Ein Sof fez na criação: fragmentar-se para que o mundo pudesse existir. Cada Convergence é HaShevirah em miniatura — o sacrifício original, repetido por escolha, ciclo após ciclo.
+É exatamente o que Or Ein Sof fez na criação: fragmentar-se para que o mundo pudesse existir. Cada Convergence é **HaShevirah em miniatura** — o sacrifício original, repetido por escolha, ciclo após ciclo.
+
+✅ **A CONVERGENCE EM TRÊS CAMADAS (VALIDADO — sessão de lore jun/2026):** o mesmo ato muda de significado conforme o Seeker o entende, e as miniaturas **crescem de tamanho**:
+
+1. **Ensaio (early — involuntário):** a Semente **dispersa sozinha ao atingir o limite do vaso** e **reconverge lembrando melhor o padrão** (= o `conv_factor`, a bola de neve). **O Seeker early NÃO entende as próprias convergences** — elas acontecem com ele, não por ele. Ele **descobre junto com o jogador**, aos poucos, **via Mémoires**.
+2. **Prática (mid):** o Seeker **percebe** o ciclo. Começa a convergir com intenção, a ler o padrão, a escolher quando.
+3. **Sacrifício (fim de ciclo):** diante de **Nihel**, a Convergence vira **escolha consciente** — o ato pleno da Parte IX. A miniatura, agora, é do tamanho do mundo.
+
+> "HaShevirah em miniatura" agora em **miniaturas de tamanhos crescentes**: do reflexo involuntário do início ao sacrifício deliberado diante do Nada.
 
 A cada ciclo, o Seeker derrota Nihel em Nil Aeternum. Não o apaga — o vácuo só fecha com a reconstituição total, e a reconstituição total é o fim do mundo. Derrotado, contido, enfraquecido, Nihel permanece. E o Seeker carrega sozinho o peso de poupar, eternamente, a única coisa no universo que quer destruí-lo — porque apagá-la custaria tudo o mais.
 
@@ -326,15 +438,20 @@ A jornada inteira — dos cogumelos de The Dreaming Wood ao castelo de Nil Aeter
 
 ---
 
-## APÊNDICE A — A REGRA DOS TRÊS IDIOMAS
+## APÊNDICE A — A REGRA DOS IDIOMAS (✅ AMPLIADA — sessão de lore jun/2026)
+
+> **Lembrete (Regra Global):** a **UI do jogo é em INGLÊS**. Estas camadas são de onde vêm os **nomes próprios** dentro do texto inglês — não trocam o idioma da interface.
 
 | Idioma | Camada | Exemplos |
 |---|---|---|
-| **Hebraico** | A verdade primordial — o que o mundo esqueceu | Or Ein Sof, HaShevirah, Qliphoth, Tikkun Olam |
-| **Francês** | O mundo de hoje — a civilização que herdou as ruínas | Éclats, Lumière, Ordre des Éclairés, La Fracture, L'Éveillé, Mémoires |
-| **Inglês** | A taxonomia das criaturas — o que vaga entre os dois mundos | The Fragmented, The Consumed, The Claimed, The Eidola, The Fracture |
+| **Hebraico** | A verdade primordial — o que o mundo esqueceu (**só em texto morto / Mémoires**) | Or Ein Sof, HaShevirah, Qliphoth, Tikkun Olam |
+| **Francês** | O mundo de hoje + a era radiante; **títulos altos/raros** | Éclats, Lumière, Ordre des Éclairés, La Fracture, L'Éveillé, Mémoires, Reliquats, Brume |
+| **Inglês** | A taxonomia das criaturas + **títulos comuns** — o que vaga entre os mundos | The Fragmented, The Consumed, The Claimed, The Eidola, The Fracture, Seeker, Illuminate |
+| **Latim** ✅ | **O registro do Nada — a única língua MORTA do jogo** | **Nil Aeternum** (o território do Nada; latim canonizado) |
 
-Nihel é o único que existe em duas camadas ao mesmo tempo — **La Fracture** para o mundo, **The Fracture** como entidade. Ele atravessa as camadas porque é a fenda entre elas.
+- **Nihel** é o único que existe em duas camadas ao mesmo tempo — **La Fracture** para o mundo, **The Fracture** como entidade. Atravessa as camadas porque é a fenda entre elas.
+- **Marca da taxonomia:** sempre **"The" + capitalização** (parte do nome próprio da classe). *The Consumed*, nunca "consumed ones".
+- **Latim = o Nada:** uma língua **morta** para o lugar onde nada vive. Nenhum outro termo do jogo usa latim — ele é exclusivo de Nil Aeternum e do que dele vier.
 
 ## APÊNDICE B — GLOSSÁRIO RÁPIDO
 
@@ -345,9 +462,34 @@ Nihel é o único que existe em duas camadas ao mesmo tempo — **La Fracture** 
 - **Nihel, The Fracture** — o vácuo que a luz deixou; o antagonista; olhos dourados de luz presa
 - **Névoa Dourada** — fragmentos soltos se atraindo; a luz tentando se reunir sozinha
 - **Ordre des Éclairés** — a instituição que coleta Éclats; sem saber, o sistema de descarte de Nihel
-- **Convergence** — o rebirth: o sacrifício voluntário do Seeker, HaShevirah em miniatura
-- **Ascension** — os marcos de rank da Ordre (Illuminate → Lumière), um por mapa
-- **Vestiges** — a essência que os corrompidos deixam; alimenta as Passivas
+- **Convergence** — o rebirth; em **três camadas**: ensaio involuntário (early) → prática (mid) → sacrifício consciente (fim); HaShevirah em miniaturas crescentes
+- **Awaken / Awakening** ✅ — o despertar interno na Sub 3 (sistema = *Awaken*; evento = *Awakening*); a luz sobe de patamar via Semente *(ex-"Despertar")*
+- **Ascension** — o **ato institucional/geográfico** da Ordre: comissiona o Seeker para a fronteira seguinte; pagar Vestiges = prestação de contas das essências da região
+- **Gatekeepers** ✅ — as faculdades da Semente que despertam por Ascension; **guardam** o que ficou atrás dos portões (A1 Ritmo · A2 Vigília · A3 Echo · A4 Atração · A5 Transcendência) *(ex-"Fate Keepers")*
+- **Echo** ✅ — projeção da forma do Seeker (A3) que farma em 2º plano; pets futuros = Echoes de Eidola vencidos *(ex-"Eco do Seeker")*
+- **Lumens** ✅ — poeira de luz **sem memória** (posse, temporária); dispersa na Convergence
+- **Vestiges** — a **essência** do que a criatura foi (permanente); alimenta a árvore **Brume**
+- **Éclats** — fragmentos **com memória** (permanente); moeda das Mémoires. *Hierarquia: Lumens < Vestiges < Éclats*
+- **Brume** ✅ — a árvore de passivas de economia (a névoa que atrai); tríade canônica das forças: **Éclat** (fragmento/combate) · **Brume** (névoa/economia) · **Fracture** (quebra/utilidade) *(ex-árvore "Vestige")*
+- **Reliquats** ✅ — Camada 2 do gear: sets de área dropáveis de Eidola; "o que você venceu" (finito, obsoleta por design)
+- **Hollows** ✅ — as dungeons; bolsões de Nil Aeternum em fissuras; vermelho só existe dentro deles fora do Map 5
 - **Mémoires** — as 15 relíquias de memória de Lumière; a narrativa como meta-progressão
 - **Tikkun Olam** — a Reparação do Mundo; a tarefa que não termina
-- **Nil Aeternum** — o território do Nada; o único lugar vermelho do mundo
+- **Nil Aeternum** — o território do Nada; o único lugar vermelho; **latim** (a única língua morta)
+
+---
+
+## APÊNDICE C — NOTA DE RENOMEAÇÃO (✅ sessão de lore jun/2026)
+
+Termos antigos → canônicos. **Atualizar toda ocorrência futura.**
+
+| Antigo | Canônico | Natureza |
+|---|---|---|
+| Despertar | **Awaken** (sistema) / **Awakening** (evento) | mecânica + evento |
+| Eco do Seeker | **Echo** | mecânica (A3) |
+| Fate Keepers | **Gatekeepers** | as 5 faculdades (A1-A5) |
+| árvore de passivas "Vestige" | **Brume** | árvore de economia (tríade Éclat/Brume/Fracture) |
+| (gear, camada 2) | **Reliquats** | sets de área dropáveis |
+| (dungeons) | **Hollows** | bolsões de Nil Aeternum |
+
+**Mantidos (sem mudança):** Nil Aeternum (latim canonizado) · tiers Seeker/Illuminate/Éclairé/L'Éveillé/Lumière · a taxonomia (The Fragmented/Consumed/Claimed/Eidola/Qliphoth) e todos os mobs/bosses atuais · Vestiges/Éclats/Lumens como **moedas** (só a *árvore* de passivas virou Brume).
