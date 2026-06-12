@@ -206,25 +206,46 @@ export const PASSIVES = {
   unlockLadder: [100, 500, 2500, 12500, 62500], // §7: custo por posição no grupo (×5)
   groupMult: [1, 10, 100],                        // ⏳ multiplicador por grupo (provisório)
   evoFactor: 0.3, evoRamp: 1.30,                  // §7: evolução = desbloqueio × 0.3 × 1.30^(n-1)
-  maxLevel: 5,                                    // ⏳ provisório (cap por passiva)
-  // envelope agregado por árvore (efeito multiplicativo por nível) — ⏳ provisório
-  effectPerLevel: { eclat: 0.05, vestige: 0.03, fracture: 0.04 },
-  // nomes na ordem canônica do GDD §7 (grupos de 5) + chave da arte (assets.js)
+  maxLevel: 12,                                   // ✅ CALIBRADO (Bloco 4, esquema Camada 5)
+  // ── Esquema dos 45 efeitos (Bloco 4) ──
+  groupAddPct: [0.05, 0.10, 0.20],  // % aditivo/nível na primária da árvore, por grupo (g1/g2/g3)
+  engineMult: 1.52,                 // 3 MOTORES por árvore (no grupo 3): ×1.52/nível
+  // motores (×1.52) por árvore — as 3 mais fortes do grupo 3
+  engines: {
+    eclat:   ['e_luminal_explosion', 'e_oreinsof_touch', 'e_shattered_light'],
+    vestige: ['v_eternal_vestige', 'v_fractured_soul', 'v_collector'],
+    fracture:['f_void_collapse', 'f_claimed_domination', 'f_void_endurance'],
+  },
+  // alavancas FUNCIONAIS (efeito especial, fora do mult da árvore) — art key → tipo
+  levers: {
+    e_luminal_edge: 'crit', e_void_piercing: 'enemyPen',
+    f_fracture_pulse: 'aps', f_void_awareness: 'mobCap', f_weakened_void: 'enemyReduce',
+    v_vestige_pull: 'material',
+  },
+  lever: {
+    critPerLevel: 0.04,     // Luminal Edge: +4% crit chance/nível (com Grasp fecha 100% mid)
+    apsPerLevel: 0.46,      // Fracture Pulse: fator de APS rumo a ~6.5 maxado (Bloco 6 fecha p/ 15)
+    mobPerLevel: 0.5,       // Void Awareness: +0.5 mob/nível (maxado +6 → rumo ao teto 24)
+    materialPerLevel: 0.75, // Vestige Pull: ×drop de material (FARM, amortecido por log → ×~2 maxado)
+    penPerLevel: 0.04,      // Void Piercing: penetra 4%/nível da def de inimigos (no-op até enemyDef>0)
+    reducePerLevel: 0.04,   // Weakened Void: reduz 4%/nível a def de inimigos (no-op até enemyDef>0)
+  },
+  // nomes na grade de posicionamento APROVADA do GDD §7 (g1 early · g2 mid · g3 late) + chave de arte
   trees: {
     eclat: { label: 'Éclat', sub: 'Combate · dano', cls: 't-eclat', list: [
-      ['Radiant Strike','e_radiant_strike'], ['Shard Burst','e_shard_burst'], ['Luminal Edge','e_luminal_edge'], ['Resonant Force','e_resonant_force'], ['Éclat Surge','e_eclat_surge'],
-      ['Execute','e_execute'], ['Overkill','e_overkill'], ['Momentum','e_momentum'], ['Refraction','e_refraction'], ['Crit Cascade','e_crit_cascade'],
-      ['Luminal Explosion','e_luminal_explosion'], ["Or Ein Sof's Touch",'e_oreinsof_touch'], ['Shattered Light','e_shattered_light'], ['Fracture Weakness','e_fracture_weakness'], ['Void Piercing','e_void_piercing'],
+      ['Radiant Strike','e_radiant_strike'], ['Luminal Edge','e_luminal_edge'], ['Éclat Surge','e_eclat_surge'], ['Refraction','e_refraction'], ['Crit Cascade','e_crit_cascade'],
+      ['Shard Burst','e_shard_burst'], ['Resonant Force','e_resonant_force'], ['Momentum','e_momentum'], ['Fracture Weakness','e_fracture_weakness'], ['Execute','e_execute'],
+      ['Overkill','e_overkill'], ['Luminal Explosion','e_luminal_explosion'], ["Or Ein Sof's Touch",'e_oreinsof_touch'], ['Shattered Light','e_shattered_light'], ['Void Piercing','e_void_piercing'],
     ] },
     vestige: { label: 'Vestige', sub: 'Economia · ganhos', cls: 't-vest', list: [
-      ["Lumen's Blessing",'v_lumens_blessing'], ['Wisdom of Ruins','v_wisdom_ruins'], ['Remnant Harvest','v_remnant_harvest'], ['Vestige Pull','v_vestige_pull'], ['Scavenger','v_scavenger'],
-      ['Dreamwalker','v_dreamwalker'], ['Beast Caller','v_beast_caller'], ['Hoarder','v_hoarder'], ['Awakened Harvest','v_awakened_harvest'], ['Echo of Greed','v_echo_greed'],
+      ["Lumen's Blessing",'v_lumens_blessing'], ['Wisdom of Ruins','v_wisdom_ruins'], ['Remnant Harvest','v_remnant_harvest'], ['Scavenger','v_scavenger'], ['Echo of Greed','v_echo_greed'],
+      ['Awakened Harvest','v_awakened_harvest'], ['Hoarder','v_hoarder'], ['Dreamwalker','v_dreamwalker'], ['Beast Caller','v_beast_caller'], ['Vestige Pull','v_vestige_pull'],
       ['Void Scavenger','v_void_scavenger'], ['Eternal Vestige','v_eternal_vestige'], ['Fractured Soul','v_fractured_soul'], ['Luminal Cache','v_luminal_cache'], ['The Collector','v_collector'],
     ] },
     fracture: { label: 'Fracture', sub: 'Utilidade · HP', cls: 't-frac', list: [
-      ['Weakened Void','f_weakened_void'], ['Fracture Sense','f_fracture_sense'], ['Void Awareness','f_void_awareness'], ['Fracture Pulse','f_fracture_pulse'], ['Void Haste','f_void_haste'],
-      ['Shard Disruption','f_shard_disruption'], ["Nihel's Shadow",'f_nihels_shadow'], ['Éclat Attunement','f_eclat_attunement'], ["La Fracture's Echo",'f_fractures_echo'], ['Last Light','f_last_light'],
-      ['Void Collapse','f_void_collapse'], ["The Fracture's Gift",'f_fractures_gift'], ['Claimed Domination','f_claimed_domination'], ["Nil's Embrace",'f_nils_embrace'], ['Void Endurance','f_void_endurance'],
+      ['Fracture Pulse','f_fracture_pulse'], ['Void Haste','f_void_haste'], ['Fracture Sense','f_fracture_sense'], ['Void Awareness','f_void_awareness'], ['Last Light','f_last_light'],
+      ['Weakened Void','f_weakened_void'], ['Shard Disruption','f_shard_disruption'], ["Nihel's Shadow",'f_nihels_shadow'], ['Éclat Attunement','f_eclat_attunement'], ["The Fracture's Gift",'f_fractures_gift'],
+      ['Void Collapse','f_void_collapse'], ["La Fracture's Echo",'f_fractures_echo'], ['Claimed Domination','f_claimed_domination'], ["Nil's Embrace",'f_nils_embrace'], ['Void Endurance','f_void_endurance'],
     ] },
   },
 };

@@ -5,7 +5,7 @@
 import { ECONOMY, NUMBER_CAP, BOSS_LUMEN_MULT, VESTIGES, CRAFT, mapMaterialTier } from '../data/constants.js';
 import { frtTotal, wisTotal } from './stats.js';
 import { gearLumensMult, gearXpMult, gearMaterialDropMult } from './gear.js';
-import { passiveEcoMult } from './passives.js';
+import { passiveEcoMult, passiveMaterialMult } from './passives.js';
 import { memoireLumensMult, memoireXpMult, memoireVestigeMult, memoireMateriaisMult, memoireDiffRewardMult } from './memoires.js';
 import { effectiveDifficulty } from './difficulty.js';
 
@@ -14,7 +14,8 @@ import { effectiveDifficulty } from './difficulty.js';
 // ⛓️ hooks reservados (= 1): Vestige Pull (passiva) · afixo Materiais do gear (⏳ amortecer a curva).
 function materialYieldMult(state) {
   return effectiveDifficulty(state).rewardMult * memoireDiffRewardMult(state)
-    * memoireMateriaisMult(state) * gearMaterialDropMult(state); // afixo Materiais (amortecido, Bloco 3)
+    * memoireMateriaisMult(state) * gearMaterialDropMult(state)  // afixo Materiais (amortecido, Bloco 3)
+    * passiveMaterialMult(state); // Vestige Pull (passiva, amortecido, Bloco 4)
 }
 
 // §13B: drop de materiais no kill. 1% do tier do MAPA + 0.1% do tier seguinte; boss = chunk garantido.

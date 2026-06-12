@@ -103,18 +103,30 @@ export function renderPassives(state) {
   updateCards(state);
 }
 
+// Descrição do efeito de uma passiva (Bloco 4): lever (especial) · motor ×1.52 · default %/grupo
+function effText(tree, i, level, stat) {
+  const art = PASSIVES.trees[tree].list[i][1];
+  const lever = PASSIVES.levers[art];
+  if (lever) {
+    const labels = { crit: '+crit chance', aps: '+APS', mobCap: '+mobs na tela', material: '×drop de material', enemyPen: 'penetra defesa', enemyReduce: 'reduz defesa' };
+    return `${labels[lever]} (alavanca)`;
+  }
+  if (PASSIVES.engines[tree].includes(art)) return `×1.52/nível ${stat} (motor)`;
+  const pct = PASSIVES.groupAddPct[Math.floor(i / 5)] * 100;
+  return level > 0 ? `+${(level * pct).toFixed(0)}% ${stat}` : `+${pct.toFixed(0)}% ${stat}/nível`;
+}
+
 function updateCards(state) {
   const tree = activeTab;
   const t = PASSIVES.trees[tree];
-  const perLevel = PASSIVES.effectPerLevel[tree];
   const stat = TREE_STAT[tree];
 
-  // resumo do bônus agregado da árvore (⏳ efeitos individuais a definir)
+  // resumo do bônus da árvore (multiplicador da primária)
   const summary = $('pv-summary');
   if (summary) {
     const total = TREE_MULT[tree](state);
-    summary.innerHTML = `Bônus <b>${t.label}</b>: <span class="pv-total">×${total.toFixed(2)} ${stat}</span>`
-      + ` <span class="pv-prov">+${(perLevel * 100).toFixed(0)}% por nível · efeito agregado ⏳ provisório</span>`;
+    summary.innerHTML = `Bônus <b>${t.label}</b>: <span class="pv-total">×${formatNumber(total)} ${stat}</span>`
+      + ` <span class="pv-prov">% por grupo + 3 motores ×1.52 (g3) · alavancas à parte</span>`;
   }
 
   document.querySelectorAll('#pv-body .pv-group').forEach((groupEl) => {
@@ -133,10 +145,8 @@ function updateCards(state) {
     card.classList.toggle('maxed', maxed);
     card.classList.toggle('buyable', buyable);
     card.classList.toggle('owned', level > 0 && !maxed);
-    // efeito: contribuição atual da carta (nível × % da árvore) + por-nível
-    card.querySelector('.pv-eff').textContent = level > 0
-      ? `+${(level * perLevel * 100).toFixed(0)}% ${stat}`
-      : `+${(perLevel * 100).toFixed(0)}% ${stat}/nível`;
+    // efeito individual da carta (lever / motor / % do grupo)
+    card.querySelector('.pv-eff').textContent = effText(tree, i, level, stat);
     card.querySelector('.pv-lvl').textContent = maxed
       ? `✦ Máx (${PASSIVES.maxLevel})`
       : (level > 0 ? `Nível ${level}/${PASSIVES.maxLevel}` : 'Bloqueada');

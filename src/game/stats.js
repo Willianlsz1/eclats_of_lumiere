@@ -4,7 +4,7 @@
 
 import { COMBAT, GOLD_STATS, CRIT, CONVERGENCE, DEFENSE } from '../data/constants.js';
 import { gearDamageMult, gearHpMult, gearCritAdd, gearDefesaMult } from './gear.js';
-import { passiveDmgMult, passiveHpMult } from './passives.js';
+import { passiveDmgMult, passiveHpMult, passiveCritAdd, passiveEnemyPen, passiveEnemyReduce } from './passives.js';
 import { memoireDmgMult, memoireHpMult, memoireCritDmgMult, memoireSurvivalMult } from './memoires.js';
 import { ascMult, despertarMult } from './ascension.js';
 
@@ -59,7 +59,7 @@ export function currentAPS(state) {
 // ⏳ Crit provisório (GDD §16.6): rate = lck × 1.5%, sem milestones;
 // excedente acima de 100% transborda 1:1 para crit damage sobre a base ×2.
 export function critChanceRaw(state) {
-  return CRIT.baseChance + state.stats.lck * GOLD_STATS.per.lck + gearCritAdd(state);
+  return CRIT.baseChance + state.stats.lck * GOLD_STATS.per.lck + gearCritAdd(state) + passiveCritAdd(state);
 }
 
 export function critChance(state) {
@@ -130,8 +130,9 @@ export function postArmorDR(_state) {
   return 1;
 }
 
-// Defesa de INIMIGOS (mesma razão virada, §4). Early = 0 → sem efeito.
-// ⛓️ hooks reservados: Weakened Void reduz a base; Void Piercing penetra X%.
-export function enemyDefesa(_state, _mob) {
-  return DEFENSE.enemyDefBase; // 0
+// Defesa de INIMIGOS (mesma razão virada, §4). Base = 0 (early) → sem efeito.
+// Weakened Void REDUZ a base; Void Piercing PENETRA X% (Bloco 4 consome os hooks; no-op enquanto base=0).
+export function enemyDefesa(state, _mob) {
+  const reduced = DEFENSE.enemyDefBase * (1 - passiveEnemyReduce(state)); // Weakened Void
+  return Math.max(0, reduced * (1 - passiveEnemyPen(state)));             // Void Piercing
 }

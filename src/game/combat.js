@@ -19,6 +19,7 @@ import { eclatsDripPerSec, checkDespertar } from './ascension.js';
 import { effectiveDifficulty } from './difficulty.js';
 import { gearBossDmgMult, gearRegenMult } from './gear.js';
 import { memoireSurvivalMult, memoireBossDmgMult, memoireEclatsAllMult, memoireDiffRewardMult } from './memoires.js';
+import { passiveMobBonus } from './passives.js';
 
 // Regen efetivo (§4): COMBAT.regenPerSec × afixo Regen do gear × #11 de la Résistance
 const regenFactor = (state) => gearRegenMult(state) * memoireSurvivalMult(state);
@@ -28,10 +29,9 @@ const regenFactor = (state) => gearRegenMult(state) * memoireSurvivalMult(state)
 function makeWave(state) {
   const map = getCurrentMap(state);
   const pack = spawnPack(map, state.subarea);
-  // Fate Keeper A4: +cap de mobs na tela (respeita o teto ~24)
-  if (state.ascensions >= 4) {
-    for (let i = 0; i < FATE.a4MobBonus; i++) pack.push(spawnMob(map, state.subarea));
-  }
+  // +cap de mobs: Fate Keeper A4 + passiva Void Awareness (rumo ao teto ~24)
+  const extra = (state.ascensions >= 4 ? FATE.a4MobBonus : 0) + passiveMobBonus(state);
+  for (let i = 0; i < extra; i++) pack.push(spawnMob(map, state.subarea));
   if (state.killsInSubarea >= map.bossKillThreshold) {
     pack[0] = spawnBoss(map, state.subarea);
   }
