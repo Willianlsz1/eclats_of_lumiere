@@ -1,0 +1,69 @@
+/* ============================================================
+   Modal de boas-vindas OFFLINE — "the light did not sleep".
+   Modal de entrada (não cerimonial). Classes of-. Monta em
+   #modal-host (inset:0 do palco 1920×1080). Ganhos = reward-row.
+   ============================================================ */
+
+.of-modal-wrap { position: absolute; inset: 0; z-index: 10; overflow: hidden;
+  opacity: 0; transition: opacity .3s ease; font-family: var(--font-ui, 'Inter', sans-serif); }
+.of-modal-wrap.show { opacity: 1; }
+
+.of-combat-bg { position: absolute; inset: 0; filter: brightness(.35) saturate(.6);
+  background:
+    radial-gradient(900px 600px at 20% 75%, rgba(63, 208, 182, .14), transparent 60%),
+    radial-gradient(1000px 700px at 85% 20%, rgba(157, 123, 219, .10), transparent 60%),
+    #0b0f16; }
+.of-veil { position: absolute; inset: 0; background: rgba(4, 6, 12, .7); }
+
+/* partículas suaves de luz acumulada */
+.of-p { position: absolute; width: 4px; height: 4px; border-radius: 50%; background: var(--gold, #d9a441);
+  box-shadow: 0 0 9px 2px rgba(217, 164, 65, .5); opacity: .7; animation: of-float 5s ease-in-out infinite; }
+.of-p.s { width: 3px; height: 3px; opacity: .45; animation-duration: 6.5s; }
+@keyframes of-float { 0%, 100% { transform: translateY(0); opacity: .45; } 50% { transform: translateY(-9px); opacity: .8; } }
+
+/* modal */
+.of-modal { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 560px;
+  border: 1px solid var(--line, rgba(170, 200, 255, .26)); border-radius: 16px; background: rgba(8, 12, 24, .94);
+  box-shadow: 0 0 0 1px rgba(170, 200, 255, .14), 0 0 70px -18px rgba(170, 200, 255, .45), 0 30px 90px -30px #000;
+  padding: 30px 34px 26px; z-index: 5; outline: 1px solid rgba(170, 200, 255, .12); outline-offset: 6px; }
+
+.of-eyebrow { text-align: center; font-size: 11px; letter-spacing: .38em; text-transform: uppercase; color: var(--dim, #8fa3c8); }
+.of-title { font-family: var(--font-display, 'Cormorant Garamond', serif); font-weight: 700; font-size: 38px; text-align: center;
+  color: #f2f7ff; margin-top: 4px; text-shadow: 0 0 22px rgba(170, 200, 255, .4); }
+.of-away { margin: 6px auto 20px; text-align: center; font-size: 12.5px; color: var(--dim, #8fa3c8); }
+.of-away b { color: var(--gold, #d9a441); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* ganhos — reward-row cuida das linhas; aqui só o espaçamento do bloco */
+.of-gains { margin-bottom: 16px; }
+
+/* echo teaser (pré-A3) */
+.of-echo { display: flex; align-items: center; gap: 14px; border: 1px dashed rgba(170, 200, 255, .22); border-radius: 11px;
+  background: rgba(10, 15, 28, .6); padding: 11px 16px; margin-bottom: 20px; opacity: .85; }
+.of-echo.unlocked { border-style: solid; border-color: var(--eclat, #aac8ff); opacity: 1; }
+.of-echo-ic { width: 38px; height: 38px; border-radius: 9px; flex: none; overflow: hidden;
+  border: 1.5px solid var(--line, rgba(170, 200, 255, .26)); background: #10162a; display: grid; place-items: center; position: relative; }
+.of-echo-ic img { width: 130%; height: 130%; object-fit: contain; filter: grayscale(.3) brightness(.9); }
+.of-echo.unlocked .of-echo-ic img { filter: none; }
+.of-echo-meta { flex: 1; }
+.of-echo-nm { font-family: var(--font-display, 'Cormorant Garamond', serif); font-size: 15.5px; color: var(--dim, #8fa3c8); }
+.of-echo.unlocked .of-echo-nm { color: var(--ink, #dbe6ff); }
+.of-echo-sub { font-size: 11px; color: var(--faint, #5a6678); margin-top: 1px; font-style: italic; }
+.of-echo-lk { font-size: 13px; color: var(--faint, #5a6678); }
+.of-echo.unlocked .of-echo-lk { color: var(--eclat, #aac8ff); }
+
+.of-collect { appearance: none; cursor: pointer; width: 100%; height: 54px; border: 0; border-radius: 12px;
+  font-weight: 700; font-size: 14px; letter-spacing: .18em; text-transform: uppercase;
+  background: linear-gradient(180deg, #e8c477, var(--gold, #d9a441)); color: #1a1204;
+  box-shadow: 0 0 30px -6px rgba(217, 164, 65, .7), inset 0 1px 0 rgba(255, 255, 255, .45); }
+.of-collect:hover { filter: brightness(1.07); }
+.of-lore { margin-top: 14px; text-align: center; font-family: var(--font-display, 'Cormorant Garamond', serif);
+  font-style: italic; font-size: 14.5px; color: var(--faint, #5a6678); line-height: 1.5; }
+
+/* borda ornamental (assets reais, transbordando o modal) */
+.of-orn { position: absolute; pointer-events: none; z-index: 6; }
+.of-orn img { display: block; width: 100%; height: auto; filter: drop-shadow(0 0 10px rgba(170, 200, 255, .3)); }
+.of-orn.crest { top: -112px; left: 50%; transform: translateX(-50%); width: 270px; }
+.of-orn.tl { top: -50px; left: -52px; width: 135px; }
+.of-orn.tr { top: -50px; right: -52px; width: 135px; }
+.of-orn.bl { bottom: -58px; left: -56px; width: 152px; }
+.of-orn.br { bottom: -58px; right: -56px; width: 152px; }

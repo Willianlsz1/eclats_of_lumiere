@@ -12,6 +12,7 @@ import { maybeApplyDevUnlock, showDevBadge, setupDevButton } from './core/dev.js
 import { setupUI, renderUI, showOfflineSummary } from './ui/ui.js';
 import { openAwakening, closeAwakening } from './ui/awakening.js';
 import { openConvergence, closeConvergence } from './ui/convergence.js';
+import { openOffline, closeOffline } from './ui/offline.js';
 
 // Carrega o save (se houver) e reconstrói o runtime
 const snapshot = load();
@@ -50,3 +51,8 @@ window.eclatsCeremonies = {
   awaken: openAwakening, closeAwaken: closeAwakening,
   converge: openConvergence, closeConverge: closeConvergence,
 };
+
+// Modal de entrada offline — exposto para teste manual. Ex.: eclatsOffline.open().
+// TODO(lógica): disparar na inicialização com os ganhos offline reais (o
+// showOfflineSummary atual permanece; a troca pelo modal é decisão futura).
+window.eclatsOffline = { open: openOffline, close: closeOffline };

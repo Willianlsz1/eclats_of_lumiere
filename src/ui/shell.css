@@ -124,6 +124,11 @@ body {
 #overlay-host { position: absolute; inset: 0; z-index: 50; pointer-events: none; }
 #overlay-host > * { pointer-events: auto; }
 
+/* host de modais de entrada não-cerimoniais (ex.: boas-vindas offline),
+   acima dos overlays cerimoniais. */
+#modal-host { position: absolute; inset: 0; z-index: 60; pointer-events: none; }
+#modal-host > * { pointer-events: auto; }
+
 /* telas muito pequenas */
 #toosmall { position: fixed; inset: 0; display: none; place-items: center; text-align: center;
   background: #05070f; color: var(--dim); padding: 24px; z-index: 100;

@@ -158,12 +158,20 @@ function buildViews(state) {
 // Host único para overlays cerimoniais (Awakening, Convergence). Fica dentro
 // de #stage para escalar junto com o fit() do palco 1920×1080. Os módulos de
 // overlay (awakening.js / convergence.js) montam sua raiz aqui.
+// Também cria #modal-host (acima), para modais de ENTRADA não-cerimoniais
+// (ex.: boas-vindas offline) — separado por design.
 function ensureOverlayHost() {
   const stage = document.getElementById('stage');
-  if (stage && !document.getElementById('overlay-host')) {
+  if (!stage) return;
+  if (!document.getElementById('overlay-host')) {
     const host = document.createElement('div');
     host.id = 'overlay-host';
     stage.appendChild(host);
+  }
+  if (!document.getElementById('modal-host')) {
+    const modal = document.createElement('div');
+    modal.id = 'modal-host';
+    stage.appendChild(modal);
   }
 }
 
