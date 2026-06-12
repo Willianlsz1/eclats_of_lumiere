@@ -10,6 +10,7 @@ import './combat.css';
 import './map.css';
 import './player.css';
 import './gear.css';
+import './forge.css';
 import './passives.css';
 import './memoires.css';
 import './ascension.css';
@@ -19,6 +20,7 @@ import { buildCombatView, renderCombat } from './combat.js';
 import { buildMapView, renderMap } from './map.js';
 import { buildPlayerView, renderPlayer } from './player.js';
 import { buildGearView, renderGear } from './gear.js';
+import { buildForgeView, renderForge } from './forge.js';
 import { buildPassivesView, renderPassives } from './passives.js';
 import { buildMemoiresView, renderMemoires } from './memoires.js';
 import { buildAscensionView, renderAscension } from './ascension.js';
@@ -40,6 +42,9 @@ const VIEWS = [
   { id: 'map',       label: 'Mapa',      icon: 'icons.nav.5' },
   { id: 'player',    label: 'Seeker',    icon: 'icons.nav.1' },
   { id: 'gear',      label: 'Gear',      icon: 'icons.nav.4' },
+  // The Forge: sem nav_8 dedicado ainda → glyph provisório (ferreiro Maël).
+  // TODO(assets): ícone de nav próprio para a Forge.
+  { id: 'forge',     label: 'The Forge', glyph: '⚒' },
   { id: 'passives',  label: 'Passivas',  icon: 'icons.nav.3' },
   { id: 'memoires',  label: 'Mémoires',  icon: 'icons.nav.6' },
   { id: 'ascension', label: 'Ascension', icon: 'icons.nav.7' },
@@ -110,6 +115,13 @@ function buildViews(state) {
       buildGearView(view, state);
       continue;
     }
+    // The Forge: estação de craft do ferreiro Maël (só a tela; lógica TODO).
+    if (v.id === 'forge') {
+      view.className = 'view';
+      main.appendChild(view);
+      buildForgeView(view, state);
+      continue;
+    }
     // Passivas: 3 árvores upáveis com Vestiges (pós-MVP, efeitos provisórios).
     if (v.id === 'passives') {
       view.className = 'view';
@@ -173,6 +185,7 @@ export function renderUI(state) {
   else if (current === 'map') renderMap(state);
   else if (current === 'player') renderPlayer(state);
   else if (current === 'gear') renderGear(state);
+  else if (current === 'forge') renderForge(state);
   else if (current === 'passives') renderPassives(state);
   else if (current === 'memoires') renderMemoires(state);
   else if (current === 'ascension') renderAscension(state);
