@@ -102,8 +102,9 @@ export const CRIT = {
 //   Alvo (gear.mjs): Veil maximizado ≈ veilFactor 0.18 → def ≈ 4× packDps ≈ 80% mit.
 //   Sem Veil (early) → veilFactor 0 → def 0 → reproduz o comportamento original.
 export const DEFENSE = {
-  veilScale: 0.02,   // ⏳ PROVISÓRIO — recalibra junto com os números do gear (multBase etc.)
-  enemyDefBase: 0,   // defesa de inimigos: early = 0 (hooks: Void Piercing penetra · Weakened Void reduz)
+  veilScale: 0.015, // ✅ CALIBRADO (Bloco 2): Veil da raridade do mapa rampa rumo ao teto por era
+  veilCap: 0.18,    // ✅ teto de veilFactor → def ≈ 4× packDps ≈ 80% mit ("com tudo": Veil+#11+passivas)
+  enemyDefBase: 0,  // defesa de inimigos: early = 0 (hooks: Void Piercing penetra · Weakened Void reduz)
 };
 
 // §6 — Convergence: parede de XP geométrica e pontos por profundidade

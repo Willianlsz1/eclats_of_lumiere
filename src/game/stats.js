@@ -109,11 +109,14 @@ export function playerHpMax(state) {
 
 // ───── Defesa / mitigação (§4, Passo 2) ─────
 
-// Fração de defesa: afixo Veil (gearDefesaMult) + futuras passivas. 0 sem Veil → comportamento atual.
+// Fração de defesa: afixo Veil (gearDefesaMult) + Mémoire #11 + hook de passivas. 0 sem Veil.
+// TETO veilCap (Bloco 2): a curva crua do gear cresce ~10 déc → sem teto, def≫packDps → ~100% mit
+// (invencível). O teto fixa o "com tudo" em def≈4× packDps (~80% mit), preservando "nunca 100%".
 export function veilFactor(state) {
   const fromVeil = Math.max(0, gearDefesaMult(state) - 1) * DEFENSE.veilScale;
-  const fromPassives = 0; // ⛓️ hook reservado (passivas de defesa) — sem fonte ainda
-  return (fromVeil + fromPassives) * memoireSurvivalMult(state); // #11 de la Résistance amplia a defesa
+  const fromPassives = 0; // ⛓️ hook reservado (Void Endurance etc.) — sem fonte ainda
+  const total = (fromVeil + fromPassives) * memoireSurvivalMult(state); // #11 amplia a defesa
+  return Math.min(DEFENSE.veilCap, total);
 }
 
 // def = hp_max × veilFactor → escala com o poder, mantendo def/packDps ~constante (§4).
