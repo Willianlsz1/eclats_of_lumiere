@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Éclats of Lumière — Mockup Mapa-Múndi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --panel:rgba(8,12,24,.85);
+    --line:rgba(170,200,255,.26);
+    --ink:#dbe6ff; --dim:#8fa3c8;
+    --eclat:#aac8ff; --gold:#d9a441;
+    --m1:#7ed8a8; --m2:#6aa8ff; --m3:#cfae6a; --m4:#b08fe8; --m5:#c04a5a;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;background:#05070f;overflow:hidden}
+  body{font-family:'Inter',sans-serif;color:var(--ink)}
+  #stage{position:absolute;left:50%;top:50%;width:1920px;height:1080px;transform-origin:center center}
+  .bg{position:absolute;inset:0;background:
+    radial-gradient(1200px 700px at 30% 40%, rgba(20,28,52,.9), rgba(5,7,15,1))}
+
+  .screen{position:absolute;inset:0;display:flex;z-index:2}
+
+  /* mapa central */
+  .mapcol{flex:1;display:flex;align-items:center;justify-content:center;position:relative}
+  .mapwrap{position:relative;height:980px}
+  .mapwrap img{height:100%;display:block;filter:drop-shadow(0 0 60px rgba(170,200,255,.12))}
+  /* pinos clicaveis sobre os clusters */
+  .pin{position:absolute;width:42px;height:42px;border-radius:50%;cursor:pointer;
+    border:2.5px solid;background:rgba(8,12,24,.85);
+    display:flex;align-items:center;justify-content:center;color:#fff !important;
+    font-family:'Cormorant Garamond',serif;font-weight:600;font-size:19px;
+    box-shadow:0 0 16px currentColor, inset 0 0 10px rgba(255,255,255,.08);
+    text-shadow:0 0 8px currentColor}
+  .pin.m1{border-color:var(--m1);color:var(--m1);left:23%;top:21%}
+  .pin.m2{border-color:var(--m2);color:var(--m2);left:70%;top:22%}
+  .pin.m3{border-color:var(--m3);color:var(--m3);left:21%;top:60%}
+  .pin.m4{border-color:var(--m4);color:var(--m4);left:73%;top:60%}
+  .pin.m5{border-color:var(--m5);color:var(--m5);left:47%;top:84%}
+  .pin.sel{box-shadow:0 0 0 4px rgba(255,255,255,.35),0 0 34px currentColor;transform:scale(1.3)}
+  .pin.lock{opacity:.45;border-style:dashed}
+
+  /* painel direito: continente selecionado */
+  .side{width:560px;flex:none;padding:56px 48px 56px 0;display:flex;flex-direction:column;gap:18px}
+  .card{border:1px solid var(--line);border-radius:14px;background:var(--panel);overflow:hidden}
+  .card .hero{position:relative;height:230px}
+  .card .hero img{width:100%;height:100%;object-fit:cover;display:block}
+  .card .hero::after{content:'';position:absolute;inset:0;
+    background:linear-gradient(180deg,transparent 40%,rgba(8,12,24,.95))}
+  .card .hero .nm{position:absolute;left:22px;bottom:14px;z-index:2}
+  .card .hero .nm h1{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:34px;color:#eef4ff;
+    text-shadow:0 2px 14px rgba(0,0,0,.8)}
+  .card .hero .nm p{font-size:11px;letter-spacing:.26em;text-transform:uppercase;color:var(--m1)}
+  .card .body{padding:18px 22px}
+  .card .desc{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:16px;
+    color:var(--dim);line-height:1.5;margin-bottom:16px}
+  .meta{display:flex;gap:22px;margin-bottom:6px}
+  .meta div{font-size:12px;color:var(--dim)}
+  .meta b{display:block;font-size:16px;color:#eef4ff;margin-top:2px}
+
+  .subs{border:1px solid var(--line);border-radius:14px;background:var(--panel);padding:16px 22px;flex:1}
+  .subs h3{font-family:'Cormorant Garamond',serif;font-size:20px;color:#eef4ff;margin-bottom:10px}
+  .sub{display:flex;align-items:center;justify-content:space-between;
+    padding:10px 12px;border-radius:9px;margin-bottom:6px;border:1px solid transparent;cursor:pointer}
+  .sub:hover{border-color:var(--line)}
+  .sub.cur{border-color:var(--m1);background:rgba(126,216,168,.08)}
+  .sub .l{font-size:14px;color:#eef4ff}
+  .sub .l small{display:block;font-size:11px;color:var(--dim);margin-top:1px}
+  .sub .r{font-size:12px;color:var(--dim)}
+  .sub .r b{color:var(--gold)}
+  .sub.lock{opacity:.45}
+  .sub.lock .l::before{content:'🔒 ';font-size:11px}
+
+  .enter{height:54px;border-radius:12px;border:2px solid var(--m1);cursor:pointer;
+    background:linear-gradient(180deg,rgba(126,216,168,.18),rgba(126,216,168,.06));
+    color:var(--m1);font-size:15px;font-weight:700;letter-spacing:.14em;text-transform:uppercase}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="bg"></div>
+  <main class="screen">
+
+    <section class="mapcol">
+      <div class="mapwrap">
+        <img src="assets/worldmap.png" alt="">
+        <div class="pin m1 sel">I</div>
+        <div class="pin m2">II</div>
+        <div class="pin m3">III</div>
+        <div class="pin m4 lock">IV</div>
+        <div class="pin m5 lock">V</div>
+      </div>
+    </section>
+
+    <aside class="side">
+      <div class="card">
+        <div class="hero">
+          <img src="assets/map1_wood.png" alt="">
+          <div class="nm">
+            <h1>The Dreaming Wood</h1>
+            <p>Continente I · Desbloqueado</p>
+          </div>
+        </div>
+        <div class="body">
+          <div class="desc">"Onde a luz aprendeu a sonhar. Os cogumelos guardam memórias
+            do Premier Matin — e algo escuro caminha entre as raízes."</div>
+          <div class="meta">
+            <div>Progresso<b>Wave 12 / 100</b></div>
+            <div>Inimigos por wave<b>6</b></div>
+            <div>Nível dos mobs<b>84 – 130</b></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="subs">
+        <h3>Sub-áreas</h3>
+        <div class="sub"><div class="l">Orla do Bosque<small>Waves 1–25 · concluída</small></div><div class="r">✦ limpa</div></div>
+        <div class="sub cur"><div class="l">Clareira dos Cogumelos<small>Waves 26–50 · atual</small></div><div class="r"><b>Wave 12</b></div></div>
+        <div class="sub"><div class="l">Raízes Profundas<small>Waves 51–75</small></div><div class="r">—</div></div>
+        <div class="sub lock"><div class="l">Coração Sonhante<small>Waves 76–100 · Boss</small></div><div class="r">bloqueada</div></div>
+      </div>
+
+      <button class="enter">Entrar na Clareira dos Cogumelos</button>
+    </aside>
+
+  </main>
+</div>
+<script>
+  function fit(){
+    const s = Math.min(innerWidth/1920, innerHeight/1080);
+    document.getElementById('stage').style.transform=`translate(-50%,-50%) scale(${s})`;
+  }
+  addEventListener('resize',fit);fit();
+</script>
+</body>
+</html>

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Éclats of Lumière — Mockup Combate (Map 1) v2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#0a0e1a;
+    --panel:rgba(8,12,24,.78);
+    --line:rgba(170,200,255,.28);
+    --ink:#dbe6ff;
+    --dim:#8fa3c8;
+    --eclat:#aac8ff;
+    --gold:#d9a441;
+    --vestige:#9d7bdb;
+    --hp:#7fd4a8;
+    --hp-enemy:#d9a441;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;background:#05070f;overflow:hidden}
+  body{font-family:'Inter',sans-serif;color:var(--ink)}
+  #stage{position:absolute;left:50%;top:50%;width:1920px;height:1080px;transform-origin:center center}
+  .bg{position:absolute;inset:0;background:url('assets/bg_map1.png') center/cover no-repeat}
+  .bg::after{content:'';position:absolute;inset:0;
+    background:linear-gradient(180deg,rgba(5,7,15,.5) 0%,rgba(5,7,15,0) 20%,rgba(5,7,15,0) 64%,rgba(5,7,15,.7) 100%)}
+
+  /* ---------- barra superior ---------- */
+  .topbar{position:absolute;top:0;left:0;right:0;height:84px;display:flex;
+    align-items:center;justify-content:space-between;padding:0 36px;z-index:5}
+  .nav{display:flex;gap:10px}
+  .nav button{width:52px;height:52px;border:1px solid var(--line);border-radius:10px;
+    background:var(--panel);color:var(--dim);font-family:'Cormorant Garamond',serif;
+    font-size:22px;cursor:pointer;backdrop-filter:blur(6px)}
+  .nav button:hover{color:var(--eclat);border-color:var(--eclat)}
+  .currencies{display:flex;gap:14px;align-items:center}
+  .chip{display:flex;align-items:center;gap:10px;height:52px;padding:0 18px 0 8px;
+    border:1px solid var(--line);border-radius:26px;background:var(--panel);backdrop-filter:blur(6px)}
+  .chip .ico{width:38px;height:38px;border-radius:50%;background-size:160%;
+    background-position:center}
+  .chip span{font-size:17px;font-weight:600;letter-spacing:.02em}
+  .chip small{display:block;font-size:10px;font-weight:500;color:var(--dim);
+    text-transform:uppercase;letter-spacing:.14em}
+  .lumens .ico{background-image:url('assets/icon_lumens_alpha.png')} .lumens span{color:var(--gold)}
+  .vestiges .ico{background-image:url('assets/icon_vestiges_alpha.png')} .vestiges span{color:var(--vestige)}
+  .conv .ico{background-image:url('assets/icon_convergence_alpha.png')} .conv span{color:var(--eclat)}
+
+  /* ---------- card unificado: moldura É a borda ---------- */
+  .card{position:absolute;z-index:6}
+  .framewrap{position:relative;overflow:visible}
+  .framewrap img.art{display:block;width:100%}
+  .framewrap img.frame{position:absolute;left:50%;top:50%;width:100%;height:100%;
+    transform:translate(-50%,-50%) scale(var(--fscale,1.14));
+    pointer-events:none}
+  /* placa colada: mesma peça, sem raio em cima, nasce sob a moldura */
+  .plate{margin-top:-6px;box-shadow:0 18px 40px rgba(0,0,0,.5);background:var(--panel);backdrop-filter:blur(6px);
+    border:1px solid var(--line);border-top:none;border-radius:0 0 12px 12px;
+    padding:14px 18px 16px}
+  .plate .name{font-family:'Cormorant Garamond',serif;font-size:22px;color:#eef4ff}
+  .plate .tier{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--eclat);margin-top:2px}
+  .bar{position:relative;height:14px;border-radius:7px;background:rgba(255,255,255,.07);
+    border:1px solid rgba(255,255,255,.1);margin-top:12px;overflow:hidden}
+  .bar i{position:absolute;inset:0;width:72%;border-radius:7px;
+    background:linear-gradient(90deg,#4f8f6f,var(--hp))}
+  .bar.enemybar i{width:88%;background:linear-gradient(90deg,#8a6420,var(--hp-enemy))}
+  .plate .nums{display:flex;justify-content:space-between;font-size:12px;color:var(--dim);margin-top:6px}
+
+  .seeker{left:56px;bottom:96px;width:290px;--fscale:1.17}
+  .enemy{left:calc(50% - 165px);top:150px;width:330px;--fscale:1.16}
+  .enemy .plate{border-color:rgba(217,164,65,.35);text-align:center}
+  .enemy .plate .name{color:#f5ecd8}
+  .enemy .plate .tier{color:var(--gold)}
+  .dmg{position:absolute;top:-12px;right:-46px;font-family:'Cormorant Garamond',serif;
+    font-weight:600;font-size:36px;color:#fff;text-shadow:0 0 18px rgba(170,200,255,.9);z-index:7}
+
+  /* ---------- rodapé ---------- */
+  .hud{position:absolute;left:0;right:0;bottom:0;height:88px;display:flex;
+    align-items:center;justify-content:flex-end;padding:0 36px;z-index:5}
+  .stats{display:flex;gap:26px;border:1px solid var(--line);border-radius:12px;
+    background:var(--panel);backdrop-filter:blur(6px);padding:12px 22px}
+  .stats div{font-size:12px;color:var(--dim);letter-spacing:.06em}
+  .stats b{display:block;font-size:16px;color:#eef4ff;font-weight:600;margin-top:2px}
+  .stats b.gold{color:var(--gold)}
+
+  /* ---------- wave de inimigos ---------- */
+  .wave{position:absolute;left:50%;top:120px;transform:translateX(-50%);z-index:6;text-align:center}
+  .wlabel{font-family:'Cormorant Garamond',serif;font-size:28px;color:#eef4ff;
+    text-shadow:0 0 18px rgba(170,200,255,.5)}
+  .mini{position:absolute;width:150px;border-radius:10px;z-index:6;
+    border:1px solid var(--line);background:#070b16;
+    box-shadow:0 10px 28px rgba(0,0,0,.5)}
+  .mini img{display:block;width:100%;height:214px;object-fit:cover;border-radius:9px 9px 0 0}
+  .mhp{height:8px;background:rgba(255,255,255,.07);border-top:1px solid rgba(255,255,255,.08);
+    border-radius:0 0 9px 9px;overflow:hidden}
+  .mhp i{display:block;height:100%;background:linear-gradient(90deg,#8a6420,var(--hp-enemy))}
+  .mini.dead{opacity:.32;filter:grayscale(.8)}
+  .mini.target{border-color:var(--gold);z-index:7;
+    box-shadow:0 0 0 1px rgba(217,164,65,.55),0 0 30px rgba(217,164,65,.4),0 14px 34px rgba(0,0,0,.6)}
+  .mname{position:absolute;left:0;right:0;bottom:8px;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.03em;
+    color:#f5ecd8;background:linear-gradient(0deg,rgba(5,8,16,.9),transparent);
+    padding:18px 4px 10px;pointer-events:none}
+  .mini .dmg{position:absolute;top:-40px;right:-26px;font-family:'Cormorant Garamond',serif;
+    font-weight:600;font-size:30px;color:#fff;text-shadow:0 0 16px rgba(170,200,255,.9);z-index:8}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="bg"></div>
+
+  <header class="topbar">
+    <nav class="nav">
+      <button title="Gear">⚔</button>
+      <button title="Passivas">✦</button>
+      <button title="Relíquias">◈</button>
+      <button title="Echoes">❖</button>
+      <button title="Mapa">🗺</button>
+      <button title="Opções">⚙</button>
+    </nav>
+    <div class="currencies">
+      <div class="chip lumens"><div class="ico"></div><div><small>Lumens</small><span>1.42e12</span></div></div>
+      <div class="chip vestiges"><div class="ico"></div><div><small>Vestiges</small><span>8 451</span></div></div>
+      <div class="chip conv"><div class="ico"></div><div><small>Convergence</small><span>3</span></div></div>
+    </div>
+  </header>
+
+  <!-- Seeker: card único, moldura = borda -->
+  <aside class="card seeker">
+    <div class="framewrap">
+      <img class="art" src="assets/seeker_t1.png" alt="">
+      <img class="frame" src="assets/frame_t1_alpha.png" alt="">
+    </div>
+    <div class="plate">
+      <div class="name">Seeker</div>
+      <div class="tier">Ordre des Éclairés · Tier I</div>
+      <div class="bar"><i></i></div>
+      <div class="nums"><span>HP 4.23M / 5.88M</span><span>LV 87</span></div>
+    </div>
+  </aside>
+
+  <!-- Wave de inimigos: distribuicao espalhada -->
+  <section class="wave">
+    <div class="waveinfo">
+      <span class="wlabel">Wave 12 / 20</span>
+    </div>
+  </section>
+  <div class="mini dead" style="left:520px;top:430px"><img src="assets/enemy_art.png" alt=""><div class="mhp"><i style="width:0%"></i></div></div>
+  <div class="mini" style="left:700px;top:215px"><img src="assets/enemy_art.png" alt=""><div class="mhp"><i style="width:100%"></i></div></div>
+  <div class="mini target" style="left:905px;top:380px">
+    <div class="dmg">−6.53M</div>
+    <img src="assets/enemy_art.png" alt="">
+    <div class="mname">Claimed of the Wood</div>
+    <div class="mhp"><i style="width:62%"></i></div>
+  </div>
+  <div class="mini" style="left:1120px;top:200px"><img src="assets/enemy_art.png" alt=""><div class="mhp"><i style="width:100%"></i></div></div>
+  <div class="mini" style="left:1330px;top:420px"><img src="assets/enemy_art.png" alt=""><div class="mhp"><i style="width:88%"></i></div></div>
+  <div class="mini" style="left:1545px;top:260px"><img src="assets/enemy_art.png" alt=""><div class="mhp"><i style="width:100%"></i></div></div>
+
+  <footer class="hud">
+    <div class="stats">
+      <div>Lumens/min <b class="gold">3.5e10</b></div>
+      <div>Kills/min <b>1 705</b></div>
+      <div>Dano <b>2.2e8</b></div>
+      <div>Vestiges/min <b>12</b></div>
+    </div>
+  </footer>
+</div>
+
+<script>
+  function fit(){
+    const s = Math.min(innerWidth/1920, innerHeight/1080);
+    document.getElementById('stage').style.transform =
+      `translate(-50%,-50%) scale(${s})`;
+  }
+  addEventListener('resize', fit); fit();
+</script>
+</body>
+</html>

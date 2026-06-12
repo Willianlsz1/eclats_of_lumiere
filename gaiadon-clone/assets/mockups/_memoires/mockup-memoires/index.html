@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Éclats of Lumière — Mockup Mémoires</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --panel:rgba(10,12,20,.85);
+    --line:rgba(233,209,160,.22);
+    --ink:#efe6d4; --dim:#9a8f78;
+    --gold:#e9d1a0; --gold-deep:#c79a4b;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;background:#070910;overflow:hidden}
+  body{font-family:'Inter',sans-serif;color:var(--ink)}
+  #stage{position:absolute;left:50%;top:50%;width:1920px;height:1080px;transform-origin:center center}
+  .bg{position:absolute;inset:0;background:
+    radial-gradient(1100px 800px at 68% 42%, rgba(56,44,22,.55), rgba(7,9,16,1) 70%)}
+  .bg::after{content:'';position:absolute;inset:0;opacity:.5;
+    background-image:radial-gradient(1.5px 1.5px at 12% 30%, rgba(233,209,160,.8), transparent),
+      radial-gradient(1px 1px at 35% 70%, rgba(233,209,160,.6), transparent),
+      radial-gradient(1.5px 1.5px at 60% 15%, rgba(233,209,160,.7), transparent),
+      radial-gradient(1px 1px at 82% 60%, rgba(233,209,160,.6), transparent),
+      radial-gradient(1.5px 1.5px at 90% 25%, rgba(233,209,160,.8), transparent)}
+
+  .screen{position:absolute;inset:48px 80px;display:flex;gap:48px;z-index:2}
+
+  /* esquerda: galeria por epopeia */
+  .gallery{width:680px;flex:none;display:flex;flex-direction:column}
+  .gallery h2{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:32px;color:var(--gold)}
+  .gallery .count{font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:var(--dim);margin:2px 0 18px}
+  .epoch{margin-bottom:16px}
+  .epoch h3{display:flex;align-items:center;gap:12px;font-family:'Cormorant Garamond',serif;
+    font-style:italic;font-size:18px;color:var(--dim);margin-bottom:10px}
+  .epoch h3::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--line),transparent)}
+  .row{display:flex;gap:14px}
+  .cell{position:relative;width:104px;height:140px;border-radius:10px;cursor:pointer;
+    border:1px solid var(--line);background:rgba(233,209,160,.04);overflow:hidden;
+    display:flex;align-items:center;justify-content:center;transition:.18s}
+  .cell img{max-width:88%;max-height:88%}
+  .cell:hover{border-color:var(--gold);background:rgba(233,209,160,.09)}
+  .cell.sel{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold),0 0 22px rgba(233,209,160,.35)}
+  .cell.lock img{filter:brightness(0) opacity(.55)}
+  .cell.lock::after{content:'?';position:absolute;inset:auto 8px 6px auto;
+    font-family:'Cormorant Garamond',serif;font-size:16px;color:var(--dim)}
+  .cell .num{position:absolute;top:5px;left:8px;font-size:10px;color:var(--dim);letter-spacing:.08em}
+
+  /* direita: detalhe da reliquia selecionada */
+  .detail{flex:1;display:flex;gap:42px;align-items:center}
+  .art{flex:none;width:430px;display:flex;align-items:center;justify-content:center}
+  .art img{max-width:100%;max-height:880px;
+    -webkit-mask-image:radial-gradient(ellipse 62% 58% at center, #000 55%, transparent 76%);
+    mask-image:radial-gradient(ellipse 62% 58% at center, #000 55%, transparent 76%)}
+  .info{flex:1;max-width:460px}
+  .info .ep{font-size:11px;letter-spacing:.32em;text-transform:uppercase;color:var(--gold-deep)}
+  .info h1{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:46px;color:var(--gold);
+    line-height:1.1;margin:6px 0 2px}
+  .info .sub{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:18px;color:var(--dim)}
+  .info .rule{width:200px;height:1px;margin:20px 0;
+    background:linear-gradient(90deg,var(--gold-deep),transparent)}
+  .info .lore{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:18px;
+    line-height:1.65;color:var(--ink);margin-bottom:26px}
+  .bonusbox{border:1px solid var(--line);border-radius:12px;background:var(--panel);padding:16px 20px}
+  .bonusbox .t{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold-deep);margin-bottom:8px}
+  .bonusbox .b{font-size:15px;color:var(--ink);line-height:1.5}
+  .bonusbox .b b{color:var(--gold)}
+  .bonusbox .gc{margin-top:10px;font-size:12.5px;color:var(--dim)}
+  .bonusbox .gc b{color:var(--gold)}
+  .obtained{margin-top:14px;font-size:12px;color:var(--dim)}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="bg"></div>
+  <main class="screen">
+
+    <aside class="gallery">
+      <h2>Mémoires</h2>
+      <div class="count">Tikkun Olam · 6 / 15 reunidas</div>
+
+      <div class="epoch"><h3>Épopée I — L'Aube</h3>
+        <div class="row">
+          <div class="cell sel"><span class="num">I</span><img src="assets/relics/e1_matin.png"></div>
+          <div class="cell"><span class="num">II</span><img src="assets/relics/e1_rires.png"></div>
+          <div class="cell"><span class="num">III</span><img src="assets/relics/e1_marche.png"></div>
+        </div>
+      </div>
+
+      <div class="epoch"><h3>Épopée II — L'Œuvre</h3>
+        <div class="row">
+          <div class="cell"><span class="num">IV</span><img src="assets/relics/e2_forme.png"></div>
+          <div class="cell"><span class="num">V</span><img src="assets/relics/e2_faconnage.png"></div>
+          <div class="cell"><span class="num">VI</span><img src="assets/relics/e2_profondeurs.png"></div>
+        </div>
+      </div>
+
+      <div class="epoch"><h3>Épopée III — La Chute</h3>
+        <div class="row">
+          <div class="cell lock"><span class="num">VII</span><img src="assets/relics/e3_chute.png"></div>
+          <div class="cell lock"><span class="num">VIII</span><img src="assets/relics/e3_cendres.png"></div>
+          <div class="cell lock"><span class="num">IX</span><img src="assets/relics/e3_chant.png"></div>
+        </div>
+      </div>
+
+      <div class="epoch"><h3>Épopée IV — La Blessure</h3>
+        <div class="row">
+          <div class="cell lock"><span class="num">X</span><img src="assets/relics/e4_blessure.png"></div>
+          <div class="cell lock"><span class="num">XI</span><img src="assets/relics/e4_resistance.png"></div>
+          <div class="cell lock"><span class="num">XII</span><img src="assets/relics/e4_temps.png"></div>
+        </div>
+      </div>
+
+      <div class="epoch"><h3>Épopée V — Le Choix</h3>
+        <div class="row">
+          <div class="cell lock"><span class="num">XIII</span><img src="assets/relics/e5_vide.png"></div>
+          <div class="cell lock"><span class="num">XIV</span><img src="assets/relics/e5_lumiere.png"></div>
+          <div class="cell lock"><span class="num">XV</span><img src="assets/relics/e5_choix.png"></div>
+        </div>
+      </div>
+    </aside>
+
+    <section class="detail">
+      <div class="art"><img src="assets/relics/e1_matin.png" alt=""></div>
+      <div class="info">
+        <div class="ep">Épopée I · L'Aube · Mémoire I</div>
+        <h1>Premier Matin</h1>
+        <div class="sub">O espelho que guarda o amanhecer</div>
+        <div class="rule"></div>
+        <div class="lore">"Antes da Fratura, a luz despertava inteira. Este espelho recusou-se
+          a esquecer: em seu vidro, o primeiro amanhecer do mundo nasce para sempre —
+          intacto, paciente, à espera de quem volte a merecê-lo."</div>
+        <div class="bonusbox">
+          <div class="t">Bônus de Ascension</div>
+          <div class="b"><b>+25%</b> de Lumens permanente · <b>+10%</b> de XP permanente</div>
+          <div class="gc">✦ Game changer: <b>desbloqueia coleta automática de Lumens</b></div>
+        </div>
+        <div class="obtained">Obtida na 1ª Convergence · The Dreaming Wood</div>
+      </div>
+    </section>
+
+  </main>
+</div>
+<script>
+  function fit(){
+    const s = Math.min(innerWidth/1920, innerHeight/1080);
+    document.getElementById('stage').style.transform=`translate(-50%,-50%) scale(${s})`;
+  }
+  addEventListener('resize',fit);fit();
+</script>
+</body>
+</html>

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Éclats of Lumière — Mockup Passivas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --panel:rgba(8,12,24,.85);
+    --line:rgba(170,200,255,.24);
+    --ink:#dbe6ff; --dim:#8fa3c8;
+    --eclat:#aac8ff; --vest:#3fd0b6; --frac:#9d7bdb; --gold:#d9a441;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;background:#05070f;overflow:hidden}
+  body{font-family:'Inter',sans-serif;color:var(--ink)}
+  #stage{position:absolute;left:50%;top:50%;width:1920px;height:1080px;transform-origin:center center}
+  .bg{position:absolute;inset:0;background:
+    radial-gradient(1000px 700px at 50% 30%, rgba(18,46,42,.55), rgba(5,7,15,1) 70%)}
+
+  .screen{position:absolute;inset:48px 110px;z-index:2;display:flex;flex-direction:column}
+
+  .head{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:16px}
+  .head h1{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:32px;color:#eef4ff}
+  .vbal{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:22px;
+    background:var(--panel);height:46px;padding:0 18px}
+  .vbal i{width:12px;height:12px;border-radius:3px;background:var(--vest);transform:rotate(45deg);
+    box-shadow:0 0 10px var(--vest)}
+  .vbal span{font-size:16px;font-weight:600;color:var(--vest)}
+  .vbal small{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim)}
+
+  .tabs{display:flex;gap:8px;margin-bottom:0}
+  .tab{height:50px;padding:0 30px;border:1px solid var(--line);border-bottom:none;
+    border-radius:12px 12px 0 0;background:rgba(8,12,24,.5);cursor:pointer;
+    display:flex;align-items:center;gap:10px;font-size:13px;font-weight:600;
+    letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+  .tab i{width:9px;height:9px;border-radius:50%}
+  .tab.eclat i{background:var(--eclat)} .tab.vest i{background:var(--vest)} .tab.frac i{background:var(--frac)}
+  .tab.on{background:var(--panel)}
+  .tab.vest.on{color:var(--vest);border-color:var(--vest)}
+  .tab small{font-weight:500;text-transform:none;letter-spacing:0;color:var(--dim)}
+
+  .board{flex:1;border:1px solid var(--vest);border-radius:0 14px 14px 14px;
+    background:var(--panel);padding:24px 30px;display:flex;flex-direction:column;gap:18px}
+
+  .tierhead{display:flex;align-items:center;gap:14px}
+  .tierhead h3{font-family:'Cormorant Garamond',serif;font-size:20px;color:#eef4ff;white-space:nowrap}
+  .tierhead .st{font-size:11px;letter-spacing:.18em;text-transform:uppercase}
+  .tierhead .st.max{color:var(--gold)} .tierhead .st.cur{color:var(--vest)} .tierhead .st.lock{color:var(--dim)}
+  .tierhead::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,rgba(63,208,182,.3),transparent)}
+
+  .tier{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}
+  .node{border:1px solid rgba(63,208,182,.35);border-radius:12px;background:rgba(63,208,182,.05);
+    padding:12px 12px 10px;text-align:center;cursor:pointer;position:relative}
+  .node .ic{height:104px;display:flex;align-items:center;justify-content:center;margin-bottom:8px}
+  .node .ic img{max-height:100%;max-width:90%}
+  .node .nm{font-size:12.5px;font-weight:600;color:#eef4ff;line-height:1.25;min-height:32px}
+  .node .lv{font-size:11px;color:var(--dim);margin:4px 0 8px}
+  .node .lv b{color:var(--vest)}
+  .node button{width:100%;height:30px;border-radius:8px;border:1px solid var(--vest);
+    background:rgba(63,208,182,.1);color:var(--vest);font-size:11px;font-weight:700;cursor:pointer}
+  .node.max{border-color:var(--gold);background:rgba(217,164,65,.06)}
+  .node.max .lv b{color:var(--gold)}
+  .node.max button{border-color:rgba(217,164,65,.5);background:rgba(217,164,65,.08);color:var(--gold)}
+  .tier.locked .node{opacity:.38;filter:grayscale(.5)}
+  .tier.locked .node button{pointer-events:none}
+  .lockmsg{font-size:12px;color:var(--dim);font-style:italic;margin-top:-8px}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="bg"></div>
+  <main class="screen">
+
+    <div class="head">
+      <h1>Passivas</h1>
+      <div class="vbal"><i></i><div><small>Vestiges</small><br><span>8 451</span></div></div>
+    </div>
+
+    <div class="tabs">
+      <div class="tab eclat"><i></i>Éclat <small>· 15/15</small></div>
+      <div class="tab vest on"><i></i>Vestige <small>· 12/15</small></div>
+      <div class="tab frac"><i></i>Fracture <small>· 4/15</small></div>
+    </div>
+
+    <div class="board">
+
+      <div class="tierhead"><h3>Tier I</h3><span class="st max">Maximizado ✦</span></div>
+      <div class="tier">
+        <div class="node max"><div class="ic"><img src="assets/passives/v_lumens_blessing.png"></div>
+          <div class="nm">Lumen's Blessing</div><div class="lv">LV <b>50 / 50</b></div><button>MAX</button></div>
+        <div class="node max"><div class="ic"><img src="assets/passives/v_wisdom_ruins.png"></div>
+          <div class="nm">Wisdom of Ruins</div><div class="lv">LV <b>50 / 50</b></div><button>MAX</button></div>
+        <div class="node max"><div class="ic"><img src="assets/passives/v_remnant_harvest.png"></div>
+          <div class="nm">Remnant Harvest</div><div class="lv">LV <b>50 / 50</b></div><button>MAX</button></div>
+        <div class="node max"><div class="ic"><img src="assets/passives/v_vestige_pull.png"></div>
+          <div class="nm">Vestige Pull</div><div class="lv">LV <b>50 / 50</b></div><button>MAX</button></div>
+        <div class="node max"><div class="ic"><img src="assets/passives/v_scavenger.png"></div>
+          <div class="nm">Scavenger</div><div class="lv">LV <b>50 / 50</b></div><button>MAX</button></div>
+      </div>
+
+      <div class="tierhead"><h3>Tier II</h3><span class="st cur">Em progresso</span></div>
+      <div class="tier">
+        <div class="node"><div class="ic"><img src="assets/passives/v_dreamwalker.png"></div>
+          <div class="nm">Dreamwalker</div><div class="lv">LV <b>34 / 50</b></div><button>▲ 120 Vestiges</button></div>
+        <div class="node"><div class="ic"><img src="assets/passives/v_beast_caller.png"></div>
+          <div class="nm">Beast Caller</div><div class="lv">LV <b>28 / 50</b></div><button>▲ 96 Vestiges</button></div>
+        <div class="node"><div class="ic"><img src="assets/passives/v_hoarder.png"></div>
+          <div class="nm">Hoarder</div><div class="lv">LV <b>41 / 50</b></div><button>▲ 168 Vestiges</button></div>
+        <div class="node"><div class="ic"><img src="assets/passives/v_awakened_harvest.png"></div>
+          <div class="nm">Awakened Harvest</div><div class="lv">LV <b>22 / 50</b></div><button>▲ 74 Vestiges</button></div>
+        <div class="node"><div class="ic"><img src="assets/passives/v_echo_greed.png"></div>
+          <div class="nm">Echo of Greed</div><div class="lv">LV <b>17 / 50</b></div><button>▲ 58 Vestiges</button></div>
+      </div>
+
+      <div class="tierhead"><h3>Tier III</h3><span class="st lock">🔒 Maximize o Tier II para desbloquear</span></div>
+      <div class="tier locked">
+        <div class="node"><div class="ic"><img src="assets/passives/v_void_scavenger.png"></div>
+          <div class="nm">Void Scavenger</div><div class="lv">LV <b>0 / 50</b></div><button>Bloqueada</button></div>
+        <div class="node"><div class="ic"><img src="assets/passives/v_eternal_vestige.png"></div>
+          <div class="nm">Eternal Vestige</div><div class="lv">LV <b>0 / 50</b></div><button>Bloqueada</button></div>
+        <div class="node"><div class="ic"><img src="assets/passives/v_fractured_soul.png"></div>
+          <div class="nm">Fractured Soul</div><div class="lv">LV <b>0 / 50</b></div><button>Bloqueada</button></div>
+        <div class="node"><div class="ic"><img src="assets/passives/v_luminal_cache.png"></div>
+          <div class="nm">Luminal Cache</div><div class="lv">LV <b>0 / 50</b></div><button>Bloqueada</button></div>
+        <div class="node"><div class="ic"><img src="assets/passives/v_collector.png"></div>
+          <div class="nm">The Collector</div><div class="lv">LV <b>0 / 50</b></div><button>Bloqueada</button></div>
+      </div>
+
+    </div>
+  </main>
+</div>
+<script>
+  function fit(){
+    const s = Math.min(innerWidth/1920, innerHeight/1080);
+    document.getElementById('stage').style.transform=`translate(-50%,-50%) scale(${s})`;
+  }
+  addEventListener('resize',fit);fit();
+</script>
+</body>
+</html>
