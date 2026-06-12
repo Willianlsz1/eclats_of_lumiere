@@ -119,6 +119,11 @@ body {
 .view.placeholder .lore { margin-top: 14px; max-width: 520px; color: var(--dim);
   font-family: var(--font-display); font-style: italic; font-size: var(--fs-lg); line-height: 1.4; }
 
+/* host dos overlays cerimoniais (Awakening, Convergence) — sobre views + topbar.
+   Não captura cliques; cada overlay reativa pointer-events na própria raiz. */
+#overlay-host { position: absolute; inset: 0; z-index: 50; pointer-events: none; }
+#overlay-host > * { pointer-events: auto; }
+
 /* telas muito pequenas */
 #toosmall { position: fixed; inset: 0; display: none; place-items: center; text-align: center;
   background: #05070f; color: var(--dim); padding: 24px; z-index: 100;

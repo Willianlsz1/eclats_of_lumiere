@@ -10,6 +10,8 @@ import { playerHpMax } from './game/stats.js';
 import { simulateOffline } from './game/offline.js';
 import { maybeApplyDevUnlock, showDevBadge, setupDevButton } from './core/dev.js';
 import { setupUI, renderUI, showOfflineSummary } from './ui/ui.js';
+import { openAwakening, closeAwakening } from './ui/awakening.js';
+import { openConvergence, closeConvergence } from './ui/convergence.js';
 
 // Carrega o save (se houver) e reconstrói o runtime
 const snapshot = load();
@@ -39,3 +41,12 @@ startLoop((dt) => {
 });
 
 renderUI(state);
+
+// Cerimônias (overlays) — expostas para teste manual no console enquanto a
+// lógica de disparo não existe. Ex.: eclatsCeremonies.awaken({ tier: 3 }).
+// TODO(lógica): disparar Awakening ao vencer o Guardião da Sub 3 (checkDespertar)
+// e Convergence no ciclo de dispersão; passar dados reais (ganhos calculados).
+window.eclatsCeremonies = {
+  awaken: openAwakening, closeAwaken: closeAwakening,
+  converge: openConvergence, closeConverge: closeConvergence,
+};

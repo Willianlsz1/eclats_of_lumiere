@@ -56,6 +56,7 @@ export function setupUI(state) {
   buildCoins();
   buildNav();
   buildViews(state);
+  ensureOverlayHost();
   show('combat');
   fit();
   window.addEventListener('resize', fit);
@@ -151,6 +152,18 @@ function buildViews(state) {
       : `<div class="glyph">${picture(v.icon, { alt: v.label })}</div>`;
     view.innerHTML = `<div>${glyph}<h2>${v.label}</h2><div class="cp">pós-MVP</div></div>`;
     main.appendChild(view);
+  }
+}
+
+// Host único para overlays cerimoniais (Awakening, Convergence). Fica dentro
+// de #stage para escalar junto com o fit() do palco 1920×1080. Os módulos de
+// overlay (awakening.js / convergence.js) montam sua raiz aqui.
+function ensureOverlayHost() {
+  const stage = document.getElementById('stage');
+  if (stage && !document.getElementById('overlay-host')) {
+    const host = document.createElement('div');
+    host.id = 'overlay-host';
+    stage.appendChild(host);
   }
 }
 
