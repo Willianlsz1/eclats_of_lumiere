@@ -430,29 +430,31 @@ Os outros 11 mantidos. Os efeitos exóticos ainda contam só via Clarté no cód
 
 ## 11. O que FALTA / pendências
 
-### ✅ Design da §10.5 — CODADO (Passos 1-7 do wiring, 2026-06)
-- ✅ **Defesa/Mitigação** (razão/armadura) · **Craft/Materiais + Forja** · **catálogo de 12 afixos + identidade** · **Fate Keepers A1/A2/A4 + Dificuldades (seleção global)** · **Mémoires (4 novos + 8 exóticos wirados; #14 stub)** · **Despertar/Tier (Passo 7)**.
-- ⏳ **Falta codar:** **Fate Keeper A3 = Eco do Seeker** (validado 2026-06-12, novo — substitui "Motor de Éclats"); **asc_mult ×2** (decisão, código ainda ×10/×5); **offline 24h cap** (código ainda 30d).
+### ✅ Design da §10.5 — CODADO (Passos 1-7) + CALIBRADO (Blocos 1-6, 2026-06-12)
+- ✅ **Defesa/Mitigação** · **Craft/Materiais + Forja** · **catálogo de 12 afixos + identidade** · **Fate Keepers A1-A4 + Dificuldades (global)** · **Mémoires (4 novos + 8 exóticos; #14 stub)** · **Despertar/Tier** · **Eco do Seeker (A3)** · **asc_mult ×2** · **45 passivas** · **Crit** · **apsCap 15**.
+- ⏳ **Falta codar (não-bloqueante):** **offline 24h cap** (código ainda 30d — guarda de engenharia, não balanceamento).
 
 ### 🔒 Não implementado (pós-MVP)
 - **Echoes (pets)** — herdam o sistema do **Eco do Seeker (A3)** quando implementados. **break_infinity** (libera Nightmare/Tormento + Map 5 alto). **A5 Transcendência**. **Convergence relics**.
 
-### ⏳ LISTA DE CALIBRAÇÃO FINA ÚNICA (sessão de Escala / calibração final — por último)
-Consolidada — tudo que ficou como provisório/hook ao longo do wiring e da validação:
+### ✅ CALIBRAÇÃO FINA — FECHADA na sessão 2026-06-12 (6 blocos)
+| Item | Status |
+|---|---|
+| **asc_mult ×2 (×16) + Despertar no orçamento** | ✅ Bloco 1 — `ASCENSIONS[].mult=2`, budget Despertar 2.8 + Asc 1.2 = 4.0 (total 101 déc) |
+| **veilScale + veilCap** | ✅ Bloco 2 — `veilScale=0.015`, `veilCap=0.18` (80% mit teto; ramp por era; nunca invencível) |
+| **afixo Materiais amortecido + Eco do Seeker (A3)** | ✅ Bloco 3 — Farm sem motor × (Lumens/XP linear); drop `1+0.5×log10` (×~2 endgame); Eco `fraction=0.35` |
+| **45 passivas individuais** | ✅ Bloco 4 — esquema Camada 5 (maxLevel 12, %/grupo + 3 motores ×1.52); Éclat = 7.62 déc; alavancas wiradas |
+| **Crit + valores das Mémoires** | ✅ Bloco 5 — `critPerLevel 0.0015`, `lck 0.002` (mínima), afixo Crit Damage wirado; Mémoires canônicas |
+| **apsCap = 15 + fontes** | ✅ Bloco 6 — AGI sub-cap 3.75 · Fracture Pulse · Resonance (amortecido); rampa 1.5→7→15 |
+| **Clarté também no HP** | ✅ fix da validação final (§4: HP recebe os mesmos fatores; sem isto o late era injogável) |
+
+### ⏳ O QUE SOBRA (só isto + pós-MVP)
 | Item | Pendência |
 |---|---|
-| **f(xp_run)** | a função de pontos da Convergence: paredes longas, retorno decrescente + bônus do boss, **~50 pts de pico/era** (requisito da sessão de Escala) |
-| **asc_mult** | ×10/×5/×5/×5 → **×2/mapa (×16)**; mexe no orçamento (Asc 1.2 + **Despertar 2.8** = 4.0) — `tools/sim/budget.mjs` |
-| **DESPERTAR.mult** | ×5/tier provisório (gate de poder do Despertar) |
-| **Eco do Seeker (A3)** | fração de rendimento **25-40%** do farm em 2º plano |
-| **veilScale** | escala da Defesa (Veil → veilFactor; alvo: maximizado ≈ 80% mit) |
-| **afixo Materiais (gear)** | mapeamento **amortecido** — a curva crua do gear é forte demais; **"Farm = sem motor ×"** (aditivo). Hoje hook = 1 |
-| **apsCap = 15 + fontes de APS** | apsCap ainda 1.25 no código; wirar AGI(sub-cap)+Fracture Pulse(passiva)+Resonance(gear) |
-| **Passivas individuais** | aplicar o **esquema da Camada 5** aos 45 valores (hoje +5% agregado); `groupMult`, `maxLevel 12` |
-| **Mémoires** | valor por nível de cada um dos 15 (efeitos já wirados; magnitudes provisórias) |
-| **#14 de la Lumière Entière** | `MEMOIRE_CLARTE_EXP_PER` = **0 (stub desarmado)** — a alavanca mais perigosa; calibrar com cuidado extremo |
-| **Crit** | lck, base e transbordo (§16.6) |
-| **Dano dos mobs / Defesa / Craft / Dificuldades** | curvas/brackets/custos finos (a malha §3 e o 0.02×HP já valem) |
+| **f(xp_run)** | a função de pontos da Convergence — **única pendência de calibração**: paredes longas, retorno decrescente + bônus do boss, **~50 pts de pico/era** (sessão de Escala) |
+| **#14 de la Lumière Entière** | `MEMOIRE_CLARTE_EXP_PER = 0` — **stub desarmado de propósito** (a alavanca mais perigosa; armar só com cuidado extremo na Escala) |
+| **DESPERTAR.mult / ECO.fraction / etc.** | valores ✅ definidos, abertos a ajuste fino em playtest (não bloqueiam) |
+| **pós-MVP** | break_infinity (Nightmare/Tormento + Map 5 alto) · Echoes (herdam o Eco) · A5 Transcendência · Convergence relics |
 
 ### Arte — estado atual
 - ✅ **Mobs:** todos os 5 trios + guardiões + 5 bosses finais (incl. Nihel = `fallen_angel`) e o Map 4 completo (Fissure Stalker, Sundered Titan, Claimed Vanguard).
