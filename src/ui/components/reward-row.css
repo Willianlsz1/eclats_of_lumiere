@@ -1,0 +1,34 @@
+/* ============================================================
+   Componente reutilizável — linha de recompensa (reward-row).
+   Classes rw-. Genérico: usado pelo modal offline, drops de boss,
+   recompensas de Ascension, etc. Tokens globais com fallback literal
+   (o componente pode ser montado em qualquer contexto).
+   ============================================================ */
+
+.rw-list { display: grid; gap: 9px; }
+
+.rw-row { display: flex; align-items: center; gap: 14px;
+  border: 1px solid var(--line-soft, rgba(170, 200, 255, .13)); border-radius: 11px;
+  background: var(--panel-2, rgba(14, 20, 36, .95)); padding: 11px 16px; }
+
+.rw-ic { width: 52px; height: 52px; border-radius: 10px; flex: none; display: grid; place-items: center;
+  overflow: hidden; border: 1.5px solid var(--line, rgba(170, 200, 255, .26));
+  color: var(--eclat, #aac8ff);
+  background: radial-gradient(circle at 50% 40%, rgba(170, 200, 255, .05), transparent 70%), #0d1322; }
+.rw-ic img { width: 120%; height: 120%; object-fit: contain; }
+.rw-glyph { font-family: var(--font-display, 'Cormorant Garamond', serif); font-size: 22px; color: currentColor; }
+
+.rw-meta { flex: 1; min-width: 0; }
+.rw-nm { font-size: 13px; font-weight: 600; color: #eef4ff; }
+.rw-sub { font-size: 11px; color: var(--faint, #5a6678); margin-top: 1px; }
+.rw-val { font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--ink, #dbe6ff); }
+
+/* acentos de cor por variante */
+.rw-row.gold  .rw-ic { border-color: var(--gold, #d9a441); color: var(--gold, #d9a441); }
+.rw-row.gold  .rw-val { color: var(--gold, #d9a441); }
+.rw-row.ember .rw-ic { border-color: #e8854a; color: #e8854a; }
+.rw-row.ember .rw-val { color: #e8854a; }
+.rw-row.eclat .rw-ic { border-color: var(--eclat, #aac8ff); color: var(--eclat, #aac8ff); }
+.rw-row.eclat .rw-val { color: var(--eclat, #aac8ff); }
+.rw-row.vest  .rw-ic { border-color: var(--vest, #3fd0b6); color: var(--vest, #3fd0b6); }
+.rw-row.vest  .rw-val { color: var(--vest, #3fd0b6); }

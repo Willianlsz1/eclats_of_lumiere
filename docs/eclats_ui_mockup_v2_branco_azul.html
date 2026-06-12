@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Éclats of Lumière — UI Mockup v2 · Branco/Azul</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ============ TOKENS — chrome branco/azul (refs: escadaria celeste + espiral) ============ */
+  :root{
+    --bg-deep:#0c0a18;            /* a floresta continua noturna — o contraste vem dela */
+    --chrome:#101a30;             /* barra superior — navy profundo */
+    --card:#f5f8ff;               /* superfícies de card — branco-gelo */
+    --card-2:#ffffff;
+    --line:#c2d3ef;               /* hairlines azuis claras */
+    --blue:#2e7cc4;               /* azul-céu — acento primário */
+    --cyan:#37c8f0;               /* ciano luminoso — destaques, crit, Convergence */
+    --ice:#a8d8ff;
+    --violet:#7b5cd6;             /* Vestiges / XP */
+    --danger:#d9434f;
+    --ink:#15203a;                /* texto sobre claro */
+    --ink-dim:#5d6b8a;
+    --on-dark:#eaf2ff;
+    --display:'Cormorant Garamond',serif;
+    --utility:'Outfit',sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    font-family:var(--utility);color:var(--ink);
+    background:
+      radial-gradient(1200px 600px at 75% 20%, rgba(94,224,210,.05), transparent 60%),
+      radial-gradient(900px 700px at 15% 85%, rgba(255,154,77,.06), transparent 55%),
+      radial-gradient(700px 500px at 50% 110%, rgba(123,92,214,.08), transparent 60%),
+      var(--bg-deep);
+    overflow:hidden;
+  }
+  .stage{width:1920px;height:1080px;position:relative;margin:0 auto;transform-origin:top left}
+
+  .mote{position:absolute;width:3px;height:3px;border-radius:50%;background:var(--ice);opacity:.35;animation:drift 14s linear infinite}
+  @keyframes drift{from{transform:translateY(20px)}to{transform:translateY(-40px);opacity:0}}
+  @media (prefers-reduced-motion: reduce){.mote,.bolt,.gauge-fill::after{animation:none !important}}
+
+  /* ============ BARRA SUPERIOR — navy com ícones claros (padrão Gaiadon) ============ */
+  .topbar{position:absolute;inset:0 0 auto 0;height:84px;display:flex;align-items:center;gap:18px;padding:0 28px;
+    background:linear-gradient(180deg, rgba(16,26,48,.97), rgba(16,26,48,.82));border-bottom:1px solid rgba(168,216,255,.18)}
+  .nav{display:flex;gap:10px}
+  .nav button{width:54px;height:54px;border-radius:10px;border:1px solid rgba(168,216,255,.25);background:rgba(245,248,255,.06);
+    color:var(--ice);font-size:22px;cursor:pointer;display:grid;place-items:center;transition:.15s}
+  .nav button:hover,.nav button:focus-visible{border-color:var(--cyan);color:#fff;outline:none}
+  .nav button[data-locked]{opacity:.35}
+  .spacer{flex:1}
+  .currency{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);
+    border-radius:10px;padding:9px 16px;min-width:170px;color:var(--ink)}
+  .currency .dot{width:14px;height:14px;border-radius:50%}
+  .currency b{font-weight:600;font-size:17px;letter-spacing:.3px}
+  .currency span{font-size:11px;color:var(--ink-dim);text-transform:uppercase;letter-spacing:.12em}
+  .zone{display:flex;align-items:center;gap:14px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 22px}
+  .zone .map-name{font-family:var(--display);font-size:26px;font-weight:600;color:var(--blue);font-style:italic}
+  .zone .sub{font-size:12px;color:var(--ink-dim);letter-spacing:.14em;text-transform:uppercase;border-left:1px solid var(--line);padding-left:14px}
+  .worldbtn{width:54px;height:54px;border-radius:50%;border:1px solid var(--ice);background:radial-gradient(circle at 35% 30%, #2e4a7c, var(--chrome));
+    color:var(--ice);font-size:22px;cursor:pointer}
+
+  /* ============ CARD DO SEEKER — branco-gelo ============ */
+  .seeker{position:absolute;left:36px;top:140px;width:392px;border-radius:16px;border:1px solid var(--line);
+    background:linear-gradient(170deg,var(--card-2),var(--card) 70%);
+    box-shadow:0 0 0 1px rgba(168,216,255,.25), 0 24px 60px rgba(0,0,0,.55);overflow:hidden}
+  .seeker .rank{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid var(--line)}
+  .seeker .rank .title{font-family:var(--display);font-size:24px;font-weight:700;letter-spacing:.04em;color:var(--ink)}
+  .seeker .rank .tier{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--blue);
+    border:1px solid var(--line);border-radius:999px;padding:4px 12px;background:#eaf2ff}
+  .portrait{height:300px;display:grid;place-items:center;position:relative;
+    background:
+      radial-gradient(220px 150px at 50% 80%, rgba(55,200,240,.14), transparent 70%),
+      radial-gradient(300px 220px at 50% 30%, rgba(168,216,255,.18), transparent 65%),
+      #10182c;}
+  .silhouette{width:150px;height:210px;border-radius:80px 80px 18px 18px;
+    background:linear-gradient(180deg,#22304f,#131b30);position:relative;
+    box-shadow:inset 0 -30px 50px rgba(0,0,0,.55), 0 0 50px rgba(168,216,255,.22)}
+  .silhouette::after{content:'';position:absolute;left:50%;top:62px;width:60px;height:8px;transform:translateX(-50%);
+    border-radius:8px;background:#dff1ff;filter:blur(4px);opacity:.95}
+  .portrait .placeholder-note{position:absolute;bottom:10px;font-size:10px;letter-spacing:.14em;color:var(--ice);text-transform:uppercase;opacity:.7}
+  .stats{padding:16px 18px;display:grid;gap:12px}
+  .bar{position:relative;height:22px;border-radius:6px;background:#e3eaf8;border:1px solid var(--line);overflow:hidden}
+  .bar i{position:absolute;inset:0;border-radius:5px}
+  .bar.hp i{width:78%;background:linear-gradient(90deg,#b53a45,#e8616c)}
+  .bar.xp i{width:46%;background:linear-gradient(90deg,#5b46a8,var(--violet))}
+  .bar label{position:absolute;inset:0;display:flex;justify-content:space-between;align-items:center;padding:0 10px;
+    font-size:12px;font-weight:600;letter-spacing:.04em;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.55)}
+  .bar label .lbl{color:var(--ink);text-shadow:none}
+  .meta{display:flex;justify-content:space-between;font-size:13px;color:var(--ink-dim)}
+  .meta b{color:var(--ink);font-weight:600}
+  .buffrow{display:flex;gap:8px;padding:0 18px 16px}
+  .buff{width:38px;height:38px;border-radius:8px;border:1px solid var(--line);background:#eaf2ff;display:grid;place-items:center;font-size:16px;color:var(--blue)}
+
+  .queue{position:absolute;left:36px;top:610px;width:392px;display:flex;gap:8px;align-items:center}
+  .queue .label{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ice);writing-mode:vertical-rl;transform:rotate(180deg);opacity:.8}
+  .queue .thumb{width:46px;height:46px;border-radius:8px;border:1px solid var(--line);background:linear-gradient(160deg,#fff,#dde8fa)}
+
+  /* ============ GRADE DE INIMIGOS — cards brancos (Gaiadon) ============ */
+  .field{position:absolute;left:520px;right:36px;top:140px;bottom:170px;display:grid;
+    grid-template-columns:repeat(3, 1fr);grid-auto-rows:minmax(250px, 1fr);gap:22px;align-content:start}
+  .enemy{border-radius:14px;border:1px solid var(--line);background:linear-gradient(175deg,var(--card-2),var(--card) 80%);
+    position:relative;padding:14px;display:flex;flex-direction:column;gap:8px;min-height:250px;
+    box-shadow:0 14px 34px rgba(0,0,0,.45)}
+  .enemy.elite{border-color:var(--cyan);box-shadow:0 0 30px rgba(55,200,240,.25), 0 14px 34px rgba(0,0,0,.45)}
+  .enemy .art{flex:1;border-radius:10px;display:grid;place-items:center;background:#101a30;position:relative;overflow:hidden}
+  .glyph{width:88px;height:88px;border-radius:50%}
+  .glyph.shroom{background:radial-gradient(circle at 35% 30%, #ff9a4d, #7a3c12 65%, transparent 70%);box-shadow:0 0 36px rgba(255,154,77,.45)}
+  .glyph.frag{background:radial-gradient(circle at 40% 35%, #e9edff, #4a3f8f 60%, transparent 72%);box-shadow:0 0 36px rgba(123,92,214,.45)}
+  .glyph.wisp{background:radial-gradient(circle at 40% 35%, #5ee0d2, #19564f 62%, transparent 72%);box-shadow:0 0 36px rgba(94,224,210,.4)}
+  .enemy .name{font-family:var(--display);font-size:20px;font-weight:600;letter-spacing:.03em;color:var(--ink)}
+  .enemy .lvl{font-size:11px;color:var(--ink-dim);letter-spacing:.1em;text-transform:uppercase}
+  .enemy .row{display:flex;justify-content:space-between;font-size:12.5px;color:var(--ink-dim)}
+  .enemy .row b{color:var(--ink);font-weight:600}
+  .ebar{height:10px;border-radius:5px;background:#e3eaf8;border:1px solid var(--line);overflow:hidden}
+  .ebar i{display:block;height:100%;background:linear-gradient(90deg,#b53a45,#e8616c)}
+  .dmg{position:absolute;font-weight:700;font-size:15px;color:#fff;text-shadow:0 0 10px rgba(55,200,240,.9),0 2px 6px rgba(0,0,0,.7)}
+  .dmg.crit{color:var(--cyan);font-size:18px}
+  .slot-empty{border:1px dashed rgba(168,216,255,.4);border-radius:14px;display:grid;place-items:center;
+    color:var(--ice);font-size:11px;letter-spacing:.16em;text-transform:uppercase;min-height:250px;opacity:.55}
+
+  /* projétil — luz branco-azulada */
+  .bolt{position:absolute;left:430px;top:430px;width:520px;height:3px;pointer-events:none;
+    background:linear-gradient(90deg, transparent, var(--ice) 55%, #fff);transform:rotate(-9deg);
+    filter:drop-shadow(0 0 8px rgba(55,200,240,.9));animation:fly 1.2s ease-in infinite}
+  @keyframes fly{0%{opacity:0;transform:rotate(-9deg) scaleX(.2)}30%{opacity:1}100%{opacity:0;transform:rotate(-9deg) scaleX(1) translateX(420px)}}
+
+  /* ============ RODAPÉ ============ */
+  .ratebox{position:absolute;left:36px;bottom:26px;display:grid;gap:6px;font-size:13px;color:var(--ice)}
+  .ratebox b{color:#fff}
+  .sysbtns{position:absolute;right:36px;bottom:26px;display:flex;gap:10px}
+  .sysbtns button{width:50px;height:50px;border-radius:10px;border:1px solid rgba(168,216,255,.3);background:rgba(16,26,48,.85);color:var(--ice);font-size:20px;cursor:pointer}
+
+  /* ============ ASSINATURA: MEDIDOR DE CONVERGENCE — luz branco-ciano ============ */
+  .gauge{position:absolute;left:50%;bottom:22px;transform:translateX(-50%);width:660px;display:grid;gap:8px;justify-items:center}
+  .gauge .cap{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--ice)}
+  .gauge .cap b{color:#fff;font-weight:600}
+  .gauge-track{width:100%;height:30px;border-radius:999px;border:1px solid rgba(168,216,255,.55);
+    background:rgba(16,26,48,.85);position:relative;overflow:hidden;
+    box-shadow:inset 0 2px 10px rgba(0,0,0,.5), 0 0 28px rgba(55,200,240,.2)}
+  .gauge-fill{position:absolute;inset:2px auto 2px 2px;width:62%;border-radius:999px;
+    background:
+      repeating-linear-gradient(115deg, rgba(255,255,255,.25) 0 8px, transparent 8px 22px),
+      linear-gradient(90deg,#2e7cc4,var(--cyan) 70%,#dff6ff);}
+  .gauge-fill::after{content:'';position:absolute;inset:0;border-radius:999px;
+    background:linear-gradient(90deg,transparent 60%,rgba(255,255,255,.5));animation:shimmer 2.6s ease-in-out infinite}
+  @keyframes shimmer{0%,100%{opacity:.2}50%{opacity:.7}}
+  .seed{position:absolute;right:-23px;top:50%;transform:translateY(-50%);width:46px;height:46px;border-radius:50%;
+    border:1px solid #fff;background:radial-gradient(circle at 40% 35%, #ffffff, #2e7cc4 75%);
+    box-shadow:0 0 30px rgba(55,200,240,.7);display:grid;place-items:center;font-size:18px;color:#0c1830}
+  .gauge-track .pct{position:absolute;inset:0;display:grid;place-items:center;font-size:13px;font-weight:600;
+    letter-spacing:.06em;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.7)}
+</style>
+</head>
+<body>
+<div class="stage">
+
+  <div class="mote" style="left:62%;top:46%"></div><div class="mote" style="left:71%;top:64%;animation-delay:3s"></div>
+  <div class="mote" style="left:55%;top:30%;animation-delay:6s"></div><div class="mote" style="left:83%;top:38%;animation-delay:9s"></div>
+  <div class="mote" style="left:14%;top:72%;animation-delay:4s"></div>
+
+  <header class="topbar">
+    <nav class="nav" aria-label="Sistemas">
+      <button title="Seeker">🜂</button>
+      <button title="Gear">⚔</button>
+      <button title="Passivas (3 árvores)">✦</button>
+      <button title="Echoes">◈</button>
+      <button title="Mémoires" data-locked>📖</button>
+      <button title="Ascension" data-locked>▲</button>
+    </nav>
+    <div class="spacer"></div>
+    <div class="currency" title="Lumens">
+      <span class="dot" style="background:#e8b54a"></span>
+      <div><b>48.2K</b><br><span>Lumens</span></div>
+    </div>
+    <div class="currency" title="Vestiges">
+      <span class="dot" style="background:var(--violet)"></span>
+      <div><b>1.847</b><br><span>Vestiges</span></div>
+    </div>
+    <div class="zone">
+      <span class="map-name">The Dreaming Wood</span>
+      <span class="sub">Sub-área 3 · Lv 16–63</span>
+    </div>
+    <button class="worldbtn" title="Mapa-múndi">🗺</button>
+  </header>
+
+  <section class="seeker" aria-label="Seeker">
+    <div class="rank">
+      <span class="title">The Seeker</span>
+      <span class="tier">Tier I · Seeker</span>
+    </div>
+    <div class="portrait">
+      <div class="silhouette" role="img" aria-label="Retrato do Seeker (placeholder)"></div>
+      <span class="placeholder-note">arte via geração de imagem</span>
+    </div>
+    <div class="stats">
+      <div class="bar hp"><i></i><label><span class="lbl">HP</span><span>21.4K / 27.5K</span></label></div>
+      <div class="bar xp"><i></i><label><span class="lbl">Parede da run</span><span>4.6K / 10.1K XP</span></label></div>
+      <div class="meta"><span>Level <b>1.240</b></span><span>DPS <b>612</b></span></div>
+      <div class="meta"><span>Pontos de Convergence <b>23</b></span><span>Fator <b>×4.45</b></span></div>
+    </div>
+    <div class="buffrow" aria-label="Efeitos ativos">
+      <span class="buff" title="Dream Pulse">☾</span>
+      <span class="buff" title="Regen por kill">✚</span>
+      <span class="buff" title="Lumen's Blessing">◉</span>
+    </div>
+  </section>
+
+  <div class="queue" aria-label="Próximos inimigos">
+    <span class="label">Spawn</span>
+    <span class="thumb"></span><span class="thumb"></span><span class="thumb"></span><span class="thumb"></span>
+  </div>
+
+  <div class="bolt" aria-hidden="true"></div>
+
+  <main class="field" aria-label="Campo de combate">
+    <article class="enemy elite">
+      <div class="art"><span class="glyph shroom"></span><span class="dmg crit" style="right:14px;top:12px">CRIT −1.8K</span></div>
+      <h3 class="name">Luminous Triplecap</h3>
+      <span class="lvl">The Fragmented · Lv 48</span>
+      <div class="row"><span>ATK <b>9</b></span><span>HP <b>4.1K / 6.6K</b></span></div>
+      <div class="ebar"><i style="width:62%"></i></div>
+    </article>
+    <article class="enemy">
+      <div class="art"><span class="glyph frag"></span><span class="dmg" style="right:18px;top:24px">−612</span></div>
+      <h3 class="name">Fragmented Wanderer</h3>
+      <span class="lvl">The Fragmented · Lv 31</span>
+      <div class="row"><span>ATK <b>6</b></span><span>HP <b>2.2K / 2.9K</b></span></div>
+      <div class="ebar"><i style="width:75%"></i></div>
+    </article>
+    <article class="enemy">
+      <div class="art"><span class="glyph wisp"></span></div>
+      <h3 class="name">Dreambound Wisp</h3>
+      <span class="lvl">The Fragmented · Lv 22</span>
+      <div class="row"><span>ATK <b>4</b></span><span>HP <b>1.4K / 1.4K</b></span></div>
+      <div class="ebar"><i style="width:100%"></i></div>
+    </article>
+    <article class="enemy">
+      <div class="art"><span class="glyph shroom"></span></div>
+      <h3 class="name">Sporeling</h3>
+      <span class="lvl">The Fragmented · Lv 19</span>
+      <div class="row"><span>ATK <b>4</b></span><span>HP <b>1.1K / 1.1K</b></span></div>
+      <div class="ebar"><i style="width:100%"></i></div>
+    </article>
+    <div class="slot-empty">slot de pack — sub-área 4+</div>
+    <div class="slot-empty">slot de pack — sub-área 4+</div>
+  </main>
+
+  <div class="ratebox">
+    <span>Lumens/min <b>2.1K</b></span>
+    <span>XP/min <b>1.6K</b></span>
+  </div>
+
+  <div class="gauge" aria-label="Progresso para Convergence">
+    <span class="cap">A luz se reúne — <b>Convergence em 62%</b></span>
+    <div class="gauge-track">
+      <div class="gauge-fill"></div>
+      <span class="pct">4.6K / 10.1K XP</span>
+      <span class="seed" title="A Semente">✶</span>
+    </div>
+  </div>
+
+  <div class="sysbtns">
+    <button title="Inventário">🎒</button>
+    <button title="Configurações">⚙</button>
+    <button title="Ajuda">?</button>
+  </div>
+
+</div>
+<script>
+  const fit=()=>{const s=Math.min(innerWidth/1920, innerHeight/1080);
+    document.querySelector('.stage').style.transform=`scale(${s})`;};
+  addEventListener('resize',fit);fit();
+</script>
+</body>
+</html>

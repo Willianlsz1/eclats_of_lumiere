@@ -1,0 +1,84 @@
+/* ============================================================
+   CONVERGENCE — overlay/modal de dispersão (inverso do Awaken).
+   Compacto, centralizado. Branco-azul no centro → dourado fugindo.
+   Classes cv-. Monta em #overlay-host (inset:0 do palco 1920×1080).
+   ============================================================ */
+
+.cv-overlay { position: absolute; inset: 0; z-index: 10; overflow: hidden;
+  opacity: 0; transition: opacity .3s ease; font-family: var(--font-ui, 'Inter', sans-serif); }
+.cv-overlay.show { opacity: 1; }
+
+.cv-combat-bg { position: absolute; inset: 0; filter: brightness(.38) saturate(.6);
+  background:
+    radial-gradient(900px 600px at 20% 75%, rgba(63, 208, 182, .14), transparent 60%),
+    radial-gradient(1000px 700px at 85% 20%, rgba(157, 123, 219, .10), transparent 60%),
+    #0b0f16; }
+.cv-veil { position: absolute; inset: 0; background: rgba(4, 6, 12, .66); }
+
+/* núcleo branco-azul se desfazendo + fragmentos */
+.cv-burst { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  width: 1000px; height: 1000px; pointer-events: none; }
+.cv-core { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 240px; height: 240px;
+  border-radius: 50%; background: radial-gradient(circle, rgba(170, 200, 255, .20), rgba(170, 200, 255, .05) 55%, transparent 70%);
+  animation: cv-pulse 3.2s ease-in-out infinite; }
+@keyframes cv-pulse { 0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: .85; } 50% { transform: translate(-50%, -50%) scale(1.08); opacity: 1; } }
+.cv-p { position: absolute; width: 5px; height: 5px; border-radius: 50%; background: var(--gold, #d9a441);
+  box-shadow: 0 0 10px 2px rgba(217, 164, 65, .55); opacity: .9; animation: cv-drift 4s ease-in-out infinite; }
+.cv-p.s { width: 3px; height: 3px; opacity: .55; animation-duration: 5s; }
+.cv-p.c { background: var(--eclat, #aac8ff); box-shadow: 0 0 12px 3px rgba(170, 200, 255, .6); }
+@keyframes cv-drift { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(0, -8px); } }
+
+/* modal */
+.cv-modal { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 640px;
+  border: 1px solid var(--eclat, #aac8ff); border-radius: 16px; background: rgba(8, 12, 24, .92);
+  box-shadow: 0 0 0 1px rgba(170, 200, 255, .18), 0 0 80px -20px rgba(170, 200, 255, .55), 0 30px 90px -30px #000;
+  padding: 34px 38px 30px; z-index: 5; outline: 1px solid rgba(170, 200, 255, .14); outline-offset: 7px; }
+
+.cv-eyebrow { text-align: center; font-size: 11px; letter-spacing: .4em; text-transform: uppercase; color: var(--dim, #8fa3c8); }
+.cv-title { font-family: var(--font-display, 'Cormorant Garamond', serif); font-weight: 700; font-size: 44px; text-align: center;
+  color: #f2f7ff; margin-top: 4px; letter-spacing: .04em; text-shadow: 0 0 24px rgba(170, 200, 255, .45); }
+.cv-lore { margin: 10px auto 22px; max-width: 480px; text-align: center;
+  font-family: var(--font-display, 'Cormorant Garamond', serif); font-style: italic; font-size: 16px; color: var(--dim, #8fa3c8); line-height: 1.5; }
+
+/* ganho central */
+.cv-gain-strip { display: flex; gap: 12px; justify-content: center; margin-bottom: 20px; }
+.cv-g { flex: 1; text-align: center; border: 1px solid var(--line, rgba(170, 200, 255, .26)); border-radius: 12px;
+  background: rgba(14, 20, 36, .9); padding: 13px 10px; }
+.cv-g .cv-l { font-size: 9.5px; letter-spacing: .24em; text-transform: uppercase; color: var(--faint, #5a6678); }
+.cv-g .cv-v { font-family: var(--font-display, 'Cormorant Garamond', serif); font-weight: 700; font-size: 30px;
+  color: var(--eclat, #aac8ff); margin-top: 2px; text-shadow: 0 0 16px rgba(170, 200, 255, .4); font-variant-numeric: tabular-nums; }
+.cv-g .cv-d { font-size: 10.5px; color: var(--dim, #8fa3c8); margin-top: 2px; font-variant-numeric: tabular-nums; }
+.cv-g.points .cv-v { color: #f2f7ff; }
+
+/* dispersa / permanece */
+.cv-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 22px; }
+.cv-col { border: 1px solid var(--line-soft, rgba(170, 200, 255, .13)); border-radius: 12px; background: rgba(10, 15, 28, .7); padding: 13px 16px; }
+.cv-col h4 { font-size: 10px; letter-spacing: .26em; text-transform: uppercase; margin-bottom: 9px; }
+.cv-col.lost h4 { color: var(--gold, #d9a441); }
+.cv-col.kept h4 { color: var(--eclat, #aac8ff); }
+.cv-col ul { list-style: none; display: grid; gap: 6px; }
+.cv-col li { font-size: 12.5px; color: var(--dim, #8fa3c8); display: flex; align-items: center; gap: 8px; }
+.cv-col li::before { content: ''; width: 5px; height: 5px; border-radius: 50%; flex: none; }
+.cv-col.lost li::before { background: var(--gold, #d9a441); box-shadow: 0 0 6px rgba(217, 164, 65, .6); }
+.cv-col.kept li::before { background: var(--eclat, #aac8ff); box-shadow: 0 0 6px rgba(170, 200, 255, .6); }
+.cv-col.kept li b { color: var(--ink, #dbe6ff); font-weight: 600; }
+
+.cv-actions { display: flex; gap: 12px; }
+.cv-later { appearance: none; cursor: pointer; flex: 1; height: 54px; border: 1px solid var(--line, rgba(170, 200, 255, .26));
+  border-radius: 12px; background: transparent; color: var(--dim, #8fa3c8); font-weight: 600; font-size: 13px; letter-spacing: .14em; text-transform: uppercase; }
+.cv-later:hover { border-color: var(--dim, #8fa3c8); color: var(--ink, #dbe6ff); }
+.cv-converge { appearance: none; cursor: pointer; flex: 2; height: 54px; border: 0; border-radius: 12px;
+  font-weight: 700; font-size: 14px; letter-spacing: .18em; text-transform: uppercase;
+  background: linear-gradient(180deg, #c4d8ff, var(--eclat, #aac8ff)); color: #06101f;
+  box-shadow: 0 0 32px -6px rgba(170, 200, 255, .75), inset 0 1px 0 rgba(255, 255, 255, .5); }
+.cv-converge:hover { filter: brightness(1.07); }
+.cv-note { margin-top: 12px; text-align: center; font-size: 11px; color: var(--faint, #5a6678); font-style: italic; }
+
+/* borda ornamental (assets reais, transbordando o modal) */
+.cv-orn { position: absolute; pointer-events: none; z-index: 6; }
+.cv-orn img { display: block; width: 100%; height: auto; filter: drop-shadow(0 0 10px rgba(170, 200, 255, .35)); }
+.cv-orn.crest { top: -128px; left: 50%; transform: translateX(-50%); width: 300px; }
+.cv-orn.tl { top: -56px; left: -58px; width: 150px; }
+.cv-orn.tr { top: -56px; right: -58px; width: 150px; }
+.cv-orn.bl { bottom: -66px; left: -62px; width: 170px; }
+.cv-orn.br { bottom: -66px; right: -62px; width: 170px; }

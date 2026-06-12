@@ -1,12 +1,9 @@
 node_modules/
-*.log
+dist/
 .DS_Store
-Thumbs.db
+*.local
 
-# Documentos internos (contexto e decisões) — não versionar, só local
-/CONTEXT.md
-/docs/
-
-# Ferramentas locais de dev (preview) — não fazem parte do jogo
-/.claude/
-/gaiadon-clone/js/_sim.js
+# ferramentas locais de dev (preview) e referencias de mockup — nao versionar
+.claude/
+_mockups_ref/
+__pycache__/
