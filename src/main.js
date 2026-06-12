@@ -34,7 +34,7 @@ setupAutosave();
 // Tick de simulação (100ms fixo) + render por tick
 startLoop((dt) => {
   combatTick(state, dt);
-  automationTick(state); // §8 Fate Keepers (A1-A2): auto-stats/converge/progress (se ligados)
+  automationTick(state, dt); // §8 Fate Keepers: auto-stats/converge/progress + Eco do Seeker (A3)
   renderUI(state);
 });
 

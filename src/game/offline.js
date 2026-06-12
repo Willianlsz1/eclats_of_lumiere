@@ -26,7 +26,7 @@ export function simulateOffline(state, seconds) {
   const ticks = Math.floor(simSeconds / TICK_SECONDS);
   for (let i = 0; i < ticks; i++) {
     combatTick(state, TICK_SECONDS);
-    automationTick(state); // §8: automações dos Fate Keepers também rodam offline
+    automationTick(state, TICK_SECONDS); // §8: automações + Eco do Seeker rodam offline também
   }
 
   // Garantia do §15: nunca abrir morto — completa o respawn pendente

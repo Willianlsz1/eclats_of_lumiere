@@ -51,6 +51,7 @@ export function createInitialState() {
     // §8 (Passo 5): dificuldade selecionada (índice em DIFFICULTIES) + automações dos Fate Keepers
     difficulty: 0,
     auto: { stats: false, converge: false, progress: false }, // toggl_es (default off; desbloqueiam por Ascension)
+    ecoMap: 0, // §8 Eco do Seeker (A3): mapa que o eco farma em 2º plano (0 = nenhum)
 
     // Posição no mundo
     map: 1,
@@ -131,6 +132,7 @@ export function applySnapshot(snapshot) {
   state.difficulty = snapshot.difficulty ?? 0;
   const a = snapshot.auto || {};
   state.auto = { stats: !!a.stats, converge: !!a.converge, progress: !!a.progress };
+  state.ecoMap = snapshot.ecoMap ?? 0; // §8 Eco do Seeker (schema v5)
   // §8 (schema v4): tier de Despertar. MIGRA de saves antigos a partir das ascensions p/
   // NÃO regredir o tier — cada ascension passada implica um Despertar (você passou a Sub 3
   // do mapa p/ vencer o boss e ascender); +1 se já passou a Sub 3 do mapa ATUAL.
@@ -162,6 +164,7 @@ export function toSnapshot() {
     materiais: [...state.materiais],                      // §13B (persiste sempre)
     difficulty: state.difficulty,                         // §8 (Passo 5)
     auto: { ...state.auto },                              // §8 automações
+    ecoMap: state.ecoMap,                                 // §8 Eco do Seeker (A3)
     passives: JSON.parse(JSON.stringify(state.passives)), // persiste sempre (§7)
     eclats: state.eclats,                                 // §10
     ascensions: state.ascensions,                         // §9

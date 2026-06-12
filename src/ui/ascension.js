@@ -5,7 +5,7 @@
 // Contrato: buildAscensionView(root, state) monta o DOM; renderAscension(state) atualiza.
 
 import { formatNumber } from '../core/format.js';
-import { ASCENSIONS, DIFFICULTIES } from '../data/constants.js';
+import { ASCENSIONS, DIFFICULTIES, MAPS } from '../data/constants.js';
 import {
   nextAscension, ascMult, reqMet, canAscend, doAscend, currentRank, eclatsDripPerSec,
 } from '../game/ascension.js';
@@ -43,6 +43,11 @@ export function buildAscensionView(root, state) {
       <div class="as-diffs" id="as-diffs">
         ${DIFFICULTIES.map((d, i) => `<button type="button" data-diff="${i}">${d.name}</button>`).join('')}
       </div>
+      <h3>Eco do Seeker <i class="as-fk">A3</i></h3>
+      <div class="as-diffs" id="as-eco">
+        <button type="button" data-eco="0">Desligado</button>
+        ${MAPS.map((m) => `<button type="button" data-eco="${m.id}">Map ${m.id}</button>`).join('')}
+      </div>
     </section>
   `;
 
@@ -53,6 +58,12 @@ export function buildAscensionView(root, state) {
     }));
   $('as-diffs').querySelectorAll('button[data-diff]').forEach((b) =>
     b.addEventListener('click', () => { setDifficulty(state, Number(b.dataset.diff)); renderAscension(state); }));
+  $('as-eco').querySelectorAll('button[data-eco]').forEach((b) =>
+    b.addEventListener('click', () => {
+      const m = Number(b.dataset.eco);
+      if (state.ascensions >= 3 && m <= state.map) state.ecoMap = m;
+      renderAscension(state);
+    }));
 
   const ladder = $('as-ladder');
   ASCENSIONS.forEach((a, idx) => {
@@ -131,5 +142,12 @@ export function renderAscension(state) {
     b.classList.toggle('active', state.difficulty === i);
     b.textContent = d.breakInf ? `${d.name} 🔒` : d.name;
     b.title = d.breakInf ? 'Requer break_infinity (futuro)' : `×${formatNumber(d.hpMult)} HP/dano · ×${d.rewardMult} recompensa`;
+  });
+  // Eco do Seeker (A3): só mapas já alcançados (≤ map atual) selecionáveis
+  const ecoOn = state.ascensions >= 3;
+  $('as-eco').querySelectorAll('button[data-eco]').forEach((b) => {
+    const m = Number(b.dataset.eco);
+    b.disabled = !ecoOn || (m > state.map);
+    b.classList.toggle('active', state.ecoMap === m);
   });
 }

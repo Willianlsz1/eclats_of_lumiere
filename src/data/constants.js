@@ -190,6 +190,12 @@ export const DIFFICULTIES = [
 export const FATE = {
   a4MobBonus: 6, // +6 mobs no pack quando ascensions ≥ 4 (respeita o teto ~24: sub5 12→18)
 };
+// Fate Keeper A3 — ECO DO SEEKER (Bloco 3): um eco farma um mapa já limpo em 2º plano.
+export const ECO = {
+  fraction: 0.35, // ✅ rende 35% do farm daquele mapa (faixa 25-40%). Útil p/ material de refino,
+                  // mas SEMPRE < farm ativo (o eco roda um mapa MAIS BAIXO/limpo, não o atual).
+  killRate: 15,   // kills/s equivalentes do eco (= teto de APS)
+};
 
 // §7 — PASSIVAS · economia ✅ canônica · efeitos individuais ⏳ PROVISÓRIOS.
 // 3 árvores × 15 (3 grupos de 5). Moeda = Vestiges. Desbloqueia na 1ª Convergence.
@@ -295,5 +301,5 @@ export const TICK_SECONDS = 0.1;     // tick fixo de 100ms
 export const MAX_CATCHUP_TICKS = 50; // teto de catch-up por frame (ausências longas: offline §15 no reload)
 export const AUTOSAVE_MS = 10_000;
 export const SAVE_KEY = 'eclats_save_v1';
-export const SCHEMA_VERSION = 4; // v4 (Passo 7): + state.despertares (tier de Despertar)
+export const SCHEMA_VERSION = 5; // v5 (Bloco 3): + state.ecoMap (Eco do Seeker, Fate Keeper A3)
 export const NUMBER_CAP = 1e100;     // teto do jogo base — cabe no float nativo

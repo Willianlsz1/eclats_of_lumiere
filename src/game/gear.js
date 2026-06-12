@@ -49,11 +49,29 @@ export const gearDamageMult   = (s) => gearMultBy(s, 'dmg');
 export const gearHpMult       = (s) => gearMultBy(s, 'hp');
 export const gearDefesaMult   = (s) => gearMultBy(s, 'defesa');   // consumido na mitigação (Passo 2)
 export const gearApsMult      = (s) => gearMultBy(s, 'aps');      // ⛓️ consumidor no apsCap (passo futuro)
-export const gearLumensMult   = (s) => gearMultBy(s, 'lumens');
-export const gearXpMult       = (s) => gearMultBy(s, 'xp');
 export const gearRegenMult    = (s) => gearMultBy(s, 'regen');    // ⛓️ consumidor no regen (passo futuro)
 export const gearBossDmgMult  = (s) => gearMultBy(s, 'bossDmg');  // ⛓️ consumidor no hit em boss (passo futuro)
-export const gearMateriaisMult = (s) => gearMultBy(s, 'materiais'); // ⛓️ consumidor no drop (Passo 4)
+
+// ── Afixos de FARM (Lumens/XP/Materiais) — REGRA Bloco 3: só flat/% ADITIVO, NUNCA o motor ×.
+// Valor LINEAR do afixo (sem o 1.0039^L): mantém o farm como bônus modesto, não motor de décadas.
+function farmLinear(level, rarity, isSec) {
+  return 1 + level * GEAR.affixPctRate * GEAR.rarityMult[rarity] * (isSec ? GEAR.secondaryExp : 1);
+}
+function farmMultBy(state, type) {
+  let m = 1;
+  for (const def of GEAR.pieces) {
+    const p = state.gear[def.key];
+    if (def.primary === type) m *= farmLinear(p.level, p.rarity, false);
+    for (const sec of activeSecondaries(def, p.rarity)) if (sec === type) m *= farmLinear(p.level, p.rarity, true);
+  }
+  return m;
+}
+export const gearLumensMult = (s) => farmMultBy(s, 'lumens'); // Farm: linear (sem motor)
+export const gearXpMult     = (s) => farmMultBy(s, 'xp');     // Farm: linear (sem motor)
+// Materiais → DROP: AMORTECIDO por log (o bruto linear ~×70 viraria pacing absurdo). yield = 1 + 0.5×log10(bruto).
+// Justificativa: log transforma o crescimento do afixo em bônus ADITIVO limitado; 0.5 lança ≈ ×2 no endgame
+// (linear bruto ×70 → log10=1.85 → ×1.9), preservando o pacing de ~27 min/tier (drop base 1% intocado).
+export const gearMaterialDropMult = (s) => 1 + 0.5 * Math.log10(Math.max(1, farmMultBy(s, 'materiais')));
 
 // Crit chance: soma plana (primário Grasp + secundário Resonance a 30%)
 export function gearCritAdd(state) {
