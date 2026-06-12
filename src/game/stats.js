@@ -3,8 +3,8 @@
 // Mémoires) valem 1 até seus CPs chegarem.
 
 import { COMBAT, GOLD_STATS, CRIT, CONVERGENCE, DEFENSE } from '../data/constants.js';
-import { gearDamageMult, gearHpMult, gearCritAdd, gearDefesaMult, gearCritDmgAdd } from './gear.js';
-import { passiveDmgMult, passiveHpMult, passiveCritAdd, passiveEnemyPen, passiveEnemyReduce } from './passives.js';
+import { gearDamageMult, gearHpMult, gearCritAdd, gearDefesaMult, gearCritDmgAdd, gearApsMult } from './gear.js';
+import { passiveDmgMult, passiveHpMult, passiveCritAdd, passiveEnemyPen, passiveEnemyReduce, passiveApsMult } from './passives.js';
 import { memoireDmgMult, memoireHpMult, memoireCritDmgMult, memoireSurvivalMult } from './memoires.js';
 import { ascMult, despertarMult } from './ascension.js';
 
@@ -51,9 +51,14 @@ export function buyStatMax(state, key) {
 
 // ───── APS e crit ─────
 
-// agi: sem milestones (cap duro de 1.25 APS torna-os irrelevantes — herdado do sim)
+// APS (§4, Bloco 6): 3 fontes multiplicativas, teto 15 (fecha só no late).
+//   AGI (sub-cap ×3.75 → ~1.5) × Fracture Pulse (passiva, ~×6.5) × Resonance (gear, AMORTECIDO por log).
+//   Resonance amortecido (não-motor): APS é capado, não é corrida de décadas — o gear só fecha o último trecho.
 export function currentAPS(state) {
-  return Math.min(COMBAT.apsCap, COMBAT.baseAPS * (1 + state.stats.agi * GOLD_STATS.per.agi));
+  const agiFactor = Math.min(COMBAT.agiApsCap, 1 + state.stats.agi * GOLD_STATS.per.agi);
+  const resonance = 1 + 0.3 * Math.log10(Math.max(1, gearApsMult(state))); // fecha ~9.8 → 15 maxado
+  const aps = COMBAT.baseAPS * agiFactor * passiveApsMult(state) * resonance;
+  return Math.min(COMBAT.apsCap, aps);
 }
 
 // ⏳ Crit provisório (GDD §16.6): rate = lck × 1.5%, sem milestones;

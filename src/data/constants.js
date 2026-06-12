@@ -5,7 +5,8 @@
 export const COMBAT = {
   baseDmg: 7,
   baseAPS: 0.40,          // intervalo de ataque 2.5s
-  apsCap: 1.25,           // intervalo mínimo 0.8s
+  apsCap: 15,             // ✅ CALIBRADO (Bloco 6): teto 15 kills/s (54k/h). Fecha só no late.
+  agiApsCap: 3.75,        // sub-cap do AGI: AGI sozinho leva o APS só até ~1.5 (0.40 × 3.75)
   playerBaseHp: 50,
   regenPerSec: 0.01,      // 1% do HP máx por segundo
   regenOnKill: 0.02,      // 2% do HP máx por kill
