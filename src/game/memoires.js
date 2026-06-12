@@ -4,7 +4,7 @@
 
 import {
   MEMOIRES, MEMOIRE_CLARTE_BASE, MEMOIRE_UNLOCK, MEMOIRE_EVO_BASE, MEMOIRE_EVO_RAMP,
-  MEMOIRE_CLARTE_EXP_PER,
+  MEMOIRE_CLARTE_EXP_PER, MEMOIRE_INDIV_DMG_CAP,
 } from '../data/constants.js';
 
 export const eraOf = (i) => MEMOIRES[i].era;
@@ -61,8 +61,11 @@ function clarteExponent(state) {
 }
 export const clarte = (state) => MEMOIRE_CLARTE_BASE ** clarteExponent(state);
 
-// dano = Clarté × (1 + Σ dmg) × Π dmgMult  (§4: × memoire_mult)
-export const memoireDmgMult     = (s) => clarte(s) * (1 + eff(s, 'dmg')) * mulType(s, 'dmgMult');
+// dano = Clarté × bônus individual AMORTECIDO (#1 + #10), capado p/ não abrir gap no late.
+// A Clarté é O motor (70 déc); #1/#10 dão um bônus pequeno por cima (teto ×CAP) e seus níveis
+// ainda alimentam a Clarté via totalLevels. Andar Mémoires ≈ 70 déc no TOTAL.
+export const memoireDmgMult = (s) =>
+  clarte(s) * Math.min(MEMOIRE_INDIV_DMG_CAP, (1 + eff(s, 'dmg')) * mulType(s, 'dmgMult'));
 // HP recebe os MESMOS fatores de prestige (§4) — INCLUSIVE a Clarté. Sem isto o HP fica ~70 déc
 // atrás do dano e o jogador morre instantâneo no late (a sobrevivência da Camada 2 assume HP∝dano).
 export const memoireHpMult      = (s) => clarte(s) * (1 + eff(s, 'hp') + eff(s, 'survival'));

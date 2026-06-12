@@ -79,9 +79,11 @@ export function critDamageMult(state) {
 
 // ───── Fórmulas do jogador (§4 e §6) ─────
 
-// level_do_Seeker = (XP_total_da_vida / 10)^0.4 — display (§6)
+// level_do_Seeker = (XP_total_da_vida / 10)^0.4 — display (§6). TETO 1e9 (§3: "1 → 1e9").
+// Sem o teto, no late o heroLevel atinge ~1e38 e o level_bonus entrega ~18 déc (gap-opener);
+// capado, level_bonus satura em ~3.8 déc (constante após o mid) — fix da curva de poder.
 export function heroLevel(xpTotal) {
-  return Math.max(1, Math.floor((xpTotal / 10) ** 0.4));
+  return Math.min(1e9, Math.max(1, Math.floor((xpTotal / 10) ** 0.4)));
 }
 
 // level_bonus = 1 + sqrt(heroLevel) × 0.20 (§4)

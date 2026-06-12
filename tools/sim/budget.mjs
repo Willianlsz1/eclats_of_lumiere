@@ -29,7 +29,7 @@ const budget = [
   ['Convergence',                   4, 'bola de neve composta'],
   ['Despertar',  +despertarDecades.toFixed(1), 'mudança de classe ×5/tier (×625)'],
   ['Ascension',  +ascDecades.toFixed(1), 'marco de mapa ×2 (×16)'],
-  ['Level bonus',                   1, 'menor'],
+  ['Level bonus',                 3.8, 'heroLevel CAPADO em 1e9 (§3) → satura ~3.8 déc constante'],
 ];
 
 let total = 0;

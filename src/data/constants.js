@@ -291,6 +291,10 @@ export const MEMOIRE_EVO_BASE = 2, MEMOIRE_EVO_RAMP = 3.0; // §11: evolução =
 // ⚠️ #14 de la Lumière Entière amplifica o EXPOENTE da Clarté — a alavanca MAIS PERIGOSA
 // (multiplica o expoente que monta as ~70 décadas). STUB = 0 até a sessão de Escala (auditoria).
 export const MEMOIRE_CLARTE_EXP_PER = 0; // por nível; 0 = wired mas desarmado
+// AMORTECE os efeitos INDIVIDUAIS de dano (#1 du Premier Matin + #10 de la Blessure): teto no bônus
+// sobre a Clarté, p/ o andar Mémoires somar ~70 déc no TOTAL (Clarté + indiv), não 70 + extras.
+// Sem isto, #10 (×1.10/nível) abria ~9 déc no late (gap-opener). Os níveis ainda contam via Clarté.
+export const MEMOIRE_INDIV_DMG_CAP = 3; // ×3 máx de bônus individual sobre a Clarté (~0.5 déc)
 // Nomes das eras (Épopées) — ⏳ TODO(canon): placeholders L'Aube…Le Choix.
 export const MEMOIRE_ERAS = ['L’Aube', 'Le Façonnage', 'La Chute', 'La Blessure', 'Le Choix'];
 export const MEMOIRES = [
