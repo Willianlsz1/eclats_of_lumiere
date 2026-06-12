@@ -63,7 +63,9 @@ export const clarte = (state) => MEMOIRE_CLARTE_BASE ** clarteExponent(state);
 
 // dano = Clarté × (1 + Σ dmg) × Π dmgMult  (§4: × memoire_mult)
 export const memoireDmgMult     = (s) => clarte(s) * (1 + eff(s, 'dmg')) * mulType(s, 'dmgMult');
-export const memoireHpMult      = (s) => 1 + eff(s, 'hp') + eff(s, 'survival'); // #11 também no HP
+// HP recebe os MESMOS fatores de prestige (§4) — INCLUSIVE a Clarté. Sem isto o HP fica ~70 déc
+// atrás do dano e o jogador morre instantâneo no late (a sobrevivência da Camada 2 assume HP∝dano).
+export const memoireHpMult      = (s) => clarte(s) * (1 + eff(s, 'hp') + eff(s, 'survival'));
 export const memoireLumensMult  = (s) => 1 + eff(s, 'lumens');
 export const memoireXpMult      = (s) => 1 + eff(s, 'xp');
 export const memoireVestigeMult = (s) => 1 + eff(s, 'vestiges');
