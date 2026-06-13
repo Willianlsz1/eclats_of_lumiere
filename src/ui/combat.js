@@ -9,9 +9,7 @@
 
 import { formatNumber } from '../core/format.js';
 import { picture, bg } from '../data/assets.js';
-import {
-  heroLevel, dps, playerHpMax, currentAPS, critChance, critDamageMult,
-} from '../game/stats.js';
+import { heroLevel, playerHpMax } from '../game/stats.js';
 import { changeSubarea } from '../game/combat.js';
 import { getCurrentMap, subareaLevelRange } from '../game/enemies.js';
 import { currentRank, seekerFrame, seekerPortrait } from '../game/ascension.js';
@@ -24,31 +22,46 @@ const ENEMY_ART_FALLBACK = 'enemies.map1.deer_spirit';
 
 // Pontos de spawn fixos dentro da arena (%) — pack ≤ 8 (packSizes do GDD),
 // então renderizamos todos, sem badge "+N".
-const SPAWN_POINTS = [
-  { x: 44, y: 32 }, { x: 63, y: 24 }, { x: 81, y: 36 },
-  { x: 37, y: 58 }, { x: 58, y: 55 }, { x: 78, y: 62 },
-  { x: 49, y: 80 }, { x: 71, y: 81 },
-];
-const BOSS_POINT = { x: 60, y: 50 };
+// Grade 4×2 com espaçamento horizontal de 17% (≥217px no palco mais estreito,
+// 1280) e cards de 190px (285 de altura) — NUNCA há sobreposição entre mobs.
+// Verticalmente a arena útil (topbar→HUD, ~100..988px) comporta exatamente
+// 3 bandas de 285px com ~17px de folga: linha de cima (y 22.5%), faixa
+// exclusiva do boss no meio (y 50.5%) e linha de baixo (y 78%).
+// Packs grandes (9..12, GDD packSizes=[2,4,6,9,12]) usam grade 6×2 com cards
+// menores (140px) — TODOS os mobs do pack aparecem, nunca menos.
+const GRID_COLS_4 = [30, 47, 64, 81];                      // espaçamento 17%
+const GRID_COLS_6 = [28, 39.6, 51.2, 62.8, 74.4, 86];      // espaçamento 11.6%
+const BOSS_POINT = { x: 55, y: 50.5 };
+
+// Posição do i-ésimo mob num pack de `total` (linha de cima → linha de baixo).
+// Sem boss em cena: 2 fileiras altas (cards grandes, y 30/70.5). Com boss: as
+// fileiras abrem a faixa do meio pra ele (y 22.5/78) e os cards encolhem.
+function spawnPos(i, total, bossOut) {
+  const cols = total > 8 ? GRID_COLS_6 : GRID_COLS_4;
+  const top = i < cols.length;
+  const y = bossOut ? (top ? 22.5 : 78) : (top ? 30 : 70.5);
+  return { x: cols[i % cols.length], y };
+}
 
 // Janela de suavização das taxas do HUD (EMA simples)
 let rates = null;
 
 // Troca o retrato e a moldura do Seeker conforme o tier (só quando muda)
 function updateSeekerCard(seekerEl, portraitId, frameId) {
-  const port = seekerEl.querySelector('.cb-portrait');
-  if (!port) return;
-  if (port.dataset.portrait !== portraitId) {
-    port.dataset.portrait = portraitId;
-    const img = port.querySelector('picture:not(.cb-frame)');
-    if (img) img.outerHTML = picture(portraitId, { alt: 'The Seeker' });
+  const art = seekerEl.querySelector('.scard-art');
+  if (!art) return;
+  if (seekerEl.dataset.portrait !== portraitId) {
+    seekerEl.dataset.portrait = portraitId;
+    art.innerHTML = picture(portraitId, { className: 'scard-art-img', alt: 'The Seeker' });
   }
-  if (port.dataset.frame !== frameId) {
-    port.dataset.frame = frameId;
-    const old = port.querySelector('.cb-frame');
+  if (seekerEl.dataset.frame !== frameId) {
+    seekerEl.dataset.frame = frameId;
+    const old = seekerEl.querySelector('.scard-frame');
     if (old) old.remove();
-    port.insertAdjacentHTML('beforeend', picture(frameId, { className: 'cb-frame', alt: '' }));
+    seekerEl.insertAdjacentHTML('beforeend', picture(frameId, { className: 'scard-frame', alt: '' }));
   }
+  // imagens absolutas não disparam lazy-load — força carregamento imediato
+  seekerEl.querySelectorAll('img').forEach((img) => { img.loading = 'eager'; });
 }
 
 export function buildCombatView(root, state) {
@@ -57,37 +70,37 @@ export function buildCombatView(root, state) {
   root.innerHTML = `
     <div class="cb-backdrop" id="cb-backdrop"></div>
 
-    <aside class="cb-seeker" id="cb-seeker">
-      <div class="cb-portrait">
-        ${picture('seeker.t1', { alt: 'The Seeker' })}
-        ${picture('frames.tier1', { className: 'cb-frame', alt: '' })}
+    <aside class="cb-seeker scard" id="cb-seeker">
+      <div class="scard-bg"></div>
+      <div class="scard-art">
+        ${picture('seeker.t1', { className: 'scard-art-img', alt: 'The Seeker' })}
       </div>
-      <h2 class="cb-name">The Seeker</h2>
-      <div class="cb-tier" id="cb-tier">Ordre des Veilleurs · Tier I</div>
-      <div class="cb-hpbar"><i class="cb-hp-fill" id="cb-hp-fill"></i>
-        <span class="cb-hp-text" id="cb-hp-text">—</span></div>
-      <div class="cb-status" id="cb-status" hidden></div>
-      <dl class="cb-mini">
-        <div><dt>Lv</dt><dd id="cb-level">1</dd></div>
-        <div><dt>DPS</dt><dd id="cb-dps">0</dd></div>
-        <div><dt>APS</dt><dd id="cb-aps">0</dd></div>
-        <div><dt>Crit</dt><dd id="cb-crit">0%</dd></div>
-      </dl>
+      <div class="scard-inner">
+        <div class="scard-name">The Seeker</div>
+        <div class="scard-tier" id="cb-tier">Seeker · Tier I</div>
+        <div class="scard-div"></div>
+        <div class="scard-hpbar"><i id="cb-hp-fill"></i>
+          <span id="cb-hp-text">—</span></div>
+        <div class="scard-lvbar"><i></i>
+          <span id="cb-lv-text">LVL 1</span></div>
+        <div class="cb-status" id="cb-status" hidden></div>
+      </div>
+      ${picture('frames.tier1', { className: 'scard-frame', alt: '' })}
     </aside>
 
     <div class="cb-arena" id="cb-arena"><!-- enemy cards (JS) --></div>
 
     <footer class="cb-hud">
       <div class="cb-nav">
-        <button type="button" class="cb-arrow" id="cb-prev" title="Sub-área anterior">◀</button>
+        <button type="button" class="cb-arrow" id="cb-prev" title="Previous sub-area">◀</button>
         <div class="cb-zone">
           <b id="cb-zone-name">The Dreaming Wood</b>
-          <span id="cb-zone-sub">Sub-área 1/5</span>
+          <span id="cb-zone-sub">Sub-area 1/5</span>
         </div>
-        <button type="button" class="cb-arrow" id="cb-next" title="Próxima sub-área">▶</button>
+        <button type="button" class="cb-arrow" id="cb-next" title="Next sub-area">▶</button>
       </div>
       <div class="cb-progress">
-        <span class="cb-progress-label" id="cb-progress-label">Rumo ao Guardião</span>
+        <span class="cb-progress-label" id="cb-progress-label">Toward the Guardian</span>
         <div class="cb-progress-bar"><i id="cb-progress-fill"></i></div>
       </div>
       <dl class="cb-metrics">
@@ -117,17 +130,13 @@ export function renderCombat(state) {
   updateSeekerCard($('cb-seeker'), seekerPortrait(state), seekerFrame(state));
   $('cb-hp-fill').style.width = `${Math.max(0, (state.player.hp / hpMax) * 100)}%`;
   $('cb-hp-text').textContent =
-    `${formatNumber(Math.max(0, state.player.hp))} / ${formatNumber(hpMax)}`;
-  $('cb-level').textContent = formatNumber(heroLevel(state.xpTotal));
-  $('cb-dps').textContent = formatNumber(dps(state));
-  $('cb-aps').textContent = currentAPS(state).toFixed(2);
-  $('cb-crit').textContent =
-    `${(critChance(state) * 100).toFixed(1)}% ×${critDamageMult(state).toFixed(2)}`;
+    `HP: ${formatNumber(Math.max(0, state.player.hp))}/${formatNumber(hpMax)}`;
+  $('cb-lv-text').textContent = `LVL ${formatNumber(heroLevel(state.xpTotal))}`;
 
   const status = $('cb-status');
   const seeker = $('cb-seeker');
   if (state.player.dead) {
-    status.textContent = `Caído — retorna em ${Math.ceil(state.player.respawnTimer)}s`;
+    status.textContent = `Fallen — returns in ${Math.ceil(state.player.respawnTimer)}s`;
     status.hidden = false;
     seeker.classList.add('dead');
   } else {
@@ -141,14 +150,14 @@ export function renderCombat(state) {
   if (bd) bd.style.backgroundImage = bg(map.bg);
   const range = subareaLevelRange(map, state.subarea);
   $('cb-zone-sub').textContent =
-    `Sub-área ${state.subarea}/${map.subareaCount} · Lv ${Math.round(range.lo)}–${Math.round(range.hi)}`;
+    `LV ${Math.round(range.lo)}–${Math.round(range.hi)}`;
   const prev = $('cb-prev');
   const next = $('cb-next');
   prev.disabled = state.subarea <= 1;
   next.disabled = state.subarea >= state.unlockedSubarea;
   next.title = next.disabled && state.subarea < map.subareaCount
-    ? 'Derrote o Guardião desta sub-área para avançar'
-    : 'Próxima sub-área';
+    ? "Defeat this sub-area's Guardian to advance"
+    : 'Next sub-area';
 
   // ── Onda atual + progresso até o boss (modelo de ondas: limpa a onda → próxima;
   //    o Guardião entra na onda ao bater killsInSubarea/bossKillThreshold). ──
@@ -157,8 +166,8 @@ export function renderCombat(state) {
   const pct = Math.min(100, (state.killsInSubarea / map.bossKillThreshold) * 100);
   $('cb-progress-fill').style.width = `${pct}%`;
   $('cb-progress-label').textContent = bossOut
-    ? `⚔ O Guardião chegou · ${alive} na onda`
-    : `Onda ${state.wave} · ${alive} vivo${alive === 1 ? '' : 's'} · Guardião ${Math.floor(pct)}%`;
+    ? `⚔ The Guardian has arrived · ${alive} in the wave`
+    : `Wave ${state.wave} · ${alive} alive · Guardian ${Math.floor(pct)}%`;
 
   // ── HUD: taxas suavizadas ──
   renderRates(state);
@@ -172,9 +181,12 @@ export function renderCombat(state) {
 function renderEnemies(state) {
   const arena = $('cb-arena');
 
+  const totalMobs = state.enemies.reduce((n, m) => n + (m.isBoss ? 0 : 1), 0);
+  const bossPresent = state.enemies.some((m) => m.isBoss);
+  arena.classList.toggle('with-boss', bossPresent);
   if (arena.children.length !== state.enemies.length) {
     arena.innerHTML = '';
-    state.enemies.forEach((mob, i) => arena.appendChild(buildEnemyCard(mob, i)));
+    state.enemies.forEach((mob, i) => arena.appendChild(buildEnemyCard(mob, i, totalMobs, bossPresent)));
   }
 
   // Alvo do motor: o vivo de menor HP recebe a borda dourada
@@ -187,7 +199,7 @@ function renderEnemies(state) {
   state.enemies.forEach((mob, i) => {
     let card = arena.children[i];
     if (!card || card.dataset.mobId !== String(mob.id)) {
-      const fresh = buildEnemyCard(mob, i);
+      const fresh = buildEnemyCard(mob, i, totalMobs, bossPresent);
       if (card) arena.replaceChild(fresh, card); else arena.appendChild(fresh);
       card = fresh;
     }
@@ -198,47 +210,73 @@ function renderEnemies(state) {
     }
     card.style.display = '';
     const pct = Math.max(0, (mob.hp / mob.hpMax) * 100);
-    card.querySelector('.cb-e-fill').style.width = `${pct}%`;
-    card.querySelector('.cb-e-hp').textContent =
-      `${formatNumber(Math.max(0, mob.hp))} / ${formatNumber(mob.hpMax)}`;
+    card.querySelector('.ecard-fill').style.width = `${pct}%`;
+    card.querySelector('.ecard-hp').textContent = `HP: ${formatNumber(Math.max(0, mob.hp))}`;
     card.classList.toggle('target', mob.id === targetId);
+    if (!card.dataset.fitted) { fitEnemyName(card); card.dataset.fitted = '1'; }
   });
 }
 
-function buildEnemyCard(mob, i) {
-  const pos = mob.isBoss ? BOSS_POINT : SPAWN_POINTS[i % SPAWN_POINTS.length];
+function buildEnemyCard(mob, i, total, bossOut) {
+  const pos = mob.isBoss ? BOSS_POINT : spawnPos(i, total, bossOut);
+  const dense = !mob.isBoss && total > 8; // pack grande → cards compactos
   const artId = mob.art || ENEMY_ART_FALLBACK; // arte vem do mapa (enemies.js)
-
-  const frameId = mob.frame || 'frames.enemy_universal';
   const card = document.createElement('article');
-  card.className = mob.isBoss ? 'cb-enemy boss' : 'cb-enemy';
+  card.className = mob.isBoss ? 'cb-enemy ecard boss' : `cb-enemy ecard${dense ? ' dense' : ''}`;
   card.dataset.mobId = mob.id;
   card.style.left = `${pos.x}%`;
   card.style.top = `${pos.y}%`;
+  // 3 camadas: (1) janela de arte + faixa de nome · (2) moldura PNG (centro
+  // transparente) · (3) ATK/HP + barra de vida · floats de dano por golpe.
   card.innerHTML = `
-    <div class="cb-e-art">
-      ${picture(artId, { alt: mob.name })}
-      ${picture(frameId, { className: 'cb-e-frame', alt: '' })}
+    <div class="ecard-bg"></div>
+    <div class="ecard-art">
+      ${picture(artId, { className: 'ecard-art-img', alt: mob.name })}
     </div>
-    <div class="cb-e-name">${mob.isBoss ? '👑 ' : ''}${mob.name}</div>
-    <div class="cb-e-meta">Lv ${formatNumber(mob.level)}${mob.isBoss ? ' · GUARDIÃO' : ''}</div>
-    <div class="cb-e-bar"><i class="cb-e-fill"></i></div>
-    <div class="cb-e-hp"></div>
+    <div class="ecard-inner">
+      <div class="ecard-name">${mob.isBoss ? '👑 ' : ''}${mob.name}</div>
+      <div class="ecard-lvl">LVL ${formatNumber(mob.level)}${mob.isBoss ? ' · GUARDIAN' : ''}</div>
+      <div class="ecard-div"></div>
+      <div class="ecard-stats">
+        <span class="ecard-atk">ATK: ${formatNumber(mob.dmg)}</span>
+        <span class="ecard-hp">HP: ${formatNumber(mob.hp)}</span>
+      </div>
+      <div class="ecard-bar"><i class="ecard-fill"></i></div>
+      <div class="ecard-sigil">⚔</div>
+    </div>
+    ${mob.frame && mob.frame.startsWith('frames.boss')
+      ? picture(mob.frame, { className: 'ecard-frame', alt: '' })
+      : '<img class="ecard-frame" src="eclats/frames/card_frame_alpha.png" alt="" aria-hidden="true">'}
+    <div class="ecard-floats"></div>
   `;
+  card.querySelectorAll('img').forEach((img) => { img.loading = 'eager'; });
   return card;
+}
+
+// Auto-shrink do nome para não vazar a largura da janela de arte.
+function fitEnemyName(card) {
+  const el = card.querySelector('.ecard-name');
+  if (!el || !el.clientWidth) return;
+  el.style.fontSize = '';
+  let size = parseFloat(getComputedStyle(el).fontSize);
+  let guard = 0;
+  while (el.scrollWidth > el.clientWidth && size > 9 && guard++ < 24) {
+    size -= 1; el.style.fontSize = `${size}px`;
+  }
 }
 
 // Números de dano flutuantes — consome state.fx e a esvazia (a UI é a dona).
 function renderDamageFloats(state) {
   if (state.fx.length === 0) return;
   for (const hit of state.fx) {
-    const art = document.querySelector(`.cb-enemy[data-mob-id="${hit.mobId}"] .cb-e-art`);
-    if (!art) continue; // mob já substituído — descarta
+    const card = document.querySelector(`.cb-enemy[data-mob-id="${hit.mobId}"]`);
+    if (!card) continue; // mob já substituído — descarta
+    const host = card.querySelector('.ecard-floats') || card;
     const el = document.createElement('span');
-    el.className = hit.isCrit ? 'cb-dmg crit' : 'cb-dmg';
-    el.textContent = `${hit.isCrit ? 'CRIT ' : ''}−${formatNumber(hit.amount)}`;
-    art.appendChild(el);
-    setTimeout(() => el.remove(), 800);
+    el.className = hit.isCrit ? 'ecard-dmg crit' : 'ecard-dmg';
+    el.textContent = `-${formatNumber(hit.amount)} HP`;
+    host.appendChild(el);
+    setTimeout(() => el.remove(), 850);
   }
   state.fx.length = 0;
 }

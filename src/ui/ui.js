@@ -30,10 +30,11 @@ const $ = (sel, root = document) => root.querySelector(sel);
 // moedas do topo — leem o state real
 // 3ª moeda = Éclats (§10), fonte das Mémoires. Usa o ícone de convergence
 // (branco-azul) como placeholder até haver ícone próprio. TODO(canon): ícone Éclats.
+// ícones: PNGs dedicados das moedas (caminho Vite direto em public/)
 const COINS = [
-  { id: 'lumens',   icon: 'icons.currency.lumens',      name: 'Lumens',   get: (s) => formatNumber(s.lumens) },
-  { id: 'vestiges', icon: 'icons.currency.vestiges',    name: 'Vestiges', get: (s) => formatNumber(s.vestiges) },
-  { id: 'eclats',   icon: 'icons.currency.convergence', name: 'Éclats',   get: (s) => formatNumber(s.eclats) },
+  { id: 'lumens',   src: 'eclats/offline/icons/lumens.png',   name: 'Lumens',   get: (s) => formatNumber(s.lumens) },
+  { id: 'vestiges', src: 'eclats/offline/icons/vestiges.png', name: 'Vestiges', get: (s) => formatNumber(s.vestiges) },
+  { id: 'eclats',   src: 'eclats/offline/icons/eclats.png',   name: 'Éclats',   get: (s) => formatNumber(s.eclats) },
 ];
 
 // telas. icon = id de nav confirmado pelo Willian. locked = pós-MVP da main.
@@ -62,11 +63,15 @@ export function setupUI(state) {
   window.addEventListener('resize', fit);
 }
 
+// HUD de moedas (.chud): 3 pills agrupadas no vocabulário visual da navbar.
+// Os spans #coin-<id> são atualizados pelo renderUI (fluxo de render existente).
 function buildCoins() {
-  $('.coins').innerHTML = COINS.map((c) =>
-    `<div class="coin ${c.id}">${picture(c.icon, { alt: c.name })}` +
-    `<span class="meta"><span class="n">${c.name}</span><span class="v" id="coin-${c.id}">0</span></span></div>`
-  ).join('');
+  $('.coins').innerHTML =
+    `<div class="chud">` + COINS.map((c) =>
+      `<div class="chud-pill chud-${c.id}" title="${c.name}">` +
+      `<img class="chud-ico" src="${c.src}" alt="${c.name}">` +
+      `<span class="chud-v" id="coin-${c.id}">0</span></div>`
+    ).join('') + `</div>`;
 }
 
 function buildNav() {
@@ -184,12 +189,20 @@ function show(id) {
 
 function fit() {
   const W = window.innerWidth, H = window.innerHeight;
-  const s = Math.min(W / 1920, H / 1080);
+  // Palco com altura de referência fixa (1080) e LARGURA DINÂMICA seguindo a
+  // proporção da janela: o jogo preenche a tela toda (sem letterbox) em
+  // qualquer aspect ratio, sem distorcer nem cortar. Clamp de segurança para
+  // proporções extremas (ultrawide / retrato).
+  const stageW = Math.max(1280, Math.min(2560, Math.round(1080 * (W / H))));
+  const stage = $('#stage');
+  stage.style.width = `${stageW}px`;
+  document.documentElement.style.setProperty('--stage-w', `${stageW}px`);
+  const s = Math.min(W / stageW, H / 1080);
   // Centraliza explicitamente (origem top-left): evita o bug de centralização
   // via grid em telas menores que o palco (celular renderizava o palco fora da área).
-  const x = (W - 1920 * s) / 2;
+  const x = (W - stageW * s) / 2;
   const y = (H - 1080 * s) / 2;
-  $('#stage').style.transform = `translate(${x}px, ${y}px) scale(${s})`;
+  stage.style.transform = `translate(${x}px, ${y}px) scale(${s})`;
   // Corte baixo só para janelas realmente minúsculas — celulares (mesmo em
   // retrato, ~0.21) passam. Mobile é só para visualizar/testar; o alvo é desktop.
   $('#toosmall').style.display = s < 0.12 ? 'grid' : 'none';

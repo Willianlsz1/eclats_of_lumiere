@@ -62,14 +62,17 @@ body {
 .nav { display: flex; gap: 9px; }
 .navbtn {
   appearance: none; cursor: pointer; position: relative;
-  width: 52px; height: 52px; padding: 9px;
+  width: 62px; height: 62px; padding: 11px;
   border: 1px solid var(--line); border-radius: 11px;
   background: var(--panel); backdrop-filter: blur(6px);
   display: grid; place-items: center;
   color: var(--dim); transition: border-color .16s ease, background .16s ease, transform .12s ease;
 }
-.navbtn .ico { width: 100%; height: 100%; display: grid; place-items: center; }
-.navbtn .ico img, .navbtn .ico picture { width: 100%; height: 100%; object-fit: contain;
+/* .ico absoluto: dá um box de tamanho DEFINITIVO pros 100% da picture/img
+   (height:100% em filho de grid entra em loop com a linha e o ícone estoura) */
+.navbtn .ico { position: absolute; inset: 11px; display: grid; place-items: center; }
+.navbtn .ico picture { position: absolute; inset: 0; }
+.navbtn .ico img { display: block; width: 100%; height: 100%; object-fit: contain;
   opacity: .6; transition: opacity .16s ease, filter .16s ease; }
 .navbtn .lbl { display: none; }                 /* tooltip nativo via title */
 .navbtn:hover { border-color: var(--eclat); background: var(--panel-2); transform: translateY(-1px); }
@@ -82,21 +85,34 @@ body {
 }
 .navbtn.provisional .ico { font-size: 22px; color: var(--dim); border: 1px dashed var(--line-soft); border-radius: 8px; }
 
-/* moedas (topo-direita) — estilo chip do mockup */
-.coins { display: flex; align-items: center; gap: 12px; }
-.coin {
-  display: flex; align-items: center; gap: 10px;
-  height: 52px; padding: 0 18px 0 8px;
-  border: 1px solid var(--line); border-radius: 26px;
+/* ---------------- HUD de moedas (.chud) — topo-direita ----------------
+   Mesmo vocabulário visual da navbar: var(--panel) + var(--line) + radius 11
+   + blur(6px). 3 pills agrupadas: ícone (glow na cor da moeda) + valor. */
+.chud { display: flex; align-items: center; gap: 9px; }
+.chud-pill {
+  display: flex; align-items: center; gap: 8px;
+  height: 52px; padding: 0 16px 0 12px;
+  border: 1px solid var(--line); border-radius: 11px;
   background: var(--panel); backdrop-filter: blur(6px);
 }
-.coin picture, .coin img { width: 36px; height: 36px; object-fit: contain; display: block; }
-.coin .meta { display: flex; flex-direction: column; line-height: 1.1; }
-.coin .n { font-size: 10px; color: var(--dim); text-transform: uppercase; letter-spacing: .14em; }
-.coin .v { font-size: 17px; font-weight: 600; letter-spacing: .02em; font-variant-numeric: tabular-nums; }
-.coin.lumens   .v { color: var(--gold); }
-.coin.vestiges .v { color: var(--vest); }
-.coin.eclats   .v { color: var(--eclat); }
+.chud-ico { width: 30px; height: 30px; object-fit: contain; display: block; }
+.chud-lumens   .chud-ico { filter: drop-shadow(0 0 6px color-mix(in srgb, var(--gold)  75%, transparent)); }
+.chud-vestiges .chud-ico { filter: drop-shadow(0 0 6px color-mix(in srgb, var(--frac)  75%, transparent)); }
+.chud-eclats   .chud-ico { filter: drop-shadow(0 0 6px color-mix(in srgb, var(--eclat) 75%, transparent)); }
+.chud-v {
+  font-size: 16px; font-weight: 700; letter-spacing: .02em;
+  font-variant-numeric: tabular-nums; line-height: 1;
+}
+.chud-lumens   .chud-v { color: var(--gold); }
+.chud-vestiges .chud-v { color: var(--frac); }
+.chud-eclats   .chud-v { color: var(--eclat); }
+/* janelas estreitas: pills mais compactas pra caberem lado a lado */
+@media (max-width: 760px) {
+  .chud { gap: 6px; }
+  .chud-pill { height: 40px; padding: 0 10px 0 8px; gap: 6px; }
+  .chud-ico { width: 18px; height: 18px; }
+  .chud-v { font-size: 13px; }
+}
 
 /* ---------------- MAIN (views) ---------------- */
 .stage-main { position: absolute; inset: 0; z-index: 5; }

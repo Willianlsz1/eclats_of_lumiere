@@ -19,142 +19,230 @@
     radial-gradient(1200px 700px at 28% 45%, rgba(5,7,15,.5), transparent 70%);
 }
 
-/* ---------------- Card do Seeker (esquerda) ---------------- */
-.cb-seeker {
+/* ============================================================
+   Card do Seeker — mesmo modelo 3 camadas do card de inimigo:
+   fundo navy recuado + moldura PNG do tier (maior, com respiro)
+   + arte / nome / tier / barra de HP (vermelha) / barra de LV (azul).
+   ============================================================ */
+.cb-seeker.scard {
   position: absolute; z-index: 6;
-  left: 40px; top: 110px; width: 360px;
-  padding: 20px 20px 16px;
-  background: color-mix(in srgb, var(--panel) 86%, transparent);
-  border: var(--border); border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-panel); backdrop-filter: blur(8px);
-  text-align: center;
+  left: 56px; top: 168px; width: 300px; aspect-ratio: 1024 / 1536;
+  background: transparent;
+  transition: filter .25s ease;
 }
-.cb-seeker.dead { filter: grayscale(.7) brightness(.8); }
+.cb-seeker.scard.dead { filter: grayscale(.7) brightness(.8); }
 
-.cb-portrait {
-  position: relative; width: 220px; height: 220px; margin: 0 auto 10px;
-}
-.cb-portrait > picture, .cb-portrait > picture img { width: 100%; height: 100%; object-fit: contain; }
-.cb-portrait .cb-frame { position: absolute; inset: -6px; pointer-events: none; }
-
-.cb-name {
-  font-family: var(--font-display); font-weight: 700; font-size: var(--fs-xl);
-  margin: 0; letter-spacing: .03em; color: var(--ink);
-}
-.cb-tier {
-  font-size: var(--fs-xs); color: var(--dim);
-  text-transform: uppercase; letter-spacing: .16em; margin-bottom: 14px;
+/* CAMADA 0 — fundo navy dentro da moldura */
+.scard-bg {
+  position: absolute; inset: 4.5% 5.5% 4%; z-index: 0;
+  background: #0a1024; border-radius: 10px;
 }
 
-/* barra de HP do Seeker */
-.cb-hpbar {
-  position: relative; height: 22px; border-radius: 11px;
-  background: #0c1119; border: var(--border-soft); overflow: hidden;
+/* CAMADA 2 — moldura do tier, levemente maior que o card */
+.scard-frame {
+  position: absolute; inset: -3.5%; width: 107%; height: 107%;
+  pointer-events: none; z-index: 2;
 }
-.cb-hp-fill {
-  position: absolute; inset: 0; width: 100%;
-  background: linear-gradient(90deg, var(--vest), #6fe6cf);
-  box-shadow: var(--glow-vest); transition: width .12s linear;
+.scard-frame img { width: 100%; height: 100%; object-fit: fill; }
+
+/* CAMADA 1 — retrato preenche o card inteiro (mesmo recorte do fundo navy) */
+.scard-art {
+  position: absolute; inset: 4.5% 5.5% 4%; z-index: 0;
+  border-radius: 10px; overflow: hidden; background: #0a1024;
 }
-.cb-hp-text {
+.scard-art picture, .scard-art img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+}
+/* escurecimento na base pra legibilidade das infos sobre a arte */
+.scard-art::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(180deg, transparent 52%, rgba(5,8,20,.55) 72%, rgba(5,8,20,.92));
+}
+
+/* CAMADA 3 — infos sobrepostas na base do retrato */
+.scard-inner {
+  position: absolute; inset: 9% 11% 8%; z-index: 1;
+  display: flex; flex-direction: column; justify-content: flex-end; min-height: 0;
+}
+.scard-name {
+  margin-top: 8px; font-family: var(--font-display); font-weight: 700; color: #fff;
+  font-size: 20px; line-height: 1.05; letter-spacing: .02em; text-align: center;
+  text-transform: uppercase; white-space: nowrap; text-shadow: 0 2px 6px #000c;
+}
+.scard-tier {
+  margin-top: 2px; font-size: 11px; color: #9fb6e6; text-align: center;
+  letter-spacing: .16em; text-transform: uppercase;
+}
+.scard-div {
+  height: 1px; margin: 8px 2px;
+  background: linear-gradient(90deg, transparent, rgba(159,182,230,.45), transparent);
+}
+
+/* barra de HP (vermelha, com texto) e barra de LV (azul) */
+.scard-hpbar, .scard-lvbar {
+  position: relative; height: 20px; border-radius: 7px; overflow: hidden;
+  background: #1a0d0d;
+}
+.scard-lvbar { margin-top: 6px; background: #0c1428; }
+.scard-hpbar i, .scard-lvbar i {
+  position: absolute; inset: 0; display: block; width: 100%;
+  transition: width .12s linear;
+}
+.scard-hpbar i { background: #d6443c; }
+.scard-lvbar i { background: #2f6fd6; }
+.scard-hpbar span, .scard-lvbar span {
   position: absolute; inset: 0; display: grid; place-items: center;
-  font-size: var(--fs-xs); font-weight: 600; color: #04130f;
-  font-variant-numeric: tabular-nums; text-shadow: 0 1px 1px #fff6;
+  font-size: 12px; font-weight: 700; color: #fff;
+  font-variant-numeric: tabular-nums; text-shadow: 0 1px 3px #000c;
 }
 
 .cb-status {
-  margin-top: 10px; padding: 6px 10px; border-radius: var(--radius-sm);
+  margin-top: 8px; padding: 5px 8px; border-radius: var(--radius-sm);
   background: color-mix(in srgb, var(--gold) 16%, transparent);
   border: 1px solid color-mix(in srgb, var(--gold) 45%, transparent);
-  color: var(--gold); font-size: var(--fs-sm); font-weight: 600;
+  color: var(--gold); font-size: var(--fs-xs); font-weight: 600; text-align: center;
 }
-
-.cb-mini {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
-  margin: 14px 0 0; padding: 0;
-}
-.cb-mini > div {
-  background: var(--panel-2); border: var(--border-soft); border-radius: var(--radius-sm);
-  padding: 8px 6px;
-}
-.cb-mini dt { font-size: var(--fs-xs); color: var(--dim);
-  text-transform: uppercase; letter-spacing: .12em; }
-.cb-mini dd { margin: 2px 0 0; font-size: var(--fs-md); font-weight: 600;
-  color: var(--eclat); font-variant-numeric: tabular-nums; }
 
 /* ---------------- Arena de inimigos (direita) ---------------- */
 .cb-arena { position: absolute; inset: 0; z-index: 5; pointer-events: none; }
 
-.cb-enemy {
-  position: absolute; z-index: 5; width: 150px; pointer-events: auto;
-  transform: translate(-50%, -50%); text-align: center;
+/* ============================================================
+   Card de inimigo — 3 CAMADAS (modelo card_demo_v3):
+   fundo navy sólido + (1) janela de arte · (2) moldura PNG (centro transparente)
+   · (3) nome/LVL/divisória/ATK·HP/barra/espada. Carta 1024/1536; conteúdo num
+   coluna flex inset pra dentro dos espinhos.
+   ============================================================ */
+.cb-enemy.ecard {
+  /* largura proporcional ao palco (espaçamento de colunas tb é %, então nunca
+     sobrepõe) com teto vindo do limite VERTICAL de cada layout:
+     sem boss → 2 fileiras altas, card até 270px (405 de altura);
+     com boss (.with-boss) → 3 bandas, card até 190px (285). */
+  position: absolute; z-index: 5;
+  width: min(calc(var(--stage-w) * 0.14), 270px);
+  aspect-ratio: 1024 / 1536;
+  pointer-events: auto; transform: translate(-50%, -50%);
+  background: transparent; /* fundo fica na .ecard-bg, recuada dentro da moldura */
   transition: filter .25s ease, opacity .25s ease;
 }
-.cb-enemy.slain { filter: grayscale(1) brightness(.55); opacity: .45; }
 
-.cb-e-art {
-  position: relative; width: 130px; height: 130px; margin: 0 auto 6px;
-  display: grid; place-items: center;
+/* CAMADA 0 — fundo navy recuado pra dentro dos espinhos (nada vaza da moldura) */
+.ecard-bg {
+  position: absolute; inset: 4.5% 5.5% 4%; z-index: 0;
+  background: #0a1024; border-radius: 10px;
 }
-.cb-e-art > picture:not(.cb-e-frame), .cb-e-art > picture:not(.cb-e-frame) img {
-  width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 6px 14px #0009); }
-/* moldura do inimigo (comum/boss) — borda decorativa em volta da arte (§8d) */
-.cb-e-frame { position: absolute; inset: -14%; pointer-events: none; z-index: 2; opacity: .9; }
-.cb-e-frame, .cb-e-frame img { width: auto; height: auto; }
-.cb-e-frame img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: fill; }
-.cb-enemy.boss .cb-e-frame { inset: -6%; opacity: 1; }
+.cb-enemy.ecard.slain { filter: grayscale(1) brightness(.55); opacity: .45; }
+.cb-enemy.ecard.target { filter: drop-shadow(0 0 10px var(--gold)); }
 
-/* alvo atual: anel dourado pulsante (luz presa) */
-.cb-enemy.target .cb-e-art::before {
-  content: ""; position: absolute; inset: -10px; border-radius: 50%;
-  border: 2px solid var(--gold); box-shadow: var(--glow-gold), inset 0 0 18px -6px var(--gold);
-  animation: cb-pulse 1.2s ease-in-out infinite;
+/* CAMADA 2 — moldura PNG (só posicionada; sem desenho de borda em CSS) */
+.ecard-frame {
+  /* levemente maior que o card: a moldura envolve o fundo navy com respiro */
+  position: absolute; inset: -3.5%; width: 107%; height: 107%;
+  pointer-events: none; z-index: 2;
 }
-@keyframes cb-pulse { 0%,100% { opacity: .55; } 50% { opacity: 1; } }
+.ecard-frame img { width: 100%; height: 100%; display: block; }
 
-.cb-e-name {
-  font-family: var(--font-display); font-weight: 600; font-size: var(--fs-md);
-  color: var(--ink); line-height: 1.1; text-shadow: 0 2px 6px #000c;
+/* CAMADA 1 — arte preenche o card inteiro (mesmo recorte do fundo navy) */
+.ecard-art {
+  position: absolute; inset: 4.5% 5.5% 4%; z-index: 0;
+  border-radius: 10px; overflow: hidden; background: #0a1024;
 }
-.cb-e-meta { font-size: var(--fs-xs); color: var(--dim); letter-spacing: .04em;
-  margin-bottom: 5px; text-shadow: 0 1px 3px #000c; }
+.ecard-art-img, .ecard-art-img img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+}
+/* escurecimento na base pra ATK/HP e barra legíveis sobre a arte */
+.ecard-art::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(180deg, transparent 46%, rgba(5,8,20,.6) 68%, rgba(5,8,20,.94));
+}
 
-.cb-e-bar {
-  height: 7px; border-radius: 4px; background: #0c1119aa;
-  border: var(--border-soft); overflow: hidden;
+/* CAMADA 3 — infos sobrepostas na base da arte */
+.ecard-inner {
+  position: absolute; inset: 9% 11% 8%; z-index: 1;
+  display: flex; flex-direction: column; justify-content: flex-end; min-height: 0;
 }
-.cb-e-fill {
+
+/* CAMADA 3 — nome / LVL */
+.ecard-name {
+  margin-top: 7px; font-family: var(--font-display); font-weight: 700; color: #fff;
+  font-size: 18px; line-height: 1.05; letter-spacing: .02em; text-align: center;
+  text-transform: uppercase; white-space: nowrap;
+  text-shadow: 0 1px 2px #000, 0 2px 8px #000;
+}
+.ecard-lvl {
+  margin-top: 2px; font-size: 12px; font-weight: 700; color: #dce8ff;
+  text-align: center; letter-spacing: .16em; text-transform: uppercase;
+  text-shadow: 0 1px 2px #000, 0 2px 6px #000;
+}
+.ecard-div {
+  height: 1px; margin: 7px 2px;
+  background: linear-gradient(90deg, transparent, rgba(159,182,230,.45), transparent);
+}
+
+/* CAMADA 3 — ATK / HP (sem caixa) */
+.ecard-stats {
+  display: flex; justify-content: space-between; align-items: baseline;
+  font-weight: 800; font-size: 14px; font-variant-numeric: tabular-nums;
+  padding: 0 2px;
+  text-shadow: 0 1px 3px #000c;
+}
+.ecard-atk { color: #ff963c; }   /* ATK laranja */
+.ecard-hp  { color: #96ebaa; }   /* HP verde */
+
+/* CAMADA 3 — barra de vida (sem caixa em volta) */
+.ecard-bar {
+  margin-top: 4px; height: 14px; background: #281212;
+  border-radius: 6px; overflow: hidden;
+}
+.ecard-fill {
   display: block; height: 100%; width: 100%;
-  background: linear-gradient(90deg, var(--gold), #f0d9a0);
-  transition: width .1s linear;
+  background: #d6443c; transition: width .2s ease;
 }
-.cb-e-hp { font-size: 10px; color: var(--dim); margin-top: 3px;
-  font-variant-numeric: tabular-nums; text-shadow: 0 1px 2px #000c; }
 
-/* boss: maior, moldura completa */
-.cb-enemy.boss { width: 260px; z-index: 7; }
-.cb-enemy.boss .cb-e-art { width: 240px; height: 240px; }
-.cb-enemy.boss .cb-e-art picture, .cb-enemy.boss .cb-e-art img {
-  filter: drop-shadow(0 0 30px color-mix(in srgb, var(--gold) 60%, transparent)) drop-shadow(0 8px 18px #000b);
+/* CAMADA 3 — espada no canto inferior esquerdo */
+.ecard-sigil {
+  margin-top: 5px; align-self: flex-start;
+  width: 21px; height: 21px; display: grid; place-items: center;
+  font-size: 11px; color: #cfd8ea; background: #0c1428;
+  border: 1px solid rgba(159,182,230,.35); border-radius: 5px;
 }
-.cb-enemy.boss .cb-e-name { font-size: var(--fs-xl); color: var(--gold); }
-.cb-enemy.boss .cb-e-bar { height: 11px; }
 
-/* números de dano flutuantes (branco-ciano frio + crit dourado) */
-.cb-dmg {
-  position: absolute; left: 50%; top: 30%;
-  transform: translateX(-50%); pointer-events: none;
-  font-weight: 700; font-size: 18px; color: var(--eclat);
-  text-shadow: 0 0 8px #000, 0 2px 4px #000; white-space: nowrap;
-  animation: cb-float .8s ease-out forwards;
+/* dano flutuante: popup vermelho por golpe, sobe e some */
+.ecard-floats { position: absolute; inset: 0; z-index: 4; pointer-events: none; }
+.ecard-dmg {
+  position: absolute; left: 50%; top: 6%; transform: translateX(-50%);
+  color: #ff5050; font-weight: 800; font-size: 22px; white-space: nowrap;
+  text-shadow: 0 0 8px #000, 0 2px 4px #000;
+  animation: ecard-float .8s ease-out forwards;
 }
-.cb-dmg.crit { font-size: 24px; color: var(--gold);
-  text-shadow: 0 0 12px color-mix(in srgb, var(--gold) 70%, transparent), 0 2px 4px #000; }
-@keyframes cb-float {
-  0% { opacity: 0; transform: translate(-50%, 6px) scale(.85); }
-  18% { opacity: 1; transform: translate(-50%, -4px) scale(1.05); }
-  100% { opacity: 0; transform: translate(-50%, -42px) scale(1); }
+.ecard-dmg.crit { font-size: 28px; }
+@keyframes ecard-float {
+  0%   { opacity: 0; transform: translate(-50%, 12px); }
+  18%  { opacity: 1; transform: translate(-50%, 2px); }
+  100% { opacity: 0; transform: translate(-50%, -40px); }
 }
+
+/* boss: card maior */
+/* com boss em cena: cards abrem a faixa do meio e encolhem pro layout 3 bandas */
+.cb-arena.with-boss .cb-enemy.ecard:not(.boss):not(.dense) {
+  width: min(calc(var(--stage-w) * 0.12), 190px);
+}
+
+/* pack grande (9..12 mobs): grade 6×2 — colunas a 11.6%, card ≤ 10% do palco */
+.cb-enemy.ecard.dense { width: min(calc(var(--stage-w) * 0.10), 215px); }
+.cb-arena.with-boss .cb-enemy.ecard.dense { width: min(calc(var(--stage-w) * 0.095), 140px); }
+.cb-enemy.ecard.dense .ecard-name { font-size: 13px; }
+.cb-enemy.ecard.dense .ecard-lvl { font-size: 10px; }
+.cb-enemy.ecard.dense .ecard-stats { font-size: 11px; }
+.cb-enemy.ecard.dense .ecard-bar { height: 11px; }
+.cb-enemy.ecard.dense .ecard-sigil { width: 17px; height: 17px; font-size: 9px; }
+.cb-enemy.ecard.dense .ecard-dmg { font-size: 16px; }
+
+/* boss: cabe exato na faixa do meio; destaque por glow dourado */
+.cb-enemy.ecard.boss {
+  width: min(calc(var(--stage-w) * 0.12), 190px);
+  z-index: 7; filter: drop-shadow(0 0 14px var(--gold));
+}
+.cb-enemy.ecard.boss .ecard-name { font-size: 16px; }
 
 /* ---------------- HUD (rodapé) ---------------- */
 .cb-hud {
@@ -172,16 +260,16 @@
 }
 .cb-arrow:hover:not(:disabled) { border-color: var(--eclat); background: var(--panel-2); transform: translateY(-1px); }
 .cb-arrow:disabled { opacity: .32; cursor: not-allowed; }
-.cb-zone { text-align: center; min-width: 220px; }
-.cb-zone b { display: block; font-family: var(--font-display); font-size: var(--fs-lg);
+.cb-zone { text-align: center; min-width: 240px; }
+.cb-zone b { display: block; font-family: var(--font-display); font-size: 28px;
   color: var(--ink); letter-spacing: .03em; }
-.cb-zone span { font-size: var(--fs-xs); color: var(--dim);
+.cb-zone span { font-size: 14px; color: var(--dim);
   text-transform: uppercase; letter-spacing: .12em; }
 
-.cb-progress { flex: 1; max-width: 520px; }
-.cb-progress-label { font-size: var(--fs-xs); color: var(--gold);
+.cb-progress { flex: 1; max-width: 560px; }
+.cb-progress-label { font-size: 14px; color: var(--gold);
   text-transform: uppercase; letter-spacing: .14em; }
-.cb-progress-bar { height: 9px; margin-top: 5px; border-radius: 5px;
+.cb-progress-bar { height: 12px; margin-top: 6px; border-radius: 6px;
   background: #0c1119; border: var(--border-soft); overflow: hidden; }
 .cb-progress-bar i { display: block; height: 100%; width: 0;
   background: linear-gradient(90deg, var(--gold), #f0d9a0);
@@ -189,7 +277,7 @@
 
 .cb-metrics { display: flex; gap: 22px; margin: 0; padding: 0; }
 .cb-metrics > div { text-align: right; }
-.cb-metrics dt { font-size: var(--fs-xs); color: var(--dim);
+.cb-metrics dt { font-size: 14px; color: var(--dim);
   text-transform: uppercase; letter-spacing: .1em; }
-.cb-metrics dd { margin: 2px 0 0; font-size: var(--fs-md); font-weight: 600;
+.cb-metrics dd { margin: 2px 0 0; font-size: 21px; font-weight: 600;
   color: var(--ink); font-variant-numeric: tabular-nums; }

@@ -51,7 +51,7 @@ export function spawnMob(map, subarea) {
     id,
     name: map.enemyNames[k],
     art: map.enemyArts[k],
-    frame: 'frames.enemy_universal', // moldura comum dos inimigos (§8d)
+    frame: 'frames.enemy_universal', // moldura comum dos inimigos (§8d) — espinhos prateados
     level,
     hpMax,
     hp: hpMax,
@@ -67,7 +67,7 @@ export function spawnBoss(map, subarea) {
   const isFinal = subarea === map.subareaCount;
   return {
     id: nextEnemyId++,
-    name: isFinal ? map.bossName : `Guardião — Subárea ${subarea}`,
+    name: isFinal ? map.bossName : `Guardian — Sub-area ${subarea}`,
     art: isFinal ? map.bossArt : map.guardianArt,
     // boss final = moldura própria do mapa (§8d); guardião = moldura comum
     frame: isFinal ? `frames.boss_m${map.id}` : 'frames.enemy_universal',
