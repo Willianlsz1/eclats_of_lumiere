@@ -41,6 +41,8 @@ export function doAscend(state) {
   // recriada pelo chamador (resetPack) — evita ciclo de import com combat.js.
   if (a.mapBoss < MAPS.length) {
     state.map = a.mapBoss + 1;
+    state.maxMap = Math.max(state.maxMap || 1, state.map); // fronteira avança
+    delete state.mapProgress[state.map]; // mapa novo começa zerado
     state.subarea = 1;
     state.unlockedSubarea = 1;
     state.bossDefeated = state.bossDefeated.map(() => false);

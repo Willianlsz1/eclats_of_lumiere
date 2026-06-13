@@ -55,10 +55,12 @@ export function createInitialState() {
 
     // Posição no mundo
     map: 1,
+    maxMap: 1,          // fronteira: maior mapa já alcançado (permite voltar a anteriores)
     subarea: 1,         // 1..5
     unlockedSubarea: 1, // gate: maior subárea acessível (abre ao derrotar o boss)
     bossDefeated: [false, false, false, false, false], // 1ª derrota por subárea
     killsInSubarea: 0,  // contador oculto rumo ao threshold do boss
+    mapProgress: {},    // progresso salvo por mapa {id: {subarea, unlockedSubarea, bossDefeated, killsInSubarea}}
 
     // Jogador (valores derivados ficam em src/game/stats.js)
     player: {
@@ -98,6 +100,9 @@ export function applySnapshot(snapshot) {
   state.bossDefeated = snapshot.bossDefeated ?? state.bossDefeated;
   state.killsInSubarea = snapshot.killsInSubarea ?? 0;
   state.subarea = Math.min(state.subarea, state.unlockedSubarea);
+  // viagem entre mapas: fronteira + progresso por mapa (saves antigos: fronteira = mapa atual)
+  state.maxMap = Math.max(snapshot.maxMap ?? state.map, state.map);
+  state.mapProgress = snapshot.mapProgress ?? {};
   state.xpRun = snapshot.xpRun ?? 0;
   state.vestiges = snapshot.vestiges ?? 0;
   state.convergences = snapshot.convergences ?? 0;
@@ -155,6 +160,8 @@ export function toSnapshot() {
     unlockedSubarea: state.unlockedSubarea,
     bossDefeated: [...state.bossDefeated],
     killsInSubarea: state.killsInSubarea,
+    maxMap: state.maxMap,
+    mapProgress: JSON.parse(JSON.stringify(state.mapProgress)),
     xpRun: state.xpRun,
     vestiges: state.vestiges,
     convergences: state.convergences,

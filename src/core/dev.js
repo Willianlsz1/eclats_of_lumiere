@@ -13,6 +13,7 @@ export function applyDevUnlock(state) {
   state.convergences = Math.max(state.convergences, 1); // libera as Passivas
   state.convPoints   = Math.max(state.convPoints, 20);  // conv_factor folgado
   state.unlockedSubarea = 5;                            // mapa todo navegável
+  state.maxMap = 5;                                     // os 5 mapas viajáveis
   // boss final batido → A1 fica disponível pra testar a Ascension (não força
   // ascensions: assim dá pra clicar Ascender e ver o fluxo). Mémoires abrem
   // por era conforme você ascende.

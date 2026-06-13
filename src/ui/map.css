@@ -11,20 +11,43 @@
   position: absolute; inset: 0; z-index: 0;
   background-size: cover; background-position: center;
 }
+
+/* mundo em tela cheia: o canvas mantém o aspect da arte e COBRE o palco
+   inteiro (transborda centrado no eixo que sobrar; overflow escondido).
+   Os pinos ficam dentro do canvas, então seguem presos à imagem. */
+.map-frame {
+  position: absolute; inset: 0; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+}
+.map-canvas {
+  /* altura do palco é fixa (1080): largura mínima p/ cobrir = 1080×(1672/941)
+     ≈ 1919px; em palcos mais largos o 100% assume e o excesso vertical corta. */
+  position: relative; flex: none; aspect-ratio: 1672 / 941;
+  width: max(1919px, 100%);
+}
+.map-bg.world { background-size: contain; background-repeat: no-repeat; }
+.map-bg.world::after { background: none; } /* sem vinheta cortando a arte */
 .map-bg::after {
   content: ""; position: absolute; inset: 0;
   background: radial-gradient(120% 90% at 50% 30%, transparent 40%, rgba(5,7,15,.6));
 }
 
-/* título do mundo */
+/* título do mundo — véu escuro radial atrás do texto pra destacar da arte */
 .map-title {
-  position: absolute; z-index: 3; top: 104px; left: 0; right: 0; text-align: center;
-  text-shadow: 0 2px 12px #000c;
+  position: absolute; z-index: 3; top: 88px; left: 0; right: 0; text-align: center;
+  padding: 18px 0 22px; pointer-events: none;
+}
+.map-title::before {
+  content: ""; position: absolute; inset: 0; z-index: -1;
+  background: radial-gradient(60% 100% at 50% 45%, rgba(5,7,15,.78), rgba(5,7,15,.32) 55%, transparent 78%);
 }
 .map-title b { display: block; font-family: var(--font-display); font-weight: 700;
-  font-size: var(--fs-xxl); letter-spacing: .04em; color: var(--ink); }
-.map-title span { font-size: var(--fs-sm); color: var(--dim);
-  text-transform: uppercase; letter-spacing: .24em; }
+  font-size: var(--fs-xxl); letter-spacing: .04em; color: #fff;
+  text-shadow: 0 2px 4px #000, 0 4px 22px #000e, 0 0 40px rgba(217,164,65,.25); }
+.map-title span { display: inline-block; margin-top: 4px;
+  font-size: var(--fs-sm); color: #cbd6ea; font-weight: 600;
+  text-transform: uppercase; letter-spacing: .24em;
+  text-shadow: 0 1px 3px #000, 0 2px 10px #000c; }
 
 /* ---------------- Pinos do mundo ---------------- */
 .map-pins { position: absolute; inset: 0; z-index: 4; }
@@ -69,6 +92,19 @@
 }
 .map-back:hover { border-color: var(--eclat); background: var(--panel-2); }
 
+/* trilha entre as sub-áreas (atrás dos nós) — pontilhada, acende ao avançar */
+.cont-trail { position: absolute; inset: 0; z-index: 3; width: 100%; height: 100%; pointer-events: none; }
+.cont-trail line {
+  stroke: var(--faint); stroke-width: 3; stroke-linecap: round;
+  stroke-dasharray: 2.5 6; vector-effect: non-scaling-stroke; opacity: .35;
+  transition: stroke .25s ease, opacity .25s ease;
+}
+.cont-trail line.open {
+  stroke: var(--gold); opacity: .9;
+  filter: drop-shadow(0 0 5px color-mix(in srgb, var(--gold) 70%, transparent));
+}
+.cont-trail line.locked { stroke: var(--faint); opacity: .28; }
+
 /* nós das sub-áreas */
 .map-nodes { position: absolute; inset: 0; z-index: 4; }
 .sub-node {
@@ -96,40 +132,95 @@
 .sub-node.locked .num { color: var(--faint); }
 .sub-node.locked { cursor: not-allowed; }
 
+/* nó com arte: ícone da sub-área + nome embaixo (substitui ring/num I–V) */
+.sub-node.art { width: 172px; height: auto; display: grid; justify-items: center; gap: 4px; }
+.sub-node.art .ico {
+  width: 158px; height: 158px; display: grid; place-items: center;
+  filter: drop-shadow(0 6px 14px #000a);
+  transition: transform .15s ease, filter .15s ease;
+}
+.sub-node.art .ico img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.sub-node.art .nm {
+  font-family: var(--font-display); font-weight: 700; font-size: 16px; color: #fff;
+  letter-spacing: .02em; white-space: nowrap; text-align: center;
+  padding: 2px 12px; border-radius: 999px;
+  background: color-mix(in srgb, var(--panel) 78%, transparent);
+  border: var(--border-soft); backdrop-filter: blur(4px);
+  text-shadow: 0 1px 3px #000;
+}
+.sub-node.art:hover .ico { transform: scale(1.07); filter: drop-shadow(0 8px 18px #000c); }
+.sub-node.art.selected .nm { border-color: #fff; color: #fff; box-shadow: 0 0 18px -4px var(--eclat); }
+.sub-node.art.current .ico { filter: drop-shadow(0 0 16px var(--gold)); }
+.sub-node.art.current .nm { border-color: var(--gold); color: var(--gold); }
+.sub-node.art.cleared .nm::after { content: ' ✓'; color: var(--vest); }
+.sub-node.art.locked { cursor: not-allowed; }
+.sub-node.art.locked .ico { filter: grayscale(.85) brightness(.55); }
+.sub-node.art.locked .nm { color: var(--faint); }
+.sub-node.art.locked .nm::after { content: ' 🔒'; }
+
 /* ---------------- Painel direito ---------------- */
 .map-panel {
   position: absolute; z-index: 5; top: 104px; right: 40px; bottom: 40px;
-  width: 380px; padding: 0 0 22px;
+  width: 380px;
+  display: flex; flex-direction: column;
   background: color-mix(in srgb, var(--panel) 90%, transparent);
   border: var(--border); border-radius: var(--radius-lg);
   box-shadow: var(--shadow-panel); backdrop-filter: blur(8px);
   overflow: hidden;
 }
 .map-panel .cover {
-  height: 150px; background-size: cover; background-position: center;
-  border-bottom: var(--border);
-  -webkit-mask-image: linear-gradient(#000 60%, transparent);
-          mask-image: linear-gradient(#000 60%, transparent);
+  flex: none; height: 170px; background-size: cover; background-position: center;
+  -webkit-mask-image: linear-gradient(#000 55%, transparent);
+          mask-image: linear-gradient(#000 55%, transparent);
+}
+/* corpo ocupa o resto e distribui as seções (rola se faltar espaço) */
+.panel-body {
+  flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column;
+  padding: 0 0 22px; overflow-y: auto;
 }
 .map-panel h2 {
-  margin: -34px 22px 4px; position: relative;
+  margin: -40px 22px 4px; position: relative;
   font-family: var(--font-display); font-weight: 700; font-size: var(--fs-xl);
   color: var(--ink); letter-spacing: .03em; text-shadow: 0 2px 10px #000c;
 }
 .map-panel .sub-name {
-  margin: 0 22px 16px; font-size: var(--fs-sm); color: var(--eclat);
+  margin: 0 22px 14px; font-size: var(--fs-sm); color: var(--eclat);
   text-transform: uppercase; letter-spacing: .14em;
 }
-.map-panel .facts { margin: 0 22px 18px; padding: 0; display: grid; gap: 10px; }
+/* lore — descritivo do mapa (o mapa conta a história do mundo) */
+.map-panel .lore {
+  margin: 0 22px 22px; font-family: var(--font-display);
+  font-size: var(--fs-lg); line-height: 1.55; color: #d3deef;
+  font-style: italic;
+  border-left: 3px solid color-mix(in srgb, var(--eclat) 55%, transparent);
+  padding-left: 14px; text-shadow: 0 1px 3px #0008;
+}
+/* recursos da área */
+.map-panel .rewards { margin: 0 22px 22px; }
+.map-panel .rewards-h { font-size: var(--fs-xs); color: var(--dim);
+  text-transform: uppercase; letter-spacing: .14em; margin-bottom: 10px; }
+.map-panel .rewards-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; }
+.map-panel .rewards-list li {
+  display: flex; justify-content: space-between; align-items: baseline;
+  padding: 11px 12px; border-radius: var(--radius-sm);
+  background: var(--panel-2); border: var(--border-soft);
+}
+.map-panel .rewards-list span { font-size: var(--fs-md); color: var(--ink); }
+.map-panel .rewards-list b { font-size: var(--fs-md); color: var(--gold);
+  font-variant-numeric: tabular-nums; }
+/* rodapé colado embaixo (só o botão) */
+.map-panel .panel-foot { margin-top: auto; padding-top: 8px; }
+.map-panel .facts { margin: 0 22px 22px; padding: 0; display: grid; gap: 13px; }
 .map-panel .facts > div {
   display: flex; justify-content: space-between; align-items: baseline;
-  border-bottom: var(--border-soft); padding-bottom: 8px;
+  border-bottom: var(--border-soft); padding-bottom: 11px;
 }
 .map-panel .facts dt { font-size: var(--fs-xs); color: var(--dim);
   text-transform: uppercase; letter-spacing: .12em; }
 .map-panel .facts dd { margin: 0; font-size: var(--fs-md); font-weight: 600;
   color: var(--ink); font-variant-numeric: tabular-nums; }
 
+.map-panel .panel-foot .enter-btn,
 .enter-btn {
   display: block; margin: 0 22px; width: calc(100% - 44px); padding: 14px;
   cursor: pointer; border: 0; border-radius: 12px;

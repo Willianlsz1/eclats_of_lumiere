@@ -162,6 +162,31 @@ function onBossKill(state) {
   checkDespertar(state); // §8: Guardião da Sub 3 → Despertar (tier de poder)
 }
 
+// Viagem entre mapas já alcançados (id ≤ maxMap). Guarda o progresso do mapa
+// atual em mapProgress e restaura o do destino; mapas anteriores à fronteira
+// já foram concluídos → entram com tudo liberado por padrão.
+export function travelToMap(state, id) {
+  const dest = Math.max(1, Math.min(state.maxMap, Math.round(id)));
+  if (dest === state.map) return false;
+  state.mapProgress[state.map] = {
+    subarea: state.subarea,
+    unlockedSubarea: state.unlockedSubarea,
+    bossDefeated: [...state.bossDefeated],
+    killsInSubarea: state.killsInSubarea,
+  };
+  state.map = dest;
+  const map = getCurrentMap(state);
+  const saved = state.mapProgress[dest];
+  const cleared = dest < state.maxMap; // mapa já concluído (a fronteira passou dele)
+  state.unlockedSubarea = saved ? saved.unlockedSubarea : (cleared ? map.subareaCount : 1);
+  state.bossDefeated = saved ? [...saved.bossDefeated] : state.bossDefeated.map(() => cleared);
+  state.subarea = Math.min(saved ? saved.subarea : 1, state.unlockedSubarea);
+  state.killsInSubarea = saved ? saved.killsInSubarea : 0;
+  state.bestSubareaRun = Math.max(state.bestSubareaRun, state.subarea);
+  if (!state.player.dead) resetPack(state);
+  return true;
+}
+
 // Navegação entre subáreas, respeitando o gate (boss abre a próxima)
 export function changeSubarea(state, delta) {
   enterSubarea(state, state.subarea + delta);
