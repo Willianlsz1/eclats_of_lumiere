@@ -18,6 +18,7 @@ export function createInitialState() {
     eclats: 0,
     ascensions: 0, // marcos de Ascension concluídos (§9) — gate das Mémoires por era
     despertares: 0, // §8 (Passo 7): tier de Despertar (0..4 = T1..T5), gate de poder no meio do mapa
+    nitzotzot: 0, // §8 (redesign 13/jun): material dedicado do Despertar (Oferenda). Dropa nas Sub 3+. PERSISTE.
     memoires: new Array(15).fill(0), // níveis das 15 Mémoires (§11); 0 = bloqueada. PERSISTE.
 
     // Convergence (§6) — persistem para sempre
@@ -145,6 +146,7 @@ export function applySnapshot(snapshot) {
     SEEKER_RANKS.length - 1,
     state.ascensions + (state.unlockedSubarea > 3 ? 1 : 0),
   );
+  state.nitzotzot = snapshot.nitzotzot ?? 0; // §8 redesign (material do Despertar)
 }
 
 // Extrai só o que deve ser persistido (pack e timers são reconstruídos no load)
@@ -176,6 +178,7 @@ export function toSnapshot() {
     eclats: state.eclats,                                 // §10
     ascensions: state.ascensions,                         // §9
     despertares: state.despertares,                       // §8 (Passo 7) tier de Despertar
+    nitzotzot: state.nitzotzot,                           // §8 redesign — material do Despertar
     memoires: [...state.memoires],                        // §11
   };
 }

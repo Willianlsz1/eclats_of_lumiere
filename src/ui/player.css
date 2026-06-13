@@ -5,67 +5,88 @@
    Gold Stats (interativo) · Convergence.
    ============================================================ */
 
-.view.player {
-  display: grid; grid-template-columns: 460px 1fr; gap: 30px;
-  padding: 100px 40px 36px; overflow: hidden;
+/* mantém position:absolute; inset:0 da base .view (não sobrescrever, senão a
+   view colapsa pra altura 0 e os panes absolutos somem) */
+.view.player { display: block; padding: 0; overflow: hidden; }
+
+/* Panes das abas (Codex | Awakening) ocupam o palco inteiro */
+.view.player .pl-pane { position: absolute; inset: 0; }
+.view.player .pl-pane[hidden] { display: none; }
+
+/* Codex = cena full-bleed (igual Gear/Forge): card central + painel à esquerda
+   flutuando sobre o fundo do santuário da Ordre. */
+.view.player .pl-codex-pane { display: block; overflow: hidden; }
+
+/* fundo do santuário (cobre o backdrop do mapa) */
+.view.player .pl-screen {
+  position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background: url('eclats/codex/codex_screen.webp') center / cover no-repeat, #0b1226;
 }
 
 /* ---------------- Coluna do herói (identidade) ----------------
    Modelo dos cards de combate: a arte do Seeker PREENCHE a moldura do tier
    (que evolui com a progressão); o texto fica sobreposto na base, sobre um
    gradiente escuro, legível. Card esticado até o fim da tela. */
-.pl-hero { position: relative; align-self: stretch; min-height: 0; }
+/* hero = CARD no centro do palco, sobre o emblema do fundo */
+.pl-hero { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  z-index: 2; height: 84%; aspect-ratio: 966 / 1488; }
 
-/* CAMADA 0 — arte preenchendo o card (recuada pra dentro da borda da moldura) */
-.pl-hero-art { position: absolute; inset: 4.5% 5.5% 4%; z-index: 0;
-  border-radius: 10px; overflow: hidden; background: #0a1024; }
+/* CAMADA 0 — o CARD inteiro (moldura + avatar fundidos) preenche o hero.
+   A moldura agora é parte da imagem; nada de frame solto por cima. */
+.pl-hero-art { position: absolute; inset: 0; z-index: 0; overflow: hidden; }
 .pl-portrait-img, .pl-portrait-img img { width: 100%; height: 100%;
-  object-fit: cover; object-position: top center; display: block; }
-/* escurecimento da base pra legibilidade do texto sobre a arte */
-.pl-hero-art::after { content: ""; position: absolute; inset: 0;
-  background: linear-gradient(180deg, transparent 22%, rgba(5,8,20,.5) 42%, rgba(5,8,20,.93) 66%); }
+  object-fit: cover; object-position: center; display: block; }
+/* scrim sutil só no rodapé do card pra legibilidade do nome/level */
+.pl-hero-art::after { content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(180deg, transparent 60%, rgba(5,8,18,.5) 86%); }
 
-/* CAMADA 2 — moldura do tier (crest + cantos + bordas embutidos) */
-.pl-tierframe { position: absolute; inset: -2%; width: 104%; height: 104%;
-  z-index: 3; pointer-events: none; }
-.pl-tierframe img { width: 100%; height: 100%; display: block; }
-
-/* CAMADA 1 — texto na base, sobre o gradiente */
-.pl-hero-inner { position: absolute; inset: 4.5% 5.5% 4%; z-index: 2;
+/* CAMADA 1 — texto enxuto no terço inferior reservado do card */
+.pl-hero-inner { position: absolute; inset: 0; z-index: 2;
   display: flex; flex-direction: column; justify-content: flex-end;
-  padding: 0 28px 9%; text-align: center; }
+  padding: 0 10% 6%; text-align: center; }
 .pl-name { margin: 0; font-family: var(--font-display); font-weight: 700;
-  font-size: 52px; line-height: 1.02; letter-spacing: .03em; color: #fff;
+  font-size: 36px; line-height: 1.04; letter-spacing: .03em; color: #fff;
   text-shadow: 0 2px 4px #000, 0 2px 16px #000; }
 .pl-tier { font-size: 14px; color: #c5d3ea; font-weight: 600;
   text-transform: uppercase; letter-spacing: .16em; margin-top: 4px;
   text-shadow: 0 1px 3px #000; }
-.pl-lore { margin: 14px 6px 0; font-family: var(--font-display); font-style: italic;
-  font-size: 25px; line-height: 1.4; color: #e3edfb;
-  text-shadow: 0 1px 4px #000; }
-
-.pl-hero-vitals { margin-top: 20px; }
-.pl-vital { display: flex; flex-direction: column; gap: 4px; }
-.pl-vital-lbl { font-size: 13px; color: #c5d3ea;
+.pl-hero-vitals { margin-top: 10px; }
+.pl-vital { display: flex; flex-direction: column; gap: 2px; }
+.pl-vital-lbl { font-size: 12px; color: #c5d3ea;
   text-transform: uppercase; letter-spacing: .2em; text-shadow: 0 1px 3px #000; }
-.pl-vital-val { font-family: var(--font-display); font-size: 56px;
+.pl-vital-val { font-family: var(--font-display); font-size: 40px;
   font-weight: 700; color: #fff; font-variant-numeric: tabular-nums; line-height: 1;
   text-shadow: 0 2px 8px #000; }
-
-/* lore do Seeker / da Ordre, abaixo do Level */
-.pl-codex { margin: 18px 6px 0; font-family: var(--font-display); font-style: italic;
-  font-size: 19px; line-height: 1.5; color: #c6d3e8;
-  text-shadow: 0 1px 4px #000; }
 
 /* ---------------- A ficha (direita) — painel central ÚNICO ----------------
    Todos os stats numa lista em sequência, num só painel (alvo da moldura +
    imagem da Ordre de fundo no futuro). Centralizado na área. */
-.pl-sheet { min-height: 0; overflow-y: auto; padding-right: 4px;
-  display: flex; justify-content: center; align-items: flex-start; }
-.pl-codex-panel { position: relative; width: 100%; max-width: 660px;
-  background: color-mix(in srgb, var(--panel) 90%, transparent);
-  border: var(--border); border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-panel); padding: 24px 26px 22px; }
+/* painel da ficha — flutua à ESQUERDA sobre o fundo do santuário (abaixo da
+   navbar). O painel NÃO rola; só a lista de stats rola por dentro (título/motto
+   ficam fixos) — assim o topo nunca corta. */
+.pl-sheet { position: absolute; left: 3%; top: 13%; bottom: 6%; width: 560px; z-index: 3;
+  display: flex; }
+/* painel da ficha — leitura CALMA e serena: vidro navy frio, borda fina
+   azul-gelo, respiro generoso e um leve banho de luz no topo. */
+.pl-codex-panel { position: relative; width: 100%; max-width: none;
+  display: flex; flex-direction: column; max-height: 100%; overflow: hidden;
+  background:
+    radial-gradient(120% 60% at 50% -8%, rgba(170,200,255,.10), transparent 60%),
+    color-mix(in srgb, var(--panel) 92%, transparent);
+  border: 1px solid rgba(170,200,255,.22); border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-panel), inset 0 1px 0 rgba(170,200,255,.08);
+  padding: 34px 34px 22px; }
+
+/* só a lista de stats rola; título + motto ficam fixos no topo do painel */
+.pl-stats-list { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding-right: 10px;
+  scrollbar-width: thin; scrollbar-color: rgba(170,200,255,.45) transparent; }
+.pl-stats-list::-webkit-scrollbar { width: 6px; }
+.pl-stats-list::-webkit-scrollbar-track { background: transparent; }
+.pl-stats-list::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(170,200,255,.55), rgba(120,150,220,.35));
+  border-radius: 99px; }
+.pl-stats-list::-webkit-scrollbar-thumb:hover { background: rgba(170,200,255,.75); }
+
 .pl-codex-title { margin: 0; font-family: var(--font-display); font-weight: 700;
   font-size: 40px; color: var(--ink); letter-spacing: .02em; text-align: center; }
 .pl-codex-motto { margin: 8px auto 22px; max-width: 92%; text-align: center; font-family: var(--font-display);
@@ -90,23 +111,6 @@
 .pl-stat-l { font-size: 16px; color: var(--dim); }
 .pl-stat-v { font-size: 19px; font-weight: 700; color: var(--ink);
   font-variant-numeric: tabular-nums; }
-
-/* Gold Stats */
-.pl-rows { display: grid; gap: 9px; }
-.pl-row { display: grid; grid-template-columns: 104px 1fr auto auto; gap: 10px;
-  align-items: center; background: var(--panel-2); border: var(--border-soft);
-  border-radius: var(--radius-sm); padding: 11px 14px; }
-.pl-s-label { font-size: 16px; font-weight: 600; color: var(--ink); letter-spacing: .04em; }
-.pl-s-label b { color: var(--gold); font-weight: 700; }
-.pl-s-effect { font-size: 15px; color: var(--dim); font-variant-numeric: tabular-nums; }
-.pl-s-buy, .pl-s-max {
-  appearance: none; cursor: pointer; border: var(--border); border-radius: 8px;
-  padding: 9px 14px; font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums;
-  background: var(--panel); color: var(--ink); transition: border-color .14s, background .14s, opacity .14s;
-}
-.pl-s-buy { background: color-mix(in srgb, var(--gold) 18%, var(--panel)); border-color: color-mix(in srgb, var(--gold) 45%, var(--line)); }
-.pl-s-buy:hover:not(:disabled), .pl-s-max:hover:not(:disabled) { border-color: var(--gold); }
-.pl-s-buy:disabled, .pl-s-max:disabled { opacity: .4; cursor: not-allowed; }
 
 /* Convergence */
 .pl-mini { display: grid; gap: 9px; margin: 0; }

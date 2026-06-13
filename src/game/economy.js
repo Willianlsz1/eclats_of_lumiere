@@ -2,7 +2,7 @@
 // lumens_por_kill = mob_hp × 0.10 × frt_total (boss ×5 — CP-D)
 // xp_por_kill     = mob_hp × 0.08 × wis_total
 
-import { ECONOMY, NUMBER_CAP, BOSS_LUMEN_MULT, VESTIGES, CRAFT, mapMaterialTier } from '../data/constants.js';
+import { ECONOMY, NUMBER_CAP, BOSS_LUMEN_MULT, VESTIGES, CRAFT, NITZOTZ, mapMaterialTier } from '../data/constants.js';
 import { frtTotal, wisTotal } from './stats.js';
 import { gearLumensMult, gearXpMult, gearMaterialDropMult } from './gear.js';
 import { passiveEcoMult, passiveMaterialMult } from './passives.js';
@@ -27,6 +27,14 @@ function awardMaterials(state, mob) {
   if (mob.isBoss) state.materiais[tier] += CRAFT.bossChunk * y; // Guardião/final: chunk garantido
 }
 
+// §8 redesign: drop de Nitzotzot (Oferenda do Despertar). Só nas Sub-áreas 3+
+// (a região do Guardião); chunk garantido em boss. Acumula no mapa do tier.
+function awardNitzotz(state, mob) {
+  if (state.subarea < 3) return;
+  if (mob.isBoss) state.nitzotzot += NITZOTZ.bossChunk;
+  else if (Math.random() < NITZOTZ.dropChance) state.nitzotzot += 1;
+}
+
 // §7: vestiges_por_kill = ceil(subárea × 0.5) × 3^(índice_do_mapa)
 // Map 1 (índice 0): [1, 1, 2, 2, 3] nas Subs 1-5
 export function vestigesPerKill(state) {
@@ -45,5 +53,6 @@ export function awardKill(state, mob) {
   const vest = vestigesPerKill(state) * (mob.isBoss ? VESTIGES.bossMult : 1) * memoireVestigeMult(state);
   state.vestiges = Math.min(NUMBER_CAP, state.vestiges + vest);
   awardMaterials(state, mob); // §13B (Passo 4)
+  awardNitzotz(state, mob);   // §8 redesign (Oferenda do Despertar)
   state.killsTotal += 1;
 }

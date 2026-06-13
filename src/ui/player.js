@@ -1,8 +1,9 @@
-// Tela do Player / Seeker (U-4) — FICHA do personagem.
-// Esquerda: retrato (identidade) + Level + parede de Convergence.
-// Direita: build summary (números-manchete) · All Stats agrupadas e clicáveis
-// (abrem o breakdown de COMO a stat é calculada, com as fontes reais do GDD) ·
-// Gold Stats (única ação: comprar com Lumens) · Convergence.
+// Tela do Player / Seeker (U-4) — FICHA do personagem (só leitura/identidade).
+// Abas: Codex (esta ficha) | Awakening.
+// Codex: CARD do Seeker (moldura+avatar fundidos, evolui por tier) com nome/tier/
+//   Level no terço inferior · painel à direita com All Stats agrupadas e clicáveis
+//   (breakdown de COMO cada stat é calculada). Gold Stats e Convergence saíram
+//   desta tela (13/jun) — ela é só a ficha; ações vivem noutros lugares.
 //
 // Contrato: buildPlayerView(root, state) monta o DOM uma vez;
 //           renderPlayer(state) atualiza a cada exibição.
@@ -13,14 +14,17 @@ import {
   heroLevel, dps, playerHpMax, currentAPS, critChance, critChanceRaw, critDamageMult,
   convFactor, damagePerHit, levelBonus, playerDefesa, veilFactor,
   strTotal, vitTotal, frtTotal, wisTotal,
-  statCostNext, buyStat, buyStatMax,
 } from '../game/stats.js';
 import { gearDamageMult, gearHpMult, gearCritAdd, gearCritDmgAdd, gearApsMult } from '../game/gear.js';
 import { passiveDmgMult, passiveHpMult, passiveCritAdd, passiveApsMult } from '../game/passives.js';
 import { memoireDmgMult, memoireHpMult, memoireCritDmgMult } from '../game/memoires.js';
 import { ascMult, despertarMult } from '../game/ascension.js';
-import { currentRank, seekerFrame, seekerPortrait } from '../game/ascension.js';
+import { currentRank } from '../game/ascension.js';
 import { COMBAT, CRIT, GOLD_STATS } from '../data/constants.js';
+import { buildAwakenPane, renderAwakenPane } from './awaken.js';
+
+// tier romano → número do card (seeker.card_tN). Espelha ascension.js.
+const TIER_NUM = { I: 1, II: 2, III: 3, IV: 4, V: 5 };
 
 const $ = (id) => document.getElementById(id);
 
@@ -183,58 +187,41 @@ const STATS = {
     ],
     note: 'A bonus to both Damage and HP that grows with your Level.',
   },
-  convFactor: {
-    label: 'Convergence Factor',
-    value: (s) => formatMult(convFactor(s)),
-    breakdown: (s) => {
-      const base = 1 + 0.04 * 1.38 ** s.ascensions;
-      return [
-        { label: 'Bonus per point', disp: formatMult(base), kind: 'active' },
-        { label: 'Convergence Points', disp: formatNumber(s.convPoints), kind: 'active' },
-      ];
-    },
-    note: 'Boosts Damage and HP. Each Convergence adds points; Ascension resets them but makes every point stronger.',
-  },
 };
 
 const STAT_GROUPS = [
   { title: 'Combat', ids: ['dmg', 'dps', 'aps', 'critRate', 'critDmg', 'hpMax', 'defense'] },
   { title: 'Economy', ids: ['lumensMult', 'xpMult'] },
-  { title: 'Progression', ids: ['level', 'levelBonus', 'convFactor'] },
-];
-
-// Os 6 Gold Stats (§5) — rótulo + efeito derivado do state
-const STAT_DEFS = [
-  { key: 'str', label: 'STR', effect: (s) => `${formatMult(strTotal(s))} dmg` },
-  { key: 'vit', label: 'VIT', effect: (s) => `${formatMult(vitTotal(s))} HP` },
-  { key: 'agi', label: 'AGI', effect: (s) => `${currentAPS(s).toFixed(2)} APS` },
-  { key: 'lck', label: 'LCK', effect: (s) => `${pct(critChance(s))} crit` },
-  { key: 'frt', label: 'FRT', effect: (s) => `${formatMult(frtTotal(s))} Lumens` },
-  { key: 'wis', label: 'WIS', effect: (s) => `${formatMult(wisTotal(s))} XP` },
+  { title: 'Progression', ids: ['level', 'levelBonus'] },
 ];
 
 let openStatId = null; // breakdown aberto (pra live-update)
+let activePane = 'codex'; // aba ativa da tela Seeker (codex | awaken)
 
 export function buildPlayerView(root, state) {
   root.classList.remove('placeholder');
   root.classList.add('player');
   root.innerHTML = `
+    <div class="pl-tabs">
+      <button type="button" class="pl-tab on" data-tab="codex">Codex</button>
+      <button type="button" class="pl-tab" data-tab="awaken">Awakening</button>
+    </div>
+
+    <div class="pl-pane pl-codex-pane" data-pane="codex">
+    <div class="pl-screen" aria-hidden="true"></div>
     <aside class="pl-hero">
       <div class="pl-hero-art">
-        ${picture('seeker.t1', { className: 'pl-portrait-img', alt: 'The Seeker' })}
+        ${picture('seeker.card_t1', { className: 'pl-portrait-img', alt: 'The Seeker' })}
       </div>
-      ${picture('frames.tier1', { className: 'pl-tierframe', alt: '' })}
       <div class="pl-hero-inner">
         <h2 class="pl-name">The Seeker</h2>
         <div class="pl-tier" id="pl-tier">Order of the Watchers · Tier I</div>
-        <p class="pl-lore">“He carries the light, he is not the light yet.”</p>
         <div class="pl-hero-vitals">
           <div class="pl-vital">
             <span class="pl-vital-lbl">Level</span>
             <b class="pl-vital-val" id="pl-level">1</b>
           </div>
         </div>
-        <p class="pl-codex">He entered the Order as any other initiate, with no destiny proclaimed. But the shard he carries is the Seed, the one fragment that still remembers the whole. In every other vessel the light sleeps, caged and silent. In him, it converges.</p>
       </div>
     </aside>
 
@@ -243,13 +230,11 @@ export function buildPlayerView(root, state) {
         <h3 class="pl-codex-title"><span id="pl-codex-rank">Seeker</span> Codex</h3>
         <p class="pl-codex-motto">Carry the light onward. Through you, the world remembers how to mend.</p>
         <div class="pl-stats-list" id="pl-stats-list"></div>
-
-        <div class="pl-section">
-          <h4 class="pl-sec-h">Gold Stats <span class="pl-sub">— spend Lumens to grow</span></h4>
-          <div class="pl-rows" id="pl-rows"></div>
-        </div>
       </div>
     </div>
+    </div><!-- /pl-codex-pane -->
+
+    <div class="pl-pane pl-awaken-pane" data-pane="awaken" hidden></div>
 
     <!-- breakdown (modal) -->
     <div class="pl-modal" id="pl-modal" hidden>
@@ -281,24 +266,20 @@ export function buildPlayerView(root, state) {
   root.querySelectorAll('[data-stat]').forEach((el) =>
     el.addEventListener('click', () => openStat(state, el.dataset.stat)));
 
-  // Linhas dos Gold Stats (construídas uma vez; atualizadas no render)
-  const rows = $('pl-rows');
-  for (const def of STAT_DEFS) {
-    const row = document.createElement('div');
-    row.className = 'pl-row';
-    row.innerHTML = `
-      <span class="pl-s-label">${def.label} <b class="pl-s-level"></b></span>
-      <span class="pl-s-effect"></span>
-      <button type="button" class="pl-s-buy"></button>
-      <button type="button" class="pl-s-max">Max</button>
-    `;
-    row.querySelector('.pl-s-buy').addEventListener('click', () => buyStat(state, def.key));
-    row.querySelector('.pl-s-max').addEventListener('click', () => buyStatMax(state, def.key));
-    rows.appendChild(row);
-  }
-
   $('pl-modal-x').addEventListener('click', closeModal);
   $('pl-modal-back').addEventListener('click', closeModal);
+
+  // Aba Awakening — pane no formato Gear/Forge (módulo próprio)
+  buildAwakenPane(root.querySelector('.pl-awaken-pane'), state);
+
+  // Troca de abas Codex | Awakening
+  root.querySelectorAll('.pl-tab').forEach((tab) =>
+    tab.addEventListener('click', () => {
+      activePane = tab.dataset.tab;
+      root.querySelectorAll('.pl-tab').forEach((t) => t.classList.toggle('on', t === tab));
+      root.querySelectorAll('.pl-pane').forEach((p) => { p.hidden = p.dataset.pane !== activePane; });
+      if (activePane === 'awaken') renderAwakenPane(state);
+    }));
 }
 
 function openStat(state, id) {
@@ -327,27 +308,25 @@ function renderModal(state) {
 }
 
 export function renderPlayer(state) {
+  // Aba Awakening ativa → atualiza só ela (a ficha Codex fica congelada atrás)
+  if (activePane === 'awaken') renderAwakenPane(state);
+
   const rank = currentRank(state);
 
-  // Identidade
-  $('pl-tier').textContent = `${rank.name} · Tier ${rank.tier}`;
+  // Identidade — o nome-manchete do card é o RANK atual (Seeker→Lumière)
   $('pl-codex-rank').textContent = rank.name; // o Codex acompanha o tier atual
   const hero = document.querySelector('#view-player .pl-hero');
   if (hero) {
-    // retrato (arte) conforme o tier
-    const portraitId = seekerPortrait(state);
+    const nm = hero.querySelector('.pl-name');
+    if (nm) nm.textContent = rank.name;
+    const tierEl = hero.querySelector('#pl-tier');
+    if (tierEl) tierEl.textContent = `The Seeker · Tier ${rank.tier}`;
+    // card do Seeker (moldura + avatar fundidos) conforme o tier de Despertar
+    const cardId = `seeker.card_t${TIER_NUM[rank.tier] || 1}`;
     const port = hero.querySelector('.pl-hero-art');
-    if (port && port.dataset.portrait !== portraitId) {
-      port.dataset.portrait = portraitId;
-      port.innerHTML = picture(portraitId, { className: 'pl-portrait-img', alt: 'The Seeker' });
-    }
-    // moldura do card = moldura do TIER atual (evolui com a progressão)
-    const frameId = seekerFrame(state);
-    if (hero.dataset.frame !== frameId) {
-      hero.dataset.frame = frameId;
-      const old = hero.querySelector('.pl-tierframe');
-      const fresh = picture(frameId, { className: 'pl-tierframe', alt: '' });
-      if (old) old.outerHTML = fresh;
+    if (port && port.dataset.card !== cardId) {
+      port.dataset.card = cardId;
+      port.innerHTML = picture(cardId, { className: 'pl-portrait-img', alt: 'The Seeker' });
     }
     hero.querySelectorAll('img').forEach((im) => { im.loading = 'eager'; });
   }
@@ -355,21 +334,6 @@ export function renderPlayer(state) {
 
   // Lista de stats (mesmo catálogo)
   for (const g of STAT_GROUPS) for (const id of g.ids) $(`plv-${id}`).textContent = STATS[id].value(state);
-
-  // Gold Stats
-  const rows = $('pl-rows').children;
-  STAT_DEFS.forEach((def, i) => {
-    const row = rows[i];
-    const level = state.stats[def.key];
-    const cost = statCostNext(level);
-    const afford = state.lumens >= cost;
-    row.querySelector('.pl-s-level').textContent = `Lv ${formatNumber(level)}`;
-    row.querySelector('.pl-s-effect').textContent = def.effect(state);
-    const buy = row.querySelector('.pl-s-buy');
-    buy.textContent = `+1 (${formatNumber(cost)})`;
-    buy.disabled = !afford;
-    row.querySelector('.pl-s-max').disabled = !afford;
-  });
 
   // breakdown aberto: live-update
   if (openStatId) renderModal(state);

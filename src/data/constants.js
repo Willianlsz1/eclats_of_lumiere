@@ -281,6 +281,19 @@ export const SEEKER_RANKS = [
 // ×poder permanente por tier de Despertar (dano E HP). ⏳ PROVISÓRIO — calibração na Escala.
 export const DESPERTAR = { mult: 5 };
 
+// §8 redesign (13/jun) — gate do Despertar em 3 camadas: Prova (Guardião Sub3) +
+// Oferenda (Nitzotzot) + Tributo (Vestiges). ⏳ NÚMEROS = LISTA DE CALIBRAÇÃO.
+// Drop do Nitzotz: só nas Sub-áreas 3+; chunk garantido em boss (Guardião).
+export const NITZOTZ = { dropChance: 0.02, bossChunk: 5 };
+// Requisito por TIER ALVO (índice = despertares+1 = 1..4 → T2..T5). [0] não usado (T1 = início).
+export const DESPERTAR_REQ = [
+  null,
+  { nitzotz: 20,  vestiges: 75_000 },    // → T2 Illuminate  (~15% Asc Map1)
+  { nitzotz: 40,  vestiges: 285_000 },   // → T3 Éclairé     (~15% Asc Map2)
+  { nitzotz: 80,  vestiges: 600_000 },   // → T4 L'Éveillé   (~15% Asc Map3)
+  { nitzotz: 160, vestiges: 1_200_000 }, // → T5 Lumière     (~15% Asc Map4)
+];
+
 // §10/§11 — ÉCLATS + MÉMOIRES (✅ motor canônico do GDD). 15 relíquias, 3 por era,
 // desbloqueadas pela Ascension da era; moeda = Éclats. Clarté é o motor global.
 // Os efeitos `wired:true` já somam aos fatores memoire_*; os `wired:false` são

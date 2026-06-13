@@ -43,3 +43,11 @@ export function setupAutosave() {
   setInterval(save, AUTOSAVE_MS);
   window.addEventListener('beforeunload', save);
 }
+
+// Apaga o save e recomeça do zero. Remove o listener de beforeunload pra o
+// autosave NÃO regravar o estado antigo antes do reload.
+export function resetSave() {
+  try { localStorage.removeItem(SAVE_KEY); } catch { /* indisponível */ }
+  window.removeEventListener('beforeunload', save);
+  window.location.reload();
+}

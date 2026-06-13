@@ -22,6 +22,8 @@ export function applyDevUnlock(state) {
 
   state.stats.vit = Math.max(state.stats.vit, 40);
   state.stats.str = Math.max(state.stats.str, 30);
+
+  state.nitzotzot = Math.max(state.nitzotzot || 0, 9999); // Oferenda do Despertar à vontade
   return true;
 }
 
@@ -46,6 +48,76 @@ export function showDevBadge() {
   bar.appendChild(b);
 }
 
+// ─── Painel DEV flutuante: dar recursos/materiais "infinitos" a qualquer hora ───
+const HUGE = 1e30; // "infinito" prático (cabe no teto 1e100 e formata curto)
+
+function devGrant(state, kind) {
+  switch (kind) {
+    case 'lumens': state.lumens = HUGE; break;
+    case 'vestiges': state.vestiges = HUGE; break;
+    case 'eclats': state.eclats = HUGE; break;
+    case 'nitzotzot': state.nitzotzot = 1e9; break;
+    case 'materials': state.materiais = [1e9, 1e9, 1e9, 1e9]; break;
+    case 'xp': state.xpTotal += 1e15; break;
+    case 'maps':
+      state.maxMap = 5; state.unlockedSubarea = 5;
+      state.bossDefeated = [true, true, true, true, true];
+      state.convergences = Math.max(state.convergences, 1);
+      break;
+    case 'all':
+      ['lumens', 'vestiges', 'eclats', 'nitzotzot', 'materials', 'xp', 'maps'].forEach((k) => devGrant(state, k));
+      break;
+    default: break;
+  }
+}
+
+const DEV_ITEMS = [
+  ['★ MAX TUDO', 'all'],
+  ['Lumens ∞', 'lumens'],
+  ['Vestiges ∞', 'vestiges'],
+  ['Éclats ∞', 'eclats'],
+  ['Nitzotzot ∞', 'nitzotzot'],
+  ['Materiais ∞', 'materials'],
+  ['XP +1Qa', 'xp'],
+  ['Mapas/Subs', 'maps'],
+];
+
+export function setupDevPanel(state, onChange) {
+  if (document.getElementById('dev-panel')) return;
+  const panel = document.createElement('div');
+  panel.id = 'dev-panel';
+  panel.style.cssText = 'position:fixed;left:12px;bottom:56px;z-index:300;display:flex;flex-direction:column;gap:5px;'
+    + 'background:rgba(14,20,36,.92);border:1px solid #d9a441;border-radius:12px;padding:10px;'
+    + 'width:160px;backdrop-filter:blur(5px);box-shadow:0 8px 26px -8px #000;';
+  panel.innerHTML = '<div style="font:700 11px/1 Inter,sans-serif;letter-spacing:.2em;color:#d9a441;'
+    + 'text-transform:uppercase;padding:2px 2px 6px;border-bottom:1px solid rgba(217,164,65,.25);margin-bottom:2px">Dev · recursos</div>'
+    + DEV_ITEMS.map(([label, k]) =>
+      `<button type="button" data-k="${k}" style="cursor:pointer;text-align:left;`
+      + 'border:1px solid rgba(217,164,65,.4);border-radius:8px;background:rgba(20,26,37,.7);'
+      + `color:#f0d9a0;font:600 12px/1 Inter,sans-serif;padding:8px 10px">${label}</button>`).join('');
+  panel.querySelectorAll('button').forEach((b) =>
+    b.addEventListener('click', () => { devGrant(state, b.dataset.k); if (onChange) onChange(); }));
+  document.body.appendChild(panel);
+}
+
+// Botão RESET — apaga o save e recomeça do zero (com confirmação). Fica ao lado
+// do botão DEV. Útil pra QA: testar o jogo desde o início.
+export function setupResetButton(resetFn) {
+  if (document.getElementById('reset-btn')) return;
+  const btn = document.createElement('button');
+  btn.id = 'reset-btn';
+  btn.type = 'button';
+  btn.textContent = 'RESET ⟳';
+  btn.title = 'Apagar o save e recomeçar do zero';
+  btn.style.cssText = 'position:fixed;left:108px;bottom:12px;z-index:300;cursor:pointer;'
+    + 'background:rgba(37,20,22,.85);color:#e0807f;border:1px solid #b05a59;border-radius:999px;'
+    + 'font:700 13px/1 Inter,sans-serif;letter-spacing:.12em;padding:10px 16px;backdrop-filter:blur(4px);';
+  btn.addEventListener('click', () => {
+    if (window.confirm('Apagar TODO o progresso e recomeçar do zero?')) resetFn();
+  });
+  document.body.appendChild(btn);
+}
+
 // Botão clicável para ativar o modo de teste (quando não veio por URL).
 // onApplied() é chamado após ativar (ex.: salvar). Fica fora do #stage para
 // não escalar — sempre legível no celular.
@@ -62,6 +134,7 @@ export function setupDevButton(state, onApplied) {
   btn.addEventListener('click', () => {
     applyDevUnlock(state);
     showDevBadge();
+    setupDevPanel(state, onApplied); // painel flutuante de recursos
     btn.remove();
     if (onApplied) onApplied();
   });

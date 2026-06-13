@@ -3,7 +3,7 @@
 // A1 também libera o drip de Éclats (§10). Persiste sempre. Só Map 1 existe
 // no MVP → só A1 é completável; A2-A5 exigem Maps 2-5.
 
-import { ASCENSIONS, ECLATS_DRIP, MAPS, SEEKER_RANKS, DESPERTAR } from '../data/constants.js';
+import { ASCENSIONS, ECLATS_DRIP, MAPS, SEEKER_RANKS, DESPERTAR, DESPERTAR_REQ } from '../data/constants.js';
 import { hpForLevel, subareaLevelRange, getCurrentMap } from './enemies.js';
 import { memoireEclatsAllMult } from './memoires.js';
 
@@ -62,12 +62,43 @@ export const currentRank = (state) => SEEKER_RANKS[despertarTier(state)];
 // ×poder permanente do Despertar (dano E HP): mult^despertares.
 export const despertarMult = (state) => DESPERTAR.mult ** (state.despertares || 0);
 
-// Gate de poder: vencer o Guardião da Sub 3 do mapa → Despertar (idempotente). Map 5 = sem ganho (já T5).
-export function checkDespertar(state) {
-  if (state.subarea !== 3) return false;
-  const target = Math.min(SEEKER_RANKS.length - 1, state.map); // Map N Sub3 → despertares N
-  if ((state.despertares || 0) < target) { state.despertares = target; return true; }
-  return false;
+// ── Gate do Despertar em 3 camadas (§8 redesign, 13/jun) — ATO DO JOGADOR ──
+// Não dispara mais sozinho: vencer o Guardião só destrava a Prova.
+
+// Tier alvo do próximo despertar (despertares+1), ou null se já é Lumière (T5).
+export function despertarTarget(state) {
+  const t = (state.despertares || 0) + 1;
+  return t <= SEEKER_RANKS.length - 1 ? t : null;
+}
+
+// Requisito (Oferenda Nitzotzot + Tributo Vestiges) do próximo despertar, ou null.
+export function despertarReq(state) {
+  const t = despertarTarget(state);
+  return t == null ? null : DESPERTAR_REQ[t];
+}
+
+// Prova: vencer o Guardião da Sub 3 do mapa do tier alvo (bossDefeated[2] = Sub3).
+export function despertarProvaMet(state) {
+  const t = despertarTarget(state);
+  if (t == null) return false;
+  return state.map >= t && Array.isArray(state.bossDefeated) && state.bossDefeated[2] === true;
+}
+
+// Pode despertar? Prova + Oferenda + Tributo, todos atendidos.
+export function canDespertar(state) {
+  const req = despertarReq(state);
+  if (!req || !despertarProvaMet(state)) return false;
+  return (state.nitzotzot || 0) >= req.nitzotz && (state.vestiges || 0) >= req.vestiges;
+}
+
+// Executa o despertar (gasta Nitzotzot + Vestiges, sobe o tier). Idempotente/seguro.
+export function doDespertar(state) {
+  if (!canDespertar(state)) return false;
+  const req = despertarReq(state);
+  state.nitzotzot -= req.nitzotz;
+  state.vestiges -= req.vestiges;
+  state.despertares = despertarTarget(state);
+  return true;
 }
 
 // Moldura do card do Seeker conforme o tier (T1..T5, todas confirmadas).
