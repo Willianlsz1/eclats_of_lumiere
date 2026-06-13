@@ -9,7 +9,7 @@
 
 import { formatNumber } from '../core/format.js';
 import { picture, bg } from '../data/assets.js';
-import { heroLevel, playerHpMax } from '../game/stats.js';
+import { heroLevel, playerHpMax, currentAPS } from '../game/stats.js';
 import { changeSubarea } from '../game/combat.js';
 import { getCurrentMap, subareaLevelRange } from '../game/enemies.js';
 import { currentRank, seekerFrame, seekerPortrait } from '../game/ascension.js';
@@ -89,6 +89,9 @@ export function buildCombatView(root, state) {
     </aside>
 
     <div class="cb-arena" id="cb-arena"><!-- enemy cards (JS) --></div>
+
+    <!-- camada de FX: cortes de luz do Seeker voando até o alvo -->
+    <div class="cb-fx" id="cb-fx" aria-hidden="true"></div>
 
     <footer class="cb-hud">
       <div class="cb-nav">
@@ -265,18 +268,75 @@ function fitEnemyName(card) {
   }
 }
 
+// Ângulo do "tip" na arte do corte (tail→tip ≈ 234° em coords de tela). Usado
+// pra rotacionar o projétil de modo que a ponta aponte pro alvo.
+const SLASH_NATURAL_ANGLE = 234;
+const MAX_PROJ_PER_FRAME = 6; // teto de projéteis por render (evita pileup no APS alto)
+
+// Escala atual do palco (o stage é transformado por scale no fit())
+function stageScale() {
+  const st = $('#stage') || document.getElementById('stage');
+  if (!st) return 1;
+  const w = parseFloat(st.style.width) || 1920;
+  const rect = st.getBoundingClientRect();
+  return rect.width / w || 1;
+}
+// Centro de um elemento nas coords (não-escaladas) da camada `layer`
+function centerIn(layer, el, scale) {
+  const r = el.getBoundingClientRect();
+  const l = layer.getBoundingClientRect();
+  return { x: (r.left + r.width / 2 - l.left) / scale, y: (r.top + r.height / 2 - l.top) / scale };
+}
+
+// Duração do voo escalada pelo APS: piso no APS 1 (velocidade base PROJ_BASE_MS);
+// acima de 1 fica proporcionalmente mais curta (APS 2 = metade do tempo → dois
+// projéteis em sequência), com piso pra não virar piscada no APS altíssimo.
+const PROJ_BASE_MS = 360;
+function projDuration(aps) {
+  return Math.max(75, Math.min(PROJ_BASE_MS, PROJ_BASE_MS / Math.max(1, aps)));
+}
+
+// Dispara um corte de luz do card do Seeker até o card do mob alvo
+function spawnProjectile(targetCard, isCrit, aps) {
+  const fx = document.getElementById('cb-fx');
+  const seeker = document.getElementById('cb-seeker');
+  if (!fx || !seeker || !targetCard) return;
+  const scale = stageScale();
+  const o = centerIn(fx, seeker, scale);
+  const t = centerIn(fx, targetCard, scale);
+  // origem na borda direita do card do Seeker (parece sair "dele")
+  const sr = seeker.getBoundingClientRect();
+  const fr = fx.getBoundingClientRect();
+  o.x = (sr.right - sr.width * 0.12 - fr.left) / scale;
+  const ang = Math.atan2(t.y - o.y, t.x - o.x) * 180 / Math.PI;
+  const proj = document.createElement('div');
+  proj.className = isCrit ? 'cb-proj crit' : 'cb-proj';
+  proj.style.left = `${o.x}px`;
+  proj.style.top = `${o.y}px`;
+  proj.style.setProperty('--dx', `${t.x - o.x}px`);
+  proj.style.setProperty('--dy', `${t.y - o.y}px`);
+  proj.style.animationDuration = `${projDuration(aps)}ms`;
+  proj.innerHTML = `<i class="cb-proj-img" style="transform:rotate(${ang - SLASH_NATURAL_ANGLE}deg)"></i>`;
+  proj.addEventListener('animationend', () => proj.remove());
+  fx.appendChild(proj);
+}
+
 // Números de dano flutuantes — consome state.fx e a esvazia (a UI é a dona).
+// Cada golpe também dispara um corte de luz do Seeker até o mob.
 function renderDamageFloats(state) {
   if (state.fx.length === 0) return;
+  let projCount = 0;
+  const aps = currentAPS(state);
   for (const hit of state.fx) {
     const card = document.querySelector(`.cb-enemy[data-mob-id="${hit.mobId}"]`);
-    if (!card) continue; // mob já substituído — descarta
+    if (!card || card.style.display === 'none') continue; // mob morto/substituído — descarta
     const host = card.querySelector('.ecard-floats') || card;
     const el = document.createElement('span');
     el.className = hit.isCrit ? 'ecard-dmg crit' : 'ecard-dmg';
     el.textContent = `-${formatNumber(hit.amount)} HP`;
     host.appendChild(el);
     setTimeout(() => el.remove(), 850);
+    if (projCount < MAX_PROJ_PER_FRAME) { spawnProjectile(card, hit.isCrit, aps); projCount++; }
   }
   state.fx.length = 0;
 }

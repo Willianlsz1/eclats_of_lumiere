@@ -244,6 +244,29 @@
 }
 .cb-enemy.ecard.boss .ecard-name { font-size: 16px; }
 
+/* ---------------- FX: cortes de luz do Seeker ---------------- */
+.cb-fx { position: absolute; inset: 0; z-index: 7; pointer-events: none; overflow: hidden; }
+/* container voa da origem (left/top) até origem+dx,dy; a imagem dentro rotaciona
+   pra apontar no alvo. mix-blend-mode: screen some com o fundo preto da arte. */
+.cb-proj {
+  position: absolute; width: 0; height: 0;
+  animation: cb-proj-fly 340ms ease-out forwards;
+}
+/* arte já tem alfa (fundo preto removido) — sem blend, só um glow suave */
+.cb-proj-img {
+  position: absolute; left: -55px; top: -55px; width: 110px; height: 110px;
+  background: url('eclats/fx/projectil.webp') center / contain no-repeat;
+  filter: drop-shadow(0 0 9px rgba(120, 190, 255, .65));
+}
+.cb-proj.crit .cb-proj-img { left: -80px; top: -80px; width: 160px; height: 160px;
+  filter: drop-shadow(0 0 16px rgba(150, 210, 255, .9)); }
+@keyframes cb-proj-fly {
+  0%   { translate: 0 0; opacity: 0; }
+  14%  { opacity: 1; }
+  82%  { opacity: 1; }
+  100% { translate: var(--dx) var(--dy); opacity: 0; }
+}
+
 /* ---------------- HUD (rodapé) ---------------- */
 .cb-hud {
   position: absolute; z-index: 8; left: 0; right: 0; bottom: 0; height: 92px;
