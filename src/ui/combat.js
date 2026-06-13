@@ -176,6 +176,8 @@ export function renderCombat(state) {
   renderRates(state);
 
   // ── Inimigos + dano flutuante ──
+  // processa impactos cujo projétil já chegou ANTES de desenhar os cards
+  processPending(performance.now());
   renderEnemies(state);
   renderDamageFloats(state);
 }
@@ -192,11 +194,15 @@ function renderEnemies(state) {
     state.enemies.forEach((mob, i) => arena.appendChild(buildEnemyCard(mob, i, totalMobs, bossPresent)));
   }
 
-  // Alvo do motor: o vivo de menor HP recebe a borda dourada
+  // limpa o HP exibido / impactos pendentes de mobs que saíram (troca de onda)
+  const liveIds = new Set(state.enemies.map((m) => m.id));
+  for (const id of shownHp.keys()) if (!liveIds.has(id)) shownHp.delete(id);
+  if (pendingHits.length) pendingHits = pendingHits.filter((h) => liveIds.has(h.mobId));
+
+  // Alvo do motor: o PRIMEIRO vivo na ordem da onda (frente → trás) recebe a borda dourada
   let targetId = null;
-  let lowest = Infinity;
   for (const m of state.enemies) {
-    if (m.hp > 0 && m.hp < lowest) { lowest = m.hp; targetId = m.id; }
+    if (m.hp > 0) { targetId = m.id; break; }
   }
 
   state.enemies.forEach((mob, i) => {
@@ -206,15 +212,19 @@ function renderEnemies(state) {
       if (card) arena.replaceChild(fresh, card); else arena.appendChild(fresh);
       card = fresh;
     }
-    // Mob morto SOME (sem respawn no lugar); fica fora da cena até a onda virar.
-    if (mob.hp <= 0) {
+    // HP EXIBIDO (bufferizado até o projétil chegar); o motor já aplicou o dano real.
+    let vh = displayHp(mob);
+    // reconciliação: motor já matou e não há projétil a caminho → morte visual imediata
+    if (mob.hp <= 0 && !pendingHits.some((h) => h.mobId === mob.id)) { vh = 0; shownHp.set(mob.id, 0); }
+    // Mob (visualmente) morto SOME — fica fora da cena até a onda virar.
+    if (vh <= 0) {
       card.style.display = 'none';
       return;
     }
     card.style.display = '';
-    const pct = Math.max(0, (mob.hp / mob.hpMax) * 100);
+    const pct = Math.max(0, (vh / mob.hpMax) * 100);
     card.querySelector('.ecard-fill').style.width = `${pct}%`;
-    card.querySelector('.ecard-hp').textContent = `HP: ${formatNumber(Math.max(0, mob.hp))}`;
+    card.querySelector('.ecard-hp').textContent = `HP: ${formatNumber(Math.max(0, vh))}`;
     card.classList.toggle('target', mob.id === targetId);
     if (!card.dataset.fitted) { fitEnemyName(card); card.dataset.fitted = '1'; }
   });
@@ -302,11 +312,15 @@ function spawnProjectile(targetCard, isCrit, aps) {
   const seeker = document.getElementById('cb-seeker');
   if (!fx || !seeker || !targetCard) return;
   const scale = stageScale();
+  const fr = fx.getBoundingClientRect();
   const o = centerIn(fx, seeker, scale);
-  const t = centerIn(fx, targetCard, scale);
+  // alvo pela POSIÇÃO % do card (style.left/top) — funciona mesmo se o mob morreu
+  // no golpe e o card já está display:none (getBoundingClientRect daria zero → 0,0).
+  const lx = parseFloat(targetCard.style.left) || 50;
+  const ty = parseFloat(targetCard.style.top) || 50;
+  const t = { x: (lx / 100) * (fr.width / scale), y: (ty / 100) * (fr.height / scale) };
   // origem na borda direita do card do Seeker (parece sair "dele")
   const sr = seeker.getBoundingClientRect();
-  const fr = fx.getBoundingClientRect();
   o.x = (sr.right - sr.width * 0.12 - fr.left) / scale;
   const ang = Math.atan2(t.y - o.y, t.x - o.x) * 180 / Math.PI;
   const proj = document.createElement('div');
@@ -321,22 +335,62 @@ function spawnProjectile(targetCard, isCrit, aps) {
   fx.appendChild(proj);
 }
 
-// Números de dano flutuantes — consome state.fx e a esvazia (a UI é a dona).
-// Cada golpe também dispara um corte de luz do Seeker até o mob.
+// ── Dano sincronizado com o projétil ───────────────────────────────────────
+// O motor aplica o dano e mata o mob na hora (economia/offline corretos), mas
+// VISUALMENTE o HP só cai e o card só some quando o corte de luz chega. A UI
+// mantém um HP "exibido" por mob (shownHp) e uma fila de impactos agendados.
+const shownHp = new Map();   // mobId -> HP exibido (bufferizado)
+let pendingHits = [];        // { mobId, amount, isCrit, impactAt }
+
+// HP exibido do mob (inicia cheio na primeira vez que aparece em cena)
+function displayHp(mob) {
+  let v = shownHp.get(mob.id);
+  if (v === undefined) { v = mob.hpMax; shownHp.set(mob.id, v); }
+  return v;
+}
+
+// Aplica um hit ao visual: baixa o HP exibido e solta o número de dano no card.
+function applyVisualHit(h) {
+  const cur = shownHp.get(h.mobId);
+  if (cur === undefined) return; // mob já saiu de cena
+  shownHp.set(h.mobId, Math.max(0, cur - h.amount));
+  const card = document.querySelector(`.cb-enemy[data-mob-id="${h.mobId}"]`);
+  if (!card) return;
+  const host = card.querySelector('.ecard-floats') || card;
+  const el = document.createElement('span');
+  el.className = h.isCrit ? 'ecard-dmg crit' : 'ecard-dmg';
+  el.textContent = `-${formatNumber(h.amount)} HP`;
+  host.appendChild(el);
+  setTimeout(() => el.remove(), 850);
+}
+
+// Processa os impactos cujo projétil já chegou (chamado a cada frame).
+function processPending(now) {
+  if (pendingHits.length === 0) return;
+  const rest = [];
+  for (const h of pendingHits) {
+    if (h.impactAt <= now) applyVisualHit(h); else rest.push(h);
+  }
+  pendingHits = rest;
+}
+
+// Consome state.fx: dispara o projétil e AGENDA o impacto (HP/número/morte) pra
+// quando o corte chegar. Hits acima do teto de projéteis/frame aplicam na hora.
 function renderDamageFloats(state) {
   if (state.fx.length === 0) return;
   let projCount = 0;
   const aps = currentAPS(state);
+  const now = performance.now();
   for (const hit of state.fx) {
     const card = document.querySelector(`.cb-enemy[data-mob-id="${hit.mobId}"]`);
-    if (!card || card.style.display === 'none') continue; // mob morto/substituído — descarta
-    const host = card.querySelector('.ecard-floats') || card;
-    const el = document.createElement('span');
-    el.className = hit.isCrit ? 'ecard-dmg crit' : 'ecard-dmg';
-    el.textContent = `-${formatNumber(hit.amount)} HP`;
-    host.appendChild(el);
-    setTimeout(() => el.remove(), 850);
-    if (projCount < MAX_PROJ_PER_FRAME) { spawnProjectile(card, hit.isCrit, aps); projCount++; }
+    if (!card) continue; // mob já substituído — descarta
+    if (projCount < MAX_PROJ_PER_FRAME) {
+      spawnProjectile(card, hit.isCrit, aps);
+      projCount++;
+      pendingHits.push({ mobId: hit.mobId, amount: hit.amount, isCrit: hit.isCrit, impactAt: now + projDuration(aps) });
+    } else {
+      applyVisualHit({ mobId: hit.mobId, amount: hit.amount, isCrit: hit.isCrit });
+    }
   }
   state.fx.length = 0;
 }

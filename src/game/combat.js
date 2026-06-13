@@ -1,5 +1,5 @@
 // Núcleo de combate — GDD §4 (modelo de ONDAS, estilo Gaiadon).
-// - Jogador ataca um mob por vez (o vivo de menor HP atual).
+// - Jogador ataca um mob por vez (o primeiro vivo na ordem da onda: frente → trás).
 // - Cap físico: máximo de 1 kill por ataque — o hit atinge um único mob e o
 //   excedente de dano se perde; kill rate nunca excede o APS atual.
 // - Mob morto NÃO respawna: fica na cena (apagado) e para de causar dano. Só
@@ -118,12 +118,13 @@ export function combatTick(state, dt) {
   }
 }
 
-// Um ataque: alvo único = o mob VIVO de menor HP. Máx 1 kill. SEM respawn —
-// o mob morto fica na cena (apagado) até a onda inteira ser limpa.
+// Um ataque: alvo único = o PRIMEIRO mob vivo na ordem da onda (frente → trás),
+// nunca aleatório. Máx 1 kill. SEM respawn — o mob morto fica na cena (apagado)
+// até a onda inteira ser limpa.
 function playerAttack(state, hpMax) {
   let target = null;
   for (const m of state.enemies) {
-    if (m.hp > 0 && (target === null || m.hp < target.hp)) target = m;
+    if (m.hp > 0) { target = m; break; } // foca o da frente até morrer, depois o próximo
   }
   if (!target) return; // onda toda morta (será trocada no tick)
 
