@@ -18,6 +18,11 @@ const DATA = {
     "atlas": "worldmap/worldmap"
   },
   "seeker": {
+    "card_t1": "characters/seeker/seeker_card_t1",
+    "card_t2": "characters/seeker/seeker_card_t2",
+    "card_t3": "characters/seeker/seeker_card_t3",
+    "card_t4": "characters/seeker/seeker_card_t4",
+    "card_t5": "characters/seeker/seeker_card_t5",
     "t1": "characters/seeker/seeker_t1",
     "t2": "characters/seeker/seeker_t2",
     "t3": "characters/seeker/seeker_t3",
@@ -25,6 +30,12 @@ const DATA = {
     "t5": "characters/seeker/seeker_t5"
   },
   "frames": {
+    "card": "frames/card_frame_alpha",
+    "boss_m1": "frames/frame_boss_m1",
+    "boss_m2": "frames/frame_boss_m2",
+    "boss_m3": "frames/frame_boss_m3",
+    "boss_m4": "frames/frame_boss_m4",
+    "boss_m5": "frames/frame_boss_m5",
     "enemy": "frames/frame_enemy_alpha",
     "enemy_universal": "frames/frame_enemy_universal",
     "tier1": "frames/frame_tier1_alpha",
@@ -32,11 +43,7 @@ const DATA = {
     "tier3": "frames/frame_tier3_alpha",
     "tier4": "frames/frame_tier4_alpha",
     "tier5": "frames/frame_tier5_alpha",
-    "boss_m1": "frames/frame_boss_m1",
-    "boss_m2": "frames/frame_boss_m2",
-    "boss_m3": "frames/frame_boss_m3",
-    "boss_m4": "frames/frame_boss_m4",
-    "boss_m5": "frames/frame_boss_m5"
+    "universal": "frames/frame_universal"
   },
   "icons": {
     "nav": {
@@ -46,7 +53,8 @@ const DATA = {
       "4": "icons/nav/nav_4",
       "5": "icons/nav/nav_5",
       "6": "icons/nav/nav_6",
-      "7": "icons/nav/nav_7"
+      "7": "icons/nav/nav_7",
+      "forge": "icons/nav/nav_forge"
     },
     "currency": {
       "convergence": "icons/currency/icon_convergence_alpha",
@@ -70,11 +78,14 @@ const DATA = {
     "grasp_kindled": "gear/grasp_kindled",
     "grasp_luminous": "gear/grasp_luminous",
     "grasp_radiant": "gear/grasp_radiant",
+    "nameplate": "gear/nameplate",
     "reson_converged": "gear/reson_converged",
     "reson_faded": "gear/reson_faded",
     "reson_kindled": "gear/reson_kindled",
     "reson_luminous": "gear/reson_luminous",
     "reson_radiant": "gear/reson_radiant",
+    "screen": "gear/screen",
+    "slot_frame": "gear/slot_frame",
     "veil_converged": "gear/veil_converged",
     "veil_faded": "gear/veil_faded",
     "veil_kindled": "gear/veil_kindled",
@@ -158,26 +169,45 @@ const DATA = {
   },
   "enemies": {
     "map1": {
+      "dreaming_gate": "enemies/map1/dreaming_gate",
       "constellation_weaver": "enemies/map1/enemy_VERIFICAR_constellation_weaver",
       "deer_spirit": "enemies/map1/enemy_VERIFICAR_deer_spirit",
       "golden_figure": "enemies/map1/enemy_VERIFICAR_golden_figure",
-      "moth_lantern": "enemies/map1/enemy_VERIFICAR_moth_lantern"
+      "moth_lantern": "enemies/map1/enemy_VERIFICAR_moth_lantern",
+      "glimmercap_hollow": "enemies/map1/glimmercap_hollow",
+      "lanternroot_glade": "enemies/map1/lanternroot_glade",
+      "lightfall_stair": "enemies/map1/lightfall_stair",
+      "verdant_deep": "enemies/map1/verdant_deep",
+      "wooding": "enemies/map1/wooding"
     },
     "map2": {
       "crystal_being": "enemies/map2/enemy_VERIFICAR_crystal_being",
       "cyan_ghost": "enemies/map2/enemy_VERIFICAR_cyan_ghost",
-      "teal_flame": "enemies/map2/enemy_VERIFICAR_teal_flame"
+      "teal_flame": "enemies/map2/enemy_VERIFICAR_teal_flame",
+      "hourglass_pillar": "enemies/map2/hourglass_pillar",
+      "lucent_gate": "enemies/map2/lucent_gate",
+      "luminis": "enemies/map2/luminis",
+      "prism_stair": "enemies/map2/prism_stair",
+      "shardbloom_rise": "enemies/map2/shardbloom_rise",
+      "stillwater_deep": "enemies/map2/stillwater_deep"
     },
     "map3": {
+      "ashen_throne": "enemies/map3/ashen_throne",
+      "asheruins": "enemies/map3/asheruins",
+      "cindergate": "enemies/map3/cindergate",
       "horned_statue": "enemies/map3/enemy_VERIFICAR_horned_statue",
       "thorn_sentinel": "enemies/map3/enemy_VERIFICAR_thorn_sentinel",
       "three_faces": "enemies/map3/enemy_VERIFICAR_three_faces",
-      "vortex": "enemies/map3/enemy_VERIFICAR_vortex"
+      "vortex": "enemies/map3/enemy_VERIFICAR_vortex",
+      "fallen_colonnade": "enemies/map3/fallen_colonnade",
+      "pyre_ascent": "enemies/map3/pyre_ascent",
+      "silent_choir": "enemies/map3/silent_choir"
     },
     "map4": {
       "chained_giant": "enemies/map4/enemy_VERIFICAR_chained_giant",
+      "claimed_vanguard": "enemies/map4/enemy_VERIFICAR_claimed_vanguard",
       "fissure_stalker": "enemies/map4/enemy_VERIFICAR_fissure_stalker",
-      "claimed_vanguard": "enemies/map4/enemy_VERIFICAR_claimed_vanguard"
+      "fracturedpeaks": "enemies/map4/fracturedpeaks"
     },
     "map5": {
       "crown_bearer": "enemies/map5/enemy_VERIFICAR_crown_bearer",
@@ -185,6 +215,7 @@ const DATA = {
       "fallen_angel": "enemies/map5/enemy_VERIFICAR_fallen_angel",
       "hooded_redeyes": "enemies/map5/enemy_VERIFICAR_hooded_redeyes",
       "white_mask_priest": "enemies/map5/enemy_VERIFICAR_white_mask_priest",
+      "nilaeternum": "enemies/map5/nilaeternum",
       "rare_first_eclaire": "enemies/map5/rare_VERIFICAR_first_eclaire"
     }
   },
@@ -212,6 +243,8 @@ const FLAGS = {
     "enemies/map3/enemy_VERIFICAR_three_faces",
     "enemies/map3/enemy_VERIFICAR_vortex",
     "enemies/map4/enemy_VERIFICAR_chained_giant",
+    "enemies/map4/enemy_VERIFICAR_claimed_vanguard",
+    "enemies/map4/enemy_VERIFICAR_fissure_stalker",
     "enemies/map5/enemy_VERIFICAR_crown_bearer",
     "enemies/map5/enemy_VERIFICAR_dragon_lancer",
     "enemies/map5/enemy_VERIFICAR_fallen_angel",
@@ -220,9 +253,7 @@ const FLAGS = {
     "enemies/map5/rare_VERIFICAR_first_eclaire"
   ]
 };
-const FALLBACK_EXT = {
-  "backgrounds/map2_cavernes_luminis": ".png"
-};
+const FALLBACK_EXT = {};
 
 export function path(id) {
   const v = id.split(".").reduce((o, k) => (o == null ? o : o[k]), DATA);
