@@ -19,7 +19,7 @@ Idle RPG para browser. JavaScript puro (ES6 modules) + HTML + CSS, build com Vit
 index.html · style.css · src/core/ (loop, state, save, format) · src/game/ (combat, enemies, economy, stats, convergence) · src/data/ (constants, assets) · src/ui/ (ui = casca nav/moedas + fit; combat/map/player = telas reais; tokens/shell/combat/map/player .css) · assets/ · docs/
 
 ## Disciplina de fases (inegociável)
-O MVP é só o Map 1, em fases: CP-A bootstrap/loop/save · CP-B combate · CP-C gold stats · CP-D subáreas+boss · CP-E convergence · CP-F vestiges+offline · CP-G skin/assets. Implemente APENAS o CP pedido na tarefa. Nunca adiante fases, nunca faça refactors amplos não pedidos, nunca misture escopo. Fora do MVP (não implementar ainda): Passivas, Gear, Echoes, Mémoires, Ascension, Maps 2-5.
+O MVP é só o Map 1, em fases: CP-A bootstrap/loop/save · CP-B combate · CP-C gold stats · CP-D subáreas+boss · CP-E convergence · CP-F vestiges+offline · CP-G skin/assets. Implemente APENAS o CP pedido na tarefa. Nunca adiante fases, nunca faça refactors amplos não pedidos, nunca misture escopo. Fora do MVP (não implementar ainda): Passivas, Echoes, Mémoires, Ascension, Maps 2-5. (Gear saiu desta lista em 13/jun/2026 — redesign aprovado, ver docs/eclats_implementacao_gear_mapas.md.)
 
 ## Convenções
 Módulos pequenos e focados; comentários em português; sem dependências externas além do Vite; save em localStorage com versão de schema; commits pequenos por entrega com mensagem clara.

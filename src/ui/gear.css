@@ -1,118 +1,137 @@
 /* ============================================================
-   Éclats of Lumière — Tela de Gear (pós-MVP)
-   Resumo dos afixos (esq) · grade de 6 slots (centro) · detalhe + controles (dir).
-   Borda 3px da cor da raridade + badge LVL (estilo gacha do mockup).
+   Éclats of Lumière — Tela de Gear / Equipment (REDESIGN paper-doll)
+   Moldura do modal (vitrine dourada) + Armeiro ao centro + 6 slots
+   (3 esq + 3 dir) com Level Up inline + barra de multiplicador global.
+   Slot por tier (raridade). Subir raridade = na Forja.
    ============================================================ */
 
-.view.gear {
-  display: grid; grid-template-columns: 320px 1fr 400px; gap: 24px;
-  padding: 108px 40px 40px; overflow: hidden;
-}
-.gear > * { min-height: 0; }
+/* NÃO sobrescrever position: a .view base já é absolute inset:0 (containing block) */
+.view.gear { display: block; padding: 0; overflow: hidden; }
 
-.gr-panel, .gr-summary, .gr-detail {
-  background: color-mix(in srgb, var(--panel) 88%, transparent);
-  border: var(--border); border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-panel); padding: 20px;
+/* fundo ÚNICO da tela — moldura + forja + Armeiro integrados (full-bleed) */
+.gr-screen {
+  position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background: url('eclats/gear/screen.webp') center / 100% 100% no-repeat;
 }
 
-/* ---------------- Resumo (afixos ativos) ---------------- */
-.gr-summary h3, .gr-detail h2 { margin: 0 0 14px; font-family: var(--font-display);
-  font-weight: 700; color: var(--ink); letter-spacing: .02em; }
-.gr-summary h3 { font-size: var(--fs-xl); }
-.gr-totals { margin: 0; display: grid; gap: 10px; }
+/* ---------- esquerda: stats (sobreposto, dentro da área limpa) ---------- */
+.gr-summary {
+  position: absolute; left: 7.5%; top: 15.5%; width: 232px; max-height: 60%; z-index: 3;
+  background: color-mix(in srgb, #0b1226 92%, transparent);
+  border: 1px solid rgba(217, 164, 65, .35); border-radius: 14px;
+  box-shadow: 0 0 40px -14px #000, inset 0 0 0 1px rgba(217,164,65,.1);
+  backdrop-filter: blur(3px);
+  padding: 18px; overflow-y: auto;
+}
+
+/* colunas de slots nas áreas LATERAIS (o Armeiro da arte fica entre elas) */
+.gr-summary h3 { margin: 0 0 14px; font-family: var(--font-display); font-weight: 700;
+  font-size: var(--fs-lg); color: var(--ink); letter-spacing: .02em; }
+.gr-totals { display: grid; gap: 8px; margin: 0; }
 .gr-totals > div { display: flex; justify-content: space-between; align-items: baseline;
-  background: var(--panel-2); border: var(--border-soft); border-radius: var(--radius-sm); padding: 10px 14px; }
-.gr-totals dt { font-size: var(--fs-xs); color: var(--dim);
-  text-transform: uppercase; letter-spacing: .12em; }
-.gr-totals dd { margin: 0; font-size: var(--fs-lg); font-weight: 600; color: var(--gold);
-  font-variant-numeric: tabular-nums; }
-.gr-note { margin-top: 18px; font-size: var(--fs-xs); color: var(--faint);
-  font-style: italic; font-family: var(--font-display); }
+  background: var(--panel-2); border: var(--border-soft); border-radius: var(--radius-sm); padding: 9px 12px; }
+.gr-totals dt { font-size: var(--fs-xs); color: var(--dim); text-transform: uppercase; letter-spacing: .1em; }
+.gr-totals dd { margin: 0; font-size: var(--fs-md); font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; }
+.gr-note { margin-top: 14px; font-size: var(--fs-xs); color: var(--faint); font-style: italic; }
 
-/* ---------------- Forja — materiais + refino (§13B) ---------------- */
-.gr-forja-h { margin-top: 22px !important; font-size: var(--fs-lg) !important;
-  padding-top: 16px; border-top: 1px solid var(--line); }
-.gr-mats { margin: 0; display: grid; gap: 8px; }
-.gr-mats > div { display: flex; justify-content: space-between; align-items: baseline;
-  border-bottom: 1px dotted var(--line); padding-bottom: 4px; }
-.gr-mats dt { font-size: var(--fs-xs); color: var(--dim); letter-spacing: .04em; }
-.gr-mats dd { margin: 0; font-weight: 600; color: var(--eclat); font-variant-numeric: tabular-nums; }
-.gr-refino { margin-top: 12px; display: grid; gap: 6px; }
-.gr-ref { appearance: none; cursor: pointer; padding: 7px 10px; border-radius: var(--radius-sm);
-  border: var(--border-soft); background: var(--panel-2); color: var(--ink); font-size: var(--fs-xs);
-  transition: border-color .15s ease, opacity .15s ease; }
-.gr-ref:hover:not(:disabled) { border-color: var(--eclat); }
-.gr-ref:disabled { opacity: .35; cursor: not-allowed; }
-
-/* ---------------- Grade de slots ---------------- */
-.gr-slots { display: grid; grid-template-columns: repeat(3, 1fr); grid-auto-rows: 1fr; gap: 18px; }
-.gr-slot {
-  position: relative; cursor: pointer; appearance: none;
-  background: color-mix(in srgb, var(--panel) 86%, transparent);
-  border: 3px solid var(--line); border-radius: var(--radius);
-  padding: 14px; display: flex; flex-direction: column; align-items: center; gap: 6px;
-  transition: transform .12s ease, box-shadow .14s ease;
+/* ---------- centro: Armeiro (pés ancorados na base = plataforma) ---------- */
+/* ---------- slots (colunas flanqueando o Armeiro da arte) — frame dourado uniforme ---------- */
+.gr-slots-col {
+  position: absolute; top: 49%; transform: translateY(-50%); z-index: 2;
+  display: flex; flex-direction: column; justify-content: center; gap: 22px; width: 252px;
 }
-.gr-slot:hover { transform: translateY(-2px); }
-.gr-slot.selected { box-shadow: 0 0 0 2px var(--eclat), var(--glow-eclat); }
-.gr-art { width: 100%; flex: 1; min-height: 90px; display: grid; place-items: center; }
-.gr-art picture, .gr-art img { max-width: 100%; max-height: 150px; object-fit: contain;
-  filter: drop-shadow(0 6px 14px #000a); }
-.gr-lvl { position: absolute; top: 8px; right: 8px; font-size: var(--fs-xs); font-weight: 700;
-  background: #06101fcc; border: var(--border-soft); border-radius: 999px; padding: 2px 9px;
-  color: var(--ink); font-variant-numeric: tabular-nums; }
-.gr-pname { font-family: var(--font-display); font-size: var(--fs-md); color: var(--ink);
-  text-align: center; line-height: 1.1; }
-.gr-prar { font-size: var(--fs-xs); text-transform: uppercase; letter-spacing: .14em; color: var(--dim); }
+.gr-slots-col.side-left { left: 21.5%; }
+.gr-slots-col.side-right { right: 21.5%; }
+/* slot em LINHA: caixa + ações (Level up + custo) no lado EXTERNO (longe do Armeiro) */
+.gr-slot { display: flex; align-items: center; gap: 9px; width: 100%; }
+.side-left .gr-slot { flex-direction: row-reverse; }   /* ações à esquerda (externo) */
+.side-right .gr-slot { flex-direction: row; }          /* ações à direita (externo) */
 
-/* borda + nome da raridade pela cor canônica */
-.gr-slot.r-faded     { border-color: var(--r-faded); }     .gr-slot.r-faded .gr-prar { color: var(--r-faded); }
-.gr-slot.r-kindled   { border-color: var(--r-kindled); }   .gr-slot.r-kindled .gr-prar { color: var(--r-kindled); }
-.gr-slot.r-luminous  { border-color: var(--r-luminous); }  .gr-slot.r-luminous .gr-prar { color: var(--r-luminous); }
-.gr-slot.r-radiant   { border-color: var(--r-radiant); }   .gr-slot.r-radiant .gr-prar { color: var(--r-radiant); }
-.gr-slot.r-converged { border-color: var(--r-converged); } .gr-slot.r-converged .gr-prar { color: var(--r-converged); }
+/* caixa quadrada: moldura dourada (do canvas) + arte do item dentro */
+.gr-slot-box { position: relative; width: 150px; flex: none; aspect-ratio: 1; }
+.gr-slot-art {
+  /* fundo preenche a JANELA da moldura (inset pequeno, estilo card do Seeker);
+     a moldura fica levemente maior e sobrepõe a borda — sem vão.
+     padding dá a margem interna pra arte (contain) não bater nos ornamentos. */
+  position: absolute; inset: 0; z-index: 1; border-radius: 6px; overflow: hidden;
+  /* fundo do box pinta a COR DA RARIDADE (não navy fixo); a arte é recortada por cima */
+  --tint: #6b7280;
+  background: radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--tint) 45%, #0a1024), #0a1024);
+  display: grid; place-items: center; padding: 13%;
+}
+.gr-slot.tier-faded     .gr-slot-art { --tint: var(--r-faded); }
+.gr-slot.tier-kindled   .gr-slot-art { --tint: var(--r-kindled); }
+.gr-slot.tier-luminous  .gr-slot-art { --tint: var(--r-luminous); }
+.gr-slot.tier-radiant   .gr-slot-art { --tint: var(--r-radiant); }
+.gr-slot.tier-converged .gr-slot-art { --tint: var(--r-converged); }
+.gr-slot-art picture, .gr-slot-art img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.gr-slot-frame {
+  /* levemente maior que o box: a borda interna da moldura sobrepõe o fundo (sem vão) */
+  position: absolute; inset: -3%; z-index: 2; pointer-events: none;
+  background: url('eclats/gear/slot_frame.webp') center / 100% 100% no-repeat;
+}
+.gr-slot-lvl {
+  position: absolute; top: -7px; left: 50%; transform: translateX(-50%); z-index: 3;
+  font-size: 10px; font-weight: 700; color: #fff; font-variant-numeric: tabular-nums;
+  background: rgba(8,12,24,.88); border: 1px solid rgba(217,164,65,.45); border-radius: 5px;
+  padding: 1px 8px; white-space: nowrap; text-shadow: 0 1px 2px #000;
+}
+.gr-slot:hover .gr-slot-frame { filter: drop-shadow(0 0 9px var(--gold)); }
 
-/* ---------------- Detalhe ---------------- */
-.gr-detail { display: flex; flex-direction: column; }
-.gr-d-art { width: 100%; height: 230px; display: grid; place-items: center; margin-bottom: 8px; }
-.gr-d-art picture, .gr-d-art img { max-width: 100%; max-height: 230px; object-fit: contain;
-  filter: drop-shadow(0 8px 20px #000b); }
-.gr-detail h2 { font-size: var(--fs-xl); margin-bottom: 2px; text-align: center; }
-.gr-d-slot { text-align: center; font-size: var(--fs-sm); color: var(--dim);
-  text-transform: uppercase; letter-spacing: .12em; margin-bottom: 14px; }
-.gr-d-slot b { font-weight: 700; }
+/* ações ao lado externo: Level up + custo (ícone Lumens), ambos em caixa escura */
+.gr-slot-actions { display: flex; flex-direction: column; align-items: stretch; gap: 7px; width: 92px; flex: none; }
+.gr-slot-up {
+  width: 100%; cursor: pointer; appearance: none; text-align: center;
+  font-size: 14px; font-weight: 700; letter-spacing: .02em;
+  color: #d7c79c; background: rgba(11, 18, 38, .9); border: 1px solid rgba(217,164,65,.45);
+  border-radius: 8px; padding: 8px 0; transition: filter .12s, opacity .12s;
+}
+.gr-slot-up:disabled { cursor: not-allowed; }
+.gr-slot.afford .gr-slot-up { color: #1a1204; background: linear-gradient(180deg, #e8c477, var(--gold));
+  border-color: transparent; box-shadow: 0 0 16px -4px var(--gold); }
+.gr-slot.afford .gr-slot-up:hover { filter: brightness(1.08); }
+.gr-slot.capped .gr-slot-up { color: var(--eclat); }
+/* custo na própria caixa escura (pra aparecer sobre o dourado) */
+.gr-slot-cost { display: flex; align-items: center; justify-content: center; gap: 5px;
+  background: rgba(11, 18, 38, .9); border: 1px solid rgba(217,164,65,.4); border-radius: 8px;
+  padding: 5px 6px; font-size: 15px; font-weight: 700; color: #e8d49a; font-variant-numeric: tabular-nums; }
+.gr-cost-ic { width: 18px; height: 18px; object-fit: contain; flex: none; }
+.gr-cost-max { color: var(--eclat); font-size: 12px; }
 
-.gr-d-bar { position: relative; height: 22px; border-radius: 11px;
-  background: #0c1119; border: var(--border-soft); overflow: hidden; margin-bottom: 14px; }
-.gr-d-bar i { position: absolute; inset: 0; width: 0;
-  background: linear-gradient(90deg, var(--gold), #f0d9a0); transition: width .14s ease; }
-.gr-d-bar span { position: absolute; inset: 0; display: grid; place-items: center;
-  font-size: var(--fs-xs); font-weight: 600; color: var(--ink); text-shadow: 0 1px 2px #000a;
-  font-variant-numeric: tabular-nums; }
+/* tooltip de atributos (hover do slot) */
+.gr-tip {
+  display: none; position: absolute; top: 50%; transform: translateY(-50%); z-index: 20;
+  width: 252px; text-align: left; pointer-events: none;
+  background: rgba(8, 12, 24, .97); border: 1px solid rgba(217, 164, 65, .6); border-radius: 12px;
+  padding: 14px 16px; box-shadow: 0 12px 34px -8px #000;
+}
+.gr-slot:hover .gr-tip { display: block; }
+.side-left .gr-tip { left: 114%; }
+.side-right .gr-tip { right: 114%; }
+.gr-tip-name { margin: 0 0 2px; font-family: var(--font-display); font-size: 19px; font-weight: 700; }
+.gr-tip-sub { font-size: 11px; color: var(--dim); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 11px; }
+.gr-tip-affixes { display: grid; gap: 5px; }
+.gr-tip-affixes div { font-size: 13px; color: var(--dim); font-variant-numeric: tabular-nums; }
+.gr-tip-affixes .primary { color: var(--gold); font-weight: 700; font-size: 14.5px;
+  border-bottom: 1px solid rgba(217,164,65,.2); padding-bottom: 5px; margin-bottom: 2px; }
 
-.gr-d-facts { display: grid; gap: 8px; margin: 0 0 14px; }
-.gr-d-facts > div { display: flex; justify-content: space-between; align-items: baseline;
-  border-bottom: var(--border-soft); padding-bottom: 7px; }
-.gr-d-facts dt { font-size: var(--fs-xs); color: var(--dim);
-  text-transform: uppercase; letter-spacing: .1em; }
-.gr-d-facts dd { margin: 0; font-size: var(--fs-md); font-weight: 600; color: var(--ink);
-  font-variant-numeric: tabular-nums; }
-
-.gr-mults { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-bottom: 12px; }
-.gr-mults button { appearance: none; cursor: pointer; padding: 8px 0; font-size: var(--fs-sm);
-  font-weight: 600; border: var(--border); border-radius: 8px; background: var(--panel); color: var(--dim);
-  transition: all .12s ease; }
-.gr-mults button:hover { border-color: var(--eclat); color: var(--ink); }
-.gr-mults button.active { background: var(--eclat); color: #06101f; border-color: var(--eclat); }
-
-.gr-up, .gr-rarity { appearance: none; cursor: pointer; width: 100%; padding: 13px;
-  border-radius: 12px; font-weight: 700; font-size: var(--fs-md); margin-top: auto; }
-.gr-up { border: 0; background: var(--gold); color: #1a1206; box-shadow: var(--glow-gold); }
-.gr-up:hover:not(:disabled) { filter: brightness(1.08); }
-.gr-rarity { margin-top: 10px; border: var(--border); background: var(--panel-2); color: var(--eclat); }
-.gr-rarity:hover:not(:disabled) { border-color: var(--eclat); }
-.gr-up:disabled, .gr-rarity:disabled { opacity: .4; cursor: not-allowed; box-shadow: none;
-  background: var(--panel-2); color: var(--faint); }
-.gr-d-lore { margin: 12px 0 0; text-align: center; font-size: var(--fs-xs); color: var(--faint);
-  font-style: italic; font-family: var(--font-display); }
+/* ---------- multiplicador global — pílula no canto inferior direito ---------- */
+.gr-multbar {
+  position: absolute; right: 6.5%; bottom: 6.5%; z-index: 3;
+  display: flex; align-items: center; gap: 12px;
+  background: rgba(8, 12, 24, .82); border: 1px solid rgba(217, 164, 65, .35);
+  border-radius: 12px; padding: 8px 14px; box-shadow: 0 6px 20px -8px #000;
+}
+.gr-multbar-l { font-size: var(--fs-sm); color: #c9b78a; letter-spacing: .04em; }
+.gr-mults { display: flex; gap: 7px; }
+.gr-mults button {
+  appearance: none; cursor: pointer; padding: 8px 14px; border-radius: 8px;
+  border: 1px solid rgba(217,164,65,.35); background: color-mix(in srgb, #0a1024 80%, transparent);
+  color: var(--dim); font-size: var(--fs-sm); font-weight: 700; font-variant-numeric: tabular-nums;
+  transition: border-color .14s, color .14s, background .14s;
+}
+.gr-mults button:hover { border-color: var(--gold); color: var(--ink); }
+.gr-mults button.active { border-color: var(--gold); color: var(--gold);
+  background: color-mix(in srgb, var(--gold) 18%, #0a1024); }
+.gr-mults .gr-max { color: #9be08a; border-color: rgba(155,224,138,.45); }
+.gr-mults .gr-max.active { color: #9be08a; border-color: #9be08a; background: color-mix(in srgb, #9be08a 16%, #0a1024); }
