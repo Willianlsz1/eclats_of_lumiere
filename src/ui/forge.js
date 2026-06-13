@@ -242,17 +242,14 @@ function renderAltar(state, m) {
   if (altar) altar.innerHTML = r.type === 'refine' ? refineAltar(state, r) : rarityAltar(state, r);
 }
 
-// Linha de requisito com ÍCONE real do item + barra na COR DO MATERIAL (não
-// dourado-padrão) + a fração sobreposta. tone = cor da raridade/material.
-function gateRow(ok, icHTML, name, frac, pct, tone) {
+// Linha de requisito: ÍCONE real (diz o que é) + barra grande na cor do material
+// com a fração sobreposta + selo ✓/✕. Sem label de texto (o ícone já identifica).
+function gateRow(ok, icHTML, frac, pct, tone) {
   const fill = `linear-gradient(90deg, color-mix(in srgb, ${tone} 62%, #000), ${tone})`;
   return `
     <div class="fg-gate ${ok ? 'ok' : 'no'}">
       <span class="fg-gic">${icHTML}</span>
-      <span class="fg-gmid">
-        <span class="fg-gname">${name}</span>
-        <span class="fg-gbar"><i style="width:${Math.min(100, pct)}%; background:${fill}"></i><em>${frac}</em></span>
-      </span>
+      <span class="fg-gbar"><i style="width:${Math.min(100, pct)}%; background:${fill}"></i><em>${frac}</em></span>
       <span class="fg-gseal">${ok ? '✓' : '✕'}</span>
     </div>`;
 }
@@ -298,8 +295,8 @@ function rarityAltar(state, r) {
     </div>
 
     <div class="fg-gates">
-      ${gateRow(info.atCap, picture(`gear.${r.key}_${rarName}`, { alt: '' }), 'At level cap', `Lv ${fmt(info.p.level)} / ${fmt(info.cap)}`, (info.p.level / info.cap) * 100, RAR_COLOR[info.rar])}
-      ${gateRow(info.held >= info.need, `<img src="${MAT_IMG[info.tier]}" alt="">`, `${MAT_LABELS[info.tier]} materials`, `${fmt(info.held)} / ${info.need}`, (info.held / info.need) * 100, matColor(info.tier))}
+      ${gateRow(info.atCap, picture(`gear.${r.key}_${rarName}`, { alt: '' }), `Lv ${fmt(info.p.level)} / ${fmt(info.cap)}`, (info.p.level / info.cap) * 100, RAR_COLOR[info.rar])}
+      ${gateRow(info.held >= info.need, `<img src="${MAT_IMG[info.tier]}" alt="">`, `${fmt(info.held)} / ${info.need}`, (info.held / info.need) * 100, matColor(info.tier))}
     </div>
 
     <button type="button" class="fg-forgebtn" data-act="forge" ${info.ready ? '' : 'disabled'}>Forge to ${GEAR_RARITY_LABELS[info.rar + 1]}</button>
@@ -333,7 +330,7 @@ function refineAltar(state, r) {
     </div>
 
     <div class="fg-gates">
-      ${gateRow(ok, `<img src="${MAT_IMG[r.fromTier]}" alt="">`, `${from} materials`, `${fmt(held)} / ${cost} needed`, (held / cost) * 100, matColor(r.fromTier))}
+      ${gateRow(ok, `<img src="${MAT_IMG[r.fromTier]}" alt="">`, `${fmt(held)} / ${cost}`, (held / cost) * 100, matColor(r.fromTier))}
     </div>
 
     <button type="button" class="fg-forgebtn" data-act="refine" ${ok ? '' : 'disabled'}>Refine ${qty} ${to}</button>
