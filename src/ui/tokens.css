@@ -72,3 +72,11 @@
 .r-luminous  { color: var(--r-luminous); }
 .r-radiant   { color: var(--r-radiant); }
 .r-converged { color: var(--r-converged); }
+
+/* ===== Kit de UI — Frame de painel (azul-gelo, 9-slice border-image) =====
+   Moldura ornamental cristalina reutilizável em qualquer painel. Cantos fixos,
+   bordas esticam. O fundo/conteúdo do painel fica dentro (centro transparente). */
+.ui-panel {
+  border: 46px solid transparent;
+  border-image: url('eclats/ui/panel_frame.webp') 350 / 46px / 0 stretch;
+}

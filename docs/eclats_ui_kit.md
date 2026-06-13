@@ -7,12 +7,21 @@ assinatura visual — em vez de painéis ad-hoc. Inspirado na riqueza de kits or
 ## Princípio: material = significado
 Cada elemento "veste" um material que diz o que ele é. **Não é dourado em tudo.**
 - **Vidro navy** (`#0b1226` translúcido) — superfícies/painéis (a base).
-- **Filigrana dourada** — só a *chrome cerimonial* (molduras, títulos da Ordre); com parcimônia.
-- **Azul-gelo luminoso** — a luz/Éclat (emblemas, ícones de nav).
+- **Azul-gelo / branco luminoso** — a **chrome de INTERFACE** (frames de painel, barras de UI);
+  combina com os ícones de nav e com o mockup canônico branco/azul (`eclats_ui_mockup_v2_branco_azul.html`).
+  É a cor padrão do kit. Também é a luz/Éclat (emblemas).
+- **Filigrana dourada** — só a *chrome CERIMONIAL do mundo* (nameplate, slot de gear,
+  placas iluminadas da Ordre); com parcimônia, NÃO como default. (Vínhamos usando demais.)
 - **Cor da raridade/material** — qualquer coisa ligada a um tier veste a cor dele:
   Faded `#6b7280` · Kindled `#c96a2a` · Luminous `#d9a441` · Radiant `#f0d9a0` · Converged `#aac8ff`.
 - **Brasa/ferro** — acento próprio da Forja (puxa pro ember, não pro ouro).
 - **Motivos nossos** — o **crescente** do set + cantos de filigrana (nameplate/slot).
+
+## Regra: a chrome segue a cor da TELA
+A moldura/chrome de UI tem que combinar com a paleta da tela onde está. Azul-gelo
+(`panel_frame`) é pras telas **frias/menu**; a **Forja é quente** (ember/dourado), então
+a moldura azul-gelo briga lá — usar ember/dourado ou nenhuma moldura. O fundo atrás do
+frame também tem que combinar. (Willian, 13/jun: removida a moldura azul do altar da Forge.)
 
 ## Regra de hierarquia: HUD/log é discreto
 O rodapé/HUD (métricas kills-min, progresso, log) **não compete** com a tela principal —
