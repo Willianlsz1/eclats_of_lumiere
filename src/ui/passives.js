@@ -1,11 +1,13 @@
-// Tela de Passivas (pós-MVP) — 3 árvores × 15 (3 grupos de 5), upadas com
-// Vestiges. Desbloqueia na 1ª Convergence. Gate: maximizar os 5 do grupo
-// anterior libera o próximo. ⏳ efeitos provisórios (ver PASSIVES/constants).
+// Tela de Passivas — 3 árvores em ABAS, cada uma desenhada como uma ÁRVORE que
+// cresce raiz→copa (Grupo 1 embaixo · Grupo 3 = copa/motores no topo).
+// Redesign VISUAL + apresentação (cartão estilo refs, EN, sem jargão "motor/grupo").
+// Mecânica intacta: maximizar um tier libera o próximo (groupUnlocked).
+// Ícones monocromáticos recoloridos por CSS (mask + cor por árvore/papel).
 //
 // Contrato: buildPassivesView(root, state) monta o DOM; renderPassives(state) atualiza.
 
 import { formatNumber } from '../core/format.js';
-import { picture } from '../data/assets.js';
+import { url } from '../data/assets.js';
 import { PASSIVES, PASSIVE_TREES } from '../data/constants.js';
 import {
   passivesUnlocked, nextCost, canBuy, buyPassive, groupUnlocked, isMax, treeProgress,
@@ -16,10 +18,41 @@ const $ = (id) => document.getElementById(id);
 const GROUP_SIZE = 5;
 let activeTab = 'eclat';
 
-// ⏳ efeitos individuais a definir (GDD §7); por ora cada nível soma ao
-// envelope agregado da árvore. Stat e função de total por árvore:
-const TREE_STAT = { eclat: 'dano', vestige: 'Lumens & XP', fracture: 'HP' };
+const TREE_SUB = { eclat: 'Combat · damage', vestige: 'Economy · gains', fracture: 'Utility · HP' };
+const TREE_STAT = { eclat: 'damage', vestige: 'gains (Lumens & XP)', fracture: 'HP' };
 const TREE_MULT = { eclat: passiveDmgMult, vestige: passiveEcoMult, fracture: passiveHpMult };
+
+const isEngine = (tree, art) => PASSIVES.engines[tree].includes(art);
+const leverOf = (art) => PASSIVES.levers[art];
+const roleClass = (tree, art) => (isEngine(tree, art) ? 'role-engine' : leverOf(art) ? 'role-lever' : '');
+
+// Efeito em linguagem natural (sem jargão). O número segue o nível atual.
+const LEVER_TEXT = {
+  crit: 'Increases your critical chance.',
+  aps: 'Increases your attack speed.',
+  mobCap: 'More enemies appear on screen at once.',
+  material: 'Increases the materials you find.',
+  enemyPen: 'Your hits ignore part of enemy defense.',
+  enemyReduce: 'Weakens enemy defense.',
+};
+function effectText(tree, i, level) {
+  const stat = TREE_STAT[tree];
+  const art = PASSIVES.trees[tree].list[i][1];
+  const lev = leverOf(art);
+  if (lev) return LEVER_TEXT[lev] || 'A special effect.';
+  if (isEngine(tree, art)) {
+    return `Multiplies your ${stat}, compounding with every level — the strongest growth in the tree.`;
+  }
+  const pct = PASSIVES.groupAddPct[Math.floor(i / GROUP_SIZE)] * 100;
+  return level > 0
+    ? `Increases your ${stat} by ${formatNumber(level * pct)}%.`
+    : `Increases your ${stat} by ${formatNumber(pct)}% per level.`;
+}
+
+const maskStyle = (tree, key) => {
+  const u = url(`passives.${tree}.${key}`);
+  return `-webkit-mask-image:url('${u}');mask-image:url('${u}')`;
+};
 
 export function buildPassivesView(root, state) {
   root.classList.remove('placeholder');
@@ -29,8 +62,8 @@ export function buildPassivesView(root, state) {
     <div class="pv-body" id="pv-body"></div>
     <div class="pv-lock" id="pv-lock" hidden>
       <div class="glyph">✦</div>
-      <h2>As Passivas dormem</h2>
-      <p>A Semente desperta na <b>1ª Convergence</b>. Encha a parede de XP e convirja para abrir as três árvores.</p>
+      <h2>The passives sleep</h2>
+      <p>The Seed awakens at your <b>first Convergence</b>. Fill the XP wall and converge to open the three trees.</p>
     </div>
   `;
 
@@ -41,7 +74,8 @@ export function buildPassivesView(root, state) {
     btn.type = 'button';
     btn.className = `pv-tab ${t.cls}`;
     btn.dataset.tree = tree;
-    btn.innerHTML = `<b>${t.label}</b><span class="pv-tab-sub">${t.sub}</span><span class="pv-tab-count" id="pv-count-${tree}">0/15</span>`;
+    btn.innerHTML = `<b>${t.label}</b><span class="pv-tab-sub">${TREE_SUB[tree]}</span>`
+      + `<span class="pv-tab-count" id="pv-count-${tree}">0/15</span>`;
     btn.addEventListener('click', () => switchTab(state, tree));
     tabs.appendChild(btn);
   }
@@ -49,7 +83,41 @@ export function buildPassivesView(root, state) {
   switchTab(state, activeTab);
 }
 
-// (Re)constrói as 15 cartas (3 grupos) da árvore ativa
+// Uma carta-nó da árvore (com o cartão-tooltip embutido, atualizado no render)
+function nodeHtml(tree, i) {
+  const [name, key] = PASSIVES.trees[tree].list[i];
+  return `
+    <button type="button" class="pv-node ${roleClass(tree, key)}" data-i="${i}">
+      <span class="pv-disc">
+        <span class="pv-icon" style="${maskStyle(tree, key)}"></span>
+        <i class="pv-ring"></i>
+      </span>
+      <span class="pv-node-name">${name}</span>
+      <span class="pv-node-lvl" id="pv-lvl-${i}"></span>
+      <div class="pv-tip">
+        <div class="pv-tip-head">
+          <span class="pv-tip-icon"><span class="pv-icon" style="${maskStyle(tree, key)}"></span></span>
+          <div class="pv-tip-htext">
+            <div class="pv-tip-name">${name} <span class="pv-tip-tag">Passive</span></div>
+            <div class="pv-tip-lvl" id="pv-tlvl-${i}"></div>
+          </div>
+        </div>
+        <p class="pv-tip-eff" id="pv-teff-${i}"></p>
+        <div class="pv-tip-foot" id="pv-tfoot-${i}"></div>
+      </div>
+    </button>`;
+}
+
+// Um tier (grupo) = 5 nós em leque + aviso de bloqueio
+function tierHtml(tree, g) {
+  let nodes = '';
+  for (let p = 0; p < GROUP_SIZE; p++) nodes += nodeHtml(tree, g * GROUP_SIZE + p);
+  return `<div class="pv-tier ${g === 2 ? 'canopy' : ''}" data-group="${g}">
+    <div class="pv-tier-row">${nodes}</div>
+    <div class="pv-tier-lock" id="pv-glock-${tree}-${g}"></div>
+  </div>`;
+}
+
 function switchTab(state, tree) {
   activeTab = tree;
   document.querySelectorAll('.pv-tab').forEach((b) => b.classList.toggle('active', b.dataset.tree === tree));
@@ -57,33 +125,23 @@ function switchTab(state, tree) {
   const t = PASSIVES.trees[tree];
   const body = $('pv-body');
   body.className = `pv-body ${t.cls}`;
-  body.innerHTML = `<div class="pv-summary" id="pv-summary"></div>`;
+  // tiers de cima pra baixo: copa (g3) no topo, raiz embaixo
+  body.innerHTML = `
+    <div class="pv-summary" id="pv-summary"></div>
+    <div class="pv-tree" id="pv-tree">
+      <span class="pv-trunk" aria-hidden="true"></span>
+      ${[2, 1, 0].map((g) => tierHtml(tree, g)).join('')}
+      <div class="pv-root"><span class="pv-root-disc"></span><span class="pv-root-lbl">${t.label}</span></div>
+    </div>`;
 
-  for (let g = 0; g < 3; g++) {
-    const group = document.createElement('div');
-    group.className = 'pv-group';
-    group.dataset.group = g;
-    group.innerHTML = `<div class="pv-group-head"><span>Grupo ${g + 1}</span><span class="pv-group-lock" id="pv-glock-${tree}-${g}"></span></div><div class="pv-cards"></div>`;
-    const cards = group.querySelector('.pv-cards');
-    for (let p = 0; p < GROUP_SIZE; p++) {
-      const i = g * GROUP_SIZE + p;
-      const [name, key] = t.list[i];
-      const card = document.createElement('button');
-      card.type = 'button';
-      card.className = 'pv-card';
-      card.dataset.i = i;
-      card.innerHTML = `
-        <span class="pv-art">${picture(`passives.${tree}.${key}`, { alt: name })}</span>
-        <span class="pv-name">${name}</span>
-        <span class="pv-eff"></span>
-        <span class="pv-lvl"></span>
-        <span class="pv-cost"></span>
-      `;
-      card.addEventListener('click', () => { buyPassive(state, activeTab, i); updateCards(state); });
-      cards.appendChild(card);
-    }
-    body.appendChild(group);
-  }
+  // clique compra (desbloqueia/evolui) — delegação no palco
+  $('pv-tree').addEventListener('click', (e) => {
+    const node = e.target.closest('.pv-node');
+    if (!node) return;
+    buyPassive(state, activeTab, Number(node.dataset.i));
+    updateCards(state);
+  });
+
   renderPassives(state);
 }
 
@@ -94,7 +152,6 @@ export function renderPassives(state) {
   $('pv-body').style.visibility = unlocked ? '' : 'hidden';
   if (!unlocked) return;
 
-  // contadores das abas
   for (const tree of PASSIVE_TREES) {
     const pr = treeProgress(state, tree);
     const el = $(`pv-count-${tree}`);
@@ -103,55 +160,50 @@ export function renderPassives(state) {
   updateCards(state);
 }
 
-// Descrição do efeito de uma passiva (Bloco 4): lever (especial) · motor ×1.52 · default %/grupo
-function effText(tree, i, level, stat) {
-  const art = PASSIVES.trees[tree].list[i][1];
-  const lever = PASSIVES.levers[art];
-  if (lever) {
-    const labels = { crit: '+crit chance', aps: '+APS', mobCap: '+mobs na tela', material: '×drop de material', enemyPen: 'penetra defesa', enemyReduce: 'reduz defesa' };
-    return `${labels[lever]} (alavanca)`;
-  }
-  if (PASSIVES.engines[tree].includes(art)) return `×1.52/nível ${stat} (motor)`;
-  const pct = PASSIVES.groupAddPct[Math.floor(i / 5)] * 100;
-  return level > 0 ? `+${(level * pct).toFixed(0)}% ${stat}` : `+${pct.toFixed(0)}% ${stat}/nível`;
-}
-
 function updateCards(state) {
   const tree = activeTab;
   const t = PASSIVES.trees[tree];
   const stat = TREE_STAT[tree];
 
-  // resumo do bônus da árvore (multiplicador da primária)
   const summary = $('pv-summary');
   if (summary) {
-    const total = TREE_MULT[tree](state);
-    summary.innerHTML = `Bônus <b>${t.label}</b>: <span class="pv-total">×${formatNumber(total)} ${stat}</span>`
-      + ` <span class="pv-prov">% por grupo + 3 motores ×1.52 (g3) · alavancas à parte</span>`;
+    summary.innerHTML = `<span class="pv-sum-l">${t.label} bonus</span>`
+      + `<span class="pv-total">×${formatNumber(TREE_MULT[tree](state))} ${stat}</span>`;
   }
 
-  document.querySelectorAll('#pv-body .pv-group').forEach((groupEl) => {
-    const g = Number(groupEl.dataset.group);
+  document.querySelectorAll('#pv-tree .pv-tier').forEach((tierEl) => {
+    const g = Number(tierEl.dataset.group);
     const gUnlocked = groupUnlocked(state, tree, g);
-    groupEl.classList.toggle('locked', !gUnlocked);
+    tierEl.classList.toggle('locked', !gUnlocked);
     const glock = $(`pv-glock-${tree}-${g}`);
-    if (glock) glock.textContent = gUnlocked ? '' : '🔒 maximize o grupo anterior';
+    if (glock) glock.textContent = gUnlocked ? '' : 'Max the tier below to unlock';
   });
 
-  document.querySelectorAll('#pv-body .pv-card').forEach((card) => {
-    const i = Number(card.dataset.i);
+  document.querySelectorAll('#pv-tree .pv-node').forEach((node) => {
+    const i = Number(node.dataset.i);
     const level = state.passives[tree][i];
     const maxed = isMax(state, tree, i);
-    const buyable = canBuy(state, tree, i);
-    card.classList.toggle('maxed', maxed);
-    card.classList.toggle('buyable', buyable);
-    card.classList.toggle('owned', level > 0 && !maxed);
-    // efeito individual da carta (lever / motor / % do grupo)
-    card.querySelector('.pv-eff').textContent = effText(tree, i, level, stat);
-    card.querySelector('.pv-lvl').textContent = maxed
-      ? `✦ Máx (${PASSIVES.maxLevel})`
-      : (level > 0 ? `Nível ${level}/${PASSIVES.maxLevel}` : 'Bloqueada');
-    card.querySelector('.pv-cost').textContent = maxed
-      ? ''
-      : `${level === 0 ? 'Desbloquear' : 'Evoluir'} · ${formatNumber(nextCost(state, tree, i))} Vestiges`;
+    const locked = !groupUnlocked(state, tree, Math.floor(i / GROUP_SIZE));
+    node.classList.toggle('maxed', maxed);
+    node.classList.toggle('buyable', canBuy(state, tree, i));
+    node.classList.toggle('owned', level > 0 && !maxed);
+    node.classList.toggle('locked', locked && level === 0);
+    node.style.setProperty('--p', (level / PASSIVES.maxLevel).toFixed(3));
+
+    const lvlEl = $(`pv-lvl-${i}`);
+    if (lvlEl) lvlEl.textContent = maxed ? '✦' : (level > 0 ? `${level}/${PASSIVES.maxLevel}` : '');
+
+    // cartão (tooltip) — só os valores dinâmicos (sem rebuild → sem flicker no hover)
+    const tlvl = $(`pv-tlvl-${i}`);
+    if (tlvl) tlvl.textContent = `Level ${level}/${PASSIVES.maxLevel}`;
+    const teff = $(`pv-teff-${i}`);
+    if (teff) teff.textContent = effectText(tree, i, level);
+    const tfoot = $(`pv-tfoot-${i}`);
+    if (tfoot) {
+      tfoot.className = 'pv-tip-foot' + (maxed ? ' max' : locked ? ' locked' : ' cost');
+      tfoot.textContent = maxed ? 'Max Level'
+        : locked ? 'Locked — max the tier below'
+        : `${level === 0 ? 'Unlock' : 'Upgrade'} · ${formatNumber(nextCost(state, tree, i))} Vestiges`;
+    }
   });
 }
