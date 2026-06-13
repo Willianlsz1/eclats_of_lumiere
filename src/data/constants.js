@@ -5,7 +5,7 @@
 export const COMBAT = {
   baseDmg: 7,
   baseAPS: 0.90,          // intervalo de ataque ~1.11s (ajuste pedido pelo Willian: 0.40 → 0.90)
-  apsCap: 15,             // ✅ CALIBRADO (Bloco 6): teto 15 kills/s (54k/h). Fecha só no late.
+  apsCap: 5,              // teto de 5 kills/s (18k/h) — ajuste pedido pelo Willian (confortável; 15 rápido, 2 lento).
   agiApsCap: 3.75,        // sub-cap do AGI: AGI sozinho leva o APS até ~3.4 (0.90 × 3.75)
   playerBaseHp: 50,
   regenPerSec: 0.01,      // 1% do HP máx por segundo
