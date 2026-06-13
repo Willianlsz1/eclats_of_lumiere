@@ -54,17 +54,25 @@ Companheiros: Lore Bible (narrativa) · GDD Final v2 (sistemas) · Mockup HTML v
 
 ## 3. ENTIDADES — DIREÇÃO
 
-**The Seeker (✅ ESCADA T1–T5 COMPLETA E APROVADA — 2026-06-10):** a progressão é a tese visual do jogo — dourado impuro → branco convergido. Mudanças de cânone desta versão: o cabelo do Seeker é **branco a partir do T2** (escuro apenas no T1); o **capuz cai ao longo da escada** (a anonimidade é do T1); os **olhos tornam-se visíveis a partir do T2** (quando a luz responde, ele deixa de se esconder); a antiga "faixa de luz que se intensifica até vazar do capuz" foi substituída pela escada abaixo. Cada tier = um verbo da relação dele com a luz:
+**The Seeker (✅ ESCADA T1–T5 REDESENHADA E APROVADA — 2026-06-13):** a progressão é a tese visual do jogo — **preto humano → branco convergido**. Esta versão **substitui** a escada encapuzada de 2026-06-10 (ver nota histórica ao fim). Cânon atual:
+- **Sem capuz nunca** — rosto sempre visível, desde o T1. Jovem-adulto, **fisionomia madura e bem definida** (maxilar/maçãs/nariz marcados, traços masculinos realistas, pele clara) — NÃO um rosto liso de boneco/bishōnen. Olhos azuis, orelhas levemente pontudas, brinco.
+- **Paleta FRIA branco-prata da Ordre** (vermelho permanece assinatura de Nihel/corrupção — nunca no herói). Resíduo **dourado** só como "impureza que ele carrega" no início (some no T3).
+- **Marcador da escada = a mecha branca cresce**: leve no T1 → domina o cabelo no T5. Ele permanece **humano** até o fim (sem "fitas de luz").
+- **Luz progressiva**: o fundo/Éclats/moldura começam apagados (T1) e ficam radiantes (T5).
 
-| Tier | Verbo | Marcadores aprovados |
+| Tier | Verbo | Marcadores aprovados (2026-06-13) |
 |---|---|---|
-| **T1 Seeker** | carrega | Capuz, uniforme escuro da Ordre, faixa horizontal de luz dourada sobre os olhos, rosto oculto |
-| **T2 Illuminate** | a luz **veio** até ele | Salto cromático total: vestes branco-prata com ornamentos estelares (resíduos dourados = impureza restante), capuz claro, cabelo branco, olhos azul-pálidos visíveis, segura um pequeno Éclat prismático |
-| **T3 Éclairé** | a luz o **reconhece** | Sem capuz, vários Éclats orbitando por vontade própria, ornamentos 100% prismáticos (resíduo dourado some), mãos livres |
-| **T4 L'Éveillé** | a luz **vive** nele | Cabelo em chama azul etérea, olhos como fontes de luz, veias de luz na pele, Éclats se fundindo no corpo |
-| **T5 Lumière** | ele **é** a luz | Perfil sereno, auréola circular limpa, cabelo em fitas de luz branca, vestes dissolvendo nas bordas, composição harmoniosa com áreas de descanso visual — plenitude, não poder. A convergência *certa*: toda a radiância do Pale Reunion, mas com o rosto humano intacto |
+| **T1 Seeker** | carrega | Iniciante frágil; uniforme **modesto** escuro com pouco trim prata e poucos acessórios de novato; cabelo preto com **fina mecha de luz**; resíduo dourado; fundo escuro/calmo |
+| **T2 Illuminate** | a luz **veio** até ele | Mais seguro; veste branco-prata um degrau melhor, acessórios finos; mecha branca **maior**; segura um pequeno Éclat; um pouco de starlight surgindo |
+| **T3 Éclairé** | a luz o **reconhece** | Cabelo claramente bicolor (mecha larga); **Éclat flutua sozinho** sobre a mão; ornamentos prismáticos, resíduo dourado some; starfield moderado |
+| **T4 L'Éveillé** | a luz **vive** nele | Cabelo **majoritariamente branco**; **pequenos fragmentos/pigmentos de luz flutuando ao redor** (NÃO veias na pele); vários Éclats junto ao corpo; starfield forte |
+| **T5 Lumière** | ele **é** a luz | Cabelo quase todo branco, sereno; **auréola circular limpa**; vestes brancas de corte mais simples; ainda **humano**; card mais **clean** (radiância calma, sem starfield denso) — plenitude, não poder |
 
-Regra de avaliação da escada: identidade facial idêntica do T2 ao T5; cada salto de tier precisa de **ao menos um marcador físico legível em silhueta a 250px** (nuance de luz não sobrevive à miniatura). Prompts registrados na conversa de 2026-06-10; cada tier aprovado é âncora do seguinte.
+Regra de avaliação da escada: identidade facial idêntica T1→T5; cada salto precisa de **ao menos um marcador físico legível em silhueta a 250px**. Cada tier aprovado é âncora do seguinte.
+
+**Card = moldura + avatar FUNDIDOS (decisão 2026-06-13):** a arte do Seeker agora é um **card vertical único** (não retrato + moldura solta) — a moldura é parte da imagem, evolui por tier (simples/fria no T1 → filigrana celestial luminosa no T5), com o terço inferior reservado escuro pro texto (nome/tier/Level) e a margem externa recortada até o frame. Assets: `seeker.card_t1`…`card_t5` (`characters/seeker/seeker_card_tN`). Estilo/render e fisionomia ancorados na arte do **blacksmith** (Maël). Prompt mestre + marcadores por tier registrados na conversa de 2026-06-13.
+
+> **Nota histórica (2026-06-10, SUPERSEDED):** a escada anterior era encapuzada (capuz no T1, faixa de luz dourada sobre os olhos, cabelo branco a partir do T2, vestes dissolvendo em fitas de luz no T5). Substituída em 2026-06-13 pela versão acima (sem capuz, fisionomia madura, mecha branca crescente, card moldura-fundida). ⚠️ O **lore bible** ainda pode descrever o Seeker encapuzado — pendente de alinhamento.
 
 **Nihel, The Fracture:** entidade alada, anel de luz, fragmentos/corvos orbitando — com a correção canônica: **o brilho dele é dourado, não vermelho** ("a luz de Or Ein Sof presa dentro do vácuo"). O vermelho é assinatura do *ambiente* de Nil Aeternum; o dourado é assinatura *dele*.
 
@@ -185,15 +193,31 @@ Notas: continuidade direta do Map 4 (mundo rachando → estágio final); a esfer
 
 ## 6. PROMPTS — ENTIDADES (v2)
 
-### The Seeker (retrato para o card)
+### The Seeker (CARD moldura+avatar fundidos — PROMPT MESTRE, 2026-06-13)
+Anexar: arte do **blacksmith** (estilo de render + âncora de fisionomia, "match the
+mature facial structure but keep fair skin") + Âncora de Estilo nº 1. Trocar
+`[TIER MARKERS]` pelos marcadores do tier (ver tabela §3 e a conversa de 2026-06-13).
+A luz do fundo e a riqueza da moldura **crescem por tier** (T1 calmo/simples → T5 radiante).
 ```
-[BLOCO DE ESTILO] Portrait of a hooded figure facing forward, face hidden in shadow
-except for a single horizontal band of warm golden light glowing where the eyes would
-be, the light softly blooming. Dark fabric cloak of a secretive order, subtle gold
-thread details, Belle Époque elegance. Calm, mysterious, quietly luminous. Dark
-background with faint golden particles and a soft prismatic glow. Vertical card
-portrait, clean readable silhouette. [SUFIXO]
+High-production anime key-visual illustration, very high detail, painterly rendering
+and lighting quality matching the blacksmith reference. No photorealism, no 3D render
+look. COLD palette only — white, silver, pale blue; NO warm ember, NO orange/gold glow,
+NO red.
+A young ADULT man, face fully VISIBLE, NO hood. Grounded, MATURE facial physiognomy —
+defined cheekbones, firm jawline, straight nose, mature browline, realistic feature
+definition like the blacksmith reference, but keep FAIR / LIGHT skin; NOT a smooth or
+doll-like bishōnen face. Black hair with a WHITE STREAK in the fringe (it GROWS larger
+each tier), blue eyes, slightly pointed ears. Ornate layered white-silver uniform of a
+secretive luminous order, fine silver trim, small star/crescent emblems.
+[TIER MARKERS]
+Vertical character card, 3:4. The portrait is FUSED inside a single decorative card
+frame (simple/cold at T1 → full celestial filigree at T5); behind him a faint circular
+order-emblem. LOWER THIRD = calm dark area reserved for overlaid name/stats, draw NO
+text. Plain dark background outside the outer border. Clean readable silhouette.
+[SUFIXO]
 ```
+*(O prompt encapuzado antigo — "hooded figure, golden light band over the eyes" — foi
+aposentado em 2026-06-13; ver nota histórica na §3.)*
 
 ### Nihel, The Fracture (arte de boss)
 ```

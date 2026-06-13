@@ -173,15 +173,15 @@ Faíscas separadas destroem. Faíscas reunidas iluminam. A diferença entre The 
 
 ### O arco visual dos cinco tiers (canon)
 
-A transformação do Seeker é visível — e é uma viagem de cor (Parte III):
+A transformação do Seeker é visível — e é uma viagem de cor: **preto humano → branco convergido** (✅ REDESENHADO jun/2026 — substitui a versão encapuzada/faixa dourada; ver `docs/eclats_art_direction.md` §3). **Sem capuz nunca**, rosto sempre visível, fisionomia madura e definida, pele clara, paleta **fria branco-prata** (o vermelho continua sendo Nihel). O marcador da escada é a **mecha branca que cresce**:
 
-1. **Seeker** — capuz fechado, manto digno da Ordre, rosto humano visível, uma faixa fina de luz **dourada** sobre os olhos. O ponto mais humano do jogo.
-2. **Illuminate** — a faixa mais intensa; veias de luz discretas nas mãos.
-3. **Éclairé** — capuz meio caído, pontas do cabelo embranquecendo, luz vazando pela gola.
-4. **L'Éveillé** — capuz abaixado, cabelo branco, uma auréola *parcial* se formando — e o rosto começando a escurecer.
-5. **Lumière** — auréola completa, luz **branco-azul** fluindo, o rosto um vazio sereno.
+1. **Seeker** — sem capuz, rosto humano maduro e visível, cabelo preto com uma **fina mecha de luz**; uniforme modesto da Ordre, resíduo **dourado** (a impureza que ele carrega). O ponto mais humano do jogo.
+2. **Illuminate** — a mecha branca cresce; vestes branco-prata com ornamentos estelares; segura um pequeno Éclat prismático.
+3. **Éclairé** — cabelo claramente **bicolor** (mecha larga); vários Éclats orbitando por vontade própria; ornamentos 100% prismáticos (o dourado some).
+4. **L'Éveillé** — cabelo **majoritariamente branco**; **pequenos fragmentos de luz flutuando ao redor** (não veias na pele); Éclats se fundindo ao corpo.
+5. **Lumière** — cabelo quase todo branco, **auréola circular limpa**, luz **branco-azul** fluindo, vestes de corte mais simples — **rosto humano intacto e sereno** (não um vazio).
 
-No último tier, o jogador olha para o próprio card e vê algo desconfortavelmente parecido com as criaturas que passou o jogo matando. É proposital. A diferença entre o Seeker-Lumière e um Consumed está nos detalhes: auréola íntegra, luz branca da convergência (não dourada fragmentada), serenidade em vez de erro. "Ele e Nihel são feitos da mesma coisa" deixa de ser texto e vira algo que o jogador sente.
+No último tier, a radiância do Seeker-Lumière rivaliza com a do Pale Reunion e a brasa dos Consumed — e é justamente o **rosto humano intacto** que o distingue. A diferença não é o quanto de luz se carrega: é a luz **reunida** (branco-azul) vs a luz **fragmentada** (dourada) dos Consumed, e a serenidade em vez do erro. "Ele e Nihel são feitos da mesma coisa" deixa de ser texto e vira algo que o jogador sente — mas onde Nihel é o vazio, o Seeker permanece humano.
 
 ---
 
@@ -444,7 +444,7 @@ A jornada inteira — dos cogumelos de The Dreaming Wood ao castelo de Nil Aeter
 
 | Idioma | Camada | Exemplos |
 |---|---|---|
-| **Hebraico** | A verdade primordial — o que o mundo esqueceu (**só em texto morto / Mémoires**) | Or Ein Sof, HaShevirah, Qliphoth, Tikkun Olam |
+| **Hebraico** | A verdade primordial — o que o mundo esqueceu (**só em texto morto / Mémoires**) | Or Ein Sof, HaShevirah, Qliphoth, Tikkun Olam, Nitzotzot |
 | **Francês** | O mundo de hoje + a era radiante; **títulos altos/raros** | Éclats, Lumière, Ordre des Éclairés, La Fracture, L'Éveillé, Mémoires, Reliquats, Brume |
 | **Inglês** | A taxonomia das criaturas + **títulos comuns** — o que vaga entre os mundos | The Fragmented, The Consumed, The Claimed, The Eidola, The Fracture, Seeker, Illuminate |
 | **Latim** ✅ | **O registro do Nada — a única língua MORTA do jogo** | **Nil Aeternum** (o território do Nada; latim canonizado) |
@@ -464,6 +464,7 @@ A jornada inteira — dos cogumelos de The Dreaming Wood ao castelo de Nil Aeter
 - **Ordre des Éclairés** — a instituição que coleta Éclats; sem saber, o sistema de descarte de Nihel
 - **Convergence** — o rebirth; em **três camadas**: ensaio involuntário (early) → prática (mid) → sacrifício consciente (fim); HaShevirah em miniaturas crescentes
 - **Awaken / Awakening** ✅ — o despertar interno na Sub 3 (sistema = *Awaken*; evento = *Awakening*); a luz sobe de patamar via Semente *(ex-"Despertar")*
+- **Nitzotzot** ✅ (hebraico, "fagulhas") — as fagulhas sagradas de luz **espalhadas na HaShevirah** que o Tikkun Olam deve reunir. No jogo = o **material dedicado do Awakening** (a Oferenda): você as junta na região do Guardião pra despertar. São literalmente "a luz dispersa" do credo da Ordre (*"we gather the scattered light"*) — material, credo e tese da Convergence num só termo *(decisão jun/2026)*
 - **Ascension** — o **ato institucional/geográfico** da Ordre: comissiona o Seeker para a fronteira seguinte; pagar Vestiges = prestação de contas das essências da região
 - **Gatekeepers** ✅ — as faculdades da Semente que despertam por Ascension; **guardam** o que ficou atrás dos portões (A1 Ritmo · A2 Vigília · A3 Echo · A4 Atração · A5 Transcendência) *(ex-"Fate Keepers")*
 - **Echo** ✅ — projeção da forma do Seeker (A3) que farma em 2º plano; pets futuros = Echoes de Eidola vencidos *(ex-"Eco do Seeker")*

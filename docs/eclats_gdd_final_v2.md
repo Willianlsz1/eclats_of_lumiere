@@ -385,12 +385,27 @@ A Ascension vira o **loop de prestige de cima** (a Convergence é o de baixo):
 
 **Expansão de sub-áreas (futuro):** o nº de sub-áreas por mapa CRESCE (ex.: Map 1 ~6 → Map 5 ~11-14) p/ suavizar a curva de HP (ideia 4). A **Auto-progressão (A2)** escala com isso. *(§3 hoje fixa 5/mapa — será variável.)*
 > ✅ **VALIDADO 2026-06-12 — Despertar = a MUDANÇA DE CLASSE** (insp. Grand Chase). O tier (T1→T5) é **desacoplado das ascensions** e vira **gate de poder no MEIO do mapa** (estilo "awakening"): você chega à região do boss final **já evoluído**, e sem despertar os mobs ficam tanky/letais demais (parede natural).
-- **Quando:** ao alcançar a **Sub-área 3** do mapa + **requisito**.
-- **Requisito:** **(a) derrotar o Guardião da Sub 3** (teste do despertar — só combate). ⏳ **Futuro: escalar para (b) + custo de material** (quando o craft existir — decisão do Willian).
-- **Efeito:** **×5 de poder PERMANENTE por tier** (dano E HP) + **arte (retrato/moldura) + rank** novos. Sobrevive a todos os resets, incl. Ascension. *(⏳ `DESPERTAR.mult` provisório = ×5 — calibração.)*
+- **Quando:** ao alcançar a **Sub-área 3** do mapa + **requisito** (agora em 3 camadas).
+- **Requisito — 3 camadas (✅ APROVADO 2026-06-13, insp. job-change do Grand Chase):** o Despertar deixa de ser automático e vira um **ato do jogador na tela de Awakening** quando as três camadas fecham:
+  1. **Prova (combate):** derrotar o **Guardião da Sub 3** do mapa. Vencer o Guardião apenas **destrava** a Prova (não desperta sozinho).
+  2. **Oferenda (material dedicado):** juntar **Nitzotzot** — *as fagulhas sagradas espalhadas na HaShevirah* (hebraico, língua primordial; é literalmente "a luz dispersa" do credo da Ordre e a moeda da tese de Convergência). **Recurso DEDICADO** (estado próprio, NÃO os materiais do Forge — evita disputa com o craft). **Fonte:** chunk garantido ao vencer o Guardião + filete nas **Sub-áreas 3+** do mapa (espelha `awardMaterials`). Como cada Despertar é num mapa diferente, o Nitzotz é farmado **no próprio mapa** do tier.
+  3. **Tributo (Vestiges):** custo em Vestiges, **fração da Ascension daquele mapa** (~10–20%) — o Despertar é no MEIO do mapa, então não pode drenar o relógio de Vestiges duas vezes.
+- **Efeito:** **×5 de poder PERMANENTE por tier** (dano E HP) + **arte (card moldura-fundida) + rank** novos. Sobrevive a todos os resets, incl. Ascension. *(⏳ `DESPERTAR.mult` provisório = ×5 — calibração.)*
+- **⏳ NÚMEROS = LISTA DE CALIBRAÇÃO** (estrutura aprovada, valores provisórios a afinar):
+
+| Tier | Prova | Oferenda (Nitzotzot) — provisório | Tributo (Vestiges) — provisório |
+|---|---|---|---|
+| **T2 Illuminate** | Guardião Sub3 Map1 | 20 | ~15% Asc Map1 (≈75k) |
+| **T3 Éclairé** | Sub3 Map2 | 40 | ~15% Asc Map2 (≈285k) |
+| **T4 L'Éveillé** | Sub3 Map3 | 80 | ~15% Asc Map3 (≈600k) |
+| **T5 Lumière** | Sub3 Map4 | 160 | ~15% Asc Map4 (≈1.2M) |
+
+  - *Drop do Nitzotz e quantidades calibram juntos (deve custar "um pedaço sentido" do farm da região do Guardião).* Opcional debatido: **atalho** pagando mais Vestiges/Éclats pra cortar parte da Oferenda — NÃO entra sem nova decisão.
+  - *Tela de Awakening mostra: card alvo + ganhos **antes→depois** (×5) + as 3 barras de gate + botão "Awaken" → cerimônia. Arte: os 5 cards por tier + fundo dedicado da aba + 1 splash de cerimônia por tier.*
 - **Distribuição:** **T2-T5 nas Sub 3 dos Maps 1-4** (T2 Illuminate · T3 Éclairé · T4 L'Éveillé · T5 Lumière). **O Map 5 NÃO tem Despertar** — o jogador enfrenta Nihel já como **Lumière (T5)**.
 - **Despertar ≠ Ascension (papéis distintos, ✅ validado):** o **Despertar** é a *mudança de classe* (poder + arte) no meio do mapa; a **Ascension** é o *marco de progressão* (mapa novo + bolsa + Fate Keeper + amplifica a base da Convergence) no fim do mapa. Dois sistemas.
 - *Código (Passo 7, feito):* `currentRank`/arte/moldura leem o **tier de Despertar** (`state.despertares`), não `state.ascensions`.
+- *⏳ Código (pendente, redesign 2026-06-13):* hoje `checkDespertar` ([combat.js](../src/game/combat.js)) **incrementa `state.despertares` automaticamente** ao vencer o Guardião. Com as 3 camadas, isso muda: o Guardião só **destrava a Prova**; o incremento passa a ser disparado pelo **botão "Awaken"** da tela (gastando Nitzotzot + Vestiges). Adicionar: `state.nitzotzot` + drop no `economy.js` + gate/ação no `awaken.js`.
 
 | Ascension | Requisito | Custo (Vestiges) | asc_mult | Éclats (bolsa) | Rank desbloqueado |
 |---|---|---|---|---|---|
