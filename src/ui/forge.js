@@ -288,13 +288,14 @@ function rarityAltar(state, r) {
         <span class="r-${RLETTER[info.rar + 1]}">${GEAR_RARITY_LABELS[info.rar + 1]}</span>
       </div></div>
 
-    <div class="fg-morph">
-      <div class="fg-piece r-${RLETTER[info.rar]}">${picture(`gear.${r.key}_${rarName}`, { alt: '' })}</div>
-      <div class="fg-spark">➜</div>
-      <div class="fg-piece next r-${RLETTER[info.rar + 1]}">${picture(`gear.${r.key}_${nextName}`, { alt: '' })}</div>
+    <div class="fg-preview">
+      <div class="fg-morph">
+        <div class="fg-piece r-${RLETTER[info.rar]}">${picture(`gear.${r.key}_${rarName}`, { alt: '' })}</div>
+        <div class="fg-spark">➜</div>
+        <div class="fg-piece next r-${RLETTER[info.rar + 1]}">${picture(`gear.${r.key}_${nextName}`, { alt: '' })}</div>
+      </div>
+      <div class="fg-delta">${lines}</div>
     </div>
-
-    <div class="fg-delta">${lines}</div>
 
     <div class="fg-gates">
       ${gateRow(info.atCap, picture(`gear.${r.key}_${rarName}`, { alt: '' }), 'At level cap', `Lv ${fmt(info.p.level)} / ${fmt(info.cap)}`, (info.p.level / info.cap) * 100, RAR_COLOR[info.rar])}
