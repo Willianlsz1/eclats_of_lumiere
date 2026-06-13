@@ -22,8 +22,8 @@ const rarityName = (r) => GEAR_RARITIES[r];
 const SLOT_EN = { Arma: 'Weapon', Elmo: 'Helm', Manto: 'Cloak', Manoplas: 'Gauntlets', Amuleto: 'Amulet', Anel: 'Ring' };
 const SLOT_LAYOUT = { left: ['edge', 'vigil', 'veil'], right: ['grasp', 'reson', 'band'] };
 const AFFIX_LABELS = {
-  dmg: 'dmg', hp: 'HP', defesa: 'defense', crit: 'crit', critDmg: 'crit dmg',
-  aps: 'APS', regen: 'regen', bossDmg: 'boss dmg', lumens: 'Lumens', xp: 'XP',
+  dmg: 'damage', hp: 'HP', defesa: 'defense', crit: 'crit', critDmg: 'crit damage',
+  aps: 'attack speed', regen: 'regen', bossDmg: 'boss damage', lumens: 'Lumens', xp: 'XP',
   materiais: 'materials', erosao: 'erosion',
 };
 function affixDesc(type, level, rarity, isSec) {
@@ -32,11 +32,6 @@ function affixDesc(type, level, rarity, isSec) {
   if (type === 'critDmg') return `+${(critDmgOf(level, rarity) * w * 100).toFixed(0)}% crit dmg`;
   const m = isSec ? secondaryMult(level, rarity) : primaryMult(level, rarity);
   return `×${formatNumber(m)} ${AFFIX_LABELS[type]}`;
-}
-function affixText(def, piece) {
-  const parts = [affixDesc(def.primary, piece.level, piece.rarity, false)];
-  for (const sec of activeSecondaries(def, piece.rarity)) parts.push(affixDesc(sec, piece.level, piece.rarity, true));
-  return parts.join(' · ');
 }
 
 // Multiplicador GLOBAL de level-up (aplica a qualquer slot)
@@ -82,7 +77,7 @@ export function buildGearView(root, state) {
         <div><dt>HP</dt><dd id="gr-t-hp">×1</dd></div>
         <div><dt>Defense</dt><dd id="gr-t-defesa">×1</dd></div>
         <div><dt>Crit</dt><dd id="gr-t-crit">+0%</dd></div>
-        <div><dt>APS</dt><dd id="gr-t-aps">×1</dd></div>
+        <div><dt>Attack Speed</dt><dd id="gr-t-aps">×1</dd></div>
         <div><dt>Lumens</dt><dd id="gr-t-lumens">×1</dd></div>
       </dl>
       <p class="gr-note">Raise rarity at The Forge.</p>
@@ -90,6 +85,14 @@ export function buildGearView(root, state) {
 
     <div class="gr-slots-col side-left">${SLOT_LAYOUT.left.map((k) => slotMarkup(pieceDef(k))).join('')}</div>
     <div class="gr-slots-col side-right">${SLOT_LAYOUT.right.map((k) => slotMarkup(pieceDef(k))).join('')}</div>
+
+    <!-- Identidade do Armeiro, fixada aos pés (mesmo estilo do nameplate do Maël) -->
+    <div class="gr-npc-id">
+      <div class="gr-npc-text">
+        <div class="gr-npc-name">Lucius</div><!-- TODO(canon): ratificar nome no lore bible -->
+        <div class="gr-npc-title">Armorer of the Ordre</div>
+      </div>
+    </div>
 
     <div class="gr-multbar">
       <span class="gr-multbar-l">Equipment level</span>
@@ -133,7 +136,6 @@ export function renderGear(state) {
     const rar = rarityName(piece.rarity);
     const capped = atLevelCap(piece, state);
     slot.className = `gr-slot tier-${rar}${capped ? ' capped' : ''}`;
-    slot.title = `${def.name} — ${affixText(def, piece)}`;
 
     const art = $(`gr-art-${def.key}`);
     if (art && art.dataset.rar !== rar) {
