@@ -11,6 +11,13 @@ const SUFFIXES = [
 // Acima de 1e15 (esgotados os sufixos) cai na notação científica curta: "1.23e18".
 const SCI_THRESHOLD = 1e15;
 
+// Multiplicador exibido como PORCENTAGEM total: ×3.89 → "389%", ×495 → "49.5K%",
+// ×1 → "100%". Decisão do Willian (mais amigável que "×N" para crit/bônus).
+export function formatMult(v) {
+  if (!Number.isFinite(v)) return '∞%';
+  return `${formatNumber(v * 100)}%`;
+}
+
 export function formatNumber(n) {
   if (!Number.isFinite(n)) return '∞';
   if (n < 0) return '-' + formatNumber(-n);

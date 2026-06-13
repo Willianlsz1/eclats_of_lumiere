@@ -24,8 +24,21 @@ import { buildForgeView, renderForge } from './forge.js';
 import { buildPassivesView, renderPassives } from './passives.js';
 import { buildMemoiresView, renderMemoires } from './memoires.js';
 import { buildAscensionView, renderAscension } from './ascension.js';
+import { getCurrentMap } from '../game/enemies.js';
 
 const $ = (sel, root = document) => root.querySelector(sel);
+
+let gameState = null;       // ref do state (pra saber o mapa atual no chrome)
+let backdropMap = null;     // último mapa pintado no backdrop (evita repintar por tick)
+
+// Fundo desfocado do palco = mapa ATUAL do jogador (telas de menu)
+function paintBackdrop() {
+  if (!gameState) return;
+  const map = getCurrentMap(gameState);
+  if (backdropMap === map.id) return;
+  backdropMap = map.id;
+  $('#stage-backdrop').style.backgroundImage = bg(map.bg);
+}
 
 // moedas do topo — leem o state real
 // 3ª moeda = Éclats (§10), fonte das Mémoires. Usa o ícone de convergence
@@ -54,6 +67,7 @@ const VIEWS = [
 let current = 'combat';
 
 export function setupUI(state) {
+  gameState = state;
   buildCoins();
   buildNav();
   buildViews(state);
@@ -184,7 +198,7 @@ function show(id) {
   current = id;
   document.querySelectorAll('.view').forEach((n) => n.classList.toggle('active', n.id === 'view-' + id));
   document.querySelectorAll('.navbtn').forEach((n) => n.classList.toggle('active', n.dataset.view === id));
-  $('#stage-backdrop').style.backgroundImage = bg('backgrounds.map1');
+  paintBackdrop();
 }
 
 function fit() {
@@ -209,6 +223,8 @@ function fit() {
 }
 
 export function renderUI(state) {
+  gameState = state;
+  paintBackdrop(); // mantém o backdrop no mapa atual (atualiza ao viajar/ascender)
   // moedas (state real)
   for (const c of COINS) {
     const el = document.getElementById('coin-' + c.id);
