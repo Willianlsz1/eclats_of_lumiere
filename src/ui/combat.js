@@ -150,7 +150,7 @@ export function renderCombat(state) {
   if (bd) bd.style.backgroundImage = bg(map.bg);
   const range = subareaLevelRange(map, state.subarea);
   $('cb-zone-sub').textContent =
-    `LV ${Math.round(range.lo)}–${Math.round(range.hi)}`;
+    `LV ${formatNumber(Math.round(range.lo))}–${formatNumber(Math.round(range.hi))}`;
   const prev = $('cb-prev');
   const next = $('cb-next');
   prev.disabled = state.subarea <= 1;

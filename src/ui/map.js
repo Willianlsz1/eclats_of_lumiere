@@ -6,6 +6,7 @@
 // Contrato: buildMapView(root, state, goToCombat) monta o DOM uma vez;
 //           renderMap(state) atualiza estados a cada exibição.
 
+import { formatNumber } from '../core/format.js';
 import { picture, bg } from '../data/assets.js';
 import { getCurrentMap, subareaLevelRange } from '../game/enemies.js';
 import { enterSubarea, travelToMap } from '../game/combat.js';
@@ -43,9 +44,29 @@ const SUBAREAS = {
     { icon: 'eclats/enemies/map1/dreaming_gate',      name: 'The Dreaming Gate' },
     { icon: 'eclats/enemies/map1/verdant_deep',       name: 'The Verdant Deep' },
   ],
+  2: [
+    { icon: 'eclats/enemies/map2/shardbloom_rise',   name: 'Shardbloom Rise' },
+    { icon: 'eclats/enemies/map2/hourglass_pillar',  name: 'The Hourglass Pillar' },
+    { icon: 'eclats/enemies/map2/prism_stair',       name: 'The Prism Stair' },
+    { icon: 'eclats/enemies/map2/lucent_gate',       name: 'The Lucent Gate' },
+    { icon: 'eclats/enemies/map2/stillwater_deep',   name: 'The Stillwater Deep' },
+  ],
+  3: [
+    { icon: 'eclats/enemies/map3/cindergate',        name: 'The Cindergate' },
+    { icon: 'eclats/enemies/map3/fallen_colonnade',  name: 'The Fallen Colonnade' },
+    { icon: 'eclats/enemies/map3/pyre_ascent',       name: 'The Pyre Ascent' },
+    { icon: 'eclats/enemies/map3/silent_choir',      name: 'The Silent Choir' },
+    { icon: 'eclats/enemies/map3/ashen_throne',      name: 'The Ashen Throne' },
+  ],
 };
 // Fundo do continente por mapa (sobrepõe map.continent quando há arte dedicada)
-const CONTINENT_BG = { 1: 'eclats/enemies/map1/wooding' };
+const CONTINENT_BG = {
+  1: 'eclats/enemies/map1/wooding',
+  2: 'eclats/enemies/map2/luminis',
+  3: 'eclats/enemies/map3/asheruins',
+  4: 'eclats/enemies/map4/fracturedpeaks',
+  5: 'eclats/enemies/map5/nilaeternum',
+};
 
 // Lore curta POR MAPA (condensada da lore bible, em inglês — cada mapa "conta"
 // o seu capítulo do mundo). Sem travessões. TODO(canon): revisar textos 2-5
@@ -67,6 +88,20 @@ const SUBAREA_LORE = {
     'A stairway climbs beside a fall of pure light. Those who built the steps are gone, but the light still comes down to meet whoever dares to climb.',
     'An arch of stone and vine, flooded with teal light. It is not a door out of the forest. It is the forest deciding who may go deeper.',
     'The oldest grove, an emerald deep where the canopy closes like a vault. At its heart waits the Gilded Hollow, the first mirror of the journey.',
+  ],
+  2: [
+    'The first chamber of the caves, where crystals bloom from the rock like flowers of frozen light. Each one is an Éclat that stopped waiting to be found.',
+    'A pillar shaped like an hourglass, dripping slow beads of light. Time runs thinner here. Some drops have been falling since before the Fracture.',
+    'A stairway of pure prism, climbing through a column of light. Every step refracts the climber a little more, as if the caves were studying you.',
+    'A gate of living crystal at the threshold of the deep. The light beyond it does not flicker. It waits, patient, the way only old things wait.',
+    'A still lake that mirrors the cavern perfectly. In the deepest dark beyond it, the crystals tried to become whole again. The Pale Reunion is what they managed.',
+  ],
+  3: [
+    'A gate of scorched stone, still raining embers that never cool. The first civilization built it to welcome pilgrims. Now it only marks where the burning began.',
+    'Columns that held a sky of light, now broken at the knee. Gold dust drifts between them like the memory of a crowd that never left.',
+    'The grand stair of a temple, climbing into a beam that still falls from nowhere. The faith died with its priests. The light never noticed.',
+    'The nave of a roofless cathedral, where the Ash Choir still stands in formation. No sound comes out. The hymn continues anyway.',
+    'The heart of the ruins, where the throne room once stood. The king who refused to die with his world is still here, grieving in ember and gold.',
   ],
 };
 
@@ -219,7 +254,7 @@ function renderPanel(state) {
       <div class="sub-name">${subName} · ${n}/${map.subareaCount}${cleared ? ' ✓' : ''}</div>
       ${lore ? `<p class="lore">${lore}</p>` : ''}
       <dl class="facts">
-        <div><dt>Level</dt><dd>${Math.round(range.lo)}–${Math.round(range.hi)}</dd></div>
+        <div><dt>Level</dt><dd>${formatNumber(Math.round(range.lo))}–${formatNumber(Math.round(range.hi))}</dd></div>
         <div><dt>Enemies</dt><dd>${packSize} per wave</dd></div>
         <div><dt>Status</dt><dd>${status}</dd></div>
       </dl>
