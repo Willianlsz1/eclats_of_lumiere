@@ -44,13 +44,14 @@ const FLAVOR = {
   veil: '"The veil was woven from what remained of a fire. Feed it, and it remembers being flame."',
 };
 
-// Receitas: 3 refinos + 6 saltos de raridade (1 por peça).
-const REFINES = [0, 1, 2].map((t) => ({
-  id: `refine_${t}`, type: 'refine', group: 'Refining', fromTier: t,
-  name: `Refine ${MAT_LABELS[t + 1]}`, iconImg: MAT_IMG[t + 1],
+// Trilho: grupo MATERIALS (4 materiais, hover = estoque + usos; refino ao
+// selecionar) + grupo GEAR (6 peças, próximo tier + requisito).
+const MATERIALS = [0, 1, 2, 3].map((t) => ({
+  id: `mat_${t}`, type: 'material', group: 'Materials', tier: t,
+  name: MAT_LABELS[t], iconImg: MAT_IMG[t],
 }));
-const RAISES = GEAR.pieces.map((p) => ({ id: p.key, type: 'rarity', group: 'Raise rarity', key: p.key, name: p.name }));
-const RECIPES = [...REFINES, ...RAISES];
+const RAISES = GEAR.pieces.map((p) => ({ id: p.key, type: 'rarity', group: 'Gear', key: p.key, name: p.name }));
+const RECIPES = [...MATERIALS, ...RAISES];
 
 const $ = (id) => document.getElementById(id);
 const fmt = (n) => formatNumber(Math.floor(n || 0));
@@ -175,10 +176,11 @@ export function buildForgeView(root, state) {
     const r = RECIPES.find((x) => x.id === selectedId);
     if (!r) return;
     const act = b.dataset.act;
+    const ft = r.type === 'material' ? r.tier : -1; // refino CONSOME este material → próximo tier
     if (act === 'qminus') { refineQty = Math.max(1, refineQty - 1); lastSig = ''; }
-    else if (act === 'qplus') { refineQty = Math.min(Math.max(1, maxRefines(S, r.fromTier)), refineQty + 1); lastSig = ''; }
-    else if (act === 'refine') { for (let i = 0; i < refineQty && doRefino(S, r.fromTier); i++) { /* */ } refineQty = 1; lastSig = ''; }
-    else if (act === 'refineMax') { let g = 1000; while (g-- > 0 && doRefino(S, r.fromTier)) { /* */ } refineQty = 1; lastSig = ''; }
+    else if (act === 'qplus') { refineQty = Math.min(Math.max(1, maxRefines(S, ft)), refineQty + 1); lastSig = ''; }
+    else if (act === 'refine') { for (let i = 0; i < refineQty && doRefino(S, ft); i++) { /* */ } refineQty = 1; lastSig = ''; }
+    else if (act === 'refineMax') { let g = 1000; while (g-- > 0 && doRefino(S, ft)) { /* */ } refineQty = 1; lastSig = ''; }
     else if (act === 'forge') { doRarityUp(S, r.key); lastSig = ''; }
     renderForge(S);
   });
@@ -203,11 +205,11 @@ export function renderForge(state) {
     const stEl = $(`fg-st-${r.id}`), subEl = $(`fg-sub-${r.id}`), icEl = $(`fg-ic-${r.id}`);
     let status, letter, subText;
 
-    if (r.type === 'refine') {
-      const held = Math.floor(m[r.fromTier] || 0);
-      status = canRefino(state, r.fromTier) ? { cls: 'ok', text: 'Ready' } : { cls: 'no', text: `${fmt(held)}/${CRAFT.refinoRatio}` };
-      letter = RLETTER[r.fromTier + 1];
-      subText = `${CRAFT.refinoRatio} ${MAT_LABELS[r.fromTier]} → 1 ${MAT_LABELS[r.fromTier + 1]}`;
+    if (r.type === 'material') {
+      const t = r.tier;
+      status = { cls: 'no', text: '' }; // sem status no material (clicar abre o refino)
+      letter = RLETTER[t + 1]; // cor da raridade do material
+      subText = `${fmt(m[t])} held`; // quantidade em estoque
       if (icEl && !icEl.dataset.done) { icEl.innerHTML = `<img src="${r.iconImg}" alt="">`; icEl.dataset.done = '1'; }
     } else {
       const info = rarityInfo(state, r.key);
@@ -233,13 +235,20 @@ export function renderForge(state) {
 // Rebuild do altar só quando a assinatura muda (evita flicker das imagens).
 function renderAltar(state, m) {
   const r = RECIPES.find((x) => x.id === selectedId) || RECIPES[0];
-  const sig = r.type === 'refine'
-    ? `R|${r.id}|${Math.floor(m[r.fromTier] || 0)}|${refineQty}`
-    : (() => { const i = rarityInfo(state, r.key); return `G|${r.id}|${i.rar}|${i.p.level}|${i.cap}|${i.held}`; })();
+  let sig;
+  if (r.type === 'material') {
+    const above = r.tier < 3 ? Math.floor(m[r.tier + 1] || 0) : 0;
+    sig = `M|${r.id}|${Math.floor(m[r.tier] || 0)}|${above}|${refineQty}`;
+  } else {
+    const i = rarityInfo(state, r.key);
+    sig = `G|${r.id}|${i.rar}|${i.p.level}|${i.cap}|${i.held}`;
+  }
   if (sig === lastSig) return;
   lastSig = sig;
   const altar = $('fg-altar');
-  if (altar) altar.innerHTML = r.type === 'refine' ? refineAltar(state, r) : rarityAltar(state, r);
+  if (!altar) return;
+  if (r.type === 'material') altar.innerHTML = r.tier < 3 ? refineAltar(state, r.tier) : materialInfoAltar(state, r.tier);
+  else altar.innerHTML = rarityAltar(state, r);
 }
 
 // Linha de requisito: ÍCONE real (diz o que é) + barra grande na cor do material
@@ -248,9 +257,9 @@ function gateRow(ok, icHTML, frac, pct, tone) {
   const fill = `linear-gradient(90deg, color-mix(in srgb, ${tone} 62%, #000), ${tone})`;
   return `
     <div class="fg-gate ${ok ? 'ok' : 'no'}">
-      <span class="fg-gic">${icHTML}</span>
+      <span class="fg-gic" style="--tint:${tone}">${icHTML}</span>
       <span class="fg-gbar"><i style="width:${Math.min(100, pct)}%; background:${fill}"></i><em>${frac}</em></span>
-      <span class="fg-gseal">${ok ? '✓' : '✕'}</span>
+      <span class="fg-gseal"><img src="eclats/ui/${ok ? 'seal_ok' : 'seal_no'}.webp" alt=""></span>
     </div>`;
 }
 
@@ -300,26 +309,31 @@ function rarityAltar(state, r) {
     </div>
 
     <button type="button" class="fg-forgebtn" data-act="forge" ${info.ready ? '' : 'disabled'}>Forge to ${GEAR_RARITY_LABELS[info.rar + 1]}</button>
-    <p class="fg-altar-note">Consumes ${info.need} ${MAT_LABELS[info.tier]}. What is forged, stays forged.</p>
     <p class="fg-flavor">${flavor}</p>`;
 }
 
-function refineAltar(state, r) {
-  const from = MAT_LABELS[r.fromTier], to = MAT_LABELS[r.fromTier + 1];
-  const held = Math.floor(state.materiais[r.fromTier] || 0);
-  const maxN = maxRefines(state, r.fromTier);
+function refineAltar(state, fromTier) {
+  const from = MAT_LABELS[fromTier], to = MAT_LABELS[fromTier + 1];
+  const held = Math.floor(state.materiais[fromTier] || 0);
+  const maxN = maxRefines(state, fromTier);
   const qty = Math.min(Math.max(1, refineQty), Math.max(1, maxN));
   const cost = CRAFT.refinoRatio * qty;
   const ok = held >= cost && maxN >= 1;
 
   return `
-    <div class="fg-altar-head"><h3>${r.name}</h3>
-      <div class="fg-path"><span class="r-${RLETTER[r.fromTier]}">${from}</span><span class="fg-fa">→</span><span class="r-${RLETTER[r.fromTier + 1]}">${to}</span></div></div>
+    <div class="fg-altar-head"><h3>Refine ${to}</h3>
+      <div class="fg-path"><span class="r-${RLETTER[fromTier]}">${from}</span><span class="fg-fa">→</span><span class="r-${RLETTER[fromTier + 1]}">${to}</span></div></div>
 
     <div class="fg-morph mat">
-      <div class="fg-mpiece"><img src="${MAT_IMG[r.fromTier]}" alt=""><b>${CRAFT.refinoRatio * qty}</b></div>
+      <div class="fg-mpiece">
+        <div class="fg-mbox r-${RLETTER[fromTier + 1]}"><img src="${MAT_IMG[fromTier]}" alt=""></div>
+        <b>${CRAFT.refinoRatio * qty}</b>
+      </div>
       <div class="fg-spark">➜</div>
-      <div class="fg-mpiece"><img src="${MAT_IMG[r.fromTier + 1]}" alt=""><b>${qty}</b></div>
+      <div class="fg-mpiece">
+        <div class="fg-mbox r-${RLETTER[fromTier + 2]}"><img src="${MAT_IMG[fromTier + 1]}" alt=""></div>
+        <b>${qty}</b>
+      </div>
     </div>
 
     <div class="fg-qty">
@@ -330,9 +344,23 @@ function refineAltar(state, r) {
     </div>
 
     <div class="fg-gates">
-      ${gateRow(ok, `<img src="${MAT_IMG[r.fromTier]}" alt="">`, `${fmt(held)} / ${cost}`, (held / cost) * 100, matColor(r.fromTier))}
+      ${gateRow(ok, `<img src="${MAT_IMG[fromTier]}" alt="">`, `${fmt(held)} / ${cost}`, (held / cost) * 100, matColor(fromTier))}
     </div>
 
-    <button type="button" class="fg-forgebtn" data-act="refine" ${ok ? '' : 'disabled'}>Refine ${qty} ${to}</button>
-    <p class="fg-altar-note">Refining only goes up: ${CRAFT.refinoRatio} ${from} → 1 ${to}.</p>`;
+    <button type="button" class="fg-forgebtn" data-act="refine" ${ok ? '' : 'disabled'}>Refine ${qty} ${to}</button>`;
+}
+
+// Altar do material do TOPO (Converged): não há tier acima pra converter.
+function materialInfoAltar(state, t) {
+  const held = Math.floor(state.materiais[t] || 0);
+  return `
+    <div class="fg-altar-head"><h3>${MAT_LABELS[t]}</h3>
+      <div class="fg-path"><span class="r-${RLETTER[t + 1]}">Highest material</span></div></div>
+
+    <div class="fg-morph mat">
+      <div class="fg-mpiece big">
+        <div class="fg-mbox r-${RLETTER[t + 1]}"><img src="${MAT_IMG[t]}" alt=""></div>
+        <b>${fmt(held)}</b>
+      </div>
+    </div>`;
 }
