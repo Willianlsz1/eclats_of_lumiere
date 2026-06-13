@@ -56,9 +56,7 @@ const VIEWS = [
   { id: 'map',       label: 'Mapa',      icon: 'icons.nav.5' },
   { id: 'player',    label: 'Seeker',    icon: 'icons.nav.1' },
   { id: 'gear',      label: 'Gear',      icon: 'icons.nav.4' },
-  // The Forge: sem nav_8 dedicado ainda → glyph provisório (ferreiro Maël).
-  // TODO(assets): ícone de nav próprio para a Forge.
-  { id: 'forge',     label: 'The Forge', glyph: '⚒' },
+  { id: 'forge',     label: 'The Forge', iconSrc: 'eclats/icons/nav/nav_forge.webp' },
   { id: 'passives',  label: 'Passivas',  icon: 'icons.nav.3' },
   { id: 'memoires',  label: 'Mémoires',  icon: 'icons.nav.6' },
   { id: 'ascension', label: 'Ascension', icon: 'icons.nav.7' },
@@ -95,7 +93,10 @@ function buildNav() {
     btn.className = 'navbtn' + (v.locked ? ' locked' : '') + (v.glyph && !v.icon ? ' provisional' : '');
     btn.dataset.view = v.id;
     btn.title = v.locked ? `${v.label} — pós-MVP` : v.label;
-    btn.innerHTML = `<span class="ico">${v.glyph ? v.glyph : picture(v.icon, { alt: v.label })}</span>`;
+    const ico = v.iconSrc
+      ? `<img src="${v.iconSrc}" alt="${v.label}">`
+      : (v.glyph ? v.glyph : picture(v.icon, { alt: v.label }));
+    btn.innerHTML = `<span class="ico">${ico}</span>`;
     if (!v.locked) btn.addEventListener('click', () => show(v.id));
     nav.appendChild(btn);
   }
