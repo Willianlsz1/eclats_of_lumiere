@@ -20,7 +20,7 @@
 
 .rw-meta { flex: 1; min-width: 0; }
 .rw-nm { font-size: 13px; font-weight: 600; color: #eef4ff; }
-.rw-sub { font-size: 11px; color: var(--faint, #5a6678); margin-top: 1px; }
+.rw-sub { font-size: 13px; color: var(--faint, #5a6678); margin-top: 1px; }
 .rw-val { font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--ink, #dbe6ff); }
 
 /* acentos de cor por variante */

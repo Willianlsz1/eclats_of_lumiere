@@ -27,10 +27,10 @@
   box-shadow: 0 0 0 1px rgba(170, 200, 255, .14), 0 0 70px -18px rgba(170, 200, 255, .45), 0 30px 90px -30px #000;
   padding: 30px 34px 26px; z-index: 5; outline: 1px solid rgba(170, 200, 255, .12); outline-offset: 6px; }
 
-.of-eyebrow { text-align: center; font-size: 11px; letter-spacing: .38em; text-transform: uppercase; color: var(--dim, #8fa3c8); }
+.of-eyebrow { text-align: center; font-size: 13px; letter-spacing: .38em; text-transform: uppercase; color: var(--dim, #8fa3c8); }
 .of-title { font-family: var(--font-display, 'Cormorant Garamond', serif); font-weight: 700; font-size: 38px; text-align: center;
   color: #f2f7ff; margin-top: 4px; text-shadow: 0 0 22px rgba(170, 200, 255, .4); }
-.of-away { margin: 6px auto 20px; text-align: center; font-size: 12.5px; color: var(--dim, #8fa3c8); }
+.of-away { margin: 6px auto 20px; text-align: center; font-size: 13px; color: var(--dim, #8fa3c8); }
 .of-away b { color: var(--gold, #d9a441); font-weight: 600; font-variant-numeric: tabular-nums; }
 
 /* ganhos — reward-row cuida das linhas; aqui só o espaçamento do bloco */
@@ -47,7 +47,7 @@
 .of-echo-meta { flex: 1; }
 .of-echo-nm { font-family: var(--font-display, 'Cormorant Garamond', serif); font-size: 15.5px; color: var(--dim, #8fa3c8); }
 .of-echo.unlocked .of-echo-nm { color: var(--ink, #dbe6ff); }
-.of-echo-sub { font-size: 11px; color: var(--faint, #5a6678); margin-top: 1px; font-style: italic; }
+.of-echo-sub { font-size: 13px; color: var(--faint, #5a6678); margin-top: 1px; font-style: italic; }
 .of-echo-lk { font-size: 13px; color: var(--faint, #5a6678); }
 .of-echo.unlocked .of-echo-lk { color: var(--eclat, #aac8ff); }
 

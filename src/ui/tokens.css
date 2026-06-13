@@ -32,8 +32,8 @@
   /* — tipografia — */
   --font-display: 'Cormorant Garamond', 'Georgia', serif;  /* títulos / nomes / lore */
   --font-ui:      'Inter', system-ui, -apple-system, sans-serif; /* números / UI */
-  --fs-xxl: 44px; --fs-xl: 32px; --fs-lg: 22px; --fs-md: 16px;
-  --fs-sm: 13px;  --fs-xs: 11px;
+  --fs-xxl: 46px; --fs-xl: 34px; --fs-lg: 24px; --fs-md: 18px;
+  --fs-sm: 15px;  --fs-xs: 13px;
   --tracking: .02em;
 
   /* — forma dos cards / padrões — */

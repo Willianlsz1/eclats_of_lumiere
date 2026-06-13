@@ -72,7 +72,7 @@
 }
 .gr-slot-lvl {
   position: absolute; top: -7px; left: 50%; transform: translateX(-50%); z-index: 3;
-  font-size: 10px; font-weight: 700; color: #fff; font-variant-numeric: tabular-nums;
+  font-size: 13px; font-weight: 700; color: #fff; font-variant-numeric: tabular-nums;
   background: rgba(8,12,24,.88); border: 1px solid rgba(217,164,65,.45); border-radius: 5px;
   padding: 1px 8px; white-space: nowrap; text-shadow: 0 1px 2px #000;
 }
@@ -96,7 +96,7 @@
   background: rgba(11, 18, 38, .9); border: 1px solid rgba(217,164,65,.4); border-radius: 8px;
   padding: 5px 6px; font-size: 15px; font-weight: 700; color: #e8d49a; font-variant-numeric: tabular-nums; }
 .gr-cost-ic { width: 18px; height: 18px; object-fit: contain; flex: none; }
-.gr-cost-max { color: var(--eclat); font-size: 12px; }
+.gr-cost-max { color: var(--eclat); font-size: 13px; }
 
 /* tooltip de atributos (hover do slot) */
 .gr-tip {
@@ -109,7 +109,7 @@
 .side-left .gr-tip { left: 114%; }
 .side-right .gr-tip { right: 114%; }
 .gr-tip-name { margin: 0 0 2px; font-family: var(--font-display); font-size: 19px; font-weight: 700; }
-.gr-tip-sub { font-size: 11px; color: var(--dim); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 11px; }
+.gr-tip-sub { font-size: 13px; color: var(--dim); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 11px; }
 .gr-tip-affixes { display: grid; gap: 5px; }
 .gr-tip-affixes div { font-size: 13px; color: var(--dim); font-variant-numeric: tabular-nums; }
 .gr-tip-affixes .primary { color: var(--gold); font-weight: 700; font-size: 14.5px;
@@ -139,7 +139,7 @@
 }
 .gr-npc-title {
   margin-top: 3px;
-  font-size: 11px; letter-spacing: .26em; text-transform: uppercase; font-weight: 600;
+  font-size: 13px; letter-spacing: .26em; text-transform: uppercase; font-weight: 600;
   color: #c96a2a; text-shadow: 0 1px 4px #000;
 }
 

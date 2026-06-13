@@ -30,7 +30,7 @@
 @keyframes aw-float { 0%, 100% { transform: translateY(0); opacity: .55; } 50% { transform: translateY(-12px); opacity: .95; } }
 
 .aw-stack { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; padding-top: 84px; z-index: 5; }
-.aw-small-rite { font-size: 12px; letter-spacing: .42em; text-transform: uppercase; color: var(--dim, #8fa3c8); }
+.aw-small-rite { font-size: 13px; letter-spacing: .42em; text-transform: uppercase; color: var(--dim, #8fa3c8); }
 
 /* card do tier novo + halo */
 .aw-rite { position: relative; margin-top: 26px; width: 560px; height: 430px; display: grid; place-items: center; }
@@ -67,7 +67,7 @@
 .aw-you-are { font-family: var(--font-display, 'Cormorant Garamond', serif); font-style: italic; font-size: 22px; color: var(--dim, #8fa3c8); }
 .aw-reveal h1 { font-family: var(--font-display, 'Cormorant Garamond', serif); font-weight: 700; font-size: 88px; line-height: 1;
   letter-spacing: .06em; color: #f2f7ff; margin-top: 6px; text-shadow: 0 0 30px rgba(170, 200, 255, .55), 0 0 90px rgba(170, 200, 255, .25); }
-.aw-was { margin-top: 10px; font-size: 12px; letter-spacing: .3em; text-transform: uppercase; color: var(--faint, #5a6678); }
+.aw-was { margin-top: 10px; font-size: 13px; letter-spacing: .3em; text-transform: uppercase; color: var(--faint, #5a6678); }
 .aw-was b { color: var(--gold, #d9a441); font-weight: 600; }
 .aw-was i { font-style: normal; color: var(--eclat, #aac8ff); }
 
@@ -75,7 +75,7 @@
 .aw-gains { margin-top: 36px; display: flex; gap: 14px; }
 .aw-gain { min-width: 210px; text-align: center; border: 1px solid var(--line, rgba(170, 200, 255, .26));
   border-radius: 12px; background: var(--panel, rgba(8, 12, 24, .86)); padding: 14px 22px; }
-.aw-g-l { font-size: 10px; letter-spacing: .26em; text-transform: uppercase; color: var(--faint, #5a6678); }
+.aw-g-l { font-size: 13px; letter-spacing: .26em; text-transform: uppercase; color: var(--faint, #5a6678); }
 .aw-g-v { font-family: var(--font-display, 'Cormorant Garamond', serif); font-weight: 700; font-size: 34px;
   color: var(--eclat, #aac8ff); margin-top: 2px; text-shadow: 0 0 18px rgba(170, 200, 255, .45); }
 .aw-gain.gld .aw-g-v { color: var(--gold, #d9a441); text-shadow: 0 0 18px rgba(217, 164, 65, .4); }
