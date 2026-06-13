@@ -4,9 +4,9 @@
 // §4 — Constantes-âncora do núcleo de combate
 export const COMBAT = {
   baseDmg: 7,
-  baseAPS: 0.40,          // intervalo de ataque 2.5s
+  baseAPS: 0.90,          // intervalo de ataque ~1.11s (ajuste pedido pelo Willian: 0.40 → 0.90)
   apsCap: 15,             // ✅ CALIBRADO (Bloco 6): teto 15 kills/s (54k/h). Fecha só no late.
-  agiApsCap: 3.75,        // sub-cap do AGI: AGI sozinho leva o APS só até ~1.5 (0.40 × 3.75)
+  agiApsCap: 3.75,        // sub-cap do AGI: AGI sozinho leva o APS até ~3.4 (0.90 × 3.75)
   playerBaseHp: 50,
   regenPerSec: 0.01,      // 1% do HP máx por segundo
   regenOnKill: 0.02,      // 2% do HP máx por kill
