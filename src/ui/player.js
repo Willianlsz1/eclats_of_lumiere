@@ -240,7 +240,8 @@ export function buildPlayerView(root, state) {
 
     <div class="pl-sheet">
       <div class="pl-codex-panel">
-        <h3 class="pl-codex-title">Seeker Codex <span class="pl-sub">— attributes &amp; powers · click any stat to see how it's built</span></h3>
+        <h3 class="pl-codex-title"><span id="pl-codex-rank">Seeker</span> Codex</h3>
+        <p class="pl-codex-motto">Carry the light onward. Through you, the world remembers how to mend.</p>
         <div class="pl-stats-list" id="pl-stats-list"></div>
 
         <div class="pl-section">
@@ -330,6 +331,7 @@ export function renderPlayer(state) {
 
   // Identidade
   $('pl-tier').textContent = `${rank.name} · Tier ${rank.tier}`;
+  $('pl-codex-rank').textContent = rank.name; // o Codex acompanha o tier atual
   const hero = document.querySelector('#view-player .pl-hero');
   if (hero) {
     // retrato (arte) conforme o tier
