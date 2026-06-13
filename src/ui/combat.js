@@ -12,7 +12,10 @@ import { picture, bg } from '../data/assets.js';
 import { heroLevel, playerHpMax, currentAPS } from '../game/stats.js';
 import { changeSubarea } from '../game/combat.js';
 import { getCurrentMap, subareaLevelRange } from '../game/enemies.js';
-import { currentRank, seekerFrame, seekerPortrait } from '../game/ascension.js';
+import { currentRank } from '../game/ascension.js';
+
+// tier romano → número do card (seeker.card_tN)
+const TIER_NUM = { I: 1, II: 2, III: 3, IV: 4, V: 5 };
 
 const $ = (id) => document.getElementById(id);
 
@@ -47,18 +50,12 @@ function spawnPos(i, total, bossOut) {
 let rates = null;
 
 // Troca o retrato e a moldura do Seeker conforme o tier (só quando muda)
-function updateSeekerCard(seekerEl, portraitId, frameId) {
+function updateSeekerCard(seekerEl, cardId) {
   const art = seekerEl.querySelector('.scard-art');
   if (!art) return;
-  if (seekerEl.dataset.portrait !== portraitId) {
-    seekerEl.dataset.portrait = portraitId;
-    art.innerHTML = picture(portraitId, { className: 'scard-art-img', alt: 'The Seeker' });
-  }
-  if (seekerEl.dataset.frame !== frameId) {
-    seekerEl.dataset.frame = frameId;
-    const old = seekerEl.querySelector('.scard-frame');
-    if (old) old.remove();
-    seekerEl.insertAdjacentHTML('beforeend', picture(frameId, { className: 'scard-frame', alt: '' }));
+  if (seekerEl.dataset.card !== cardId) {
+    seekerEl.dataset.card = cardId;
+    art.innerHTML = picture(cardId, { className: 'scard-art-img', alt: 'The Seeker' });
   }
   // imagens absolutas não disparam lazy-load — força carregamento imediato
   seekerEl.querySelectorAll('img').forEach((img) => { img.loading = 'eager'; });
@@ -73,7 +70,7 @@ export function buildCombatView(root, state) {
     <aside class="cb-seeker scard" id="cb-seeker">
       <div class="scard-bg"></div>
       <div class="scard-art">
-        ${picture('seeker.t1', { className: 'scard-art-img', alt: 'The Seeker' })}
+        ${picture('seeker.card_t1', { className: 'scard-art-img', alt: 'The Seeker' })}
       </div>
       <div class="scard-inner">
         <div class="scard-name">The Seeker</div>
@@ -85,7 +82,6 @@ export function buildCombatView(root, state) {
           <span id="cb-lv-text">LVL 1</span></div>
         <div class="cb-status" id="cb-status" hidden></div>
       </div>
-      ${picture('frames.tier1', { className: 'scard-frame', alt: '' })}
     </aside>
 
     <div class="cb-arena" id="cb-arena"><!-- enemy cards (JS) --></div>
@@ -130,7 +126,7 @@ export function renderCombat(state) {
   // ── Card do Seeker ──
   const rank = currentRank(state);
   $('cb-tier').textContent = `${rank.name} · Tier ${rank.tier}`;
-  updateSeekerCard($('cb-seeker'), seekerPortrait(state), seekerFrame(state));
+  updateSeekerCard($('cb-seeker'), `seeker.card_t${TIER_NUM[rank.tier] || 1}`);
   $('cb-hp-fill').style.width = `${Math.max(0, (state.player.hp / hpMax) * 100)}%`;
   $('cb-hp-text').textContent =
     `HP: ${formatNumber(Math.max(0, state.player.hp))}/${formatNumber(hpMax)}`;
