@@ -163,10 +163,10 @@ export const GEAR = {
   costMult:   [1, 4, 16, 64, 256],
   // ── Afixo FLAT por nível (CP-4): cada nível soma valor flat à BASE do stat,
   //    escalado pela raridade. É o "dano base +X/nível" do Willian. ⏳ SEMENTES.
-  flatPerLevel: { dmg: 100, hp: 50, defesa: 30, aps: 0.0015, regen: 0.0005, bossDmg: 0, lumens: 0, xp: 0, crit: 0, critDmg: 0, materiais: 0 },
-  // ── Sabor % (multiplicativo) — segue existindo, ALÉM do flat ──
-  affixPctRate: 0.0002,      // % por nível (menor, pois nível vai a milhões): 1 + nível × rate × rarityMult
-  affixMultBase: 1.0000005,  // sabor × (a partir de Luminous) — amortecido p/ níveis altos
+  flatPerLevel: { dmg: 1000, hp: 500, defesa: 300, aps: 0.0015, regen: 0.0005, bossDmg: 0, lumens: 0, xp: 0, crit: 0, critDmg: 0, materiais: 0 },
+  // ── Sabor % (multiplicativo) — modesto: o FLAT é o protagonista do gear (~13 déc no Converged) ──
+  affixPctRate: 1e-6,        // % por nível: 1 + nível × rate × rarityMult (linear, amortecido)
+  affixMultBase: 1.0000001,  // sabor × (a partir de Luminous) — bem amortecido p/ níveis altos
   affixMultFromRarity: 2,    // Luminous (idx 2) destrava o sabor ×
   secondaryExp: 0.30,        // afixo SECUNDÁRIO = primário^0.30 (e flat secundário × secondaryExp)
   capPerAsc: 100000,         // a Ascension soma +cap ao nível da raridade TOPO — sem-teto. ⏳ semente
