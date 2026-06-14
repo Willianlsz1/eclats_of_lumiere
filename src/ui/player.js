@@ -31,10 +31,11 @@ const pct = (x) => `${(x * 100).toFixed(1)}%`;
 // ganho de um multiplicador em +% (×1.30 → "+30%") — mais agradável que "×1.30"
 const gainPct = (mult) => `+${formatNumber((mult - 1) * 100).replace(/\.0$/, '')}%`;
 
-// fatores de um breakdown — kind: base | active | idle (×1) | locked (pós-MVP)
+// fatores de um breakdown — kind: base | active | idle (×1) | locked (pós-MVP).
+// Mostra o GANHO em +% (×1.30 → "+30%"); ×1 vira "+0%".
 const M = (label, v, postMvp = false) => {
   const one = Math.abs(v - 1) < 1e-9;
-  return { label, disp: formatMult(v), kind: one ? (postMvp ? 'locked' : 'idle') : 'active' };
+  return { label, disp: gainPct(v), kind: one ? (postMvp ? 'locked' : 'idle') : 'active' };
 };
 const ADDP = (label, frac) => ({ label, disp: `+${formatNumber(frac * 100)}%`, kind: frac > 1e-9 ? 'active' : 'idle' });
 
