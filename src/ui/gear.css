@@ -110,10 +110,14 @@
 .side-right .gr-tip { right: 114%; }
 .gr-tip-name { margin: 0 0 2px; font-family: var(--font-display); font-size: 19px; font-weight: 700; }
 .gr-tip-sub { font-size: 16px; color: var(--dim); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 11px; }
-.gr-tip-affixes { display: grid; gap: 5px; }
-.gr-tip-affixes div { font-size: 16px; color: var(--dim); font-variant-numeric: tabular-nums; }
-.gr-tip-affixes .primary { color: var(--gold); font-weight: 700; font-size: 16px;
-  border-bottom: 1px solid rgba(217,164,65,.2); padding-bottom: 5px; margin-bottom: 2px; }
+.gr-tip-affixes { display: grid; gap: 4px; }
+/* cada afixo: valor (bold) + label, e o descritor "per level" (dim) à direita */
+.gr-aff { display: flex; align-items: baseline; gap: 6px; font-size: 16px; color: var(--dim);
+  font-variant-numeric: tabular-nums; }
+.gr-aff-v { color: var(--ink); font-weight: 700; }
+.gr-aff-l { color: var(--dim); }
+.gr-aff-per { margin-left: auto; font-style: normal; font-size: 13px; color: var(--faint); }
+.gr-aff.primary .gr-aff-v { color: var(--gold); }
 
 /* ---------- nameplate do Armeiro (Lucius), aos pés — mesmo estilo do Maël ---------- */
 .gr-npc-id {

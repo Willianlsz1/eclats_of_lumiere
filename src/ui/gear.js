@@ -31,16 +31,8 @@ function affixFlat(type, level, rarity, isSec) {
   const per = GEAR.flatPerLevel[type] || 0;
   return level * per * GEAR.rarityMult[rarity] * (isSec ? GEAR.secondaryExp : 1);
 }
-function affixDesc(type, level, rarity, isSec) {
-  const w = isSec ? GEAR.secondaryExp : 1;
-  if (type === 'crit') return `+${(critOf(level, rarity) * w * 100).toFixed(2)}% crit`;
-  if (type === 'critDmg') return `+${(critDmgOf(level, rarity) * w * 100).toFixed(0)}% crit dmg`;
-  const m = isSec ? secondaryMult(level, rarity) : primaryMult(level, rarity);
-  const label = AFFIX_LABELS[type];
-  const flat = affixFlat(type, level, rarity, isSec);
-  // afixos com FLAT (dano/HP/APS/defesa/regen): "+flat label · ×%"; farm (Lumens/XP): só "×%"
-  return flat > 0 ? `+${formatNumber(flat)} ${label} · ×${formatNumber(m)}` : `×${formatNumber(m)} ${label}`;
-}
+// gain de um multiplicador em +% (sem ".0" sobrando), NUNCA "×1"
+const affGain = (m) => `+${String(formatNumber((m - 1) * 100)).replace(/\.0$/, '')}%`;
 
 // Multiplicador GLOBAL de level-up (aplica a qualquer slot)
 const MULTS = [1, 10, 100, 1000, 100000];
@@ -62,13 +54,38 @@ function slotMarkup(def) {
     </div>`;
 }
 
-// Linhas de afixo pra o tooltip (primário destacado + secundários ativos)
-function affixLines(def, piece) {
-  const lines = [{ text: affixDesc(def.primary, piece.level, piece.rarity, false), primary: true }];
-  for (const sec of activeSecondaries(def, piece.rarity)) {
-    lines.push({ text: affixDesc(sec, piece.level, piece.rarity, true), primary: false });
-  }
-  return lines;
+// Afixos exibíveis: cada um vira { val, label, per (descritor por nível), primary }.
+// Afixos de stat (dano/HP/APS/defesa/regen) viram 2 linhas: FLAT (base) e % (multiplicador).
+function affixEntries(def, piece) {
+  const lvl = piece.level, rar = piece.rarity, rm = GEAR.rarityMult[rar];
+  const out = [];
+  const add = (type, isSec) => {
+    const w = isSec ? GEAR.secondaryExp : 1;
+    const prim = !isSec;
+    if (type === 'crit') {
+      out.push({ val: `+${formatNumber(critOf(lvl, rar) * w * 100)}%`, label: 'crit rate',
+        per: `+${(GEAR.critPerLevel * rm * w * 100).toFixed(4)}% per level`, primary: prim });
+      return;
+    }
+    if (type === 'critDmg') {
+      out.push({ val: `+${formatNumber(critDmgOf(lvl, rar) * w * 100)}%`, label: 'crit dmg',
+        per: `+${(GEAR.critDmgPerLevel * rm * w * 100).toFixed(4)}% per level`, primary: prim });
+      return;
+    }
+    const label = AFFIX_LABELS[type];
+    const mult = isSec ? secondaryMult(lvl, rar) : primaryMult(lvl, rar);
+    // 1) afixo FLAT (base), se a peça tiver flat nesse tipo
+    if ((GEAR.flatPerLevel[type] || 0) > 0) {
+      out.push({ val: `+${formatNumber(affixFlat(type, lvl, rar, isSec))}`, label,
+        per: `+${formatNumber(GEAR.flatPerLevel[type] * rm * w)} per level`, primary: prim });
+    }
+    // 2) afixo % (multiplicador) — sempre como +X%, NUNCA ×1
+    out.push({ val: `${affGain(mult)}`, label,
+      per: `+${(GEAR.affixPctRate * rm * w * 100).toFixed(3)}% per level`, primary: prim });
+  };
+  add(def.primary, false);
+  for (const sec of activeSecondaries(def, rar)) add(sec, true);
+  return out;
 }
 const multLabel = (m) => (m >= 100000 ? '×100K' : `×${m}`);
 
@@ -157,7 +174,10 @@ export function renderGear(state) {
         <h4 class="gr-tip-name r-${rar}">${def.name}</h4>
         <div class="gr-tip-sub">${GEAR_RARITY_LABELS[piece.rarity]} ${SLOT_EN[def.slot]} · Lv ${formatNumber(piece.level)}</div>
         <div class="gr-tip-affixes">
-          ${affixLines(def, piece).map((l) => `<div class="${l.primary ? 'primary' : ''}">${l.text}</div>`).join('')}
+          ${affixEntries(def, piece).map((e) =>
+            `<div class="gr-aff ${e.primary ? 'primary' : ''}">`
+            + `<span class="gr-aff-v">${e.val}</span> <span class="gr-aff-l">${e.label}</span>`
+            + `<i class="gr-aff-per">${e.per}</i></div>`).join('')}
         </div>`;
     }
     const cost = levelCost(piece);
