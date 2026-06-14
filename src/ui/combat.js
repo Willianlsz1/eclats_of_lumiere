@@ -9,7 +9,7 @@
 
 import { formatNumber } from '../core/format.js';
 import { picture, bg } from '../data/assets.js';
-import { heroLevel, playerHpMax, currentAPS } from '../game/stats.js';
+import { runLevel, playerHpMax, currentAPS } from '../game/stats.js';
 import { changeSubarea } from '../game/combat.js';
 import { getCurrentMap, subareaLevelRange } from '../game/enemies.js';
 import { currentRank } from '../game/ascension.js';
@@ -130,7 +130,7 @@ export function renderCombat(state) {
   $('cb-hp-fill').style.width = `${Math.max(0, (state.player.hp / hpMax) * 100)}%`;
   $('cb-hp-text').textContent =
     `HP: ${formatNumber(Math.max(0, state.player.hp))}/${formatNumber(hpMax)}`;
-  $('cb-lv-text').textContent = `LVL ${formatNumber(heroLevel(state.xpTotal))}`;
+  $('cb-lv-text').textContent = `LVL ${formatNumber(runLevel(state))}`;
 
   const status = $('cb-status');
   const seeker = $('cb-seeker');

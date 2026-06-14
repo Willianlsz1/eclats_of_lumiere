@@ -38,8 +38,8 @@ function overlayHost() {
 
 export function openConvergence(data) {
   const d = { ...PLACEHOLDER, ...(data || {}) };
-  onConverge = d.onConverge || null;
-  closeConvergence();
+  closeConvergence();               // limpa um overlay anterior (zera onConverge)...
+  onConverge = d.onConverge || null; // ...e SÓ ENTÃO registra o callback (bug fix CP-3b)
 
   host = document.createElement('div');
   host.className = 'cv-overlay';

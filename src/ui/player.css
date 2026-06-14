@@ -166,3 +166,30 @@
 .pl-lock { font-size: 16px; font-style: normal; }
 .pl-modal-note { margin: 14px 0 0; font-size: var(--fs-sm); color: var(--dim);
   font-style: italic; line-height: 1.45; }
+
+/* ───── Aba Convergence (CP-3b) ───── */
+.pl-conv-pane { display: grid; place-items: center; padding: 40px; }
+.pl-conv-card { width: min(560px, 92%); background: var(--panel); border: var(--border);
+  border-radius: 18px; padding: 30px 34px; text-align: center; box-shadow: 0 18px 50px -20px #000; }
+.pl-conv-eyebrow { font-size: 16px; letter-spacing: .3em; text-transform: uppercase; color: var(--eclat); }
+.pl-conv-title { font-family: var(--font-display); font-weight: 700; font-size: 40px; color: #eef4ff; margin: 4px 0 10px; }
+.pl-conv-lore { font-family: var(--font-display); font-style: italic; font-size: 17px; color: var(--dim);
+  line-height: 1.5; margin: 0 auto 22px; max-width: 46ch; }
+.pl-conv-stats { display: flex; justify-content: center; gap: 44px; margin-bottom: 22px; }
+.pl-conv-stat { display: flex; flex-direction: column; gap: 4px; }
+.pl-conv-l { font-size: 16px; letter-spacing: .1em; text-transform: uppercase; color: var(--faint); }
+.pl-conv-v { font-family: var(--font-display); font-size: 30px; color: var(--ink); font-variant-numeric: tabular-nums; }
+.pl-conv-v.t-gold { color: var(--gold); }
+.pl-conv-prog { margin: 0 auto 22px; max-width: 420px; }
+.pl-conv-prog-top { display: flex; justify-content: space-between; font-size: 16px; color: var(--dim);
+  margin-bottom: 6px; font-variant-numeric: tabular-nums; }
+.pl-conv-bar { height: 14px; border-radius: 8px; background: var(--panel-2); border: var(--border-soft); overflow: hidden; }
+.pl-conv-bar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--eclat), #c4d8ff);
+  transition: width .2s ease; box-shadow: 0 0 14px var(--eclat); }
+.pl-conv-btn { appearance: none; cursor: pointer; height: 54px; padding: 0 44px; border: 0; border-radius: 13px;
+  font-weight: 700; font-size: 16px; letter-spacing: .14em; text-transform: uppercase;
+  background: linear-gradient(180deg, #c4d8ff, var(--eclat)); color: #06101f;
+  box-shadow: 0 0 30px -6px rgba(170,200,255,.7); transition: filter .14s ease, transform .1s ease; }
+.pl-conv-btn:hover:not(:disabled) { filter: brightness(1.07); transform: translateY(-1px); }
+.pl-conv-btn:disabled { background: var(--panel-2); color: var(--faint); box-shadow: none; cursor: not-allowed; }
+.pl-conv-keeps { margin-top: 18px; font-size: 16px; color: var(--faint); line-height: 1.55; }

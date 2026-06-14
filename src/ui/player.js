@@ -1,9 +1,9 @@
-// Tela do Player / Seeker (U-4) — FICHA do personagem (só leitura/identidade).
-// Abas: Codex (esta ficha) | Awakening.
-// Codex: CARD do Seeker (moldura+avatar fundidos, evolui por tier) com nome/tier/
-//   Level no terço inferior · painel à direita com All Stats agrupadas e clicáveis
-//   (breakdown de COMO cada stat é calculada). Gold Stats e Convergence saíram
-//   desta tela (13/jun) — ela é só a ficha; ações vivem noutros lugares.
+// Tela do Player / Seeker (U-4) — FICHA do personagem + Convergence.
+// Abas: Codex (ficha) | Convergence | Awakening.
+// Codex: CARD do Seeker (evolui por tier) + lista de All Stats clicáveis (breakdown).
+// Convergence (CP-3b): status (nº de converges, bônus +15%×N), barra de progresso
+//   até o gate de NÍVEL, e o botão Converge real (gate por nível; reseta nível da
+//   run + nível do gear, mantém raridade/mapa). A cerimônia usa o overlay existente.
 //
 // Contrato: buildPlayerView(root, state) monta o DOM uma vez;
 //           renderPlayer(state) atualiza a cada exibição.
@@ -11,54 +11,45 @@
 import { formatNumber, formatMult } from '../core/format.js';
 import { picture } from '../data/assets.js';
 import {
-  heroLevel, dps, playerHpMax, currentAPS, critChance, critChanceRaw, critDamageMult,
-  convFactor, damagePerHit, levelBonus, playerDefesa, veilFactor,
-  strTotal, vitTotal, frtTotal, wisTotal,
+  runLevel, dps, playerHpMax, currentAPS, critChance, critChanceRaw, critDamageMult,
+  convMult, damagePerHit, playerDefesa, veilFactor,
 } from '../game/stats.js';
-import { gearDamageMult, gearHpMult, gearCritAdd, gearCritDmgAdd, gearApsMult } from '../game/gear.js';
-import { passiveDmgMult, passiveHpMult, passiveCritAdd, passiveApsMult } from '../game/passives.js';
-import { memoireDmgMult, memoireHpMult, memoireCritDmgMult } from '../game/memoires.js';
-import { ascMult, despertarMult } from '../game/ascension.js';
-import { currentRank } from '../game/ascension.js';
-import { COMBAT, CRIT, GOLD_STATS } from '../data/constants.js';
+import { gearDamageMult, gearHpMult, gearCritAdd, gearCritDmgAdd, gearApsMult, gearLumensMult, gearXpMult } from '../game/gear.js';
+import { passiveDmgMult, passiveHpMult, passiveCritAdd, passiveApsMult, passiveEcoMult } from '../game/passives.js';
+import { memoireDmgMult, memoireHpMult, memoireCritDmgMult, memoireLumensMult, memoireXpMult } from '../game/memoires.js';
+import { ascMult, despertarMult, currentRank } from '../game/ascension.js';
+import { canConverge, doConverge, convGateLevel, convergeProgress } from '../game/convergence.js';
+import { openConvergence } from './convergence.js';
+import { COMBAT, CRIT, LEVEL } from '../data/constants.js';
 import { buildAwakenPane, renderAwakenPane } from './awaken.js';
 
 // tier romano → número do card (seeker.card_tN). Espelha ascension.js.
 const TIER_NUM = { I: 1, II: 2, III: 3, IV: 4, V: 5 };
 
 const $ = (id) => document.getElementById(id);
-
-// ───── helpers de formatação dos fatores ─────
 const pct = (x) => `${(x * 100).toFixed(1)}%`;
 
-// produto dos milestones de Gold Stats atingidos pelo nível (espelha stats.js)
-function milestoneMult(level) {
-  let m = 1;
-  for (const [at, x] of GOLD_STATS.milestones) if (level >= at) m *= x;
-  return m;
-}
-
-// fatores de um breakdown — kind: base | active | idle (×1 agora) | locked (pós-MVP)
-// MUL: fator multiplicativo em % total (×3.89 → "389%"). 100% = sem efeito.
+// fatores de um breakdown — kind: base | active | idle (×1) | locked (pós-MVP)
 const M = (label, v, postMvp = false) => {
   const one = Math.abs(v - 1) < 1e-9;
   return { label, disp: formatMult(v), kind: one ? (postMvp ? 'locked' : 'idle') : 'active' };
 };
-// ADDP: contribuição aditiva a um multiplicador, em % (fração 3.17 → "+317%")
 const ADDP = (label, frac) => ({ label, disp: `+${formatNumber(frac * 100)}%`, kind: frac > 1e-9 ? 'active' : 'idle' });
 
-// ───── catálogo de stats da ficha ─────
-// value(s) → texto exibido · breakdown(s) → linhas de fatores · note opcional.
+// base FLAT de dano/HP do nível (CP-3): baseDmg + nível×perLevel
+const baseDamage = (s) => COMBAT.baseDmg + runLevel(s) * LEVEL.dmgPerLevel;
+const baseHp = (s) => COMBAT.playerBaseHp + runLevel(s) * LEVEL.hpPerLevel;
+const CONV_BONUS_PER = 0.15; // espelha CONVERGENCE.bonusPerConv (só display)
+
+// ───── catálogo de stats da ficha (modelo CP-3) ─────
 const STATS = {
   dmg: {
     label: 'Damage / hit',
     value: (s) => formatNumber(damagePerHit(s)),
-    note: 'The damage of a single hit.',
+    note: 'The damage of a single hit. The base scales with your Level (flat).',
     breakdown: (s) => [
-      { label: 'Base', disp: String(COMBAT.baseDmg), kind: 'base' },
-      M('STR', strTotal(s)),
-      M('Level Bonus', levelBonus(s.xpTotal)),
-      M('Convergence', convFactor(s)),
+      { label: `Base + Level ${formatNumber(runLevel(s))}`, disp: formatNumber(baseDamage(s)), kind: 'base' },
+      M('Convergence', convMult(s)),
       M('Ascension', ascMult(s)),
       M('Despertar', despertarMult(s)),
       M('Gear', gearDamageMult(s), true),
@@ -69,6 +60,7 @@ const STATS = {
   dps: {
     label: 'DPS',
     value: (s) => formatNumber(dps(s)),
+    note: 'Your real damage per second, crits included.',
     breakdown: (s) => {
       const critBonus = 1 + critChance(s) * (critDamageMult(s) - 1);
       return [
@@ -77,33 +69,29 @@ const STATS = {
         M('Crit bonus', critBonus),
       ];
     },
-    note: 'Your real damage per second, crits included.',
   },
   aps: {
     label: 'Attack Speed',
     value: (s) => currentAPS(s).toFixed(2),
+    note: `How many times you attack each second. Capped at ${COMBAT.apsCap}/s.`,
     breakdown: (s) => {
-      const agiFactor = Math.min(COMBAT.agiApsCap, 1 + s.stats.agi * GOLD_STATS.per.agi);
       const resonance = 1 + 0.3 * Math.log10(Math.max(1, gearApsMult(s)));
       return [
         { label: 'Base', disp: COMBAT.baseAPS.toFixed(2), kind: 'base' },
-        M('AGI', agiFactor),
         M('Fracture Pulse', passiveApsMult(s), true),
-        M('Resonance', resonance, true),
+        M('Resonance (Gear)', resonance, true),
       ];
     },
-    note: `How many times you attack each second. Capped at ${COMBAT.apsCap}/s.`,
   },
   critRate: {
     label: 'Critical Rate',
     value: (s) => pct(critChance(s)),
+    note: 'Your chance to crit. Past 100% turns into extra Critical Damage. Comes from Gear & Passives.',
     breakdown: (s) => [
       { label: 'Base', disp: pct(CRIT.baseChance), kind: 'base' },
-      ADDP('LCK', s.stats.lck * GOLD_STATS.per.lck),
-      ADDP('Gear', gearCritAdd(s)),
+      ADDP('Gear (Grasp)', gearCritAdd(s)),
       ADDP('Passives', passiveCritAdd(s)),
     ],
-    note: 'Your chance to land a critical hit. Anything past 100% turns into extra Critical Damage.',
   },
   critDmg: {
     label: 'Critical Damage',
@@ -122,12 +110,10 @@ const STATS = {
   hpMax: {
     label: 'HP Max',
     value: (s) => formatNumber(playerHpMax(s)),
-    note: 'Your maximum health.',
+    note: 'Your maximum health. The base scales with your Level (flat).',
     breakdown: (s) => [
-      { label: 'Base', disp: String(COMBAT.playerBaseHp), kind: 'base' },
-      M('VIT', vitTotal(s)),
-      M('Level Bonus', levelBonus(s.xpTotal)),
-      M('Convergence', convFactor(s)),
+      { label: `Base + Level ${formatNumber(runLevel(s))}`, disp: formatNumber(baseHp(s)), kind: 'base' },
+      M('Convergence', convMult(s)),
       M('Ascension', ascMult(s)),
       M('Despertar', despertarMult(s)),
       M('Gear', gearHpMult(s), true),
@@ -138,65 +124,65 @@ const STATS = {
   defense: {
     label: 'Defense (Veil)',
     value: (s) => formatNumber(playerDefesa(s)),
+    note: 'Reduces the damage you take. Granted by the Veil affix on your Gear.',
     breakdown: (s) => [
       { label: 'HP Max', disp: formatNumber(playerHpMax(s)), kind: 'base' },
       M('Veil mitigation', veilFactor(s), true),
     ],
-    note: 'Reduces the damage you take. Granted by the Veil affix on your Gear.',
   },
   lumensMult: {
-    label: 'Lumens / kill',
-    value: (s) => formatMult(frtTotal(s)),
-    breakdown: (s) => {
-      const lv = s.stats.frt;
-      return [
-        { label: 'Base', disp: formatMult(1), kind: 'base' },
-        ADDP(`FRT (Lv ${formatNumber(lv)})`, lv * GOLD_STATS.per.frt),
-        M('Milestones', milestoneMult(lv)),
-      ];
-    },
-    note: 'Increases the Lumens you earn from each kill.',
-  },
-  xpMult: {
-    label: 'XP / kill',
-    value: (s) => formatMult(wisTotal(s)),
-    breakdown: (s) => {
-      const lv = s.stats.wis;
-      return [
-        { label: 'Base', disp: formatMult(1), kind: 'base' },
-        ADDP(`WIS (Lv ${formatNumber(lv)})`, lv * GOLD_STATS.per.wis),
-        M('Milestones', milestoneMult(lv)),
-      ];
-    },
-    note: 'Increases the XP you earn from each kill.',
-  },
-  level: {
-    label: 'Seeker Level',
-    value: (s) => formatNumber(heroLevel(s.xpTotal)),
-    breakdown: (s) => [
-      { label: 'Lifetime XP', disp: formatNumber(s.xpTotal), kind: 'base' },
-    ],
-    note: 'Your overall progress. Higher levels raise your Level Bonus.',
-  },
-  levelBonus: {
-    label: 'Level Bonus',
-    value: (s) => formatMult(levelBonus(s.xpTotal)),
+    label: 'Lumens / kill ×',
+    value: (s) => formatMult(convMult(s) * gearLumensMult(s) * passiveEcoMult(s) * memoireLumensMult(s)),
+    note: 'Multiplier on the Lumens you earn from each kill.',
     breakdown: (s) => [
       { label: 'Base', disp: formatMult(1), kind: 'base' },
-      ADDP('From your Level', Math.sqrt(heroLevel(s.xpTotal)) * 0.20),
+      M('Convergence', convMult(s)),
+      M('Gear', gearLumensMult(s), true),
+      M('Passives', passiveEcoMult(s), true),
+      M('Mémoires', memoireLumensMult(s), true),
     ],
-    note: 'A bonus to both Damage and HP that grows with your Level.',
+  },
+  xpMult: {
+    label: 'XP / kill ×',
+    value: (s) => formatMult(convMult(s) * gearXpMult(s) * passiveEcoMult(s) * memoireXpMult(s)),
+    note: 'Multiplier on the XP you earn from each kill.',
+    breakdown: (s) => [
+      { label: 'Base', disp: formatMult(1), kind: 'base' },
+      M('Convergence', convMult(s)),
+      M('Gear', gearXpMult(s), true),
+      M('Passives', passiveEcoMult(s), true),
+      M('Mémoires', memoireXpMult(s), true),
+    ],
+  },
+  level: {
+    label: 'Level',
+    value: (s) => formatNumber(runLevel(s)),
+    note: 'Your current Level, from this run’s XP. Each level gives flat Damage and HP. Resets on Convergence.',
+    breakdown: (s) => [
+      { label: 'Run XP', disp: formatNumber(s.xpRun), kind: 'base' },
+      ADDP('Damage / level', LEVEL.dmgPerLevel / 100),
+      ADDP('HP / level', LEVEL.hpPerLevel / 100),
+    ],
+  },
+  convergence: {
+    label: 'Convergence ×',
+    value: (s) => formatMult(convMult(s)),
+    note: 'A permanent boost to Damage, HP, XP and Lumens. +15% per Convergence.',
+    breakdown: (s) => [
+      { label: 'Base', disp: formatMult(1), kind: 'base' },
+      ADDP(`Convergences (${formatNumber(s.convergences)})`, CONV_BONUS_PER * s.convergences),
+    ],
   },
 };
 
 const STAT_GROUPS = [
   { title: 'Combat', ids: ['dmg', 'dps', 'aps', 'critRate', 'critDmg', 'hpMax', 'defense'] },
   { title: 'Economy', ids: ['lumensMult', 'xpMult'] },
-  { title: 'Progression', ids: ['level', 'levelBonus'] },
+  { title: 'Progression', ids: ['level', 'convergence'] },
 ];
 
-let openStatId = null; // breakdown aberto (pra live-update)
-let activePane = 'codex'; // aba ativa da tela Seeker (codex | awaken)
+let openStatId = null;
+let activePane = 'codex'; // codex | converge | awaken
 
 export function buildPlayerView(root, state) {
   root.classList.remove('placeholder');
@@ -204,6 +190,7 @@ export function buildPlayerView(root, state) {
   root.innerHTML = `
     <div class="pl-tabs">
       <button type="button" class="pl-tab on" data-tab="codex">Codex</button>
+      <button type="button" class="pl-tab" data-tab="converge">Convergence</button>
       <button type="button" class="pl-tab" data-tab="awaken">Awakening</button>
     </div>
 
@@ -234,6 +221,39 @@ export function buildPlayerView(root, state) {
     </div>
     </div><!-- /pl-codex-pane -->
 
+    <div class="pl-pane pl-conv-pane" data-pane="converge" hidden>
+      <div class="pl-conv-card">
+        <div class="pl-conv-eyebrow">The rite of dispersal</div>
+        <h2 class="pl-conv-title">Convergence</h2>
+        <p class="pl-conv-lore">To keep the world, you let it go. Reaching a new threshold lets the Seed disperse the light it gathered — and remember the pattern stronger.</p>
+
+        <div class="pl-conv-stats">
+          <div class="pl-conv-stat">
+            <span class="pl-conv-l">Convergences</span>
+            <b class="pl-conv-v" id="pl-conv-count">0</b>
+          </div>
+          <div class="pl-conv-stat">
+            <span class="pl-conv-l">Permanent bonus</span>
+            <b class="pl-conv-v t-gold" id="pl-conv-bonus">×1</b>
+          </div>
+        </div>
+
+        <div class="pl-conv-prog">
+          <div class="pl-conv-prog-top">
+            <span id="pl-conv-prog-lbl">Level 1 / 40</span>
+            <span id="pl-conv-prog-pct">0%</span>
+          </div>
+          <div class="pl-conv-bar"><i id="pl-conv-fill"></i></div>
+        </div>
+
+        <button type="button" class="pl-conv-btn" id="pl-conv-btn" disabled>Reach the threshold</button>
+        <div class="pl-conv-keeps">
+          <b>Returns to the world:</b> your Level (run XP) &amp; Gear levels ·
+          <b>The Seed keeps:</b> Gear rarity, map position, Lumens, Vestiges, Passives, Mémoires.
+        </div>
+      </div>
+    </div>
+
     <div class="pl-pane pl-awaken-pane" data-pane="awaken" hidden></div>
 
     <!-- breakdown (modal) -->
@@ -251,7 +271,6 @@ export function buildPlayerView(root, state) {
     </div>
   `;
 
-  // Lista única de stats (read-only), em seções sequenciais; cada linha clicável → breakdown
   $('pl-stats-list').innerHTML = STAT_GROUPS.map((g) =>
     `<div class="pl-section">
        <h4 class="pl-sec-h">${g.title}</h4>
@@ -262,23 +281,37 @@ export function buildPlayerView(root, state) {
          </button>`).join('')}
      </div>`).join('');
 
-  // Clique em qualquer card/linha de stat → abre o breakdown
   root.querySelectorAll('[data-stat]').forEach((el) =>
     el.addEventListener('click', () => openStat(state, el.dataset.stat)));
 
   $('pl-modal-x').addEventListener('click', closeModal);
   $('pl-modal-back').addEventListener('click', closeModal);
 
+  // Botão Converge — abre a cerimônia (overlay) que aplica o doConverge real.
+  $('pl-conv-btn').addEventListener('click', () => {
+    if (!canConverge(state)) return;
+    openConvergence({
+      points: '+15%',
+      pointsNote: 'permanent boost',
+      factor: `×${convMult(state).toFixed(2)}`,
+      prevFactor: `×${(convMult(state)).toFixed(2)}`,
+      returns: ['Your Level (run XP)', 'Gear levels'],
+      keeps: ['<b>Gear rarity</b> &amp; the map you’re on', '<b>Lumens</b> &amp; <b>Vestiges</b>', '<b>Passives</b>, <b>Mémoires</b>, <b>Awakenings</b>'],
+      onConverge: () => { doConverge(state); renderPlayer(state); },
+    });
+  });
+
   // Aba Awakening — pane no formato Gear/Forge (módulo próprio)
   buildAwakenPane(root.querySelector('.pl-awaken-pane'), state);
 
-  // Troca de abas Codex | Awakening
+  // Troca de abas Codex | Convergence | Awakening
   root.querySelectorAll('.pl-tab').forEach((tab) =>
     tab.addEventListener('click', () => {
       activePane = tab.dataset.tab;
       root.querySelectorAll('.pl-tab').forEach((t) => t.classList.toggle('on', t === tab));
       root.querySelectorAll('.pl-pane').forEach((p) => { p.hidden = p.dataset.pane !== activePane; });
       if (activePane === 'awaken') renderAwakenPane(state);
+      if (activePane === 'converge') renderConverge(state);
     }));
 }
 
@@ -307,21 +340,34 @@ function renderModal(state) {
   note.hidden = !st.note;
 }
 
+// Atualiza a aba Convergence (contagem, bônus, barra, botão)
+function renderConverge(state) {
+  const lvl = runLevel(state);
+  const gate = convGateLevel(state.convergences);
+  const prog = convergeProgress(state);
+  const able = canConverge(state);
+  $('pl-conv-count').textContent = formatNumber(state.convergences);
+  $('pl-conv-bonus').textContent = `×${convMult(state).toFixed(2)}`;
+  $('pl-conv-prog-lbl').textContent = `Level ${formatNumber(lvl)} / ${formatNumber(gate)}`;
+  $('pl-conv-prog-pct').textContent = `${Math.floor(prog * 100)}%`;
+  $('pl-conv-fill').style.width = `${prog * 100}%`;
+  const btn = $('pl-conv-btn');
+  btn.disabled = !able;
+  btn.textContent = able ? 'Converge' : `Reach Level ${formatNumber(gate)}`;
+}
+
 export function renderPlayer(state) {
-  // Aba Awakening ativa → atualiza só ela (a ficha Codex fica congelada atrás)
   if (activePane === 'awaken') renderAwakenPane(state);
+  if (activePane === 'converge') renderConverge(state);
 
   const rank = currentRank(state);
-
-  // Identidade — o nome-manchete do card é o RANK atual (Seeker→Lumière)
-  $('pl-codex-rank').textContent = rank.name; // o Codex acompanha o tier atual
+  $('pl-codex-rank').textContent = rank.name;
   const hero = document.querySelector('#view-player .pl-hero');
   if (hero) {
     const nm = hero.querySelector('.pl-name');
     if (nm) nm.textContent = rank.name;
     const tierEl = hero.querySelector('#pl-tier');
     if (tierEl) tierEl.textContent = `The Seeker · Tier ${rank.tier}`;
-    // card do Seeker (moldura + avatar fundidos) conforme o tier de Despertar
     const cardId = `seeker.card_t${TIER_NUM[rank.tier] || 1}`;
     const port = hero.querySelector('.pl-hero-art');
     if (port && port.dataset.card !== cardId) {
@@ -330,11 +376,10 @@ export function renderPlayer(state) {
     }
     hero.querySelectorAll('img').forEach((im) => { im.loading = 'eager'; });
   }
-  $('pl-level').textContent = formatNumber(heroLevel(state.xpTotal));
+  // Level exibido = o nível da RUN (que dá os stats e reseta na Convergence)
+  $('pl-level').textContent = formatNumber(runLevel(state));
 
-  // Lista de stats (mesmo catálogo)
   for (const g of STAT_GROUPS) for (const id of g.ids) $(`plv-${id}`).textContent = STATS[id].value(state);
 
-  // breakdown aberto: live-update
   if (openStatId) renderModal(state);
 }
