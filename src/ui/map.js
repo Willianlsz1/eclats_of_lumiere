@@ -30,8 +30,10 @@ const WORLD = [
 // Posições das 5 sub-áreas sobre o continente (à esquerda do painel direito,
 // que começa em ~78%). Trilha em diagonal subindo, do começo (baixo-esq) ao
 // fundo do bosque (topo).
+// CP-2: 8 sub-áreas por mapa → 8 nós ao longo da trilha (posições provisórias).
 const SUB_NODES = [
-  { x: 14, y: 80 }, { x: 30, y: 60 }, { x: 45, y: 76 }, { x: 58, y: 52 }, { x: 70, y: 70 },
+  { x: 10, y: 80 }, { x: 21, y: 60 }, { x: 33, y: 76 }, { x: 45, y: 54 },
+  { x: 56, y: 72 }, { x: 68, y: 50 }, { x: 80, y: 68 }, { x: 91, y: 46 },
 ];
 
 // Sub-áreas por mapa: imagem + nome temático. Mapas sem arte ainda caem no

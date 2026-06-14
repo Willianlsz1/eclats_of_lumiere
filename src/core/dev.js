@@ -3,6 +3,11 @@
 // no botão "DEV 🔓" (canto inferior esquerdo). NÃO afeta o jogo normal até ser
 // ativado. Isolado aqui; remover no release.
 
+import { MAPS } from '../data/constants.js';
+
+// Nº de sub-áreas do mapa atual (CP-2: 8) — p/ desbloquear o mapa todo sem cravar.
+const fullSubs = (state) => (MAPS[(state.map || 1) - 1] || MAPS[0]).subareaCount;
+
 // Aplica os desbloqueios no state (top-up: nunca diminui o que já houver)
 export function applyDevUnlock(state) {
   state.lumens   = Math.max(state.lumens, 1e12);   // Gold Stats + Gear à vontade
@@ -12,13 +17,13 @@ export function applyDevUnlock(state) {
 
   state.convergences = Math.max(state.convergences, 1); // libera as Passivas
   state.convPoints   = Math.max(state.convPoints, 20);  // conv_factor folgado
-  state.unlockedSubarea = 5;                            // mapa todo navegável
+  state.unlockedSubarea = fullSubs(state);             // mapa todo navegável
   state.maxMap = 5;                                     // os 5 mapas viajáveis
   // boss final batido → A1 fica disponível pra testar a Ascension (não força
   // ascensions: assim dá pra clicar Ascender e ver o fluxo). Mémoires abrem
   // por era conforme você ascende.
-  state.bossDefeated = [true, true, true, true, true];
-  state.bestSubareaRun = Math.max(state.bestSubareaRun, 5);
+  state.bossDefeated = new Array(fullSubs(state)).fill(true);
+  state.bestSubareaRun = Math.max(state.bestSubareaRun, fullSubs(state));
 
   state.stats.vit = Math.max(state.stats.vit, 40);
   state.stats.str = Math.max(state.stats.str, 30);
@@ -60,8 +65,8 @@ function devGrant(state, kind) {
     case 'materials': state.materiais = [1e9, 1e9, 1e9, 1e9]; break;
     case 'xp': state.xpTotal += 1e15; break;
     case 'maps':
-      state.maxMap = 5; state.unlockedSubarea = 5;
-      state.bossDefeated = [true, true, true, true, true];
+      state.maxMap = 5; state.unlockedSubarea = fullSubs(state);
+      state.bossDefeated = new Array(fullSubs(state)).fill(true);
       state.convergences = Math.max(state.convergences, 1);
       state.ascensions = Math.max(state.ascensions, 5); // abre Mémoires (eras) + ranks
       break;

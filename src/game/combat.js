@@ -191,7 +191,9 @@ export function travelToMap(state, id) {
   const saved = state.mapProgress[dest];
   const cleared = dest < state.maxMap; // mapa já concluído (a fronteira passou dele)
   state.unlockedSubarea = saved ? saved.unlockedSubarea : (cleared ? map.subareaCount : 1);
-  state.bossDefeated = saved ? [...saved.bossDefeated] : state.bossDefeated.map(() => cleared);
+  // CP-2: bossDefeated com o comprimento do mapa destino (normaliza saves de 5 → 8)
+  state.bossDefeated = Array.from({ length: map.subareaCount },
+    (_, i) => (saved ? !!(saved.bossDefeated && saved.bossDefeated[i]) : cleared));
   state.subarea = Math.min(saved ? saved.subarea : 1, state.unlockedSubarea);
   state.killsInSubarea = saved ? saved.killsInSubarea : 0;
   state.bestSubareaRun = Math.max(state.bestSubareaRun, state.subarea);

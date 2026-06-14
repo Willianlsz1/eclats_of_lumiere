@@ -1,6 +1,12 @@
 // Estado central do jogo. Único objeto mutável compartilhado entre os módulos.
 
-import { SCHEMA_VERSION, SEEKER_RANKS } from '../data/constants.js';
+import { SCHEMA_VERSION, SEEKER_RANKS, MAPS } from '../data/constants.js';
+
+// Nº de sub-áreas de um mapa (default Map 1). CP-2: 8 por mapa.
+const subCountOf = (mapId) => (MAPS[(mapId || 1) - 1] || MAPS[0]).subareaCount;
+// Normaliza um array de bossDefeated para o comprimento certo (pad false / trunca).
+const normBossDefeated = (arr, mapId) =>
+  Array.from({ length: subCountOf(mapId) }, (_, i) => !!(arr && arr[i]));
 
 export function createInitialState() {
   return {
@@ -57,9 +63,9 @@ export function createInitialState() {
     // Posição no mundo
     map: 1,
     maxMap: 1,          // fronteira: maior mapa já alcançado (permite voltar a anteriores)
-    subarea: 1,         // 1..5
+    subarea: 1,         // 1..subareaCount (CP-2: 8)
     unlockedSubarea: 1, // gate: maior subárea acessível (abre ao derrotar o boss)
-    bossDefeated: [false, false, false, false, false], // 1ª derrota por subárea
+    bossDefeated: normBossDefeated([], 1), // 1ª derrota por subárea (comprimento = subareaCount)
     killsInSubarea: 0,  // contador oculto rumo ao threshold do boss
     mapProgress: {},    // progresso salvo por mapa {id: {subarea, unlockedSubarea, bossDefeated, killsInSubarea}}
 
@@ -98,7 +104,8 @@ export function applySnapshot(snapshot) {
   Object.assign(state.stats, snapshot.stats ?? {});
   // saves anteriores ao gate: herda a subárea atual como desbloqueada
   state.unlockedSubarea = snapshot.unlockedSubarea ?? state.subarea;
-  state.bossDefeated = snapshot.bossDefeated ?? state.bossDefeated;
+  // CP-2: normaliza o comprimento ao nº de sub-áreas do mapa (saves antigos = 5 → 8)
+  state.bossDefeated = normBossDefeated(snapshot.bossDefeated, state.map);
   state.killsInSubarea = snapshot.killsInSubarea ?? 0;
   state.subarea = Math.min(state.subarea, state.unlockedSubarea);
   // viagem entre mapas: fronteira + progresso por mapa (saves antigos: fronteira = mapa atual)

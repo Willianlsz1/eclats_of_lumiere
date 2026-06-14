@@ -25,8 +25,7 @@ const GDD_DMG = [
   { lo: 1e46, hi: 1e75 }, // M5
 ];
 
-// Densidade de mobs CALIBRADA na Camada 1 (substitui o [1,2,4,6,8] do código)
-const PACK_CALIBRATED = [2, 4, 6, 9, 12];
+// (CP-2: o pack agora vem direto de map.packSizes — 8 sub-áreas.)
 
 // Média geométrica = mob "representativo" do range (a malha sorteia no log)
 const geomean = (lo, hi) => Math.sqrt(lo * hi);
@@ -50,7 +49,7 @@ for (const map of MAPS) {
     const t = (Math.log(repLevel) - Math.log(map.lvlLo)) / (Math.log(map.lvlHi) - Math.log(map.lvlLo));
     const g = GDD_DMG[map.id - 1];
     const mobDmgGdd = g.lo * (g.hi / g.lo) ** t;
-    const pack = PACK_CALIBRATED[s - 1];
+    const pack = map.packSizes[s - 1]; // CP-2: pack real do mapa (8 sub-áreas)
     const packDps = pack * mobDmgCode;
     const ratio = mobDmgCode / mobHp;
     console.log(
