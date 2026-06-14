@@ -10,6 +10,12 @@
 > ⚠️ **Importante:** as §§1-10 descrevem o **código atual**. A **§10.5** consolida as **decisões de
 > design travadas na sessão 2026-06-11** (Defesa, Craft/Materiais, Fate Keepers, Mémoires revisadas,
 > catálogo de Gear) que **ainda NÃO estão no código** — é o próximo trabalho (calibração → implementação).
+>
+> 🔴 **REDESIGN 2026-06-14 — este doc descreve o código ANTIGO.** A direção mudou: combate
+> **CLEAVE** (cai a regra "1 kill/ataque" que ancora as fórmulas abaixo), **Gold Stats removidos**,
+> **Convergence** sem reset de mapa, **Hollows/Reliquats/habilidades ativas**, Gatekeepers
+> redefinidos, 5 mapas = Jogo base ~30d. **Toda a calibração abaixo será refeita.** Nova direção:
+> **`docs/eclats_redesign_2026-06-14.md`** + **`docs/adr/0001`, `0002`** + **`CONTEXT.md`**.
 
 ---
 

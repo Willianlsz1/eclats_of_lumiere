@@ -5,6 +5,13 @@ Substitui: DESIGN.md (Parte II em diante) e BALANCE_MODEL.md.
 Lore: ver *docs/eclats_lore_bible.md* (Lore Bible Completo v2 — já consolida a Revisão de jun/2026).
 Data: 2026-06-09 · Status: **estrutura completa e calibrada por simulação** · Pendências listadas em §16.
 
+> ⚠️ **REDESIGN EM ANDAMENTO (2026-06-14).** Uma sessão de design mudou a direção do jogo
+> (combate **CLEAVE**, **Gold Stats removidos**, **Convergence** sem reset de mapa, **Hollows**,
+> **Reliquats**, **habilidades ativas**, **Gatekeepers** redefinidos, 5 mapas = Jogo base ~30d).
+> **A calibração deste GDD será refeita.** Antes de implementar qualquer sistema, leia
+> **`docs/eclats_redesign_2026-06-14.md`** + **`docs/adr/0001`, `0002`** + **`CONTEXT.md`** —
+> eles têm prioridade sobre as seções abaixo onde houver conflito.
+
 Legenda de maturidade:
 - ✅ **CALIBRADO** — validado pelo simulador de progressão (sim_full v3)
 - 🔒 **TRAVADO** — decisão de design fechada, números finos pendentes

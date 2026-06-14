@@ -61,7 +61,32 @@ Legenda de status: ✅ **Aprovada como direção** · 🌱 **Precisa amadurecer*
 
 ---
 
+## 6. Habilidades ativas (sementes — a pesquisar) 🌱
+Sistema novo decidido na sessão de design 2026-06-14 (ver `CONTEXT.md` "Habilidade" +
+ADR 0001): **~5 habilidades ativas, uma por Despertar (T1→T5), cooldown puro, manual
+(auto-cast depois via Gatekeeper)**. Os **efeitos** ficam para Willian pesquisar refs
+(TT2/Grand Chase). **Sementes anotadas:**
+- **Slow:** habilidade que **reduz a velocidade de ataque** (provável: do inimigo —
+  controle/sobrevivência; confirmar se é debuff no inimigo ou buff inverso).
+- **DoT por vida:** habilidade que **dá dano baseado na vida ao longo de X segundos**
+  (provável: % da vida MÁX do inimigo por segundo — ótimo contra bosses/Walls de HP alto).
+- Direção sugerida (não fechada): 5 papéis distintos (burst / janela de DPS / boost de
+  farm / sobrevivência / ultimate) em vez de 5 botões de dano.
+
+## 7. Passivas — papel + sementes (sessão 2026-06-14) 🌱
+Decidido: Passivas = **camada de ALAVANCAS/efeitos especiais** (Vestiges), NÃO +dano%
+genérico (que Nível/Convergence já dão). **Sementes anotadas (resto a pesquisar):**
+- **Dano em área (AoE)** nos mobs. ⚠️ **Tensão com a âncora "1 kill/ataque":** definir
+  como AoE espalha DANO sem furar o teto de kills/ataque (senão quebra a economia).
+- **Dano baseado em % (pequena) da vida do Seeker** (HP vira fonte de dano).
+- **Multiplicador de gold/Lumens por tempo de jogo** (% bem pequena, cresce com o tempo).
+- **+mobs na tela.** ⚠️ **Colide com o Gatekeeper A4 (A Atração)** — diferenciar ou
+  escolher um único lar.
+- **+% (pequeno) aos stats do Gear** (multiplica a eficácia do gear).
+
 ## Pendências registradas
+- [ ] **Pesquisar refs e fechar os efeitos das 5 habilidades ativas (ideia 6)**
+- [ ] **Pesquisar/fechar o resto das passivas-alavanca (ideia 7)**
 - [ ] Definir fonte geradora de Vestiges (ideia 2)
 - [ ] Retomar Echoes e detalhar bônus/temas (ideia 3 — aguarda Willian)
 - [x] Decidir momento de adoção do break_infinity.js (ideia 4) — **RESOLVIDO 2026-06-10:** instalado como dependência do projeto; a migração do código (saves, fórmulas, format) será um CP próprio pós-MVP
