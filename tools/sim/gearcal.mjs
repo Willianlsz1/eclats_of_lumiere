@@ -19,19 +19,18 @@ const setAt = (r) => {
 console.log('='.repeat(78));
 console.log(`Gear — décadas de dano por raridade (set maximizado). baseRef = ${baseRef}`);
 console.log('='.repeat(78));
-console.log('Raridade   | cap nível | +dano flat | ×dano (%)  | dano c/ gear | DÉCADAS gear');
+console.log('Raridade   | +dano flat | ×dano (%)  | déc FLAT | déc % | DÉC total');
 console.log('-'.repeat(78));
-let prevDec = 0;
 for (let r = 0; r < 5; r++) {
   const s = setAt(r);
   const flat = gearDamageFlat(s);
   const mult = gearDamageMult(s);
-  const dmgWithGear = (baseRef + flat) * mult;
-  const decades = Math.log10(dmgWithGear / baseRef);
+  const flatDec = Math.log10((baseRef + flat) / baseRef); // décadas que o flat dá (sobre a base)
+  const pctDec = Math.log10(mult);                        // décadas que o % dá (multiplicativo)
+  const total = flatDec + pctDec;
   console.log(
-    `${RAR[r].padEnd(10)} | ${GEAR.levelCap[r].toExponential(1).padStart(9)} | ${flat.toExponential(2).padStart(10)} | ${mult.toExponential(2).padStart(10)} | ${dmgWithGear.toExponential(2).padStart(12)} | ${decades.toFixed(1).padStart(6)} (+${(decades - prevDec).toFixed(1)})`
+    `${RAR[r].padEnd(10)} | ${flat.toExponential(2).padStart(10)} | ${mult.toExponential(2).padStart(10)} | ${flatDec.toFixed(1).padStart(8)} | ${pctDec.toFixed(1).padStart(5)} | ${total.toFixed(1).padStart(6)}`
   );
-  prevDec = decades;
 }
 console.log('-'.repeat(78));
 console.log('ALVO: ~13 décadas no Converged (a fatia do gear). Ajustar flatPerLevel/affixPctRate/');

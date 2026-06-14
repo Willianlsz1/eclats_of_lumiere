@@ -34,6 +34,17 @@ function affixFlat(type, level, rarity, isSec) {
 // gain de um multiplicador em +% (sem ".0" sobrando), NUNCA "×1"
 const affGain = (m) => `+${String(formatNumber((m - 1) * 100)).replace(/\.0$/, '')}%`;
 
+// descritor "per N levels" (estilo Gaiadon): escolhe N pra o número ficar legível (≥0.1)
+function perN(ratePerLevel, suffix = '') {
+  for (const n of [1, 5, 25, 100, 1000, 10000, 100000]) {
+    if (ratePerLevel * n >= 0.1) {
+      const val = String(formatNumber(ratePerLevel * n)).replace(/\.0$/, '');
+      return `+${val}${suffix} per ${n === 1 ? 'level' : `${formatNumber(n)} levels`}`;
+    }
+  }
+  return `+${formatNumber(ratePerLevel * 1e6)}${suffix} per 1M levels`;
+}
+
 // Multiplicador GLOBAL de level-up (aplica a qualquer slot)
 const MULTS = [1, 10, 100, 1000, 100000];
 let mult = 100;
@@ -64,24 +75,24 @@ function affixEntries(def, piece) {
     const prim = !isSec;
     if (type === 'crit') {
       out.push({ val: `+${formatNumber(critOf(lvl, rar) * w * 100)}%`, label: 'crit rate',
-        per: `+${(GEAR.critPerLevel * rm * w * 100).toFixed(4)}% per level`, primary: prim });
+        per: perN(GEAR.critPerLevel * rm * w * 100, '%'), primary: prim });
       return;
     }
     if (type === 'critDmg') {
       out.push({ val: `+${formatNumber(critDmgOf(lvl, rar) * w * 100)}%`, label: 'crit dmg',
-        per: `+${(GEAR.critDmgPerLevel * rm * w * 100).toFixed(4)}% per level`, primary: prim });
+        per: perN(GEAR.critDmgPerLevel * rm * w * 100, '%'), primary: prim });
       return;
     }
     const label = AFFIX_LABELS[type];
     const mult = isSec ? secondaryMult(lvl, rar) : primaryMult(lvl, rar);
-    // 1) afixo FLAT (base), se a peça tiver flat nesse tipo
+    // 1) afixo FLAT (base/tempero), se a peça tiver flat nesse tipo
     if ((GEAR.flatPerLevel[type] || 0) > 0) {
       out.push({ val: `+${formatNumber(affixFlat(type, lvl, rar, isSec))}`, label,
-        per: `+${formatNumber(GEAR.flatPerLevel[type] * rm * w)} per level`, primary: prim });
+        per: perN(GEAR.flatPerLevel[type] * rm * w), primary: prim });
     }
-    // 2) afixo % (multiplicador) — sempre como +X%, NUNCA ×1
+    // 2) afixo % (multiplicador, PROTAGONISTA) — sempre como +X%, NUNCA ×1
     out.push({ val: `${affGain(mult)}`, label,
-      per: `+${(GEAR.affixPctRate * rm * w * 100).toFixed(3)}% per level`, primary: prim });
+      per: perN(GEAR.affixPctRate * rm * w * 100, '%'), primary: prim });
   };
   add(def.primary, false);
   for (const sec of activeSecondaries(def, rar)) add(sec, true);
