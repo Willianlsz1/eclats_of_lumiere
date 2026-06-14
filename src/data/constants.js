@@ -156,21 +156,22 @@ export const GEAR = {
     { key: 'reson', name: 'The Last Resonance',   slot: 'Amuleto',  primary: 'aps',    secondary: ['crit', 'regen', 'dmg'] },
     { key: 'band',  name: 'Band of Dusk',         slot: 'Anel',     primary: 'lumens', secondary: ['xp', 'materiais'] },
   ],
-  // por raridade (índice 0..4): força do afixo sobe, cap de nível sobe, custo sobe
+  // por raridade (índice 0..4): força do afixo e CUSTO sobem
   rarityMult: [1, 1.5, 2.25, 3.5, 5],
-  // CP-4 (FELT upgrades): caps MODERADOS (centenas) — cada nível IMPORTA. ⏳ sementes.
-  levelCap:   [100, 150, 200, 250, 300],
-  costMult:   [1, 4, 16, 64, 256],
-  // ── % MULTIPLICATIVO = protagonista: cada nível ×(1 + perLevelPct × rarityMult).
-  //    Ganho PERCEPTÍVEL por nível: Faded ~+1.3%/nv ... Converged ~+6.3%/nv. ⏳ semente.
-  perLevelPct: 0.0126,
-  secondaryExp: 0.30,        // afixo SECUNDÁRIO = primário^0.30 (e flat secundário × secondaryExp)
-  // FLAT = base/tempero ("amuleta"): minoritário. ⏳ sementes.
-  flatPerLevel: { dmg: 0.5, hp: 0.3, defesa: 0.2, aps: 0.002, regen: 0.001, bossDmg: 0, lumens: 0, xp: 0, crit: 0, critDmg: 0, materiais: 0 },
-  capPerAsc: 50,             // a Ascension soma +cap ao nível da raridade TOPO — sem-teto. ⏳ semente
-  critPerLevel: 5e-4,        // afixo crit (chance) — Grasp/passivas fecham. ⏳ semente
-  critDmgPerLevel: 1e-3,     // afixo critDmg (bônus plano sobre a base ×2). ⏳ semente
-  // custo de nível LINEAR: base × (nível+1) × costMult.
+  // CP-4 (modelo Gaiadon): SEM cap de nível (o CUSTO é o freio). Safety alto anti-overflow.
+  levelCap:   [1e9, 1e9, 1e9, 1e9, 1e9],
+  // CUSTO ESCALA POR TIER (acompanha a renda do mapa, que vai a ~1e44): freio natural em todo mapa.
+  costMult:   [1, 1e8, 1e18, 1e29, 1e39], // ⏳ sementes
+  // ── 3 CAMADAS que MULTIPLICAM (Gaiadon), todas LINEARES no nível × rarityMult ──
+  // Primary (flat, por tipo) — soma à base. Bonus% e ×Multiplier — multiplicam.
+  flatPerLevel: { dmg: 50, hp: 25, defesa: 15, aps: 0.001, regen: 0.0005, bossDmg: 0, lumens: 0, xp: 0, crit: 0, critDmg: 0, materiais: 0 },
+  bonusRate: 6e-5,           // Bonus% (Mastery): 1 + nível × bonusRate × rarityMult. ⏳ semente
+  multRate:  0.01,           // ×Multiplier: 1 + nível × multRate × rarityMult. ⏳ semente
+  secondaryExp: 0.30,        // afixo SECUNDÁRIO = primário^0.30 (e flat/camadas × secondaryExp)
+  capPerAsc: 0,              // (sem cap)
+  critPerLevel: 5e-7,        // afixo crit (chance). ⏳ semente
+  critDmgPerLevel: 1e-6,     // afixo critDmg (bônus plano sobre a base ×2). ⏳ semente
+  // custo de nível LINEAR: base × (nível+1) × costMult[raridade].
   levelCostBase: 5,
   // (Subir raridade = gate duplo: nível no cap + MATERIAIS do tier — ver CRAFT, Passo 4.)
 };

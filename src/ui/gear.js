@@ -34,15 +34,15 @@ function affixFlat(type, level, rarity, isSec) {
 // gain de um multiplicador em +% (sem ".0" sobrando), NUNCA "×1"
 const affGain = (m) => `+${String(formatNumber((m - 1) * 100)).replace(/\.0$/, '')}%`;
 
-// descritor "per N levels" (estilo Gaiadon): escolhe N pra o número ficar legível (≥0.1)
-function perN(ratePerLevel, suffix = '') {
+// descritor "per N levels" (estilo Gaiadon): escolhe N pra o número ficar legível
+function perN(ratePerLevel, suffix = '', prefix = '+') {
   for (const n of [1, 5, 25, 100, 1000, 10000, 100000]) {
     if (ratePerLevel * n >= 0.1) {
       const val = String(formatNumber(ratePerLevel * n)).replace(/\.0$/, '');
-      return `+${val}${suffix} per ${n === 1 ? 'level' : `${formatNumber(n)} levels`}`;
+      return `${prefix}${val}${suffix} per ${n === 1 ? 'level' : `${formatNumber(n)} levels`}`;
     }
   }
-  return `+${formatNumber(ratePerLevel * 1e6)}${suffix} per 1M levels`;
+  return `${prefix}${formatNumber(ratePerLevel * 1e6)}${suffix} per 1M levels`;
 }
 
 // Multiplicador GLOBAL de level-up (aplica a qualquer slot)
@@ -84,16 +84,23 @@ function affixEntries(def, piece) {
       return;
     }
     const label = AFFIX_LABELS[type];
-    const mult = isSec ? secondaryMult(lvl, rar) : primaryMult(lvl, rar);
-    // 1) afixo FLAT (base/tempero), se a peça tiver flat nesse tipo
+    // 1) Primary (flat) — se a peça tiver flat nesse tipo
     if ((GEAR.flatPerLevel[type] || 0) > 0) {
       out.push({ val: `+${formatNumber(affixFlat(type, lvl, rar, isSec))}`, label,
         per: perN(GEAR.flatPerLevel[type] * rm * w), primary: prim });
     }
-    // 2) afixo % (multiplicador, PROTAGONISTA) — sempre como +X%, NUNCA ×1.
-    //    ganho POR NÍVEL = perLevelPct × rarityMult (×secondaryExp se secundário)
-    out.push({ val: `${affGain(mult)}`, label,
-      per: perN(GEAR.perLevelPct * rm * w * 100, '%'), primary: prim });
+    if (isSec) {
+      // secundário: contribuição combinada (× das 2 camadas, a 30%)
+      out.push({ val: `×${formatNumber(secondaryMult(lvl, rar))}`, label, per: '', primary: false });
+    } else {
+      // primário: 2 camadas multiplicativas SEPARADAS (estilo Gaiadon)
+      const multLayer = 1 + lvl * GEAR.multRate * rm;     // ×Multiplier
+      const bonusLayer = lvl * GEAR.bonusRate * rm * 100; // Bonus%/Mastery (+X%)
+      out.push({ val: `×${formatNumber(multLayer)}`, label: `${label} mult`,
+        per: perN(GEAR.multRate * rm, '', '×'), primary: true });
+      out.push({ val: `+${formatNumber(bonusLayer)}%`, label: `${label} mastery`,
+        per: perN(GEAR.bonusRate * rm * 100, '%'), primary: true });
+    }
   };
   add(def.primary, false);
   for (const sec of activeSecondaries(def, rar)) add(sec, true);

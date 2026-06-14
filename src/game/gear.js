@@ -11,10 +11,14 @@ const maxRarity = GEAR_RARITIES.length - 1;
 
 // ───── Modelo de valor de um afixo ─────
 
-// multiplicador do afixo PRIMÁRIO: cada nível MULTIPLICA por (1 + perLevelPct × rarityMult).
-// Caps moderados → cada nível dá um ganho perceptível; a raridade aumenta o ganho/nível.
+// multiplicador do afixo PRIMÁRIO = 2 camadas LINEARES que multiplicam (modelo Gaiadon):
+//   Bonus% = (1 + nível × bonusRate × rarityMult) · ×Multiplier = (1 + nível × multRate × rarityMult)
+// Lineares → o produto cresce ~nível² (polinomial); com a base flat (Primary) → ~nível³.
 export function primaryMult(level, rarity) {
-  return (1 + GEAR.perLevelPct * GEAR.rarityMult[rarity]) ** level;
+  const rm = GEAR.rarityMult[rarity];
+  const bonus = 1 + level * GEAR.bonusRate * rm;
+  const mult = 1 + level * GEAR.multRate * rm;
+  return bonus * mult;
 }
 // afixo SECUNDÁRIO multiplicativo = primário^0.30 (30% das décadas — gear.mjs corrigido)
 export const secondaryMult = (level, rarity) => primaryMult(level, rarity) ** GEAR.secondaryExp;
@@ -140,10 +144,10 @@ export function rarityUpCost(piece) {
   return piece.rarity >= maxRarity ? Infinity : CRAFT.rarityUpMaterial;
 }
 
-// GATE DUPLO (§13B): nível no cap da raridade atual + materiais do tier suficientes.
+// CP-4 (sem cap): rarity-up gateado SÓ pelo MATERIAL do tier (do Hollow). Sem requisito de nível.
 export function canRarityUp(state, key) {
   const p = state.gear[key];
-  return p.rarity < maxRarity && atLevelCap(p, state) && state.materiais[rarityUpTier(p)] >= CRAFT.rarityUpMaterial;
+  return p.rarity < maxRarity && state.materiais[rarityUpTier(p)] >= CRAFT.rarityUpMaterial;
 }
 
 // ───── Ações (gastam Lumens) ─────
