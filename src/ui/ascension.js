@@ -1,11 +1,15 @@
-// Tela de Ascension (pós-MVP) — marcos da Ordre (GDD §8). Layout v4: banner de
-// rank ornamental no topo · "comissão" da Ordre p/ a próxima fronteira (esq) ·
-// escada dos 5 Gatekeepers (dir). Derrotar o boss final do mapa + pagar Vestiges
-// → asc_mult (dano e HP), bolsa de Éclats, rank e o próximo mapa. A1 libera
-// Éclats/Mémoires + o drip. Só A1 é completável no MVP.
+// Tela de Ascension (pós-MVP) — marcos da Ordre (GDD §8). Layout v5: PALCO
+// full-bleed (salão cerimonial da Ordre) + Séraphine, a Doyenne, por cima ·
+// rank/comissão/Gatekeepers flutuam sobre a arte (sem caixas pesadas, no estilo
+// Mémoires/Passivas). Derrotar o boss final do mapa + pagar Vestiges → asc_mult
+// (dano e HP), bolsa de Éclats, rank e o próximo mapa. A1 libera Éclats/Mémoires
+// + o drip. Só A1 é completável no MVP.
 //
 // ⚠️ O seletor de Difficulty saiu desta tela (relocado para o painel de entrada
 // de sub-área do Nível 2). Aqui só restam rank, comissão e Gatekeepers.
+//
+// Arte (caminho direto, fora do manifesto — cena única, estilo Maël/Lucius):
+//   eclats/ascension/hall.webp → o salão COM a Séraphine embutida (NPC + fundo juntos)
 //
 // Contrato: buildAscensionView(root, state) monta o DOM; renderAscension(state) atualiza.
 
@@ -20,8 +24,9 @@ const $ = (id) => document.getElementById(id);
 const ROMAN = ['I', 'II', 'III', 'IV', 'V'];
 const roman = (n) => ROMAN[n - 1] || String(n);
 
-// Arte (PNG-only, fora do manifesto auto-gerado — referência por caminho Vite).
-const BANNER = 'eclats/ascension/rank_banner.png';
+// Arte (fora do manifesto — referência por caminho Vite). Cena única: o salão
+// JÁ com a Séraphine embutida (NPC + fundo numa imagem só, como Maël/Lucius).
+const HALL = 'eclats/ascension/hall.webp';
 const glyphSrc = (g) => `eclats/ascension/glyphs/${g}.png`;
 
 // Os 5 Gatekeepers — a Semente aprende a guardar o que você deixa para trás.
@@ -47,33 +52,30 @@ export function buildAscensionView(root, state) {
   root.classList.remove('placeholder');
   root.classList.add('ascension');
   root.innerHTML = `
-    <div class="as-rankbar">
-      <img class="as-frame" src="${BANNER}" alt="">
-      <div class="as-rank-content">
-        <div class="as-rk-lbl" id="as-rk-lbl">Current standing</div>
-        <h1 id="as-rk-name">Seeker</h1>
-        <div class="as-rk-map" id="as-rk-map"></div>
-        <div class="as-rk-pips" id="as-rk-pips">
-          ${SEEKER_PIPS()}
-        </div>
-        <div class="as-rk-stats">
-          <span>Ascension power <b id="as-mult" class="t-gold">×1</b></span>
-          <span>Éclats drip <b id="as-drip">0/h</b></span>
-        </div>
+    <div class="as-stage" id="as-stage" style="--art:url('${HALL}')"></div>
+
+    <div class="as-rank">
+      <div class="as-rk-lbl" id="as-rk-lbl">Current standing</div>
+      <h1 id="as-rk-name">Seeker</h1>
+      <div class="as-rk-map" id="as-rk-map"></div>
+      <div class="as-rk-pips" id="as-rk-pips">
+        ${SEEKER_PIPS()}
+      </div>
+      <div class="as-rk-stats">
+        <span>Ascension power <b id="as-mult" class="t-gold">×1</b></span>
+        <span>Éclats drip <b id="as-drip">0/h</b></span>
       </div>
     </div>
 
-    <div class="as-body">
-      <aside class="as-commission" id="as-commission"></aside>
+    <aside class="as-commission" id="as-commission"></aside>
 
-      <section class="as-gk">
-        <div class="as-gk-head">
-          <h2 class="as-title">Gatekeepers</h2>
-          <span class="as-gk-sub">The Seed learns to guard what you leave behind</span>
-        </div>
-        <div class="as-gk-ladder" id="as-gk-ladder"></div>
-      </section>
-    </div>
+    <section class="as-gk">
+      <div class="as-gk-head">
+        <h2 class="as-title">Gatekeepers</h2>
+        <span class="as-gk-sub">The Seed learns to guard what you leave behind</span>
+      </div>
+      <div class="as-gk-ladder" id="as-gk-ladder"></div>
+    </section>
   `;
 
   // Escada de Gatekeepers
