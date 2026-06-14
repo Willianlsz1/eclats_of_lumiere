@@ -149,9 +149,13 @@ Cada Hollow também dropa um **acessório/Reliquat** (a definir em passo própri
   of the Unnamed, Last Resonance, Band of Dusk). *O que você é.* Crescem por **nível**
   (Lumens, do mapa) e **raridade** (materiais, do **Hollow** — Faded no Map 1, sobe um
   tier por Hollow M2-M5 até Converged; as **30 artes** já feitas). É o **poder que quebra
-  a Wall**. **Afixos (decidido 2026-06-14):** cada afixo dá **FLAT por nível** (ex.: +X
-  dano, +Y APS, somado à base do stat) **+** o **% multiplicativo**; escala de nível
-  ampla. Números = calibração.
+  a Wall**. **Afixos — modelo GAIADON (revisado 2026-06-14):** cada afixo de stat tem
+  **3 camadas LINEARES que MULTIPLICAM** — **Primary** (flat) × **Bonus%** (Mastery) ×
+  **×Multiplier** — dando crescimento **polinomial** (~nível³). **SEM cap de nível**
+  (safety 1e9 anti-overflow); o **CUSTO é o freio**: `costMult` escala por tier
+  (`[1,1e8,1e18,1e29,1e39]`) acompanhando a renda do mapa (~1e44 no Map 5), então upar
+  freia consistente em todo mapa (~10K nv/min). **Rarity-up gateado SÓ por material do
+  Hollow** (sem requisito de nível). Números = calibração por CUSTO, não por cap.
 - **Camada 2 — Reliquats** (2ª aba do Gear). *O que você venceu.* **Slots NOVOS de
   acessório** (brincos, colar, asas, etc.); cada **Hollow/nobre** dropa **1 Reliquat
   exclusivo** (troféu com arte própria). 5 no Jogo base (um por mapa).
