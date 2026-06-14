@@ -11,11 +11,10 @@ const maxRarity = GEAR_RARITIES.length - 1;
 
 // ───── Modelo de valor de um afixo ─────
 
-// multiplicador do afixo PRIMÁRIO num nível/raridade: (1 + L×pct×rarityMult) × motor^L
+// multiplicador do afixo PRIMÁRIO: cada nível MULTIPLICA por (1 + perLevelPct × rarityMult).
+// Caps moderados → cada nível dá um ganho perceptível; a raridade aumenta o ganho/nível.
 export function primaryMult(level, rarity) {
-  const linear = 1 + level * GEAR.affixPctRate * GEAR.rarityMult[rarity];
-  const expo = rarity >= GEAR.affixMultFromRarity ? GEAR.affixMultBase ** level : 1;
-  return linear * expo;
+  return (1 + GEAR.perLevelPct * GEAR.rarityMult[rarity]) ** level;
 }
 // afixo SECUNDÁRIO multiplicativo = primário^0.30 (30% das décadas — gear.mjs corrigido)
 export const secondaryMult = (level, rarity) => primaryMult(level, rarity) ** GEAR.secondaryExp;

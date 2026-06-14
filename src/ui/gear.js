@@ -90,9 +90,10 @@ function affixEntries(def, piece) {
       out.push({ val: `+${formatNumber(affixFlat(type, lvl, rar, isSec))}`, label,
         per: perN(GEAR.flatPerLevel[type] * rm * w), primary: prim });
     }
-    // 2) afixo % (multiplicador, PROTAGONISTA) — sempre como +X%, NUNCA ×1
+    // 2) afixo % (multiplicador, PROTAGONISTA) — sempre como +X%, NUNCA ×1.
+    //    ganho POR NÍVEL = perLevelPct × rarityMult (×secondaryExp se secundário)
     out.push({ val: `${affGain(mult)}`, label,
-      per: perN(GEAR.affixPctRate * rm * w * 100, '%'), primary: prim });
+      per: perN(GEAR.perLevelPct * rm * w * 100, '%'), primary: prim });
   };
   add(def.primary, false);
   for (const sec of activeSecondaries(def, rar)) add(sec, true);
