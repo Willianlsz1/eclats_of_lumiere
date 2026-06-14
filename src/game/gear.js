@@ -28,9 +28,11 @@ export const critOf = (level, rarity) => level * GEAR.critPerLevel * GEAR.rarity
 // crit damage (afixo plano, bônus sobre a base): nível × critDmgPerLevel × rarityMult
 export const critDmgOf = (level, rarity) => level * GEAR.critDmgPerLevel * GEAR.rarityMult[rarity];
 
-// Secundários ATIVOS de uma peça conforme a raridade (secondary[i] ativo se rarity ≥ i+1)
+// Secundários ATIVOS de uma peça conforme a raridade. ✅ 14/jun: o COMUM (Faded)
+// já vem com 2 afixos (primário + 1 secundário) → libera rarity+1 secundários;
+// cada raridade acima destrava mais um (capado pelo tamanho da lista da peça).
 export function activeSecondaries(def, rarity) {
-  return def.secondary.slice(0, rarity);
+  return def.secondary.slice(0, rarity + 1);
 }
 
 // ───── Agregação por tipo de afixo ─────
@@ -144,10 +146,21 @@ export function rarityUpCost(piece) {
   return piece.rarity >= maxRarity ? Infinity : CRAFT.rarityUpMaterial;
 }
 
-// CP-4 (sem cap): rarity-up gateado SÓ pelo MATERIAL do tier (do Hollow). Sem requisito de nível.
+// Menor raridade entre TODAS as peças (piso do set, pro gate lockstep).
+function minSetRarity(state) {
+  let m = Infinity;
+  for (const def of GEAR.pieces) m = Math.min(m, state.gear[def.key].rarity);
+  return m;
+}
+
+// Rarity-up gateado por: (1) MATERIAL do tier + (2) LOCKSTEP — uma peça só sobe pra
+// R+1 se TODAS já estão ≥ R (✅ 14/jun: não passa pra Luminous enquanto nem todas
+// estiverem Kindled). Uma peça por vez, na ordem que o jogador quiser, dentro do piso.
 export function canRarityUp(state, key) {
   const p = state.gear[key];
-  return p.rarity < maxRarity && state.materiais[rarityUpTier(p)] >= CRAFT.rarityUpMaterial;
+  return p.rarity < maxRarity
+    && minSetRarity(state) >= p.rarity              // a peça está no piso do set
+    && state.materiais[rarityUpTier(p)] >= CRAFT.rarityUpMaterial;
 }
 
 // ───── Ações (gastam Lumens) ─────

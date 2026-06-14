@@ -3,11 +3,11 @@
 
 // §4 — Constantes-âncora do núcleo de combate
 export const COMBAT = {
-  baseDmg: 7,
+  baseDmg: 3500,          // rescale ×500 (14/jun): números iniciais em centenas/milhares (não 0.2/7)
   baseAPS: 0.90,          // intervalo de ataque ~1.11s (ajuste pedido pelo Willian: 0.40 → 0.90)
   apsCap: 5,              // teto de 5 kills/s (18k/h) — ajuste pedido pelo Willian (confortável; 15 rápido, 2 lento).
   agiApsCap: 3.75,        // sub-cap do AGI: AGI sozinho leva o APS até ~3.4 (0.90 × 3.75)
-  playerBaseHp: 50,
+  playerBaseHp: 25000,    // rescale ×500
   regenPerSec: 0.01,      // 1% do HP máx por segundo
   regenOnKill: 0.02,      // 2% do HP máx por kill
   bossHpMult: 15,         // usado no CP-D
@@ -23,17 +23,17 @@ export const ECONOMY = {
   xpRatio: 0.08,    // xp_por_kill     = mob_hp × 0.08 (× convMult; sem wis — CP-3)
   // ✅ Map 1 (14/jun): PISO fixo de lumens/kill. Pesa cedo (mob vale pouco) e some tarde
   // (mob vale milhares) → 1º nível comprável em ~1min (era ~9min). Acelera o early (ok, Willian).
-  lumensFloor: 60,
+  lumensFloor: 30000,  // rescale ×500 (acompanha o mob_hp ×500; pacing idêntico)
 };
 
 // CP-3 (redesign) — NÍVEL = motor de stat base (substitui os Gold Stats).
 // O nível vem do XP da RUN (xpRun): level = (xpRun / div)^exp. Reseta na Convergence.
 // Cada nível dá stat FLAT. ⏳ VALORES PLACEHOLDER — Willian vai calibrar por teste.
 export const LEVEL = {
-  curveDiv: 10, curveExp: 0.4, // forma da curva nível↔XP (mesma do antigo heroLevel)
-  dmgPerLevel: 10,  // +dano flat por nível (semente do Willian)
-  hpPerLevel: 5,    // +HP flat por nível
-  goldPerLevel: 3,  // +Lumens base por kill por nível
+  curveDiv: 11000, curveExp: 0.4, // calibrado p/ ~8h no Map 1 (gate por nível; sim map1_pace.mjs)
+  dmgPerLevel: 5000,  // +dano flat por nível (rescale ×500)
+  hpPerLevel: 2500,   // +HP flat por nível (rescale ×500)
+  goldPerLevel: 1500, // +Lumens base por kill por nível (rescale ×500)
 };
 
 // §3 — Malha geométrica dos 5 mapas (✅ levels/HP/threshold canônicos).
@@ -49,7 +49,7 @@ const PACK = [2, 3, 4, 5, 6, 8, 10, 12, 14];
 export const MAPS = [
   {
     id: 1, name: 'The Dreaming Wood', continent: 'worldmap.continent1', bg: 'backgrounds.map1',
-    lvlLo: 1, lvlHi: 1000, hpLo: 10, hpHi: 1e6, dmgLo: 0.2, dmgHi: 2e4,
+    lvlLo: 1, lvlHi: 1000, hpLo: 5000, hpHi: 5e8, dmgLo: 100, dmgHi: 1e7,
     subareaCount: 9, packSizes: PACK, bossKillThreshold: 100,
     enemyNames: ['Candlewisp Shade', 'Mothlight Herald', 'Dreamhorn Warden', 'Hollowroot Crawler', 'Glowmere Drifter'],
     enemyArts: ['enemies.map1.candlewisp_shade', 'enemies.map1.mothlight_herald', 'enemies.map1.dreamhorn_warden', 'enemies.map1.hollowroot_crawler', 'enemies.map1.glowmere_drifter'],
@@ -173,16 +173,16 @@ export const GEAR = {
   costMult:   [1, 10, 100, 1000, 10000],
   // ── MODELO MAP 1 (calibrado 14/jun): 2 AFIXOS por peça — flat + % ──
   // Primary (flat, por tipo) — soma à base. Bonus% (%) — multiplica. (×Multiplier removido.)
-  flatPerLevel: { dmg: 60, hp: 25, defesa: 15, aps: 0.001, regen: 0.0005, bossDmg: 0, lumens: 0, xp: 0, crit: 0, critDmg: 0, materiais: 0 },
+  flatPerLevel: { dmg: 30000, hp: 12500, defesa: 7500, aps: 2e-4, regen: 0.0005, bossDmg: 0, lumens: 0, xp: 0, crit: 0, critDmg: 0, materiais: 0 },
   bonusRate: 0.02,           // afixo % : 1 + nível × bonusRate × rarityMult (2%/nv no Faded). ✅ Map 1
   multRate:  0,              // ×Multiplier REMOVIDO (decisão Willian 14/jun — era cópia do Gaiadon)
   affixPctRate: 0.01,        // FARM (lumens/xp/materiais): % linear/nível. (fix do NaN — faltava no constants)
   secondaryExp: 0.30,        // afixo SECUNDÁRIO = primário^0.30 (e flat/camadas × secondaryExp)
   capPerAsc: 0,
-  critPerLevel: 5e-7,        // afixo crit (chance). ⏳ semente
-  critDmgPerLevel: 1e-6,     // afixo critDmg (bônus plano sobre a base ×2). ⏳ semente
-  // custo de nível LINEAR: base × (nível+1) × costMult[raridade]. Faded = 1400×(L+1) (✅ Map 1).
-  levelCostBase: 1400,
+  critPerLevel: 3e-4,        // afixo crit (chance): GRADUAL, ~15% no fim do M1 (Grasp ~490 Faded)
+  critDmgPerLevel: 1e-3,     // afixo critDmg (bônus plano sobre ×2): escala até o cap 1000 do gear
+  // custo de nível LINEAR: base × (nível+1) × costMult[raridade]. Calibrado p/ ~8h Map 1 (sim map1_pace.mjs).
+  levelCostBase: 420000,
   // (Subir raridade = gate duplo: nível no cap + MATERIAIS do tier — ver CRAFT, Passo 4.)
 };
 
