@@ -1,58 +1,103 @@
 /* ============================================================
-   Éclats of Lumière — Tela de Mémoires (pós-MVP)
-   Banner da Clarté + 5 eras (3 relíquias cada). Branco-dourado (Tikkun Olam).
+   Éclats of Lumière — Tela de Mémoires (LINHA DO TEMPO)
+   UMA era por vez em tela cheia: arte-janela (esq) + relíquias (dir),
+   com seletor de timeline embaixo. Reuni-las = Tikkun Olam.
    ============================================================ */
 
-.view.memoires { display: flex; flex-direction: column; padding: 100px 40px 28px; overflow: hidden; gap: 14px; }
+.view.memoires { display: block; padding: 0; overflow: hidden; }
 
-/* ---------------- Banner Clarté / Tikkun Olam ---------------- */
-.mm-banner { display: flex; gap: 16px; }
-.mm-clarte, .mm-total {
-  flex: 1; display: grid; grid-template-columns: auto 1fr; align-items: baseline; gap: 2px 12px;
-  background: color-mix(in srgb, var(--panel) 88%, transparent);
-  border: var(--border); border-radius: var(--radius); padding: 12px 20px;
-}
-.mm-lbl { grid-row: 1; font-size: var(--fs-xs); color: var(--dim);
-  text-transform: uppercase; letter-spacing: .16em; }
-.mm-clarte b, .mm-total b { grid-row: 1; grid-column: 2; justify-self: end;
-  font-family: var(--font-display); font-weight: 700; font-size: var(--fs-xl);
-  color: var(--gold); font-variant-numeric: tabular-nums; }
-.mm-sub { grid-column: 1 / 3; grid-row: 2; font-size: var(--fs-xs); color: var(--faint); }
+/* ---------------- Banner (Clarté / Tikkun Olam) ---------------- */
+/* inscrições flutuantes (sem caixa) — combinam com o resto da tela */
+.mm-banner { position: absolute; left: 50%; top: 14px; transform: translateX(-50%); z-index: 6;
+  display: flex; align-items: center; gap: 40px; }
+.mm-pill { display: grid; grid-template-columns: auto auto; align-items: baseline; gap: 0 12px;
+  background: none; border: 0; padding: 0; position: relative; }
+.mm-total::before { content: ""; position: absolute; left: -20px; top: 4px; bottom: 4px; width: 1px;
+  background: rgba(240,220,160,.3); }
+.mm-lbl { grid-row: 1; font-size: 16px; color: #e5cf94; text-transform: uppercase; letter-spacing: .2em;
+  font-weight: 600; text-shadow: 0 1px 3px #000, 0 2px 8px #000, 0 0 12px #000; }
+.mm-pill b { grid-row: 1; grid-column: 2; font-family: var(--font-display); font-weight: 700;
+  font-size: 32px; line-height: 1; color: #fff3d6; font-variant-numeric: tabular-nums;
+  text-shadow: 0 2px 5px #000, 0 0 16px #000; }
+.mm-sub { grid-column: 1 / 3; grid-row: 2; margin-top: 3px; font-size: 15px; color: #dbe2f0; font-style: italic;
+  text-shadow: 0 1px 4px #000, 0 0 10px #000; }
 
-/* ---------------- Eras ---------------- */
-.mm-eras { display: flex; flex-direction: column; gap: 10px; flex: 1; min-height: 0; }
-.mm-band { position: relative; background: color-mix(in srgb, var(--panel) 64%, transparent);
-  border: var(--border-soft); border-radius: var(--radius); padding: 8px 12px; }
-.mm-band-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-.mm-band-head b { font-family: var(--font-display); font-size: var(--fs-md); color: var(--r-radiant);
-  letter-spacing: .03em; }
-.mm-band-prog { font-size: var(--fs-xs); color: var(--dim); font-variant-numeric: tabular-nums; }
+/* ---------------- Stage (a era ativa, ARTE FULL-BLEED) ---------------- */
+.mm-stage { position: absolute; inset: 0; z-index: 1; overflow: hidden; }
+/* clima-fallback por era (até a arte 16:9 chegar) — segue a jornada de humor */
+.mm-stage.era-1 { background: linear-gradient(135deg,#2a2410,#0f0c06); }
+.mm-stage.era-2 { background: linear-gradient(135deg,#241f12,#0d0b07); }
+.mm-stage.era-3 { background: linear-gradient(135deg,#1a0e0c,#080507); }
+.mm-stage.era-4 { background: linear-gradient(135deg,#1c0d16,#0a0509); }
+.mm-stage.era-5 { background: linear-gradient(135deg,#0e1830,#070b16); }
+.mm-stage.has-art { background: var(--art) center / cover no-repeat; }
+/* véu: abafa a arte pra casar com o fundo escuro do jogo (uniforme) +
+   scrim à esquerda (legibilidade do título/lore) + base. Ajustável no 1º rgba. */
+.mm-stage::after { content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 1;
+  background: rgba(5,7,14,.5),
+    linear-gradient(90deg, rgba(4,6,12,.55) 0%, rgba(4,6,12,.1) 34%, transparent 55%),
+    linear-gradient(180deg, transparent 58%, rgba(4,6,12,.55)); }
 
-.mm-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-.mm-card {
-  cursor: pointer; appearance: none; display: grid;
-  grid-template-columns: 76px 1fr; grid-template-rows: auto auto auto; gap: 2px 12px;
-  background: color-mix(in srgb, var(--panel) 88%, transparent);
-  border: 2px solid var(--line); border-radius: var(--radius-sm); padding: 10px 12px; text-align: left;
-  transition: transform .1s ease, border-color .14s ease, box-shadow .14s ease;
-}
-.mm-card:hover { transform: translateY(-2px); }
-.mm-art { grid-row: 1 / 4; grid-column: 1; width: 76px; height: 76px; display: grid; place-items: center; }
-.mm-art picture, .mm-art img { max-width: 100%; max-height: 76px; object-fit: contain;
-  filter: drop-shadow(0 0 10px color-mix(in srgb, var(--gold) 30%, transparent)); }
-.mm-name { grid-column: 2; font-family: var(--font-display); font-size: var(--fs-md); color: var(--ink);
-  font-style: italic; line-height: 1.05; }
-.mm-eff { grid-column: 2; font-size: var(--fs-xs); color: var(--gold); }
-.mm-eff .mm-prov { font-style: normal; opacity: .8; }
-.mm-lvl { grid-column: 2; font-size: var(--fs-xs); color: var(--dim); font-variant-numeric: tabular-nums; }
-.mm-cost { grid-column: 2; font-size: 13px; color: var(--eclat); font-variant-numeric: tabular-nums; }
+/* título da era (canto superior-esquerdo) */
+.mm-era-title { position: absolute; left: 5%; top: 12%; z-index: 3; }
+.mm-era-num { font-size: 17px; letter-spacing: .3em; text-transform: uppercase; color: #dcc792;
+  text-shadow: 0 1px 4px #000; }
+.mm-era-name { display: block; margin-top: 4px; font-family: var(--font-display); font-weight: 700;
+  font-size: 64px; line-height: 1.02; color: #fbeec8; letter-spacing: .02em;
+  text-shadow: 0 2px 4px #000, 0 3px 18px #000, 0 0 30px rgba(0,0,0,.9); }
+.mm-era-beat { display: block; margin-top: 6px; font-family: var(--font-display); font-style: italic;
+  font-size: 24px; color: #e6edf8; text-shadow: 0 1px 3px #000, 0 2px 10px #000; }
 
-.mm-card.owned { border-color: color-mix(in srgb, var(--gold) 55%, var(--line)); }
-.mm-card.buyable { border-color: var(--eclat); box-shadow: 0 0 0 1px var(--eclat), var(--glow-eclat); }
-.mm-card:not(.owned) .mm-art { opacity: .55; filter: grayscale(.5); }
+/* lore da era (passagem visível, esquerda) — maior e com placa escura de leitura */
+.mm-lore { position: absolute; left: 4%; top: 30%; width: 33%; z-index: 3; margin: 0;
+  padding: 16px 20px; border-radius: 14px;
+  background: linear-gradient(180deg, rgba(6,9,16,.62), rgba(6,9,16,.5));
+  backdrop-filter: blur(3px); border-left: 2px solid rgba(240,220,160,.45);
+  font-family: var(--font-display); font-style: italic; font-size: 26px; line-height: 1.55; color: #fdf6e6;
+  text-shadow: 0 1px 3px #000, 0 2px 10px rgba(0,0,0,.7); }
 
-/* era bloqueada */
-.mm-band.locked .mm-cards { filter: grayscale(.8) brightness(.6); pointer-events: none; }
-.mm-band-lock { position: absolute; inset: 0; display: grid; place-content: center; z-index: 2;
-  font-family: var(--font-display); font-size: var(--fs-lg); color: var(--eclat);
-  background: rgba(8,11,17,.55); border-radius: var(--radius); }
+/* relíquia ESPALHADA — só ícone + texto (sem fundo), posicionada no scatter */
+.mm-relic { position: absolute; transform: translate(-50%, -50%); cursor: pointer; appearance: none;
+  background: none; border: 0; padding: 6px; z-index: 2; display: flex; align-items: center; gap: 18px;
+  text-align: left; max-width: 560px; transition: transform .12s ease, filter .14s ease; }
+.mm-relic:hover { transform: translate(-50%, -50%) scale(1.04); }
+.mm-relic-art { width: 190px; height: 190px; flex: none; display: grid; place-items: center; }
+.mm-relic-art picture, .mm-relic-art img { max-width: 100%; max-height: 190px; object-fit: contain;
+  filter: drop-shadow(0 2px 4px #000) drop-shadow(0 0 14px color-mix(in srgb, var(--gold) 45%, transparent)); }
+.mm-relic-text { min-width: 0; }
+.mm-relic-name { display: block; font-family: var(--font-display); font-style: italic; font-size: var(--fs-xl);
+  color: #fff; line-height: 1.12; text-shadow: 0 2px 6px #000, 0 0 14px #000; }
+.mm-relic-eff { display: block; margin-top: 4px; font-size: 16px; color: #f0d9a0; font-weight: 600;
+  text-shadow: 0 1px 4px #000, 0 0 10px #000; }
+.mm-relic-foot { display: block; margin-top: 5px; font-size: 16px; font-weight: 700; color: #bfe3ff;
+  font-variant-numeric: tabular-nums; text-shadow: 0 1px 4px #000, 0 0 10px #000; }
+.mm-relic.buyable .mm-relic-art { filter: drop-shadow(0 2px 4px #000) drop-shadow(0 0 16px var(--eclat)); }
+.mm-relic:not(.owned) .mm-relic-art { opacity: .72; }
+
+/* véu da era travada */
+.mm-stage-veil { position: absolute; inset: 0; z-index: 5; display: grid; place-content: center; gap: 10px;
+  justify-items: center; text-align: center; background: rgba(6,9,16,.66); backdrop-filter: blur(2px);
+  font-family: var(--font-display); font-size: var(--fs-lg); color: #d9c187; letter-spacing: .04em; }
+.mm-stage-veil .mm-lock-i { font-size: 40px; }
+
+/* ---------------- Seletor de timeline (5 marcos, rodapé) ---------------- */
+.mm-selector { position: absolute; left: 50%; bottom: 16px; transform: translateX(-50%); z-index: 6;
+  display: flex; align-items: flex-start; padding: 12px 28px 10px;
+  background: rgba(6,9,16,.78); backdrop-filter: blur(6px); border-radius: 16px;
+  border: 1px solid rgba(170,200,255,.16); box-shadow: 0 10px 30px -10px #000; }
+.mm-selector::before { content: ""; position: absolute; top: 19px; left: 13%; right: 13%; height: 2px;
+  background: rgba(170,200,255,.28); z-index: 0; }
+.mm-mark { position: relative; z-index: 1; appearance: none; background: none; border: 0; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 0 30px; color: #c3cee2;
+  transition: color .14s ease; }
+.mm-mark-dot { width: 16px; height: 16px; border-radius: 50%; background: #141b2e;
+  border: 2px solid rgba(170,200,255,.45); transition: all .15s ease; }
+.mm-mark-lbl { text-align: center; line-height: 1.15; }
+.mm-mark-lbl b { display: block; font-family: var(--font-display); font-weight: 700; font-size: var(--fs-md); color: inherit; }
+.mm-mark-lbl i { font-style: normal; font-size: 13px; color: #97a3bb; font-variant-numeric: tabular-nums; }
+.mm-mark:hover { color: #fff; }
+.mm-mark.on { color: #f6e8c4; }
+.mm-mark.on .mm-mark-dot { background: var(--gold); border-color: #fff;
+  box-shadow: 0 0 16px var(--gold); }
+.mm-mark.locked { opacity: .45; }
+.mm-mark.locked .mm-mark-dot { background: #10141f; }

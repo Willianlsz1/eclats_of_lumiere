@@ -63,6 +63,7 @@ function devGrant(state, kind) {
       state.maxMap = 5; state.unlockedSubarea = 5;
       state.bossDefeated = [true, true, true, true, true];
       state.convergences = Math.max(state.convergences, 1);
+      state.ascensions = Math.max(state.ascensions, 5); // abre Mémoires (eras) + ranks
       break;
     case 'all':
       ['lumens', 'vestiges', 'eclats', 'nitzotzot', 'materials', 'xp', 'maps'].forEach((k) => devGrant(state, k));
