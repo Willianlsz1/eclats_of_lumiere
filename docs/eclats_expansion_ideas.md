@@ -85,8 +85,9 @@ genérico (que Nível/Convergence já dão). **Sementes anotadas (resto a pesqui
 - **+% (pequeno) aos stats do Gear** (multiplica a eficácia do gear).
 
 ## Pendências registradas
-- [ ] **Pesquisar refs e fechar os efeitos das 5 habilidades ativas (ideia 6)**
-- [ ] **Pesquisar/fechar o resto das passivas-alavanca (ideia 7)**
+- [x] **Efeitos das habilidades ativas (ideia 6)** — ✅ FECHADO 14/jun: 4 habilidades
+  (Surto/Torpor/Maré Dourada/Égide), cooldown, não-redundantes c/ passivas. Ver redesign doc.
+- [x] **Passivas-alavanca (ideia 7)** — ✅ 45 reconciliadas 14/jun (efeitos). Resta números.
 - [ ] Definir fonte geradora de Vestiges (ideia 2)
 - [ ] Retomar Echoes e detalhar bônus/temas (ideia 3 — aguarda Willian)
 - [x] Decidir momento de adoção do break_infinity.js (ideia 4) — **RESOLVIDO 2026-06-10:** instalado como dependência do projeto; a migração do código (saves, fórmulas, format) será um CP próprio pós-MVP

@@ -59,12 +59,17 @@ estilo Tap Titans 2. É a **camada ativa** sobre o combate, que continua **autom
 (idle-first). NÃO é ação em tempo real. Sistema NOVO (ainda não existe no código).
 Distinto de **Passiva** (bônus permanente, comprado com Vestiges) e de **Gatekeeper**
 (faculdade desbloqueada por Ascension). Decidido 2026-06-13.
-**Fonte (decidido 2026-06-14):** vêm do **Despertar/Awaken** — **1 habilidade por tier**
-(T1→T5, no Guardião da Sub-3), ~5 no total. **Todas usáveis** (sem loadout, sem árvore).
-Profundidade = usar bem (timing/burst no boss) + evoluir cada uma. Grand Chase: cada
-classe ganha sua skill. NÃO confundir com **Gatekeeper** (automação, vem da Ascension).
-**Fuel:** **cooldown puro** (sem mana), **manual** por padrão; **auto-cast** vem como
-desbloqueio posterior (idealmente um **Gatekeeper**) para idle/offline.
+**Fonte (decidido 2026-06-14):** vêm do **Despertar/Awaken** — **1 por despertar**. Como
+o tier vai T1→T5 = **4 despertares**, são **4 habilidades** (encaixe exato, sem sobra).
+**Todas usáveis** (sem loadout, sem árvore). Desenhadas pra **NÃO duplicar as passivas**
+(foco em controle/momento ativo). NÃO confundir com **Gatekeeper** (automação, da Ascension).
+**As 4 (efeitos fechados 2026-06-14, refs Grand Chase/TT2):**
+- **Surto** (burst): nuke instantâneo em toda a tela **+ dano extra no alvo de maior HP** (quebra Wall).
+- **Torpor** (controle): **congela** os inimigos por X s **e congelados recebem +dano**.
+- **Maré Dourada** (farm): janela de X s com **×TODO o loot** (Lumens/XP/Vestiges/materiais).
+- **Égide** (defesa): **invulnerabilidade + cura** por X s (botão de pânico).
+**Fuel:** **todas em cooldown**, manual; **auto-cast** depois via **Gatekeeper A4**. (Sem
+Ultimate, sem barra-Chaser — descartados; 4 bastam.) Números = calibração.
 
 ### Combate — CLEAVE (decidido 2026-06-14, ADR 0002)
 **Cada ataque atinge TODOS os mobs na tela** (cleave total); um mob morre quando o dano

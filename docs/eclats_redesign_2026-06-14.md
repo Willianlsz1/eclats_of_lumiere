@@ -41,10 +41,16 @@ limpa a onda num golpe; HP demais = Wall. (Substitui a velha regra "1 kill/ataqu
 - **Reliquats** (2ª aba, *o que você venceu*): 1 por nobre/Hollow (brincos/colar/asas...).
   Híbrido: **bônus permanente pequeno + bônus local forte**. ≠ Mémoire.
 
-## Habilidades ativas
-**~5, uma por Despertar** (T1→T5). **Cooldown puro, manual** (auto-cast vem depois, via
-Gatekeeper). Sem loadout, sem árvore. 🌱 **efeitos a pesquisar** (sementes: slow de atk
-speed; DoT por % da vida; direção = 5 papéis: burst/DPS/farm/defesa/ult).
+## Habilidades ativas — ✅ EFEITOS FECHADOS (2026-06-14, refs Grand Chase/TT2)
+**4 habilidades, uma por despertar** (T1→T5 = 4 despertares — encaixe exato). **Todas em
+cooldown**, manual; auto-cast depois via **Gatekeeper A4**. Sem loadout, sem árvore, **sem
+Ultimate/barra-Chaser** (descartados — 4 bastam). Desenhadas pra **NÃO repetir as passivas**
+(que já cobrem crit/APS/%vida/pulso/defesa/revive/economia) — foco em **controle e momento ativo**:
+- **Surto** (burst): nuke instantâneo em toda a tela **+ dano EXTRA no alvo de maior HP** (quebra Wall).
+- **Torpor** (controle): **congela** os inimigos por X s **e congelados recebem +dano** (controle + janela).
+- **Maré Dourada** (farm): janela de X s com **×TODO o loot** (Lumens/XP/Vestiges/materiais).
+- **Égide** (defesa): **invulnerabilidade total + cura** por X s (botão de pânico; > revive/redução).
+- ❌ "DoT por % da vida" **removida** (já em Shard Burst/Void Collapse). Nomes de lore + números = passada própria.
 
 ## Gatekeepers (recompensa = automação/QoL + ×poder)
 - **A1 — O Ritmo:** Convergence deixa de resetar os níveis do Gear. ✅
@@ -102,9 +108,9 @@ Refs: https://tap-titans-2.fandom.com/wiki/Artifacts · tier list r/TapTitans2.
 - **Regra "1 kill/ataque"** → cleave.
 
 ## Pendências grandes (próximas sessões)
-1. **Efeitos das 5 habilidades** (pesquisa de refs — TT2/Grand Chase).
+1. ✅ **Efeitos das 4 habilidades** — FECHADO (Surto/Torpor/Maré Dourada/Égide). Resta: nomes de lore + números.
 2. **Os 15 efeitos das Mémoires** — desenhar **1 a 1 com o Willian** (refs TT2 Artifacts).
-3. **Passivas-alavanca** — fechar a lista fina dos 45 nós (esqueleto ✅).
+3. ✅ **Passivas** — 45 reconciliadas (efeitos). Resta: números (recalibração).
 4. **Pacing pra ~30 dias** (números: sub-áreas 7-8, ritmo Walls/Hollows/Convergences).
 5. **RECALIBRAÇÃO GERAL** (o cleave invalidou a calibração antiga — pass próprio).
 
