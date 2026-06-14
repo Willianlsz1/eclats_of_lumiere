@@ -167,31 +167,57 @@
 .pl-modal-note { margin: 14px 0 0; font-size: var(--fs-sm); color: var(--dim);
   font-style: italic; line-height: 1.45; }
 
-/* ───── Aba Convergence (CP-3b) ───── */
-.pl-conv-pane { display: grid; place-items: center; padding: 40px; }
-.pl-conv-card { width: min(560px, 92%); background: var(--panel); border: var(--border);
-  border-radius: 18px; padding: 30px 34px; text-align: center; box-shadow: 0 18px 50px -20px #000; }
-.pl-conv-eyebrow { font-size: 16px; letter-spacing: .3em; text-transform: uppercase; color: var(--eclat); }
-.pl-conv-title { font-family: var(--font-display); font-weight: 700; font-size: 40px; color: #eef4ff; margin: 4px 0 10px; }
-.pl-conv-lore { font-family: var(--font-display); font-style: italic; font-size: 17px; color: var(--dim);
-  line-height: 1.5; margin: 0 auto 22px; max-width: 46ch; }
-.pl-conv-stats { display: flex; justify-content: center; gap: 44px; margin-bottom: 22px; }
-.pl-conv-stat { display: flex; flex-direction: column; gap: 4px; }
-.pl-conv-l { font-size: 16px; letter-spacing: .1em; text-transform: uppercase; color: var(--faint); }
-.pl-conv-v { font-family: var(--font-display); font-size: 30px; color: var(--ink); font-variant-numeric: tabular-nums; }
+/* ───── Aba Convergence (CP-3b, redesign organizado) ───── */
+.pl-conv-pane { display: grid; place-items: center; padding: 28px; overflow-y: auto; }
+.pl-conv-card { width: min(600px, 94%); background: var(--panel); border: var(--border);
+  border-radius: 18px; padding: 28px 30px; box-shadow: 0 18px 50px -20px #000; }
+
+/* header */
+.pl-conv-head { text-align: center; }
+.pl-conv-eyebrow { font-size: 15px; letter-spacing: .3em; text-transform: uppercase; color: var(--eclat); }
+.pl-conv-title { font-family: var(--font-display); font-weight: 700; font-size: 38px; color: #eef4ff; margin: 4px 0 8px; }
+.pl-conv-lore { font-family: var(--font-display); font-style: italic; font-size: 16px; color: var(--dim);
+  line-height: 1.5; margin: 0 auto; max-width: 44ch; }
+
+/* dois cards de status */
+.pl-conv-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 22px 0 18px; }
+.pl-conv-stat { display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 16px;
+  background: var(--panel-2); border: var(--border-soft); border-radius: 14px; }
+.pl-conv-v { font-family: var(--font-display); font-size: 32px; line-height: 1; color: var(--ink); font-variant-numeric: tabular-nums; }
 .pl-conv-v.t-gold { color: var(--gold); }
-.pl-conv-boosts { font-size: 16px; color: var(--dim); margin: -6px auto 22px; }
-.pl-conv-boosts b { color: var(--eclat); }
-.pl-conv-prog { margin: 0 auto 22px; max-width: 420px; }
-.pl-conv-prog-top { display: flex; justify-content: space-between; font-size: 16px; color: var(--dim);
-  margin-bottom: 6px; font-variant-numeric: tabular-nums; }
-.pl-conv-bar { height: 14px; border-radius: 8px; background: var(--panel-2); border: var(--border-soft); overflow: hidden; }
+.pl-conv-l { font-size: 15px; letter-spacing: .1em; text-transform: uppercase; color: var(--faint); }
+
+/* painel de ação (progresso + botão) = o foco */
+.pl-conv-action { background: var(--panel-2); border: var(--border-soft); border-radius: 14px; padding: 18px 20px; margin-bottom: 18px; }
+.pl-conv-action-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 9px; }
+.pl-conv-action-l { font-size: 15px; letter-spacing: .1em; text-transform: uppercase; color: var(--faint); }
+.pl-conv-action-v { font-size: 16px; color: var(--dim); font-variant-numeric: tabular-nums; }
+.pl-conv-action-v b { color: var(--ink); }
+.pl-conv-bar { height: 12px; border-radius: 7px; background: rgba(0,0,0,.35); border: var(--border-soft); overflow: hidden; }
 .pl-conv-bar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--eclat), #c4d8ff);
-  transition: width .2s ease; box-shadow: 0 0 14px var(--eclat); }
-.pl-conv-btn { appearance: none; cursor: pointer; height: 54px; padding: 0 44px; border: 0; border-radius: 13px;
-  font-weight: 700; font-size: 16px; letter-spacing: .14em; text-transform: uppercase;
+  transition: width .2s ease; box-shadow: 0 0 12px var(--eclat); }
+.pl-conv-btn { display: block; width: 100%; margin-top: 16px; appearance: none; cursor: pointer; height: 52px;
+  border: 0; border-radius: 12px; font-weight: 700; font-size: 16px; letter-spacing: .14em; text-transform: uppercase;
   background: linear-gradient(180deg, #c4d8ff, var(--eclat)); color: #06101f;
-  box-shadow: 0 0 30px -6px rgba(170,200,255,.7); transition: filter .14s ease, transform .1s ease; }
+  box-shadow: 0 0 30px -8px rgba(170,200,255,.6); transition: filter .14s ease, transform .1s ease; }
 .pl-conv-btn:hover:not(:disabled) { filter: brightness(1.07); transform: translateY(-1px); }
-.pl-conv-btn:disabled { background: var(--panel-2); color: var(--faint); box-shadow: none; cursor: not-allowed; }
-.pl-conv-keeps { margin-top: 18px; font-size: 16px; color: var(--faint); line-height: 1.55; }
+.pl-conv-btn:disabled { background: var(--panel); color: var(--faint); border: var(--border-soft); box-shadow: none; cursor: not-allowed; }
+
+/* linha de efeito (o que o +15% faz) */
+.pl-conv-effect { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap;
+  padding: 12px 0; border-top: var(--border-soft); border-bottom: var(--border-soft); margin-bottom: 18px; }
+.pl-conv-effect-l { font-size: 15px; letter-spacing: .08em; text-transform: uppercase; color: var(--faint); }
+.pl-conv-effect-v { font-family: var(--font-display); font-size: 22px; color: var(--gold); }
+.pl-conv-effect-tags { font-size: 16px; font-weight: 600; color: var(--eclat); }
+
+/* colunas Returns / Keeps */
+.pl-conv-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.pl-conv-col h4 { font-size: 14px; letter-spacing: .14em; text-transform: uppercase; margin: 0 0 8px; }
+.pl-conv-col.returns h4 { color: var(--gold); }
+.pl-conv-col.keeps h4 { color: var(--eclat); }
+.pl-conv-col ul { margin: 0; padding: 0; list-style: none; }
+.pl-conv-col li { font-size: 16px; color: var(--dim); padding: 3px 0 3px 16px; position: relative; }
+.pl-conv-col li::before { content: ""; position: absolute; left: 0; top: 11px; width: 5px; height: 5px; border-radius: 50%; }
+.pl-conv-col.returns li::before { background: var(--gold); }
+.pl-conv-col.keeps li::before { background: var(--eclat); }
+.pl-conv-col li em { font-style: normal; color: var(--faint); }

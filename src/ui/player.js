@@ -226,35 +226,47 @@ export function buildPlayerView(root, state) {
 
     <div class="pl-pane pl-conv-pane" data-pane="converge" hidden>
       <div class="pl-conv-card">
-        <div class="pl-conv-eyebrow">The rite of dispersal</div>
-        <h2 class="pl-conv-title">Convergence</h2>
-        <p class="pl-conv-lore">To keep the world, you let it go. Reaching a new threshold lets the Seed disperse the light it gathered — and remember the pattern stronger.</p>
+        <header class="pl-conv-head">
+          <div class="pl-conv-eyebrow">The rite of dispersal</div>
+          <h2 class="pl-conv-title">Convergence</h2>
+          <p class="pl-conv-lore">To keep the world, you let it go. Each new threshold lets the Seed disperse the light it gathered — and remember the pattern stronger.</p>
+        </header>
 
         <div class="pl-conv-stats">
           <div class="pl-conv-stat">
-            <span class="pl-conv-l">Convergences</span>
             <b class="pl-conv-v" id="pl-conv-count">0</b>
+            <span class="pl-conv-l">Convergences</span>
           </div>
           <div class="pl-conv-stat">
-            <span class="pl-conv-l">Permanent bonus</span>
             <b class="pl-conv-v t-gold" id="pl-conv-bonus">+0%</b>
+            <span class="pl-conv-l">Permanent bonus</span>
           </div>
         </div>
 
-        <div class="pl-conv-boosts">Each Convergence: <b>+15%</b> to <b>Damage · HP · XP · Lumens</b> (permanent)</div>
-
-        <div class="pl-conv-prog">
-          <div class="pl-conv-prog-top">
-            <span id="pl-conv-prog-lbl">Level 1 / 40</span>
-            <span id="pl-conv-prog-pct">0%</span>
+        <div class="pl-conv-action">
+          <div class="pl-conv-action-top">
+            <span class="pl-conv-action-l">Next threshold</span>
+            <span class="pl-conv-action-v"><b id="pl-conv-prog-lbl">Level 1 / 40</b> · <span id="pl-conv-prog-pct">0%</span></span>
           </div>
           <div class="pl-conv-bar"><i id="pl-conv-fill"></i></div>
+          <button type="button" class="pl-conv-btn" id="pl-conv-btn" disabled>Reach the threshold</button>
         </div>
 
-        <button type="button" class="pl-conv-btn" id="pl-conv-btn" disabled>Reach the threshold</button>
-        <div class="pl-conv-keeps">
-          <b>Returns to the world:</b> your Level (run XP) &amp; Gear levels ·
-          <b>The Seed keeps:</b> Gear rarity, map position, Lumens, Vestiges, Passives, Mémoires.
+        <div class="pl-conv-effect">
+          <span class="pl-conv-effect-l">Each Convergence grants</span>
+          <b class="pl-conv-effect-v">+15%</b>
+          <span class="pl-conv-effect-tags">Damage · HP · XP · Lumens</span>
+        </div>
+
+        <div class="pl-conv-cols">
+          <div class="pl-conv-col returns">
+            <h4>Returns to the world</h4>
+            <ul><li>Your Level <em>(run XP)</em></li><li>Gear levels</li></ul>
+          </div>
+          <div class="pl-conv-col keeps">
+            <h4>The Seed keeps</h4>
+            <ul><li>Gear rarity</li><li>Map position</li><li>Lumens &amp; Vestiges</li><li>Passives &amp; Mémoires</li></ul>
+          </div>
         </div>
       </div>
     </div>
