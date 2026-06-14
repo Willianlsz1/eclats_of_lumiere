@@ -129,7 +129,9 @@ party passive, Gaiadon.
 ## Pendências grandes (próximas sessões)
 1. ✅ **Efeitos das 4 habilidades** — FECHADO (Surto/Torpor/Maré Dourada/Égide). Resta: nomes de lore + números.
 2. ✅ **15 efeitos das Mémoires** — FECHADO (knobs globais/meta). Resta: números (magnitudes/custos).
-3. ✅ **Passivas** — 45 reconciliadas (efeitos). Resta: números (recalibração).
+3. ✅ **Passivas** — 45 reconciliadas (efeitos). Resta: números (recalibração) **+ ⏳ definir o
+   UNLOCK de cleave/AoE** (qual passiva concede e como escala — candidatas: Overkill / Shard
+   Burst / Luminal Explosion; ADR 0002). **Sessão de passivas.**
 4. **Pacing pra ~30 dias** (números: sub-áreas 7-8, ritmo Walls/Hollows/Convergences).
 5. **RECALIBRAÇÃO GERAL** (o cleave invalidou a calibração antiga — pass próprio).
 
