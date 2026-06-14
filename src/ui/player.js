@@ -237,9 +237,11 @@ export function buildPlayerView(root, state) {
           </div>
           <div class="pl-conv-stat">
             <span class="pl-conv-l">Permanent bonus</span>
-            <b class="pl-conv-v t-gold" id="pl-conv-bonus">×1</b>
+            <b class="pl-conv-v t-gold" id="pl-conv-bonus">+0%</b>
           </div>
         </div>
+
+        <div class="pl-conv-boosts">Each Convergence: <b>+15%</b> to <b>Damage · HP · XP · Lumens</b> (permanent)</div>
 
         <div class="pl-conv-prog">
           <div class="pl-conv-prog-top">
