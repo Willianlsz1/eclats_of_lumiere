@@ -67,6 +67,26 @@ Não +dano% genérico (evita redundância com Nível/Convergence). 3 árvores ×
 - **Exóticas/sinergia (nós profundos):** **+% aos stats do Gear** · "quanto mais fundo no
   mapa, +X" · "cada Reliquat equipado aumenta Y" · bônus que crescem com o tempo.
 
+### Reconciliação das 45 (as do GDD §7 já existem; o redesign reparou algumas)
+Aprovado tree-by-tree em 2026-06-14. **As 45 nomeadas+calibradas do GDD §7 ficam**, com reparos:
+- **ÉCLAT (4 reparos):** *Refraction* = crit dobra no alvo de **maior HP** (era ricochete) ·
+  *Shard Burst* = golpe periódico de **dano por % vida máx** (anti-tank) · *Overkill* =
+  excedente vai pro **mob de maior HP** (anti-boss) · *Luminal Explosion* = **pulso
+  periódico de dano massivo**. (Cleave tornou os antigos "espalhar/transbordar" redundantes;
+  some o "kill paga ~50%".)
+- **VESTIGE (1 refino):** *Beast Caller* = fortalece o **Echo (Gatekeeper A3)**.
+- **Offline (regra global + 2 passivas):** **eficiência ≤ ~50% do ativo (teto 60%)**;
+  **tempo acumula 8h inicial → 24h máx**. *Dreamwalker* = **eficiência** (rumo a 50%);
+  *Nil's Embrace* = **teto de tempo** (8h→24h).
+- **FRACTURE (4 reparos):** *Void Awareness* = **overflow de APS** (APS acima do cap vira
+  dano bônus; par da Fracture Pulse; espelho do Momentum/crit) · *Éclat Attunement* =
+  **+% ao bônus da Convergence** (era "+pontos") · *The Fracture's Gift* = **níveis grátis
+  de Gear que sobrevivem ao reset da Convergence** (era "Gold Stats grátis") · *Nil's
+  Embrace* = **teto de tempo do offline** (8h→24h).
+
+> **As 45 estão fechadas (efeitos).** Posicionamento (grupos 1/2/3) e maxLevel/custos do GDD
+> §7 seguem válidos; os NÚMEROS finos entram na recalibração geral.
+
 ## Mémoires — modelo "Artifacts" (TT2)
 Direção: Mémoires viram algo como os **Artifacts do Tap Titans 2** — **15 bônus fortes e
 diversos** (game-changers), upáveis com **Éclats**. **Sem escassez dolorosa**: dá pra

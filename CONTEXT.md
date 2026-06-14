@@ -108,6 +108,12 @@ e o **mesmo motor de combate** (sem engine novo) atravessa **andares de ondas at
 (boss do Hollow)**; limpar **dropa gear/material**; **repetível**. O mapa principal
 **pausa** enquanto o jogador está dentro (atividade focada/online; offline = mapa idle).
 
+**Estrutura interna (decidido 2026-06-14):** **número FIXO de andares** (ex.: ~5, a
+calibrar), cada andar mais forte que o anterior, e o **NOBRE sempre no final** (boss-clímax
+da run). Repetível. O **eixo infinito do farm é a DIFICULDADE** (Normal → Nightmare →
+Tormento → …, do Gatekeeper A2), que multiplica HP/dano/recompensa do Hollow inteiro —
+**não** há andares infinitos. Profundidade fixa; dificuldade cresce sem teto.
+
 **Divisão econômica (decidido 2026-06-14):** **mapa principal = moedas** (Lumens →
 *nível* do Gear; Vestiges → Passivas/Ascension; drip de Éclats → Mémoires). **Hollow =
 materiais + gear exclusivo do nobre** (→ *raridade* do Gear, os saltos que quebram a
