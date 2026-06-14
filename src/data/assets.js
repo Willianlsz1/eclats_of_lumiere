@@ -22,7 +22,8 @@ const DATA = {
     "card_t2": "characters/seeker/seeker_card_t2",
     "card_t3": "characters/seeker/seeker_card_t3",
     "card_t4": "characters/seeker/seeker_card_t4",
-    "card_t5": "characters/seeker/seeker_card_t5"
+    "card_t5": "characters/seeker/seeker_card_t5",
+    "nameplate": "characters/seeker/seeker_nameplate"
   },
   "frames": {
     "card": "frames/card_frame_alpha",

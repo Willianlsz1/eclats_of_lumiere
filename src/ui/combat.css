@@ -20,63 +20,48 @@
 }
 
 /* ============================================================
-   Card do Seeker — mesmo modelo 3 camadas do card de inimigo:
-   fundo navy recuado + moldura PNG do tier (maior, com respiro)
-   + arte / nome / tier / barra de HP (vermelha) / barra de LV (azul).
+   Seeker SEM CARD — sprite de corpo inteiro (como os mobs):
+   nome + tier acima · sprite no meio · barra de HP (vermelha) e LV (azul) abaixo.
    ============================================================ */
-.cb-seeker.scard {
+.cb-seeker.sfig {
   position: absolute; z-index: 6;
-  left: 56px; top: 168px; width: 300px; aspect-ratio: 1024 / 1536;
-  background: transparent;
-  transition: filter .25s ease;
+  left: 56px; top: 150px; width: 300px;
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  background: transparent; transition: filter .25s ease;
 }
-.cb-seeker.scard.dead { filter: grayscale(.7) brightness(.8); }
+.cb-seeker.sfig.dead { filter: grayscale(.7) brightness(.8); }
 
-/* CAMADA 0 — fundo navy dentro da moldura */
-.scard-bg {
-  position: absolute; inset: 4.5% 5.5% 4%; z-index: 0;
-  background: #0a1024; border-radius: 10px;
-}
-
-/* CAMADA 2 — moldura do tier, levemente maior que o card */
-.scard-frame {
-  position: absolute; inset: -3.5%; width: 107%; height: 107%;
-  pointer-events: none; z-index: 2;
-}
-.scard-frame img { width: 100%; height: 100%; object-fit: fill; }
-
-/* CAMADA 1 — o CARD inteiro (moldura + avatar fundidos) preenche o cartão */
-.scard-art {
-  position: absolute; inset: 0; z-index: 0;
-  border-radius: 8px; overflow: hidden;
-}
-.scard-art picture, .scard-art img {
-  width: 100%; height: 100%; object-fit: cover; display: block;
-}
-/* escurecimento na base pra legibilidade das infos sobre a arte */
-.scard-art::after {
-  content: ""; position: absolute; inset: 0;
-  background: linear-gradient(180deg, transparent 52%, rgba(5,8,20,.55) 72%, rgba(5,8,20,.92));
+/* sprite (recorte transparente; sem moldura/fundo) */
+.sfig-art { position: relative; width: 100%; line-height: 0; }
+.sfig-art picture, .sfig-art img, .scard-art-img, .scard-art-img img {
+  width: 100%; height: auto; display: block; object-fit: contain;
+  filter: drop-shadow(0 8px 14px rgba(0,0,0,.6));
 }
 
-/* CAMADA 3 — infos sobrepostas na base do retrato */
-.scard-inner {
-  position: absolute; inset: 9% 13% 11%; z-index: 1;
-  display: flex; flex-direction: column; justify-content: flex-end; min-height: 0;
+/* nome / tier sobre o banner (placa navy/filigrana) */
+.sfig-label { position: relative; width: 114%; text-align: center; }
+.sfig-banner, .sfig-banner img {
+  display: block; width: 100%; height: auto; pointer-events: none;
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,.5));
+}
+/* o texto fica na faixa navy central da placa (o topo do banner tem a crista) */
+.sfig-nametext {
+  position: absolute; left: 8%; right: 8%; top: 30%; bottom: 14%;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 0;
 }
 .scard-name {
-  margin-top: 8px; font-family: var(--font-display); font-weight: 700; color: #fff;
-  font-size: 20px; line-height: 1.05; letter-spacing: .02em; text-align: center;
-  text-transform: uppercase; white-space: nowrap; text-shadow: 0 2px 6px #000c;
+  font-family: var(--font-display); font-weight: 700; color: #fff;
+  font-size: 15px; line-height: 1.05; letter-spacing: .04em;
+  text-transform: uppercase; white-space: nowrap; text-shadow: 0 1px 4px #000;
 }
 .scard-tier {
-  margin-top: 2px; font-size: 16px; color: #9fb6e6; text-align: center;
-  letter-spacing: .16em; text-transform: uppercase;
+  font-size: 11px; color: #bcd2ff;
+  letter-spacing: .12em; text-transform: uppercase; text-shadow: 0 1px 3px #000;
 }
-.scard-div {
-  height: 1px; margin: 8px 2px;
-  background: linear-gradient(90deg, transparent, rgba(159,182,230,.45), transparent);
-}
+
+/* infos abaixo do sprite */
+.sfig-info { width: 100%; }
 
 /* barra de HP (vermelha, com texto) e barra de LV (azul) */
 .scard-hpbar, .scard-lvbar {
@@ -257,9 +242,19 @@
   background: linear-gradient(90deg, var(--gold), #f0d9a0);
   box-shadow: var(--glow-gold); transition: width .2s ease; }
 
-.cb-metrics { display: flex; gap: 22px; margin: 0; padding: 0; }
-.cb-metrics > div { text-align: right; }
-.cb-metrics dt { font-size: 16px; color: var(--dim);
-  text-transform: uppercase; letter-spacing: .1em; }
-.cb-metrics dd { margin: 2px 0 0; font-size: 21px; font-weight: 600;
-  color: var(--ink); font-variant-numeric: tabular-nums; }
+/* Métricas: rates por minuto agrupados (com divisória) + total de kills à parte */
+.cb-metrics { display: flex; align-items: center; gap: 18px; margin: 0; padding: 0; }
+.cb-metrics > div {
+  display: flex; flex-direction: column; align-items: flex-end;
+  min-width: 76px;
+}
+.cb-metrics dt { font-size: 13px; color: var(--dim); font-weight: 600;
+  text-transform: uppercase; letter-spacing: .08em; white-space: nowrap; }
+.cb-metrics dd { margin: 1px 0 0; font-size: 22px; font-weight: 700;
+  color: var(--ink); font-variant-numeric: tabular-nums; line-height: 1.1; }
+/* separa o trio "/min" do total de Kills */
+.cb-metrics > div.cb-metric-total {
+  margin-left: 6px; padding-left: 18px;
+  border-left: 1px solid rgba(159,182,230,.2);
+}
+.cb-metrics > div.cb-metric-total dd { color: var(--gold); }

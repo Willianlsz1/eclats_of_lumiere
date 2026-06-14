@@ -10,7 +10,7 @@
 import { formatNumber } from '../core/format.js';
 import { picture, bg } from '../data/assets.js';
 import { runLevel, playerHpMax, currentAPS } from '../game/stats.js';
-import { changeSubarea } from '../game/combat.js';
+import { changeSubarea, subareaUnlockLevel } from '../game/combat.js';
 import { getCurrentMap, subareaLevelRange } from '../game/enemies.js';
 import { currentRank } from '../game/ascension.js';
 
@@ -111,15 +111,17 @@ export function buildCombatView(root, state) {
   root.innerHTML = `
     <div class="cb-backdrop" id="cb-backdrop"></div>
 
-    <aside class="cb-seeker scard" id="cb-seeker">
-      <div class="scard-bg"></div>
-      <div class="scard-art">
+    <aside class="cb-seeker sfig" id="cb-seeker">
+      <div class="sfig-label">
+        ${picture('seeker.nameplate', { className: 'sfig-banner', alt: '' })}
+        <div class="sfig-nametext">
+          <div class="scard-name">Seeker</div>
+        </div>
+      </div>
+      <div class="scard-art sfig-art">
         ${picture('seeker.card_t1', { className: 'scard-art-img', alt: 'The Seeker' })}
       </div>
-      <div class="scard-inner">
-        <div class="scard-name">The Seeker</div>
-        <div class="scard-tier" id="cb-tier">Seeker · Tier I</div>
-        <div class="scard-div"></div>
+      <div class="sfig-info">
         <div class="scard-hpbar"><i id="cb-hp-fill"></i>
           <span id="cb-hp-text">—</span></div>
         <div class="scard-lvbar"><i></i>
@@ -137,20 +139,19 @@ export function buildCombatView(root, state) {
       <div class="cb-nav">
         <button type="button" class="cb-arrow" id="cb-prev" title="Previous sub-area">◀</button>
         <div class="cb-zone">
-          <b id="cb-zone-name">The Dreaming Wood</b>
-          <span id="cb-zone-sub">Sub-area 1/5</span>
+          <span id="cb-zone-sub">LV 1</span>
         </div>
         <button type="button" class="cb-arrow" id="cb-next" title="Next sub-area">▶</button>
       </div>
       <div class="cb-progress">
-        <span class="cb-progress-label" id="cb-progress-label">Toward the Guardian</span>
+        <span class="cb-progress-label" id="cb-progress-label">Wave 1</span>
         <div class="cb-progress-bar"><i id="cb-progress-fill"></i></div>
       </div>
       <dl class="cb-metrics">
-        <div><dt>Kills/min</dt><dd id="cb-kpm">0</dd></div>
-        <div><dt>Lumens/min</dt><dd id="cb-lpm">0</dd></div>
-        <div><dt>Vestiges/min</dt><dd id="cb-vpm">0</dd></div>
-        <div><dt>Kills</dt><dd id="cb-kills">0</dd></div>
+        <div><dt>Kills /min</dt><dd id="cb-kpm">0</dd></div>
+        <div><dt>Lumens /min</dt><dd id="cb-lpm">0</dd></div>
+        <div><dt>Vestiges /min</dt><dd id="cb-vpm">0</dd></div>
+        <div class="cb-metric-total"><dt>Total kills</dt><dd id="cb-kills">0</dd></div>
       </dl>
     </footer>
   `;
@@ -169,7 +170,7 @@ export function renderCombat(state) {
 
   // ── Card do Seeker ──
   const rank = currentRank(state);
-  $('cb-tier').textContent = `${rank.name} · Tier ${rank.tier}`;
+  // tier removido do banner (vai pra outra tela); rank ainda escolhe o sprite do tier
   updateSeekerCard($('cb-seeker'), `seeker.card_t${TIER_NUM[rank.tier] || 1}`);
   $('cb-hp-fill').style.width = `${Math.max(0, (state.player.hp / hpMax) * 100)}%`;
   $('cb-hp-text').textContent =
@@ -188,7 +189,6 @@ export function renderCombat(state) {
   }
 
   // ── Navegação / zona (segue o mapa atual) ──
-  $('cb-zone-name').textContent = map.name;
   const bd = $('cb-backdrop');
   if (bd) bd.style.backgroundImage = subareaBg(state);
   const range = subareaLevelRange(map, state.subarea);
@@ -199,18 +199,36 @@ export function renderCombat(state) {
   prev.disabled = state.subarea <= 1;
   next.disabled = state.subarea >= state.unlockedSubarea;
   next.title = next.disabled && state.subarea < map.subareaCount
-    ? "Defeat this sub-area's Guardian to advance"
+    ? `Reach level ${formatNumber(subareaUnlockLevel(map, state.subarea + 1))} to advance`
     : 'Next sub-area';
 
-  // ── Onda atual + progresso até o boss (modelo de ondas: limpa a onda → próxima;
-  //    o Guardião entra na onda ao bater killsInSubarea/bossKillThreshold). ──
+  // ── Onda atual + progresso. Sem Guardião: sub-áreas 1..N-1 mostram o avanço de
+  //    NÍVEL até liberar a próxima; a última mostra o progresso até o boss. ──
+  const isFinalArea = state.subarea === map.subareaCount;
   const bossOut = state.enemies.some((m) => m.isBoss && m.hp > 0);
   const alive = state.enemies.reduce((n, m) => n + (m.hp > 0 ? 1 : 0), 0);
-  const pct = Math.min(100, (state.killsInSubarea / map.bossKillThreshold) * 100);
+  let pct, label;
+  if (bossOut) {
+    pct = 100;
+    label = `⚔ ${map.bossName} · ${alive} in the wave`;
+  } else if (isFinalArea) {
+    pct = Math.min(100, (state.killsInSubarea / map.bossKillThreshold) * 100);
+    label = `Wave ${state.wave} · ${alive} alive · ${Math.floor(pct)}% to ${map.bossName}`;
+  } else if (state.unlockedSubarea < map.subareaCount) {
+    // Progresso de NÍVEL até destravar a próxima área da fronteira (não a atual)
+    const tgt = state.unlockedSubarea + 1;
+    const lv = runLevel(state);
+    const cur = subareaUnlockLevel(map, state.unlockedSubarea);
+    const nxt = subareaUnlockLevel(map, tgt);
+    const tgtName = (map.subareaNames || [])[tgt - 1] || `area ${tgt}`;
+    pct = Math.max(0, Math.min(100, ((lv - cur) / Math.max(1, nxt - cur)) * 100));
+    label = `Wave ${state.wave} · ${alive} alive · level ${formatNumber(lv)}/${formatNumber(nxt)} → ${tgtName}`;
+  } else {
+    pct = 100;
+    label = `Wave ${state.wave} · ${alive} alive`;
+  }
   $('cb-progress-fill').style.width = `${pct}%`;
-  $('cb-progress-label').textContent = bossOut
-    ? `⚔ The Guardian has arrived · ${alive} in the wave`
-    : `Wave ${state.wave} · ${alive} alive · Guardian ${Math.floor(pct)}%`;
+  $('cb-progress-label').textContent = label;
 
   // ── HUD: taxas suavizadas ──
   renderRates(state);

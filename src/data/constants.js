@@ -55,6 +55,10 @@ export const MAPS = [
     enemyArts: ['enemies.map1.candlewisp_shade', 'enemies.map1.mothlight_herald', 'enemies.map1.dreamhorn_warden', 'enemies.map1.hollowroot_crawler', 'enemies.map1.glowmere_drifter'],
     guardianArt: 'enemies.map1.dreamhorn_warden',
     bossName: 'The Gilded Hollow', bossArt: 'enemies.map1.gilded_hollow',
+    subareaNames: [
+      'Lanternroot Glade', 'Glimmercap Hollow', 'The Lightfall Stair', 'The Dreaming Gate',
+      'The Verdant Deep', 'The Gilded Mire', 'The Hollowed Grove', 'The Stillwatch', 'The Hollow Heart',
+    ],
   },
   {
     id: 2, name: 'Cavernes Luminis', continent: 'worldmap.continent2', bg: 'backgrounds.map2',

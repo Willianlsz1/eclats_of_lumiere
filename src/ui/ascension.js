@@ -192,7 +192,7 @@ export function renderAscension(state) {
     if (note) {
       note.textContent = met
         ? (able ? 'The rite is ready.' : `Gather ${formatNumber(a.cost)} Vestiges for Ascension ${roman(a.id)}.`)
-        : `Defeat the map’s final Guardian to unlock Ascension ${roman(a.id)}.`;
+        : `Defeat the map’s final boss to unlock Ascension ${roman(a.id)}.`;
     }
   }
 

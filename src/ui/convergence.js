@@ -13,7 +13,7 @@ const ornSrc = (n) => `eclats/convergence/ornaments/${n}.png`;
 // Dados PLACEHOLDER (mockup v3) — substituir pelos reais no disparo.
 const PLACEHOLDER = {
   points: '+12',
-  pointsNote: 'peak XP · Guardian bonus ✓',
+  pointsNote: 'peak XP · boss bonus ✓',
   factor: '×1.41',
   prevFactor: '×1.34',
   returns: ['Lumens · 8.4e12', 'Gold Stats levels', 'Hero progress this cycle'],
