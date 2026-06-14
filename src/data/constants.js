@@ -17,8 +17,18 @@ export const COMBAT = {
 
 // §12 — Lumens · §6 — XP
 export const ECONOMY = {
-  goldRatio: 0.10, // lumens_por_kill = mob_hp × 0.10 × frt_total
-  xpRatio: 0.08,   // xp_por_kill     = mob_hp × 0.08 × wis_total
+  goldRatio: 0.10, // lumens_por_kill = mob_hp × 0.10 (× convMult; sem frt — CP-3)
+  xpRatio: 0.08,   // xp_por_kill     = mob_hp × 0.08 (× convMult; sem wis — CP-3)
+};
+
+// CP-3 (redesign) — NÍVEL = motor de stat base (substitui os Gold Stats).
+// O nível vem do XP da RUN (xpRun): level = (xpRun / div)^exp. Reseta na Convergence.
+// Cada nível dá stat FLAT. ⏳ VALORES PLACEHOLDER — Willian vai calibrar por teste.
+export const LEVEL = {
+  curveDiv: 10, curveExp: 0.4, // forma da curva nível↔XP (mesma do antigo heroLevel)
+  dmgPerLevel: 10,  // +dano flat por nível (semente do Willian)
+  hpPerLevel: 5,    // +HP flat por nível
+  goldPerLevel: 3,  // +Lumens base por kill por nível
 };
 
 // §3 — Malha geométrica dos 5 mapas (✅ levels/HP/threshold canônicos).
@@ -111,16 +121,13 @@ export const DEFENSE = {
   enemyDefBase: 0,  // defesa de inimigos: early = 0 (hooks: Void Piercing penetra · Weakened Void reduz)
 };
 
-// §6 — Convergence: parede de XP geométrica e pontos por profundidade
+// CP-3 (redesign): Convergence SEM reset de mapa. Gate por NÍVEL; +15% ADITIVO
+// permanente (dano/HP/XP/Lumens). Reseta o nível da run (xpRun) + o nível do Gear.
+// ⏳ VALORES PLACEHOLDER — Willian vai calibrar por teste (15% fixo? variável?).
 export const CONVERGENCE = {
-  wallBase: 1500,        // parede da 1ª run
-  wallRatio: 1.5,        // razão base entre paredes
-  wallRatioGrowth: 1.06, // a razão cresce 6% a cada Convergence
-  // conv_factor = (1 + pointBonusBase × pointBonusGrowth^ascensions)^(Σ pontos) — COMPOSTO + ANINHADO.
-  // Camada 7: o aditivo 1+0.15×pts morria (1.57 déc). A Ascension zera os pontos mas
-  // AMPLIFICA a base (§8): base sobe 1.04 (A0) → 1.20 (A5), pico ~4 décadas na era final.
-  pointBonusBase: 0.04,   // base inicial = 1.04
-  pointBonusGrowth: 1.38, // a base composta sobe ×1.38 a cada Ascension
+  bonusPerConv: 0.15,   // convMult = 1 + 0.15 × convergences (ADITIVO)
+  gateLevelBase: 40,    // 1ª Convergence: atingir nível 40
+  gateLevelGrowth: 1.2, // o alvo de nível sobe ×1.2 a cada Convergence
 };
 
 // §7 — Vestiges (renda; gasto em Passivas/Ascension é pós-MVP)

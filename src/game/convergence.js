@@ -1,51 +1,37 @@
-// Convergence — GDD §6 e §2.
-// O portão é uma parede de XP geométrica: quando o XP da run enche a parede,
-// o botão acende e o jogador converge — reseta Gold Stats, Lumens e progresso
-// de mapa; ganha pontos pela subárea mais funda alcançada na run.
-// Persistem: pontos de Convergence, XP/level do Seeker (e, fora do MVP,
-// Gear/Echoes/Passivas/Mémoires).
+// Convergence — CP-3 (redesign). SEM reset de mapa. Gate por NÍVEL; dá +15% ADITIVO
+// permanente (o convMult vive em stats.js, entra em dano/HP/XP/Lumens). O botão
+// RESETA: o nível da RUN (xpRun→0) + o NÍVEL do Gear (a RARIDADE nunca reseta).
+// NÃO reseta: mapa/posição, Lumens, Vestiges. (O Gatekeeper A1 vai tirar o reset
+// do gear — CP-7.) Você nunca volta pro início do mapa: sempre pra frente.
 
 import { CONVERGENCE } from '../data/constants.js';
-import { playerHpMax } from './stats.js';
+import { runLevel, playerHpMax } from './stats.js';
 import { resetPack } from './combat.js';
-import { memoireConvPointBonus } from './memoires.js';
 
-// parede_da_run(c) = 1500 × Π(i=0..c-1) [1.5 × 1.06^i]
-export function xpWall(convergences) {
-  let wall = CONVERGENCE.wallBase;
-  for (let i = 0; i < convergences; i++) {
-    wall *= CONVERGENCE.wallRatio * CONVERGENCE.wallRatioGrowth ** i;
-  }
-  return wall;
+// Nível-alvo da próxima Convergence (sobe a cada converge). 1ª = nível 40.
+export function convGateLevel(convergences) {
+  return Math.round(CONVERGENCE.gateLevelBase * CONVERGENCE.gateLevelGrowth ** convergences);
 }
 
 export function canConverge(state) {
-  return state.xpRun >= xpWall(state.convergences);
+  return runLevel(state) >= convGateLevel(state.convergences);
 }
 
-// pontos_da_run = subárea mais funda alcançada + #9 du Dernier Chant (+1 a cada 5 níveis)
-export function runPoints(state) {
-  return state.bestSubareaRun + memoireConvPointBonus(state);
+// Progresso rumo ao gate (0..1) — pra UI.
+export function convergeProgress(state) {
+  return Math.min(1, runLevel(state) / convGateLevel(state.convergences));
 }
 
 export function doConverge(state) {
   if (!canConverge(state)) return false;
 
   state.convergences += 1;
-  state.convPoints += runPoints(state);
-
-  // Reset de run: Gold Stats, Lumens e progresso de mapa
-  state.lumens = 0;
-  for (const key of Object.keys(state.stats)) state.stats[key] = 0;
+  // Reset: nível da run + NÍVEL do Gear (raridade preservada).
   state.xpRun = 0;
-  state.subarea = 1;
-  state.unlockedSubarea = 1;
-  state.bossDefeated = state.bossDefeated.map(() => false);
-  state.killsInSubarea = 0;
-  state.bestSubareaRun = 1;
+  for (const key of Object.keys(state.gear)) state.gear[key].level = 0;
+  // NÃO reseta: map/subarea/unlockedSubarea/bossDefeated, Lumens, Vestiges, raridade.
 
-  // Jogador renasce cheio na sub 1 (a 1ª Convergence desbloqueia as
-  // Passivas no jogo completo — fora do MVP; Vestiges são CP-F)
+  // Renasce cheio na posição atual; reinicia a onda (você está mais fraco agora).
   state.player.dead = false;
   state.player.respawnTimer = 0;
   state.player.attackTimer = 0;

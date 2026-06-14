@@ -2,8 +2,8 @@
 // lumens_por_kill = mob_hp × 0.10 × frt_total (boss ×5 — CP-D)
 // xp_por_kill     = mob_hp × 0.08 × wis_total
 
-import { ECONOMY, NUMBER_CAP, BOSS_LUMEN_MULT, VESTIGES, CRAFT, NITZOTZ, mapMaterialTier } from '../data/constants.js';
-import { frtTotal, wisTotal } from './stats.js';
+import { ECONOMY, LEVEL, NUMBER_CAP, BOSS_LUMEN_MULT, VESTIGES, CRAFT, NITZOTZ, mapMaterialTier } from '../data/constants.js';
+import { convMult, runLevel } from './stats.js';
 import { gearLumensMult, gearXpMult, gearMaterialDropMult } from './gear.js';
 import { passiveEcoMult, passiveMaterialMult } from './passives.js';
 import { memoireLumensMult, memoireXpMult, memoireVestigeMult, memoireMateriaisMult, memoireDiffRewardMult } from './memoires.js';
@@ -45,8 +45,11 @@ export function awardKill(state, mob) {
   // §12: o ×5 de boss só se aplica a Lumens; o XP já escala pelo HP ×15
   const bossMult = mob.isBoss ? BOSS_LUMEN_MULT : 1;
   const eco = passiveEcoMult(state); // §7 Vestige tree (Lumens/XP) — provisório
-  state.lumens = Math.min(NUMBER_CAP, state.lumens + mob.hpMax * ECONOMY.goldRatio * frtTotal(state) * bossMult * gearLumensMult(state) * eco * memoireLumensMult(state));
-  const xp = mob.hpMax * ECONOMY.xpRatio * wisTotal(state) * gearXpMult(state) * eco * memoireXpMult(state);
+  const cm = convMult(state);        // CP-3: Convergence +15% em Lumens e XP (sem frt/wis)
+  // Lumens base = HP×goldRatio + nível×goldPerLevel (o "gold base por nível" do Willian)
+  const lumBase = mob.hpMax * ECONOMY.goldRatio + runLevel(state) * LEVEL.goldPerLevel;
+  state.lumens = Math.min(NUMBER_CAP, state.lumens + lumBase * cm * bossMult * gearLumensMult(state) * eco * memoireLumensMult(state));
+  const xp = mob.hpMax * ECONOMY.xpRatio * cm * gearXpMult(state) * eco * memoireXpMult(state);
   state.xpTotal = Math.min(NUMBER_CAP, state.xpTotal + xp); // vida (level display)
   state.xpRun = Math.min(NUMBER_CAP, state.xpRun + xp);     // run (parede de Convergence)
   // §7: Vestiges nunca resetam; boss paga ×10
