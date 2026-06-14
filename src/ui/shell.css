@@ -5,6 +5,8 @@
    ============================================================ */
 
 * { box-sizing: border-box; }
+/* controles herdam a fonte (sem o default ~13.33px do <button> do navegador) */
+button, input, select, textarea { font-family: inherit; font-size: inherit; }
 html, body { height: 100%; margin: 0; }
 body {
   background: #05070f;
@@ -111,7 +113,7 @@ body {
   .chud { gap: 6px; }
   .chud-pill { height: 40px; padding: 0 10px 0 8px; gap: 6px; }
   .chud-ico { width: 18px; height: 18px; }
-  .chud-v { font-size: 13px; }
+  .chud-v { font-size: 16px; }
 }
 
 /* ---------------- MAIN (views) ---------------- */
@@ -161,7 +163,7 @@ body {
   max-width: 620px; z-index: 200; display: none;
   background: var(--panel-2); border: 1px solid var(--line); border-radius: 12px;
   box-shadow: var(--shadow-panel); padding: 14px 18px; color: var(--ink);
-  font-size: 14px; line-height: 1.5;
+  font-size: 16px; line-height: 1.5;
 }
 #offline-toast b { font-family: var(--font-display); font-size: 18px; color: var(--eclat); }
 #offline-toast button {

@@ -90,9 +90,9 @@
   -webkit-mask-size: contain; mask-size: contain;
   filter: drop-shadow(0 0 6px color-mix(in srgb, var(--c) 50%, transparent)); }
 
-.pv-node-name { font-family: var(--font-display); font-size: 13px; line-height: 1.05; text-align: center;
+.pv-node-name { font-family: var(--font-display); font-size: 16px; line-height: 1.05; text-align: center;
   color: #e7eefb; max-width: 120px; text-shadow: 0 1px 4px #000, 0 0 8px #000; }
-.pv-node-lvl { font-size: 11px; color: #c5d3ea; font-variant-numeric: tabular-nums; min-height: 13px;
+.pv-node-lvl { font-size: 16px; color: #c5d3ea; font-variant-numeric: tabular-nums; min-height: 13px;
   text-shadow: 0 1px 3px #000; }
 
 /* estados */
@@ -129,13 +129,13 @@
 .pv-tip-htext { min-width: 0; }
 .pv-tip-name { font-family: var(--font-display); font-weight: 700; font-size: 21px; color: #f3f7ff;
   display: flex; align-items: center; gap: 8px; }
-.pv-tip-tag { font-size: 11px; font-weight: 700; color: #8be0a0; letter-spacing: .12em; text-transform: uppercase;
+.pv-tip-tag { font-size: 16px; font-weight: 700; color: #8be0a0; letter-spacing: .12em; text-transform: uppercase;
   padding: 2px 9px; border-radius: 999px; background: rgba(127,208,138,.14);
   border: 1px solid rgba(127,208,138,.4); }
-.pv-tip-lvl { font-size: 13.5px; color: var(--dim); font-variant-numeric: tabular-nums; letter-spacing: .06em;
+.pv-tip-lvl { font-size: 16px; color: var(--dim); font-variant-numeric: tabular-nums; letter-spacing: .06em;
   text-transform: uppercase; margin-top: 3px; }
 .pv-tip-eff { margin: 0 0 12px; font-size: 16px; line-height: 1.5; color: #d3deef; }
-.pv-tip-foot { font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: .02em;
+.pv-tip-foot { font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: .02em;
   padding-top: 10px; border-top: 1px solid color-mix(in srgb, var(--c) 16%, rgba(255,255,255,.06)); }
 .pv-tip-foot.cost { color: #f0d9a0; }
 .pv-tip-foot.max { color: var(--c); }

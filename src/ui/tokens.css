@@ -33,7 +33,7 @@
   --font-display: 'Cormorant Garamond', 'Georgia', serif;  /* títulos / nomes / lore */
   --font-ui:      'Inter', system-ui, -apple-system, sans-serif; /* números / UI */
   --fs-xxl: 46px; --fs-xl: 34px; --fs-lg: 24px; --fs-md: 18px;
-  --fs-sm: 15px;  --fs-xs: 13px;
+  --fs-sm: 16px;  --fs-xs: 16px;
   --tracking: .02em;
 
   /* — forma dos cards / padrões — */

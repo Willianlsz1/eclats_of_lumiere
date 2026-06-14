@@ -32,12 +32,12 @@
 }
 .awaken .awk-now { padding-bottom: 12px; border-bottom: 1px solid var(--awk-line-soft); margin-bottom: 12px; }
 .awaken .awk-now-rank { font-size: 22px; font-weight: 700; color: var(--awk-ice); }
-.awaken .awk-now-tier { font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--awk-dim); margin-top: 2px; }
+.awaken .awk-now-tier { font-size: 16px; letter-spacing: .12em; text-transform: uppercase; color: var(--awk-dim); margin-top: 2px; }
 .awaken .awk-totals { margin: 0 0 14px; display: grid; gap: 8px; }
 .awaken .awk-totals div { display: flex; justify-content: space-between; align-items: baseline; }
-.awaken .awk-totals dt { font-size: 14px; color: var(--awk-dim); }
+.awaken .awk-totals dt { font-size: 16px; color: var(--awk-dim); }
 .awaken .awk-totals dd { margin: 0; font-size: 19px; font-weight: 700; color: #eef4ff; font-variant-numeric: tabular-nums; }
-.awaken .awk-note { font-size: 13px; line-height: 1.55; color: #9fb0cc; font-style: italic; }
+.awaken .awk-note { font-size: 16px; line-height: 1.55; color: #9fb0cc; font-style: italic; }
 
 /* ---------------- Trilha dos 5 tiers (direita) ---------------- */
 .awaken .awk-rail {
@@ -45,7 +45,7 @@
   display: flex; flex-direction: column;
 }
 .awaken .awk-rail-head {
-  font-size: 13px; font-weight: 700; letter-spacing: .22em; text-transform: uppercase;
+  font-size: 16px; font-weight: 700; letter-spacing: .22em; text-transform: uppercase;
   color: #c3d3ee; padding: 0 4px 10px;
 }
 .awaken .awk-rlist {
@@ -70,8 +70,8 @@
 .awaken .awk-tier.s-current .awk-th, .awaken .awk-tier.s-next .awk-th { border-color: var(--awk-ice); }
 .awaken .awk-meta { flex: 1; min-width: 0; }
 .awaken .awk-nm { display: block; font-size: 16px; font-weight: 600; color: #eef4ff; }
-.awaken .awk-sub { display: block; font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--awk-dim); margin-top: 2px; }
-.awaken .awk-st { flex: none; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--awk-faint); }
+.awaken .awk-sub { display: block; font-size: 16px; letter-spacing: .12em; text-transform: uppercase; color: var(--awk-dim); margin-top: 2px; }
+.awaken .awk-st { flex: none; font-size: 16px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--awk-faint); }
 .awaken .awk-tier.s-awakened .awk-st { color: var(--awk-ok); font-size: 16px; }
 .awaken .awk-tier.s-current .awk-st { color: var(--awk-ice); }
 .awaken .awk-tier.s-next .awk-st { color: #e6d39a; }
@@ -93,47 +93,47 @@
 .awaken .awk-hero-id { margin-top: 14px; }
 .awaken .awk-hero-name { margin: 0; font-family: 'Cormorant Garamond', serif; font-weight: 700;
   font-size: 44px; line-height: 1.02; color: #fff; text-shadow: 0 2px 6px #000, 0 0 20px rgba(0,0,0,.7); }
-.awaken .awk-hero-tier { margin-top: 4px; font-size: 14px; letter-spacing: .1em; text-transform: uppercase;
+.awaken .awk-hero-tier { margin-top: 4px; font-size: 16px; letter-spacing: .1em; text-transform: uppercase;
   color: var(--awk-dim); }
 .awaken .awk-hero-tier b { color: var(--awk-ice); }
 
 /* bloco de estado (pé) */
 .awaken .awk-foot { margin-top: 16px; width: 100%; max-width: 400px; }
-.awaken .awk-badge { display: inline-block; font-size: 13px; font-weight: 700; letter-spacing: .14em;
+.awaken .awk-badge { display: inline-block; font-size: 16px; font-weight: 700; letter-spacing: .14em;
   text-transform: uppercase; padding: 5px 16px; border-radius: 999px; border: 1px solid var(--awk-line); }
 .awaken .awk-foot.ok .awk-badge { color: var(--awk-ok); border-color: rgba(127,208,138,.45); }
 .awaken .awk-foot.cur .awk-badge { color: var(--awk-ice); border-color: rgba(170,200,255,.45); }
 .awaken .awk-foot.locked .awk-badge { color: var(--awk-faint); }
 .awaken .awk-flavor { margin-top: 10px; font-family: 'Cormorant Garamond', serif; font-style: italic;
   font-size: 16px; color: #d4def2; text-shadow: 0 1px 5px #000; }
-.awaken .awk-req { margin-top: 10px; font-size: 14px; color: #b9c6e0; }
+.awaken .awk-req { margin-top: 10px; font-size: 16px; color: #b9c6e0; }
 .awaken .awk-req b { color: var(--awk-ice); }
 
 /* ganhos antes→depois */
 .awaken .awk-gains { width: 100%; max-width: 400px; display: grid; gap: 7px; margin-bottom: 12px; }
 .awaken .awk-gains > div { display: flex; justify-content: space-between; align-items: baseline;
   padding: 8px 12px; border-radius: 9px; background: rgba(8,12,24,.6); border: 1px solid var(--awk-line-soft); }
-.awaken .awk-gains span { font-size: 13px; color: var(--awk-dim); letter-spacing: .04em; }
-.awaken .awk-gains b { font-size: 15px; color: #eef4ff; font-variant-numeric: tabular-nums; }
+.awaken .awk-gains span { font-size: 16px; color: var(--awk-dim); letter-spacing: .04em; }
+.awaken .awk-gains b { font-size: 16px; color: #eef4ff; font-variant-numeric: tabular-nums; }
 .awaken .awk-gains b i { font-style: normal; color: var(--awk-faint); margin: 0 5px; }
 
 /* gates — 3 camadas (Prova / Oferenda / Tributo) */
 .awaken .awk-gates { width: 100%; max-width: 400px; display: grid; gap: 9px; margin-bottom: 14px; }
 .awaken .awk-gate { display: grid; gap: 4px; }
-.awaken .awk-glabel { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--awk-dim);
+.awaken .awk-glabel { font-size: 16px; letter-spacing: .08em; text-transform: uppercase; color: var(--awk-dim);
   display: flex; justify-content: space-between; }
 .awaken .awk-bar { position: relative; display: block; height: 24px; border-radius: 7px;
   background: rgba(0,0,0,.42); overflow: hidden; border: 1px solid rgba(255,255,255,.08); }
 .awaken .awk-bar i { position: absolute; inset: 0; border-radius: 7px;
   background: linear-gradient(90deg, color-mix(in srgb, var(--awk-ice) 55%, #2a3b66), var(--awk-ice)); }
 .awaken .awk-bar em { position: absolute; inset: 0; display: grid; place-items: center; font-style: normal;
-  font-size: 13px; font-weight: 700; color: #fff; text-shadow: 0 1px 3px #000; font-variant-numeric: tabular-nums; }
+  font-size: 16px; font-weight: 700; color: #fff; text-shadow: 0 1px 3px #000; font-variant-numeric: tabular-nums; }
 .awaken .awk-gate.ok .awk-bar i { background: linear-gradient(90deg, #6fbf7c, var(--awk-ok)); }
 .awaken .awk-gate.ok .awk-glabel { color: var(--awk-ok); }
 
 /* botão Awaken */
 .awaken .awk-btn { appearance: none; cursor: pointer; width: 100%; max-width: 400px; height: 50px;
-  border: 0; border-radius: 12px; font-weight: 700; font-size: 14px; letter-spacing: .14em; text-transform: uppercase;
+  border: 0; border-radius: 12px; font-weight: 700; font-size: 16px; letter-spacing: .14em; text-transform: uppercase;
   background: linear-gradient(180deg, #cfe0ff, var(--awk-ice)); color: #0a1430;
   box-shadow: 0 0 26px -5px rgba(170,200,255,.7), inset 0 1px 0 rgba(255,255,255,.5); }
 .awaken .awk-btn:hover:not(:disabled) { filter: brightness(1.08); }
@@ -159,10 +159,10 @@
 .awaken .awk-rite-text h1 { margin: 6px 0 2px; font-family: 'Cormorant Garamond', serif; font-weight: 700;
   font-size: 72px; line-height: 1; color: #fff; letter-spacing: .04em;
   text-shadow: 0 2px 16px #000, 0 0 40px rgba(170,200,255,.4); }
-.awaken .awk-rite-sub { font-size: 14px; letter-spacing: .12em; text-transform: uppercase; color: #aac8ff; }
+.awaken .awk-rite-sub { font-size: 16px; letter-spacing: .12em; text-transform: uppercase; color: #aac8ff; }
 .awaken .awk-rite-close { margin-top: 20px; appearance: none; cursor: pointer; height: 46px; padding: 0 34px;
   border: 1px solid var(--awk-ice); border-radius: 11px; background: rgba(14,20,36,.8); color: #eaf1ff;
-  font-size: 13px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; }
+  font-size: 16px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; }
 .awaken .awk-rite-close:hover { background: rgba(170,200,255,.18); }
 
 /* ---------------- Abas Codex | Awakening (topo da tela Seeker) ---------------- */
@@ -174,7 +174,7 @@
 .view.player .pl-tab {
   height: 40px; padding: 0 22px; border: 1px solid var(--awk-line, rgba(170,200,255,.26));
   border-radius: 10px; background: rgba(8,12,24,.66); color: #8fa3c8;
-  font-size: 13px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; cursor: pointer;
+  font-size: 16px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; cursor: pointer;
   backdrop-filter: blur(3px);
 }
 .view.player .pl-tab.on { background: rgba(14,20,36,.92); color: #aac8ff; border-color: #aac8ff;

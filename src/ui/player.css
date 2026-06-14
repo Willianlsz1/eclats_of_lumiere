@@ -47,12 +47,12 @@
 .pl-name { margin: 0; font-family: var(--font-display); font-weight: 700;
   font-size: 36px; line-height: 1.04; letter-spacing: .03em; color: #fff;
   text-shadow: 0 2px 4px #000, 0 2px 16px #000; }
-.pl-tier { font-size: 14px; color: #c5d3ea; font-weight: 600;
+.pl-tier { font-size: 16px; color: #c5d3ea; font-weight: 600;
   text-transform: uppercase; letter-spacing: .16em; margin-top: 4px;
   text-shadow: 0 1px 3px #000; }
 .pl-hero-vitals { margin-top: 10px; }
 .pl-vital { display: flex; flex-direction: column; gap: 2px; }
-.pl-vital-lbl { font-size: 12px; color: #c5d3ea;
+.pl-vital-lbl { font-size: 16px; color: #c5d3ea;
   text-transform: uppercase; letter-spacing: .2em; text-shadow: 0 1px 3px #000; }
 .pl-vital-val { font-family: var(--font-display); font-size: 40px;
   font-weight: 700; color: #fff; font-variant-numeric: tabular-nums; line-height: 1;
@@ -91,13 +91,13 @@
   font-size: 40px; color: var(--ink); letter-spacing: .02em; text-align: center; }
 .pl-codex-motto { margin: 8px auto 22px; max-width: 92%; text-align: center; font-family: var(--font-display);
   font-style: italic; font-size: 23px; color: #c6d3e8; line-height: 1.45; }
-.pl-sub { font-family: var(--font-ui); font-size: 13px;
+.pl-sub { font-family: var(--font-ui); font-size: 16px;
   color: var(--faint); text-transform: none; letter-spacing: .04em; }
 
 /* seções da lista única, separadas por divisória */
 .pl-section + .pl-section { margin-top: 22px; padding-top: 20px;
   border-top: 1px solid color-mix(in srgb, var(--eclat) 14%, transparent); }
-.pl-sec-h { margin: 0 0 13px; font-size: 14px; color: var(--eclat); font-weight: 700;
+.pl-sec-h { margin: 0 0 13px; font-size: 16px; color: var(--eclat); font-weight: 700;
   text-transform: uppercase; letter-spacing: .16em; }
 .pl-stat {
   appearance: none; cursor: pointer; width: 100%; text-align: left;
@@ -163,6 +163,6 @@
 .pl-mrow.idle { opacity: .5; }
 .pl-mrow.locked { opacity: .45; }
 .pl-mrow.locked b { color: var(--faint); }
-.pl-lock { font-size: 13px; font-style: normal; }
+.pl-lock { font-size: 16px; font-style: normal; }
 .pl-modal-note { margin: 14px 0 0; font-size: var(--fs-sm); color: var(--dim);
   font-style: italic; line-height: 1.45; }

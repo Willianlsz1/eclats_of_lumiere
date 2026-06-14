@@ -19,7 +19,7 @@
 .mm-pill b { grid-row: 1; grid-column: 2; font-family: var(--font-display); font-weight: 700;
   font-size: 32px; line-height: 1; color: #fff3d6; font-variant-numeric: tabular-nums;
   text-shadow: 0 2px 5px #000, 0 0 16px #000; }
-.mm-sub { grid-column: 1 / 3; grid-row: 2; margin-top: 3px; font-size: 15px; color: #dbe2f0; font-style: italic;
+.mm-sub { grid-column: 1 / 3; grid-row: 2; margin-top: 3px; font-size: 16px; color: #dbe2f0; font-style: italic;
   text-shadow: 0 1px 4px #000, 0 0 10px #000; }
 
 /* ---------------- Stage (a era ativa, ARTE FULL-BLEED) ---------------- */
@@ -94,7 +94,7 @@
   border: 2px solid rgba(170,200,255,.45); transition: all .15s ease; }
 .mm-mark-lbl { text-align: center; line-height: 1.15; }
 .mm-mark-lbl b { display: block; font-family: var(--font-display); font-weight: 700; font-size: var(--fs-md); color: inherit; }
-.mm-mark-lbl i { font-style: normal; font-size: 13px; color: #97a3bb; font-variant-numeric: tabular-nums; }
+.mm-mark-lbl i { font-style: normal; font-size: 16px; color: #97a3bb; font-variant-numeric: tabular-nums; }
 .mm-mark:hover { color: #fff; }
 .mm-mark.on { color: #f6e8c4; }
 .mm-mark.on .mm-mark-dot { background: var(--gold); border-color: #fff;
