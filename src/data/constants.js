@@ -45,16 +45,16 @@ export const LEVEL = {
 // Map4=Map5=8 (era 5 fixo). PACK tem 8 entradas; cada mapa usa as primeiras N.
 // ⏳ números a re-ancorar na recalibração; curva suave 2→12 por enquanto.
 // TODO canon: vínculo nome↔arte dos Maps 2-5 (arte de alguns trios incompleta).
-const PACK = [2, 3, 4, 5, 6, 8, 10, 12];
+const PACK = [2, 3, 4, 5, 6, 8, 10, 12, 14];
 export const MAPS = [
   {
     id: 1, name: 'The Dreaming Wood', continent: 'worldmap.continent1', bg: 'backgrounds.map1',
     lvlLo: 1, lvlHi: 1000, hpLo: 10, hpHi: 1e6, dmgLo: 0.2, dmgHi: 2e4,
-    subareaCount: 5, packSizes: PACK, bossKillThreshold: 100,
-    enemyNames: ['Candlewisp Shade', 'Mothlight Herald', 'Dreamhorn Warden'],
-    enemyArts: ['enemies.map1.constellation_weaver', 'enemies.map1.moth_lantern', 'enemies.map1.deer_spirit'],
-    guardianArt: 'enemies.map1.constellation_weaver',
-    bossName: 'The Gilded Hollow', bossArt: 'enemies.map1.golden_figure',
+    subareaCount: 9, packSizes: PACK, bossKillThreshold: 100,
+    enemyNames: ['Candlewisp Shade', 'Mothlight Herald', 'Dreamhorn Warden', 'Hollowroot Crawler', 'Glowmere Drifter'],
+    enemyArts: ['enemies.map1.candlewisp_shade', 'enemies.map1.mothlight_herald', 'enemies.map1.dreamhorn_warden', 'enemies.map1.hollowroot_crawler', 'enemies.map1.glowmere_drifter'],
+    guardianArt: 'enemies.map1.dreamhorn_warden',
+    bossName: 'The Gilded Hollow', bossArt: 'enemies.map1.gilded_hollow',
   },
   {
     id: 2, name: 'Cavernes Luminis', continent: 'worldmap.continent2', bg: 'backgrounds.map2',

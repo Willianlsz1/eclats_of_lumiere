@@ -19,9 +19,24 @@ const TIER_NUM = { I: 1, II: 2, III: 3, IV: 4, V: 5 };
 
 const $ = (id) => document.getElementById(id);
 
+// Background POR SUB-ÁREA (caminho direto pro WebP). Map 1 tem arte dedicada das
+// 9 áreas; mapas/áreas sem arte caem no fundo único do mapa (bg(map.bg)).
+const SUBAREA_BG = {
+  1: [
+    'lanternroot_glade', 'glimmercap_hollow', 'lightfall_stair', 'dreaming_gate',
+    'verdant_deep', 'gilded_mire', 'hollowed_grove', 'stillwatch', 'hollow_heart',
+  ],
+};
+function subareaBg(state) {
+  const slug = (SUBAREA_BG[state.map] || [])[state.subarea - 1];
+  return slug
+    ? `url('eclats/enemies/map${state.map}/${slug}_bg.webp')`
+    : bg(getCurrentMap(state).bg);
+}
+
 // A arte de cada inimigo/boss vem do mapa (mob.art, definido em enemies.js a
 // partir de MAPS em constants). Fallback caso falte.
-const ENEMY_ART_FALLBACK = 'enemies.map1.deer_spirit';
+const ENEMY_ART_FALLBACK = 'enemies.map1.candlewisp_shade';
 
 // Pontos de spawn fixos dentro da arena (%) — pack ≤ 8 (packSizes do GDD),
 // então renderizamos todos, sem badge "+N".
@@ -45,7 +60,12 @@ function mobLayout(total) {
   if (total <= 3) return { perRow: total, rows: 1, spacing: 19 };
   if (total <= 6) return { perRow: Math.ceil(total / 2), rows: 2, spacing: 17 };
   if (total <= 8) return { perRow: 4, rows: 2, spacing: 13.5 };
-  return { perRow: 6, rows: 2, spacing: 11.5 };
+  if (total <= 12) return { perRow: 6, rows: 2, spacing: 11.5 };
+  // Packs grandes (13..20+): mais fileiras, sprites menores (.swarm). Distribui
+  // em N fileiras pra caber na vertical sem colisão; colunas centradas.
+  const rows = total <= 16 ? 3 : 4;
+  const perRow = Math.ceil(total / rows);
+  return { perRow, rows, spacing: Math.min(10.5, 60 / perRow) };
 }
 
 // Posição do i-ésimo mob (ordinal entre os NÃO-boss) num pack de `total`.
@@ -56,11 +76,17 @@ function spawnPos(i, total, bossOut) {
   const col = i % perRow;
   const colsInRow = row === rows - 1 ? total - perRow * row : perRow;
   const x = ARENA_CX + spacing * (col - (colsInRow - 1) / 2);
-  // 1 fileira → centro vertical (ou faixa de cima quando o boss ocupa o meio).
-  // 2 fileiras → bandas alta/baixa (abrem a do meio pro boss quando ele entra).
-  const y = rows === 1
-    ? (bossOut ? 22.5 : 50)
-    : (bossOut ? (row === 0 ? 22.5 : 78) : (row === 0 ? 30 : 70.5));
+  let y;
+  if (rows === 1) {
+    y = bossOut ? 22.5 : 50;
+  } else if (rows === 2) {
+    // 2 fileiras → bandas alta/baixa (abrem a do meio pro boss quando ele entra)
+    y = bossOut ? (row === 0 ? 22.5 : 78) : (row === 0 ? 30 : 70.5);
+  } else {
+    // 3+ fileiras → distribui uniformemente entre o topo e a base da arena
+    const top = 18, bot = 86;
+    y = top + row * ((bot - top) / (rows - 1));
+  }
   return { x, y };
 }
 
@@ -133,8 +159,8 @@ export function buildCombatView(root, state) {
   $('cb-prev').addEventListener('click', () => changeSubarea(state, -1));
   $('cb-next').addEventListener('click', () => changeSubarea(state, +1));
 
-  // Fundo nítido do mapa atual (atualizado também no render, em troca de mapa)
-  $('cb-backdrop').style.backgroundImage = bg(getCurrentMap(state).bg);
+  // Fundo da sub-área atual (atualizado também no render, em troca de área/mapa)
+  $('cb-backdrop').style.backgroundImage = subareaBg(state);
 }
 
 export function renderCombat(state) {
@@ -164,7 +190,7 @@ export function renderCombat(state) {
   // ── Navegação / zona (segue o mapa atual) ──
   $('cb-zone-name').textContent = map.name;
   const bd = $('cb-backdrop');
-  if (bd) bd.style.backgroundImage = bg(map.bg);
+  if (bd) bd.style.backgroundImage = subareaBg(state);
   const range = subareaLevelRange(map, state.subarea);
   $('cb-zone-sub').textContent =
     `LV ${formatNumber(Math.round(range.lo))}–${formatNumber(Math.round(range.hi))}`;
@@ -252,35 +278,31 @@ function renderEnemies(state) {
 function buildEnemyCard(mob, i, total, bossOut) {
   const pos = mob.isBoss ? BOSS_POINT : spawnPos(i, total, bossOut);
   // tamanho por contagem: ≤3 grande · 4-6 normal · 7-8 médio · 9+ denso
-  const size = mob.isBoss ? '' : total <= 3 ? ' big' : total <= 6 ? '' : total <= 8 ? ' mid' : ' dense';
+  const size = mob.isBoss ? ' boss' : total <= 3 ? ' big' : total <= 6 ? '' : total <= 8 ? ' mid' : total <= 12 ? ' dense' : ' swarm';
   const artId = mob.art || ENEMY_ART_FALLBACK; // arte vem do mapa (enemies.js)
   const card = document.createElement('article');
-  card.className = mob.isBoss ? 'cb-enemy ecard boss' : `cb-enemy ecard${size}`;
+  card.className = `cb-enemy emob${size}`;
   card.dataset.mobId = mob.id;
   card.style.left = `${pos.x}%`;
   card.style.top = `${pos.y}%`;
-  // 3 camadas: (1) janela de arte + faixa de nome · (2) moldura PNG (centro
-  // transparente) · (3) ATK/HP + barra de vida · floats de dano por golpe.
+  // SEM card: sprite de corpo inteiro (recorte transparente) · nome+LV acima ·
+  // ATK/HP + barra abaixo · floats de dano sobre o sprite.
   card.innerHTML = `
-    <div class="ecard-bg"></div>
-    <div class="ecard-art">
-      ${picture(artId, { className: 'ecard-art-img', alt: mob.name })}
-    </div>
-    <div class="ecard-inner">
+    <div class="emob-label">
       <div class="ecard-name">${mob.isBoss ? '👑 ' : ''}${mob.name}</div>
-      <div class="ecard-lvl">LVL ${formatNumber(mob.level)}${mob.isBoss ? ' · GUARDIAN' : ''}</div>
-      <div class="ecard-div"></div>
-      <div class="ecard-stats">
+      <div class="ecard-lvl">LVL ${formatNumber(mob.level)}${mob.isBoss ? ' · BOSS' : ''}</div>
+    </div>
+    <div class="emob-art">
+      ${picture(artId, { className: 'emob-art-img', alt: mob.name })}
+      <div class="ecard-floats"></div>
+    </div>
+    <div class="emob-info">
+      <div class="emob-statline">
         <span class="ecard-atk">ATK: ${formatNumber(mob.dmg)}</span>
         <span class="ecard-hp">HP: ${formatNumber(mob.hp)}</span>
       </div>
       <div class="ecard-bar"><i class="ecard-fill"></i></div>
-      <div class="ecard-sigil">⚔</div>
     </div>
-    ${mob.frame && mob.frame.startsWith('frames.boss')
-      ? picture(mob.frame, { className: 'ecard-frame', alt: '' })
-      : '<img class="ecard-frame" src="eclats/frames/card_frame_alpha.png" alt="" aria-hidden="true">'}
-    <div class="ecard-floats"></div>
   `;
   card.querySelectorAll('img').forEach((img) => { img.loading = 'eager'; });
   return card;

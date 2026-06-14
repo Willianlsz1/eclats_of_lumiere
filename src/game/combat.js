@@ -15,8 +15,8 @@
 //   (sozinho); derrotá-lo abre o gate da próxima subárea e vira loop recorrente.
 
 import { COMBAT, NUMBER_CAP, FATE } from '../data/constants.js';
-import { spawnPack, spawnBoss, spawnMob, getCurrentMap } from './enemies.js';
-import { damagePerHit, currentAPS, playerHpMax, critChance, critDamageMult, playerDefesa, postArmorDR, enemyDefesa } from './stats.js';
+import { spawnPack, spawnBoss, spawnMob, getCurrentMap, subareaLevelRange } from './enemies.js';
+import { damagePerHit, currentAPS, playerHpMax, critChance, critDamageMult, playerDefesa, postArmorDR, enemyDefesa, runLevel } from './stats.js';
 import { awardKill } from './economy.js';
 import { eclatsDripPerSec } from './ascension.js';
 import { effectiveDifficulty } from './difficulty.js';
@@ -35,7 +35,9 @@ function makeWave(state) {
   // +cap de mobs: Fate Keeper A4 + passiva Void Awareness (rumo ao teto ~24)
   const extra = (state.ascensions >= 4 ? FATE.a4MobBonus : 0) + passiveMobBonus(state);
   for (let i = 0; i < extra; i++) pack.push(spawnMob(map, state.subarea));
-  if (state.killsInSubarea >= map.bossKillThreshold) {
+  // Redesign 14/jun: SEM Guardião nas sub-áreas 1..N-1; só a ÚLTIMA tem boss
+  // (o boss final do mapa). O threshold de kills ainda é o muro que invoca o boss.
+  if (state.subarea === map.subareaCount && state.killsInSubarea >= map.bossKillThreshold) {
     pack[0] = spawnBoss(map, state.subarea);
   }
   // Dificuldade (§8): ×HP e ×dano nos mobs da onda
@@ -60,6 +62,24 @@ function nextWave(state) {
 
 export function bossActive(state) {
   return state.enemies.some((m) => m.isBoss && m.hp > 0);
+}
+
+// Redesign 14/jun: a progressão entre sub-áreas é GATE POR NÍVEL (sem Guardião).
+// A sub-área n (n≥2) libera quando o nível do jogador alcança o início da sua
+// faixa de level (= subareaLevelRange(map, n).lo). Sub-área 1 sempre aberta.
+export function subareaUnlockLevel(map, n) {
+  if (n <= 1) return 0;
+  return Math.max(1, Math.round(subareaLevelRange(map, n).lo));
+}
+
+// Avança o high-water de sub-áreas liberadas conforme o nível sobe. unlockedSubarea
+// é persistente (não recua na Convergence, mesmo que runLevel zere).
+function updateUnlockByLevel(state) {
+  const map = getCurrentMap(state);
+  const lvl = runLevel(state);
+  let u = state.unlockedSubarea || 1;
+  while (u < map.subareaCount && lvl >= subareaUnlockLevel(map, u + 1)) u += 1;
+  if (u !== state.unlockedSubarea) state.unlockedSubarea = u;
 }
 
 export function combatTick(state, dt) {
@@ -121,6 +141,9 @@ export function combatTick(state, dt) {
     * effectiveDifficulty(state).rewardMult * memoireDiffRewardMult(state)
     * memoireEclatsAllMult(state);
   if (drip > 0) state.eclats = Math.min(NUMBER_CAP, state.eclats + drip * dt);
+
+  // Gate por nível: libera sub-áreas conforme o nível sobe (sem Guardião)
+  updateUnlockByLevel(state);
 
   // --- Morte: recua uma subárea e a onda reinicia ---
   if (player.hp <= 0) {

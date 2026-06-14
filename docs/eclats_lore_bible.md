@@ -288,9 +288,21 @@ Cada mapa ensina uma verdade. Cada boss é essa verdade em forma de chefe.
 *Floresta noturna de cogumelos bioluminescentes; riacho de luz teal-violeta; no céu, distante, um vórtice escuro que ninguém na floresta parece notar.*
 
 A lição: **os Éclats carregam algo mais.**
-Habitantes: The Fragmented — Candlewisp Shade, Mothlight Herald, Dreamhorn Warden. Belos, silenciosos, errados.
+Habitantes: The Fragmented — Candlewisp Shade, Mothlight Herald, Dreamhorn Warden, Hollowroot Crawler, Glowmere Drifter (5 tipos, reusados pelas 9 sub-áreas). Belos, silenciosos, errados, feitos da própria floresta.
 
-**Boss — The Gilded Hollow (The Eidola):** um membro da Ordre que absorveu além do procedimento. A luz o esvaziou por dentro; filigranas douradas crescem pela pele e vestem o que sobrou dele. O rosto é vazio absoluto — a mesma cor do vórtice no céu. A primeira lição do jogo, e o primeiro espelho.
+**Estrutura (atualizado 14/jun/2026): 9 sub-áreas**, progressão por NÍVEL (sem Guardião intermediário; cada sub-área libera ao alcançar o início da sua faixa de level). O boss aparece SÓ na sub-área 9. As 4 últimas mostram, em detalhe mínimo, o "douramento" da floresta — fios de filigrana dourada que prenunciam o Hollow, sem nunca dominar a paisagem.
+
+1. **Lanternroot Glade** — a entrada; a grande árvore-lanterna goteja luz dourada e os Fragmented se juntam sob ela como se lembrassem do calor.
+2. **Glimmercap Hollow** — clareira afundada de cogumelos gigantes; o brilho mais fundo não é deles, algo embaixo está sonhando.
+3. **The Lightfall Stair** — escadaria ancestral ao lado de uma queda de luz pura; quem ergueu os degraus se foi, mas a luz ainda desce.
+4. **The Dreaming Gate** — arco de pedra e trepadeira inundado de luz teal; não é saída, é a floresta decidindo quem desce mais fundo.
+5. **The Verdant Deep** — o bosque mais antigo, abóbada fechada; a luz fica espessa e velha, a floresta já não acolhe, engole.
+6. **The Gilded Mire** — passado o bosque, o ouro começa; fios de filigrana cruzam a casca e a água parada, o brilho já não é da floresta.
+7. **The Hollowed Grove** — o bosque mais fundo, ainda vivo, mas veias de ouro atravessam a casca velha; algo no coração da Mata alcança até aqui.
+8. **The Stillwatch** — a última clareira antes do coração; a Mata prende a respiração, nada se move, o vórtice paira largo e próximo.
+9. **The Hollow Heart** — o coração do Dreaming Wood, aberto ao céu; o vórtice em cima e, embaixo, todo o ouro reunido num ponto. Onde o Gilded Hollow espera.
+
+**Boss — The Gilded Hollow (The Eidola):** um membro da Ordre que absorveu além do procedimento. A luz o esvaziou por dentro; filigranas douradas crescem pela pele e vestem o que sobrou dele. O rosto é vazio absoluto, a mesma cor do vórtice no céu. A primeira lição do jogo, e o primeiro espelho. Eco visual de Nihel (o anjo trágico): mesma linguagem de vazio, auréola e asas, mas em dourado e auréola INTEIRA (Nihel é vermelho/negro com auréola quebrada). O vermelho não existe no Map 1 (1ª gota só no Map 4, ver Claimed Queen).
 
 ### Map 2 — Cavernes Luminis
 *Cavernas de cristais azuis e violetas que brilham com luz própria; refrações em prisma; o tempo parece mais lento.*

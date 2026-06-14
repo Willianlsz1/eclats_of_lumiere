@@ -107,106 +107,60 @@
 .cb-arena { position: absolute; inset: 0; z-index: 5; pointer-events: none; }
 
 /* ============================================================
-   Card de inimigo — 3 CAMADAS (modelo card_demo_v3):
-   fundo navy sólido + (1) janela de arte · (2) moldura PNG (centro transparente)
-   · (3) nome/LVL/divisória/ATK·HP/barra/espada. Carta 1024/1536; conteúdo num
-   coluna flex inset pra dentro dos espinhos.
+   Inimigo SEM CARD — sprite de corpo inteiro (recorte transparente):
+   nome+LV acima · sprite no meio · ATK/HP + barra abaixo · floats sobre o sprite.
    ============================================================ */
-.cb-enemy.ecard {
-  /* largura proporcional ao palco (espaçamento de colunas tb é %, então nunca
-     sobrepõe) com teto vindo do limite VERTICAL de cada layout:
-     sem boss → 2 fileiras altas, card até 270px (405 de altura);
-     com boss (.with-boss) → 3 bandas, card até 190px (285). */
+.cb-enemy.emob {
   position: absolute; z-index: 5;
-  width: min(calc(var(--stage-w) * 0.14), 270px);
-  aspect-ratio: 1024 / 1536;
-  pointer-events: auto; transform: translate(-50%, -50%);
-  background: transparent; /* fundo fica na .ecard-bg, recuada dentro da moldura */
+  width: min(calc(var(--stage-w) * 0.12), 210px);
+  transform: translate(-50%, -50%);
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  pointer-events: auto; background: transparent;
   transition: filter .25s ease, opacity .25s ease;
 }
+.cb-enemy.emob.slain { filter: grayscale(1) brightness(.55); opacity: .45; }
 
-/* CAMADA 0 — fundo navy recuado pra dentro dos espinhos (nada vaza da moldura) */
-.ecard-bg {
-  position: absolute; inset: 4.5% 5.5% 4%; z-index: 0;
-  background: #0a1024; border-radius: 10px;
-}
-.cb-enemy.ecard.slain { filter: grayscale(1) brightness(.55); opacity: .45; }
-.cb-enemy.ecard.target { filter: drop-shadow(0 0 10px var(--gold)); }
-
-/* CAMADA 2 — moldura PNG (só posicionada; sem desenho de borda em CSS) */
-.ecard-frame {
-  /* levemente maior que o card: a moldura envolve o fundo navy com respiro */
-  position: absolute; inset: -3.5%; width: 107%; height: 107%;
-  pointer-events: none; z-index: 2;
-}
-.ecard-frame img { width: 100%; height: 100%; display: block; }
-
-/* CAMADA 1 — arte preenche o card inteiro (mesmo recorte do fundo navy) */
-.ecard-art {
-  position: absolute; inset: 4.5% 5.5% 4%; z-index: 0;
-  border-radius: 10px; overflow: hidden; background: #0a1024;
-}
-.ecard-art-img, .ecard-art-img img {
-  width: 100%; height: 100%; object-fit: cover; display: block;
-}
-/* escurecimento na base pra ATK/HP e barra legíveis sobre a arte */
-.ecard-art::after {
-  content: ""; position: absolute; inset: 0;
-  background: linear-gradient(180deg, transparent 46%, rgba(5,8,20,.6) 68%, rgba(5,8,20,.94));
+/* sprite */
+.emob-art { position: relative; width: 100%; line-height: 0; }
+.emob-art-img, .emob-art-img img {
+  width: 100%; height: auto; display: block; object-fit: contain;
+  filter: drop-shadow(0 6px 10px rgba(0,0,0,.55));
 }
 
-/* CAMADA 3 — infos sobrepostas na base da arte */
-.ecard-inner {
-  position: absolute; inset: 9% 11% 8%; z-index: 1;
-  display: flex; flex-direction: column; justify-content: flex-end; min-height: 0;
-}
-
-/* CAMADA 3 — nome / LVL */
+/* nome / LV (acima do sprite) */
+.emob-label { text-align: center; }
 .ecard-name {
-  margin-top: 7px; font-family: var(--font-display); font-weight: 700; color: #fff;
-  font-size: 18px; line-height: 1.05; letter-spacing: .02em; text-align: center;
+  font-family: var(--font-display); font-weight: 700; color: #fff;
+  font-size: 18px; line-height: 1.05; letter-spacing: .02em;
   text-transform: uppercase; white-space: nowrap;
   text-shadow: 0 1px 2px #000, 0 2px 8px #000;
 }
 .ecard-lvl {
-  margin-top: 2px; font-size: 16px; font-weight: 700; color: #dce8ff;
-  text-align: center; letter-spacing: .16em; text-transform: uppercase;
+  font-size: 16px; font-weight: 700; color: #dce8ff;
+  letter-spacing: .14em; text-transform: uppercase;
   text-shadow: 0 1px 2px #000, 0 2px 6px #000;
 }
-.ecard-div {
-  height: 1px; margin: 7px 2px;
-  background: linear-gradient(90deg, transparent, rgba(159,182,230,.45), transparent);
-}
 
-/* CAMADA 3 — ATK / HP (sem caixa) */
-.ecard-stats {
-  display: flex; justify-content: space-between; align-items: baseline;
+/* ATK / HP + barra (abaixo do sprite) */
+.emob-info { width: 100%; }
+.emob-statline {
+  display: flex; justify-content: space-between;
   font-weight: 800; font-size: 16px; font-variant-numeric: tabular-nums;
-  padding: 0 2px;
-  text-shadow: 0 1px 3px #000c;
+  padding: 0 2px 2px; text-shadow: 0 1px 3px #000c;
 }
 .ecard-atk { color: #ff963c; }   /* ATK laranja */
 .ecard-hp  { color: #96ebaa; }   /* HP verde */
-
-/* CAMADA 3 — barra de vida (sem caixa em volta) */
 .ecard-bar {
-  margin-top: 4px; height: 14px; background: #281212;
+  height: 12px; background: rgba(40,18,18,.85);
   border-radius: 6px; overflow: hidden;
+  box-shadow: 0 1px 3px #000a;
 }
 .ecard-fill {
   display: block; height: 100%; width: 100%;
   background: #d6443c; transition: width .2s ease;
 }
 
-/* CAMADA 3 — espada no canto inferior esquerdo */
-.ecard-sigil {
-  margin-top: 5px; align-self: flex-start;
-  width: 21px; height: 21px; display: grid; place-items: center;
-  font-size: 16px; color: #cfd8ea; background: #0c1428;
-  border: 1px solid rgba(159,182,230,.35); border-radius: 5px;
-}
-
-/* dano flutuante: popup vermelho por golpe, sobe e some */
+/* dano flutuante: popup vermelho por golpe, sobe e some (sobre o sprite) */
 .ecard-floats { position: absolute; inset: 0; z-index: 4; pointer-events: none; }
 .ecard-dmg {
   position: absolute; left: 50%; top: 6%; transform: translateX(-50%);
@@ -221,22 +175,20 @@
   100% { opacity: 0; transform: translate(-50%, -40px); }
 }
 
-/* boss: card maior */
-/* com boss em cena: cards abrem a faixa do meio e encolhem pro layout 3 bandas */
-.cb-arena.with-boss .cb-enemy.ecard:not(.boss):not(.dense) {
-  width: min(calc(var(--stage-w) * 0.12), 190px);
+/* tamanhos por contagem (largura do sprite) */
+.cb-enemy.emob.big   { width: min(calc(var(--stage-w) * 0.15),  260px); }
+.cb-enemy.emob.mid   { width: min(calc(var(--stage-w) * 0.105), 175px); }
+.cb-enemy.emob.dense { width: min(calc(var(--stage-w) * 0.09),  150px); }
+.cb-enemy.emob.swarm { width: min(calc(var(--stage-w) * 0.048), 78px); gap: 2px; }
+.cb-enemy.emob.swarm .ecard-name { font-size: 13px; }
+.cb-enemy.emob.swarm .ecard-lvl  { font-size: 12px; letter-spacing: .06em; }
+.cb-enemy.emob.swarm .emob-statline { font-size: 12px; }
+.cb-enemy.emob.swarm .ecard-bar { height: 8px; }
+.cb-enemy.emob.boss  { width: min(calc(var(--stage-w) * 0.20),  360px); }
+/* com boss em cena, os mobs comuns encolhem pra abrir espaço */
+.cb-arena.with-boss .cb-enemy.emob:not(.boss) {
+  width: min(calc(var(--stage-w) * 0.10), 160px);
 }
-
-/* poucos mobs (≤3): cards GRANDES, fileira única centrada (cap menor com boss) */
-.cb-enemy.ecard.big { width: min(calc(var(--stage-w) * 0.17), 330px); }
-.cb-arena.with-boss .cb-enemy.ecard.big { width: min(calc(var(--stage-w) * 0.12), 190px); }
-/* 7-8 mobs: um degrau menor que o normal pra caber as 4 colunas deslocadas */
-.cb-enemy.ecard.mid { width: min(calc(var(--stage-w) * 0.122), 235px); }
-.cb-arena.with-boss .cb-enemy.ecard.mid { width: min(calc(var(--stage-w) * 0.105), 155px); }
-
-/* pack grande (9..12 mobs): grade 6×2 — colunas a 11.5%, card ≤ 10% do palco */
-.cb-enemy.ecard.dense { width: min(calc(var(--stage-w) * 0.10), 215px); }
-.cb-arena.with-boss .cb-enemy.ecard.dense { width: min(calc(var(--stage-w) * 0.095), 140px); }
 .cb-enemy.ecard.dense .ecard-name { font-size: 16px; }
 .cb-enemy.ecard.dense .ecard-lvl { font-size: 16px; }
 .cb-enemy.ecard.dense .ecard-stats { font-size: 16px; }

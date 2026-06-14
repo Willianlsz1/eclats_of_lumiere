@@ -8,6 +8,7 @@ import { gearLumensMult, gearXpMult, gearMaterialDropMult } from './gear.js';
 import { passiveEcoMult, passiveMaterialMult } from './passives.js';
 import { memoireLumensMult, memoireXpMult, memoireVestigeMult, memoireMateriaisMult, memoireDiffRewardMult } from './memoires.js';
 import { effectiveDifficulty } from './difficulty.js';
+import { getCurrentMap, subareaLevelRange, hpForLevel } from './enemies.js';
 
 // Multiplicador de YIELD de material (§13B): DIFICULDADE ×rewardMult (×3/×10/×30) ×
 //   #13 du Vide (recompensa de dificuldade) × #5 du Façonnage (+% materiais, aditivo, sem motor ×).
@@ -39,6 +40,25 @@ function awardNitzotz(state, mob) {
 // Map 1 (índice 0): [1, 1, 2, 2, 3] nas Subs 1-5
 export function vestigesPerKill(state) {
   return Math.ceil(state.subarea * 0.5) * 3 ** (state.map - 1);
+}
+
+// Estimativa de ganho POR MOB numa sub-área (para o painel do mapa). Usa o mob
+// de nível "médio" da área (média geométrica do range) e os multiplicadores
+// atuais do jogador (conv, gear, passivas, mémoires), espelhando awardKill.
+// Materiais é drop-based: devolvemos a chance e o yield por drop.
+export function perKillEstimate(state, subarea) {
+  const map = getCurrentMap(state);
+  const { lo, hi } = subareaLevelRange(map, subarea);
+  const level = Math.max(1, Math.round(Math.sqrt(lo * hi)));
+  const hp = hpForLevel(map, level);
+  const eco = passiveEcoMult(state);
+  const cm = convMult(state);
+  const lumens = (hp * ECONOMY.goldRatio + ECONOMY.lumensFloor + runLevel(state) * LEVEL.goldPerLevel)
+    * cm * gearLumensMult(state) * eco * memoireLumensMult(state);
+  const vestiges = Math.ceil(subarea * 0.5) * 3 ** (map.id - 1) * memoireVestigeMult(state);
+  const tier = mapMaterialTier(state.map);
+  const matPerDrop = materialYieldMult(state);
+  return { lumens, vestiges, tier, matChance: CRAFT.dropChance, matPerDrop };
 }
 
 export function awardKill(state, mob) {

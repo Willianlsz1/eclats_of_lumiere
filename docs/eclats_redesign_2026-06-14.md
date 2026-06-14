@@ -6,10 +6,19 @@
 
 ## O Caminho (spine) — ADR 0001
 Sempre **pra frente**. O combate auto te empurra pelos 5 mapas. Em cada mapa você
-atravessa **7-8 sub-áreas** (hoje 5) até o **boss final = Wall**, que fecha a passagem
+atravessa as sub-áreas até o **boss final = Wall**, que fecha a passagem
 pro mapa seguinte. Quando o HP da onda/boss passa do seu dano, você **travou** → vai
 farmar o **Hollow** daquele mapa pra ficar mais forte → quebra a Wall → segue.
 **Sem reset de mapa, sem backtrack.**
+
+> **Map 1 — estrutura travada (2026-06-14): 9 sub-áreas.** Progressão por **GATE DE NÍVEL**
+> (sem Guardião intermediário): a sub-área *n* libera quando o nível alcança o início da sua
+> faixa (`subareaLevelRange(map, n).lo`; Map 1 = level 1→1000 geométrico). **Boss único na
+> sub-área 9** (Gilded Hollow = Wall do mapa). Nomes/lore canônicos: ver lore bible §Map 1
+> (as 4 últimas, 6-9, mostram o "douramento" mínimo prenunciando o Hollow). Implementado em
+> `game/combat.js` (`subareaUnlockLevel`, `updateUnlockByLevel`, boss só na última). Mobs =
+> 5 tipos sem card (sprite corpo inteiro). ⏳ os 8 níveis-alvo de unlock saem da faixa
+> geométrica atual; recalibrar junto do pacing.
 
 ## Combate — base SINGLE-TARGET; CLEAVE é unlock — ADR 0002 (revisado)
 **Base = 1 mob por ataque** (âncora "1 kill/ataque" vale no base). O **cleave/AoE** (atingir

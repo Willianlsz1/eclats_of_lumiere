@@ -9,7 +9,8 @@
 import { formatNumber } from '../core/format.js';
 import { picture, bg } from '../data/assets.js';
 import { getCurrentMap, subareaLevelRange } from '../game/enemies.js';
-import { enterSubarea, travelToMap } from '../game/combat.js';
+import { enterSubarea, travelToMap, subareaUnlockLevel } from '../game/combat.js';
+import { perKillEstimate } from '../game/economy.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -30,10 +31,19 @@ const WORLD = [
 // Posições das 5 sub-áreas sobre o continente (à esquerda do painel direito,
 // que começa em ~78%). Trilha em diagonal subindo, do começo (baixo-esq) ao
 // fundo do bosque (topo).
-// CP-2: 8 sub-áreas por mapa → 8 nós ao longo da trilha (posições provisórias).
+// Map 1 = 9 sub-áreas. Trilha em S: sobe pela esquerda, cruza o centro, desce e
+// volta pela direita até o topo-centro (boss final, mais fundo da floresta).
+// Layout aprovado pelo Willian (2026-06-14). Coords em % do continente.
 const SUB_NODES = [
-  { x: 10, y: 80 }, { x: 21, y: 60 }, { x: 33, y: 76 }, { x: 45, y: 54 },
-  { x: 56, y: 72 }, { x: 68, y: 50 }, { x: 80, y: 68 }, { x: 91, y: 46 },
+  { x: 12.5, y: 74 }, // 1 base-esq (Lanternroot)
+  { x: 18.5, y: 57 }, // 2 esq-meio
+  { x: 20.5, y: 37 }, // 3 esq-alto
+  { x: 37.5, y: 44 }, // 4 centro
+  { x: 44.5, y: 75 }, // 5 base-centro
+  { x: 62.5, y: 74 }, // 6 base-dir
+  { x: 76.0, y: 57 }, // 7 dir-meio
+  { x: 70.5, y: 36 }, // 8 dir-alto
+  { x: 50.0, y: 32 }, // 9 topo-centro (boss final)
 ];
 
 // Sub-áreas por mapa: imagem + nome temático. Mapas sem arte ainda caem no
@@ -45,6 +55,10 @@ const SUBAREAS = {
     { icon: 'eclats/enemies/map1/lightfall_stair',    name: 'The Lightfall Stair' },
     { icon: 'eclats/enemies/map1/dreaming_gate',      name: 'The Dreaming Gate' },
     { icon: 'eclats/enemies/map1/verdant_deep',       name: 'The Verdant Deep' },
+    { icon: 'eclats/enemies/map1/gilded_mire',        name: 'The Gilded Mire' },
+    { icon: 'eclats/enemies/map1/hollowed_grove',     name: 'The Hollowed Grove' },
+    { icon: 'eclats/enemies/map1/stillwatch',         name: 'The Stillwatch' },
+    { icon: 'eclats/enemies/map1/hollow_heart',       name: 'The Hollow Heart' },
   ],
   2: [
     { icon: 'eclats/enemies/map2/shardbloom_rise',   name: 'Shardbloom Rise' },
@@ -89,7 +103,11 @@ const SUBAREA_LORE = {
     'A hollow of giant glowing caps, humming with spores of light. The deeper glow is not the mushrooms. Something underneath them is dreaming.',
     'A stairway climbs beside a fall of pure light. Those who built the steps are gone, but the light still comes down to meet whoever dares to climb.',
     'An arch of stone and vine, flooded with teal light. It is not a door out of the forest. It is the forest deciding who may go deeper.',
-    'The oldest grove, an emerald deep where the canopy closes like a vault. At its heart waits the Gilded Hollow, the first mirror of the journey.',
+    'The oldest grove, an emerald deep where the canopy closes overhead like a vault. The light grows thick and old here. The forest is no longer welcoming you. It is swallowing you.',
+    'Past the deep grove, the gold begins. Thin threads of golden filigree creep across the bark and the still water, and the glow here is no longer the forest’s own. Something is gilding the Wood from within.',
+    'The deepest grove, ancient and dim. The forest still stands, but thin veins of gold thread through the old bark and roots, quiet and wrong. Something at the heart of the Wood is reaching back this far.',
+    'The last clearing before the heart. The Wood holds its breath here, no spores drift, no glow flickers, nothing moves. Above, the dark vortex hangs wide and close, and something ahead is already watching.',
+    'The heart of the Dreaming Wood, open to the sky. The vortex hangs directly overhead, and beneath it the forest has drawn all its gold into a single place. At the center waits the Gilded Hollow, the first mirror of the journey, and its first lesson.',
   ],
   2: [
     'The first chamber of the caves, where crystals bloom from the rock like flowers of frozen light. Each one is an Éclat that stopped waiting to be found.',
@@ -107,15 +125,14 @@ const SUBAREA_LORE = {
   ],
 };
 
-// Recursos por mapa: tipos reais (economy.js). O tier de materiais escala com
-// o mapa (T1..T4). Quantidades por área ainda não definidas no GDD.
-// TODO(balance): definir taxas/quantidades de drop por sub-área.
-function mapResources(map) {
-  const tier = Math.min(map.id, 4); // map1→T1 ... map4/5→T4 (4 tiers de craft)
+// Recursos por sub-área: ganho POR MOB morto (economy.perKillEstimate).
+// Materiais é drop-based → mostra a chance por kill.
+function mapResources(state, n) {
+  const est = perKillEstimate(state, n);
   return [
-    { name: 'Lumens', amount: '—' },
-    { name: 'Vestiges', amount: '—' },
-    { name: `Materials · T${tier}`, amount: '—' },
+    { name: 'Lumens', amount: `+${formatNumber(est.lumens)}` },
+    { name: 'Vestiges', amount: `+${formatNumber(est.vestiges)}` },
+    { name: `Materials · T${est.tier + 1}`, amount: `${(est.matChance * 100).toFixed(0)}% / kill` },
   ];
 }
 
@@ -216,8 +233,11 @@ function openContinent(state) {
     ln.dataset.seg = i + 1; // o segmento "leva" ao nó i+1
     trail.appendChild(ln);
   }
-  panelSig = '';                         // força reconstrução do painel
-  selectSub(state, state.subarea);       // foca a sub-área atual
+  // Painel fica oculto até o jogador clicar num ícone de sub-área.
+  panelSig = '';
+  selectedSub = 0;
+  $('cont-panel').hidden = true;
+  document.querySelectorAll('.sub-node').forEach((el) => el.classList.remove('selected'));
   renderMap(state);
 }
 
@@ -225,9 +245,17 @@ function openContinent(state) {
 let selectedSub = 1;
 function selectSub(state, n) {
   selectedSub = n;
+  $('cont-panel').hidden = false;        // clique no ícone revela o painel
   document.querySelectorAll('.sub-node').forEach((el) =>
     el.classList.toggle('selected', Number(el.dataset.sub) === n));
   renderPanel(state);
+}
+
+// Fecha o painel e limpa a seleção (botão X).
+function closePanel() {
+  selectedSub = 0;
+  $('cont-panel').hidden = true;
+  document.querySelectorAll('.sub-node').forEach((el) => el.classList.remove('selected'));
 }
 
 // Reconstrói o painel só quando muda algo relevante (evita rebuild por tick).
@@ -238,18 +266,27 @@ function renderPanel(state) {
   const map = getCurrentMap(state);
   const n = selectedSub;
   const accessible = n <= state.unlockedSubarea;
-  const cleared = !!state.bossDefeated[n - 1];
-  const sig = `${n}|${accessible}|${cleared}`;
+  // Sem Guardião nas 1..N-1: "cleared" = já passou (liberou a seguinte). A última
+  // sub-área (boss final) só fica cleared ao derrotar o boss.
+  const cleared = n === map.subareaCount
+    ? !!state.bossDefeated[n - 1]
+    : n < state.unlockedSubarea;
+
+  const resources = mapResources(state, n);
+  const sig = `${n}|${accessible}|${cleared}|${resources.map((r) => r.amount).join(',')}`;
   if (sig === panelSig) return;
   panelSig = sig;
 
   const range = subareaLevelRange(map, n);
   const packSize = map.packSizes[n - 1];
-  const subName = (SUBAREAS[map.id] || [])[n - 1]?.name || `Sub-area ${n}`;
+  const subInfo = (SUBAREAS[map.id] || [])[n - 1];
+  const subName = subInfo?.name || `Sub-area ${n}`;
+  // Capa do painel = background da própria sub-área (icon + "_bg"); fallback no mapa
+  const coverBg = subInfo ? `url('${subInfo.icon}_bg.webp')` : bg(map.bg);
   const status = !accessible ? 'Locked' : (cleared ? 'Cleared' : 'Open');
   const lore = (SUBAREA_LORE[map.id] || [])[n - 1] || MAP_LORE[map.id] || '';
-  const resources = mapResources(map);
   panel.innerHTML = `
+    <button type="button" class="panel-close" id="panel-close" aria-label="Fechar">✕</button>
     <div class="cover" id="cont-cover"></div>
     <div class="panel-body">
       <h2>${map.name}</h2>
@@ -268,12 +305,13 @@ function renderPanel(state) {
       </div>
       <div class="panel-foot">
         <button type="button" class="enter-btn" id="enter-btn" ${accessible ? '' : 'disabled'}>
-          ${accessible ? 'Enter' : '🔒 Defeat the previous Guardian'}
+          ${accessible ? 'Enter' : `🔒 Reach level ${formatNumber(subareaUnlockLevel(map, n))}`}
         </button>
       </div>
     </div>
   `;
-  $('cont-cover').style.backgroundImage = bg(map.bg);
+  $('cont-cover').style.backgroundImage = coverBg;
+  $('panel-close').addEventListener('click', () => closePanel());
   if (accessible) {
     $('enter-btn').addEventListener('click', () => {
       enterSubarea(state, n);
@@ -306,5 +344,5 @@ export function renderMap(state) {
     ln.classList.toggle('locked', dest > state.unlockedSubarea);
   });
   // Mantém o painel coerente com o gate (ex.: boss recém-derrubado libera nó)
-  if (!$('map-continent')?.hidden) renderPanel(state);
+  if (!$('map-continent')?.hidden && !$('cont-panel')?.hidden) renderPanel(state);
 }
