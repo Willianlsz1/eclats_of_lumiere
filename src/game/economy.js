@@ -46,8 +46,9 @@ export function awardKill(state, mob) {
   const bossMult = mob.isBoss ? BOSS_LUMEN_MULT : 1;
   const eco = passiveEcoMult(state); // §7 Vestige tree (Lumens/XP) — provisório
   const cm = convMult(state);        // CP-3: Convergence +15% em Lumens e XP (sem frt/wis)
-  // Lumens base = HP×goldRatio + nível×goldPerLevel (o "gold base por nível" do Willian)
-  const lumBase = mob.hpMax * ECONOMY.goldRatio + runLevel(state) * LEVEL.goldPerLevel;
+  // Lumens base = HP×goldRatio + PISO fixo + nível×goldPerLevel. O piso (✅ Map 1) garante
+  // que os primeiros níveis do gear sejam compráveis cedo (mob de HP baixo rende pouco).
+  const lumBase = mob.hpMax * ECONOMY.goldRatio + ECONOMY.lumensFloor + runLevel(state) * LEVEL.goldPerLevel;
   state.lumens = Math.min(NUMBER_CAP, state.lumens + lumBase * cm * bossMult * gearLumensMult(state) * eco * memoireLumensMult(state));
   const xp = mob.hpMax * ECONOMY.xpRatio * cm * gearXpMult(state) * eco * memoireXpMult(state);
   state.xpTotal = Math.min(NUMBER_CAP, state.xpTotal + xp); // vida (level display)

@@ -1,8 +1,7 @@
-// Convergence — CP-3 (redesign). SEM reset de mapa. Gate por NÍVEL; dá +15% ADITIVO
-// permanente (o convMult vive em stats.js, entra em dano/HP/XP/Lumens). O botão
-// RESETA: o nível da RUN (xpRun→0) + o NÍVEL do Gear (a RARIDADE nunca reseta).
-// NÃO reseta: mapa/posição, Lumens, Vestiges. (O Gatekeeper A1 vai tirar o reset
-// do gear — CP-7.) Você nunca volta pro início do mapa: sempre pra frente.
+// Convergence — redesign (calibrado Map 1, 14/jun). SEM reset de mapa. Gate por NÍVEL;
+// dá +15% ADITIVO permanente (convMult vive em stats.js: dano/HP/XP/Lumens). É um
+// ACELERADOR (~×2 ao fim do Map 1), não um motor. O botão RESETA só o nível da RUN
+// (xpRun→0); o GEAR é MANTIDO (sem strand). NÃO reseta: mapa/posição, Lumens, Vestiges.
 
 import { CONVERGENCE } from '../data/constants.js';
 import { runLevel, playerHpMax } from './stats.js';
@@ -26,10 +25,10 @@ export function doConverge(state) {
   if (!canConverge(state)) return false;
 
   state.convergences += 1;
-  // Reset: nível da run + NÍVEL do Gear (raridade preservada).
+  // Reset: SÓ o nível da run (xpRun). ✅ Map 1 (14/jun): o GEAR é MANTIDO (sem strand).
+  // Convergence = acelerador ×: +15% permanente sem perder o gear.
   state.xpRun = 0;
-  for (const key of Object.keys(state.gear)) state.gear[key].level = 0;
-  // NÃO reseta: map/subarea/unlockedSubarea/bossDefeated, Lumens, Vestiges, raridade.
+  // NÃO reseta: gear (nível+raridade), map/subarea/unlockedSubarea/bossDefeated, Lumens, Vestiges.
 
   // Renasce cheio na posição atual; reinicia a onda (você está mais fraco agora).
   state.player.dead = false;

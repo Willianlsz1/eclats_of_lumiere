@@ -90,15 +90,11 @@ function affixEntries(def, piece) {
         per: perN(GEAR.flatPerLevel[type] * rm * w), primary: prim });
     }
     if (isSec) {
-      // secundário: contribuição combinada (× das 2 camadas, a 30%)
-      out.push({ val: `×${formatNumber(secondaryMult(lvl, rar))}`, label, per: '', primary: false });
+      // secundário: contribuição combinada como % (NUNCA ×) — afixo do tier
+      out.push({ val: `+${formatNumber((secondaryMult(lvl, rar) - 1) * 100)}%`, label, per: '', primary: false });
     } else {
-      // primário: 2 camadas multiplicativas SEPARADAS (estilo Gaiadon)
-      const multLayer = 1 + lvl * GEAR.multRate * rm;     // ×Multiplier
-      const bonusLayer = lvl * GEAR.bonusRate * rm * 100; // Bonus%/Mastery (+X%)
-      out.push({ val: `×${formatNumber(multLayer)}`, label: `${label} mult`,
-        per: perN(GEAR.multRate * rm, '', '×'), primary: true });
-      out.push({ val: `+${formatNumber(bonusLayer)}%`, label: `${label} mastery`,
+      // primário: 2 afixos = FLAT (acima) + % (aqui). ×Multiplier removido (Map 1, 14/jun).
+      out.push({ val: `+${formatNumber(lvl * GEAR.bonusRate * rm * 100)}%`, label,
         per: perN(GEAR.bonusRate * rm * 100, '%'), primary: true });
     }
   };

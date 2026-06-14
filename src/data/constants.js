@@ -13,12 +13,17 @@ export const COMBAT = {
   bossHpMult: 15,         // usado no CP-D
   bossDmgMult: 3,         // usado no CP-D
   deathRespawnSeconds: 3, // morte: respawn com HP cheio, sem perdas
+  waveClearDelay: 0.3,    // beat entre ondas: cobre o voo do projétil (PROJ_BASE_MS 200ms + frame)
+                          // p/ a morte do ÚLTIMO mob chegar ANTES da próxima onda surgir.
 };
 
 // §12 — Lumens · §6 — XP
 export const ECONOMY = {
-  goldRatio: 0.10, // lumens_por_kill = mob_hp × 0.10 (× convMult; sem frt — CP-3)
-  xpRatio: 0.08,   // xp_por_kill     = mob_hp × 0.08 (× convMult; sem wis — CP-3)
+  goldRatio: 0.10,  // lumens_por_kill = mob_hp × 0.10 (× convMult; sem frt — CP-3)
+  xpRatio: 0.08,    // xp_por_kill     = mob_hp × 0.08 (× convMult; sem wis — CP-3)
+  // ✅ Map 1 (14/jun): PISO fixo de lumens/kill. Pesa cedo (mob vale pouco) e some tarde
+  // (mob vale milhares) → 1º nível comprável em ~1min (era ~9min). Acelera o early (ok, Willian).
+  lumensFloor: 60,
 };
 
 // CP-3 (redesign) — NÍVEL = motor de stat base (substitui os Gold Stats).
@@ -125,9 +130,9 @@ export const DEFENSE = {
 // permanente (dano/HP/XP/Lumens). Reseta o nível da run (xpRun) + o nível do Gear.
 // ⏳ VALORES PLACEHOLDER — Willian vai calibrar por teste (15% fixo? variável?).
 export const CONVERGENCE = {
-  bonusPerConv: 0.15,   // convMult = 1 + 0.15 × convergences (ADITIVO)
-  gateLevelBase: 40,    // 1ª Convergence: atingir nível 40
-  gateLevelGrowth: 1.2, // o alvo de nível sobe ×1.2 a cada Convergence
+  bonusPerConv: 0.15,    // convMult = 1 + 0.15 × convergences (ADITIVO) — acelerador, não motor
+  gateLevelBase: 40,     // 1ª Convergence: atingir nível 40
+  gateLevelGrowth: 1.25, // ✅ Map 1: o alvo de nível sobe ×1.25 a cada Convergence (~12 converges/M1)
 };
 
 // §7 — Vestiges (renda; gasto em Passivas/Ascension é pós-MVP)
@@ -158,21 +163,22 @@ export const GEAR = {
   ],
   // por raridade (índice 0..4): força do afixo e CUSTO sobem
   rarityMult: [1, 1.5, 2.25, 3.5, 5],
-  // CP-4 (modelo Gaiadon): SEM cap de nível (o CUSTO é o freio). Safety alto anti-overflow.
-  levelCap:   [1e9, 1e9, 1e9, 1e9, 1e9],
-  // CUSTO ESCALA POR TIER (acompanha a renda do mapa, que vai a ~1e44): freio natural em todo mapa.
-  costMult:   [1, 1e8, 1e18, 1e29, 1e39], // ⏳ sementes
-  // ── 3 CAMADAS que MULTIPLICAM (Gaiadon), todas LINEARES no nível × rarityMult ──
-  // Primary (flat, por tipo) — soma à base. Bonus% e ×Multiplier — multiplicam.
-  flatPerLevel: { dmg: 50, hp: 25, defesa: 15, aps: 0.001, regen: 0.0005, bossDmg: 0, lumens: 0, xp: 0, crit: 0, critDmg: 0, materiais: 0 },
-  bonusRate: 6e-5,           // Bonus% (Mastery): 1 + nível × bonusRate × rarityMult. ⏳ semente
-  multRate:  0.01,           // ×Multiplier: 1 + nível × multRate × rarityMult. ⏳ semente
+  // CAP de nível por raridade (✅ Map 1: Faded = 1000). M2+ = placeholder (a discutir).
+  levelCap:   [1000, 2000, 3000, 4000, 5000],
+  // CUSTO por tier. Faded = ×1 (→ 1400×(L+1), ✅ Map 1). M2+ = placeholder seguro (a discutir).
+  costMult:   [1, 10, 100, 1000, 10000],
+  // ── MODELO MAP 1 (calibrado 14/jun): 2 AFIXOS por peça — flat + % ──
+  // Primary (flat, por tipo) — soma à base. Bonus% (%) — multiplica. (×Multiplier removido.)
+  flatPerLevel: { dmg: 60, hp: 25, defesa: 15, aps: 0.001, regen: 0.0005, bossDmg: 0, lumens: 0, xp: 0, crit: 0, critDmg: 0, materiais: 0 },
+  bonusRate: 0.02,           // afixo % : 1 + nível × bonusRate × rarityMult (2%/nv no Faded). ✅ Map 1
+  multRate:  0,              // ×Multiplier REMOVIDO (decisão Willian 14/jun — era cópia do Gaiadon)
+  affixPctRate: 0.01,        // FARM (lumens/xp/materiais): % linear/nível. (fix do NaN — faltava no constants)
   secondaryExp: 0.30,        // afixo SECUNDÁRIO = primário^0.30 (e flat/camadas × secondaryExp)
-  capPerAsc: 0,              // (sem cap)
+  capPerAsc: 0,
   critPerLevel: 5e-7,        // afixo crit (chance). ⏳ semente
   critDmgPerLevel: 1e-6,     // afixo critDmg (bônus plano sobre a base ×2). ⏳ semente
-  // custo de nível LINEAR: base × (nível+1) × costMult[raridade].
-  levelCostBase: 5,
+  // custo de nível LINEAR: base × (nível+1) × costMult[raridade]. Faded = 1400×(L+1) (✅ Map 1).
+  levelCostBase: 1400,
   // (Subir raridade = gate duplo: nível no cap + MATERIAIS do tier — ver CRAFT, Passo 4.)
 };
 
@@ -352,5 +358,5 @@ export const TICK_SECONDS = 0.1;     // tick fixo de 100ms
 export const MAX_CATCHUP_TICKS = 50; // teto de catch-up por frame (ausências longas: offline §15 no reload)
 export const AUTOSAVE_MS = 10_000;
 export const SAVE_KEY = 'eclats_save_v1';
-export const SCHEMA_VERSION = 5; // v5 (Bloco 3): + state.ecoMap (Eco do Seeker, Fate Keeper A3)
+export const SCHEMA_VERSION = 6; // v6 (14/jun): modelo Map 1 — gear 2 afixos + cap 1000 + custo/conv novos (descarta saves antigos incompatíveis)
 export const NUMBER_CAP = 1e100;     // teto do jogo base — cabe no float nativo
