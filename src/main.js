@@ -10,7 +10,6 @@ import { playerHpMax } from './game/stats.js';
 import { simulateOffline } from './game/offline.js';
 import { maybeApplyDevUnlock, showDevBadge, setupDevButton, setupDevPanel, setupResetButton } from './core/dev.js';
 import { setupUI, renderUI, showOfflineSummary } from './ui/ui.js';
-import { openAwakening, closeAwakening } from './ui/awakening.js';
 import { openConvergence, closeConvergence } from './ui/convergence.js';
 import { openOffline, closeOffline } from './ui/offline.js';
 
@@ -49,7 +48,6 @@ renderUI(state);
 // TODO(lógica): disparar Awakening ao vencer o Guardião da Sub 3 (checkDespertar)
 // e Convergence no ciclo de dispersão; passar dados reais (ganhos calculados).
 window.eclatsCeremonies = {
-  awaken: openAwakening, closeAwaken: closeAwakening,
   converge: openConvergence, closeConverge: closeConvergence,
 };
 

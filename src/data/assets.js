@@ -22,12 +22,7 @@ const DATA = {
     "card_t2": "characters/seeker/seeker_card_t2",
     "card_t3": "characters/seeker/seeker_card_t3",
     "card_t4": "characters/seeker/seeker_card_t4",
-    "card_t5": "characters/seeker/seeker_card_t5",
-    "t1": "characters/seeker/seeker_t1",
-    "t2": "characters/seeker/seeker_t2",
-    "t3": "characters/seeker/seeker_t3",
-    "t4": "characters/seeker/seeker_t4",
-    "t5": "characters/seeker/seeker_t5"
+    "card_t5": "characters/seeker/seeker_card_t5"
   },
   "frames": {
     "card": "frames/card_frame_alpha",
@@ -38,11 +33,6 @@ const DATA = {
     "boss_m5": "frames/frame_boss_m5",
     "enemy": "frames/frame_enemy_alpha",
     "enemy_universal": "frames/frame_enemy_universal",
-    "tier1": "frames/frame_tier1_alpha",
-    "tier2": "frames/frame_tier2_alpha",
-    "tier3": "frames/frame_tier3_alpha",
-    "tier4": "frames/frame_tier4_alpha",
-    "tier5": "frames/frame_tier5_alpha",
     "universal": "frames/frame_universal"
   },
   "icons": {

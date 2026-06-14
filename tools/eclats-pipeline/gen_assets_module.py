@@ -55,7 +55,10 @@ for p in sorted(ECLATS.rglob("*")):
     elif top == "gear":
         data["gear"][name] = rel
     elif top == "passives":
-        data["passives"][parts[1]][name] = rel
+        # só passives/<arvore>/<icone> entra no manifesto; arquivos diretos em
+        # passives/ (fundo da árvore, frutos) são referenciados por caminho direto.
+        if len(parts) >= 3 and parts[1] in data["passives"]:
+            data["passives"][parts[1]][name] = rel
     elif top == "relics":
         data["relics"][name] = rel
     elif top == "enemies":
