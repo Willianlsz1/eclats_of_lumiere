@@ -227,7 +227,14 @@
   width: min(calc(var(--stage-w) * 0.12), 190px);
 }
 
-/* pack grande (9..12 mobs): grade 6×2 — colunas a 11.6%, card ≤ 10% do palco */
+/* poucos mobs (≤3): cards GRANDES, fileira única centrada (cap menor com boss) */
+.cb-enemy.ecard.big { width: min(calc(var(--stage-w) * 0.17), 330px); }
+.cb-arena.with-boss .cb-enemy.ecard.big { width: min(calc(var(--stage-w) * 0.12), 190px); }
+/* 7-8 mobs: um degrau menor que o normal pra caber as 4 colunas deslocadas */
+.cb-enemy.ecard.mid { width: min(calc(var(--stage-w) * 0.122), 235px); }
+.cb-arena.with-boss .cb-enemy.ecard.mid { width: min(calc(var(--stage-w) * 0.105), 155px); }
+
+/* pack grande (9..12 mobs): grade 6×2 — colunas a 11.5%, card ≤ 10% do palco */
 .cb-enemy.ecard.dense { width: min(calc(var(--stage-w) * 0.10), 215px); }
 .cb-arena.with-boss .cb-enemy.ecard.dense { width: min(calc(var(--stage-w) * 0.095), 140px); }
 .cb-enemy.ecard.dense .ecard-name { font-size: 16px; }

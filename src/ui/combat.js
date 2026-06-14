@@ -32,18 +32,36 @@ const ENEMY_ART_FALLBACK = 'enemies.map1.deer_spirit';
 // exclusiva do boss no meio (y 50.5%) e linha de baixo (y 78%).
 // Packs grandes (9..12, GDD packSizes=[2,4,6,9,12]) usam grade 6×2 com cards
 // menores (140px) — TODOS os mobs do pack aparecem, nunca menos.
-const GRID_COLS_4 = [30, 47, 64, 81];                      // espaçamento 17%
-const GRID_COLS_6 = [28, 39.6, 51.2, 62.8, 74.4, 86];      // espaçamento 11.6%
 const BOSS_POINT = { x: 55, y: 50.5 };
+const ARENA_CX = 66; // centro horizontal da arena de mobs (à DIREITA do card do Seeker)
 
-// Posição do i-ésimo mob num pack de `total` (linha de cima → linha de baixo).
-// Sem boss em cena: 2 fileiras altas (cards grandes, y 30/70.5). Com boss: as
-// fileiras abrem a faixa do meio pra ele (y 22.5/78) e os cards encolhem.
+// Layout COUNT-AWARE: poucos mobs ficam grandes e centrados; muitos viram grade
+// densa. Sempre deslocado pra direita (ARENA_CX) pra não encostar no Seeker.
+//   ≤3 mobs  → 1 fileira centrada (cards grandes)
+//   4-6 mobs → 2 fileiras (cards normais)
+//   7-8 mobs → grade 4×2 (cards médios)
+//   9-12     → grade 6×2 (cards densos)
+function mobLayout(total) {
+  if (total <= 3) return { perRow: total, rows: 1, spacing: 19 };
+  if (total <= 6) return { perRow: Math.ceil(total / 2), rows: 2, spacing: 17 };
+  if (total <= 8) return { perRow: 4, rows: 2, spacing: 13.5 };
+  return { perRow: 6, rows: 2, spacing: 11.5 };
+}
+
+// Posição do i-ésimo mob (ordinal entre os NÃO-boss) num pack de `total`.
+// Colunas centradas em ARENA_CX; a última fileira (se incompleta) também centra.
 function spawnPos(i, total, bossOut) {
-  const cols = total > 8 ? GRID_COLS_6 : GRID_COLS_4;
-  const top = i < cols.length;
-  const y = bossOut ? (top ? 22.5 : 78) : (top ? 30 : 70.5);
-  return { x: cols[i % cols.length], y };
+  const { perRow, rows, spacing } = mobLayout(total);
+  const row = Math.floor(i / perRow);
+  const col = i % perRow;
+  const colsInRow = row === rows - 1 ? total - perRow * row : perRow;
+  const x = ARENA_CX + spacing * (col - (colsInRow - 1) / 2);
+  // 1 fileira → centro vertical (ou faixa de cima quando o boss ocupa o meio).
+  // 2 fileiras → bandas alta/baixa (abrem a do meio pro boss quando ele entra).
+  const y = rows === 1
+    ? (bossOut ? 22.5 : 50)
+    : (bossOut ? (row === 0 ? 22.5 : 78) : (row === 0 ? 30 : 70.5));
+  return { x, y };
 }
 
 // Janela de suavização das taxas do HUD (EMA simples)
@@ -185,9 +203,11 @@ function renderEnemies(state) {
   const totalMobs = state.enemies.reduce((n, m) => n + (m.isBoss ? 0 : 1), 0);
   const bossPresent = state.enemies.some((m) => m.isBoss);
   arena.classList.toggle('with-boss', bossPresent);
+  // ordinal entre os NÃO-boss (boss fica no slot 0 quando presente → mobs começam em 1)
+  const ordOf = (i) => (bossPresent ? Math.max(0, i - 1) : i);
   if (arena.children.length !== state.enemies.length) {
     arena.innerHTML = '';
-    state.enemies.forEach((mob, i) => arena.appendChild(buildEnemyCard(mob, i, totalMobs, bossPresent)));
+    state.enemies.forEach((mob, i) => arena.appendChild(buildEnemyCard(mob, ordOf(i), totalMobs, bossPresent)));
   }
 
   // limpa o HP exibido / impactos pendentes de mobs que saíram (troca de onda)
@@ -204,14 +224,17 @@ function renderEnemies(state) {
   state.enemies.forEach((mob, i) => {
     let card = arena.children[i];
     if (!card || card.dataset.mobId !== String(mob.id)) {
-      const fresh = buildEnemyCard(mob, i, totalMobs, bossPresent);
+      const fresh = buildEnemyCard(mob, ordOf(i), totalMobs, bossPresent);
       if (card) arena.replaceChild(fresh, card); else arena.appendChild(fresh);
       card = fresh;
     }
     // HP EXIBIDO (bufferizado até o projétil chegar); o motor já aplicou o dano real.
     let vh = displayHp(mob);
-    // reconciliação: motor já matou e não há projétil a caminho → morte visual imediata
-    if (mob.hp <= 0 && !pendingHits.some((h) => h.mobId === mob.id)) { vh = 0; shownHp.set(mob.id, 0); }
+    // reconciliação: motor já matou E não há projétil a caminho NEM impacto a agendar
+    // (state.fx ainda não virou projétil — renderEnemies roda antes de renderDamageFloats).
+    // Sem o check de state.fx, o mob morria ANTES do projétil sair → some antes do corte chegar.
+    const projComing = pendingHits.some((h) => h.mobId === mob.id) || state.fx.some((h) => h.mobId === mob.id);
+    if (mob.hp <= 0 && !projComing) { vh = 0; shownHp.set(mob.id, 0); }
     // Mob (visualmente) morto SOME — fica fora da cena até a onda virar.
     if (vh <= 0) {
       card.style.display = 'none';
@@ -228,10 +251,11 @@ function renderEnemies(state) {
 
 function buildEnemyCard(mob, i, total, bossOut) {
   const pos = mob.isBoss ? BOSS_POINT : spawnPos(i, total, bossOut);
-  const dense = !mob.isBoss && total > 8; // pack grande → cards compactos
+  // tamanho por contagem: ≤3 grande · 4-6 normal · 7-8 médio · 9+ denso
+  const size = mob.isBoss ? '' : total <= 3 ? ' big' : total <= 6 ? '' : total <= 8 ? ' mid' : ' dense';
   const artId = mob.art || ENEMY_ART_FALLBACK; // arte vem do mapa (enemies.js)
   const card = document.createElement('article');
-  card.className = mob.isBoss ? 'cb-enemy ecard boss' : `cb-enemy ecard${dense ? ' dense' : ''}`;
+  card.className = mob.isBoss ? 'cb-enemy ecard boss' : `cb-enemy ecard${size}`;
   card.dataset.mobId = mob.id;
   card.style.left = `${pos.x}%`;
   card.style.top = `${pos.y}%`;
@@ -297,7 +321,9 @@ function centerIn(layer, el, scale) {
 // Duração do voo escalada pelo APS: piso no APS 1 (velocidade base PROJ_BASE_MS);
 // acima de 1 fica proporcionalmente mais curta (APS 2 = metade do tempo → dois
 // projéteis em sequência), com piso pra não virar piscada no APS altíssimo.
-const PROJ_BASE_MS = 360;
+// ⚠️ ligado a COMBAT.waveClearDelay: o beat de troca de onda deve cobrir este voo
+// (senão a onda troca antes do projétil do último mob chegar). 200ms ↔ beat 0.3s.
+const PROJ_BASE_MS = 200;
 function projDuration(aps) {
   return Math.max(75, Math.min(PROJ_BASE_MS, PROJ_BASE_MS / Math.max(1, aps)));
 }
@@ -329,6 +355,9 @@ function spawnProjectile(targetCard, isCrit, aps) {
   proj.innerHTML = `<i class="cb-proj-img" style="transform:rotate(${ang - SLASH_NATURAL_ANGLE}deg)"></i>`;
   proj.addEventListener('animationend', () => proj.remove());
   fx.appendChild(proj);
+  // Fallback: garante a remoção mesmo se animationend NÃO disparar (aba oculta /
+  // animação interrompida) — senão os projéteis pilham invisíveis (opacity 0) e vazam.
+  setTimeout(() => proj.remove(), projDuration(aps) + 200);
 }
 
 // ── Dano sincronizado com o projétil ───────────────────────────────────────

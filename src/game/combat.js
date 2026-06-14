@@ -78,17 +78,29 @@ export function combatTick(state, dt) {
     return;
   }
 
-  // --- Ataques do jogador (acumulador respeita o intervalo do APS) ---
-  const interval = 1 / currentAPS(state);
-  player.attackTimer += dt;
-  while (player.attackTimer >= interval) {
-    player.attackTimer -= interval;
-    playerAttack(state, hpMax);
+  // --- Ataques do jogador (só com alvo VIVO; senão pausa — não desperdiça golpes
+  //     nem acumula timer durante o beat de troca de onda). ---
+  const hasLive = state.enemies.some((m) => m.hp > 0);
+  if (hasLive) {
+    const interval = 1 / currentAPS(state);
+    player.attackTimer += dt;
+    while (player.attackTimer >= interval) {
+      player.attackTimer -= interval;
+      playerAttack(state, hpMax);
+    }
   }
 
-  // --- Onda limpa (todos mortos) → próxima onda. NÃO há respawn individual. ---
-  if (state.enemies.length > 0 && state.enemies.every((m) => m.hp <= 0)) {
-    nextWave(state);
+  // --- Onda limpa (todos mortos) → próxima onda APÓS um beat. Sem o beat, o novo
+  //     mob substituía na hora o que ainda estava morrendo (projétil no ar) → parecia
+  //     que "o mob virou outro". O beat deixa a morte animar e a posição esvaziar. ---
+  if (state.enemies.length > 0 && !hasLive) {
+    state.waveClearT = (state.waveClearT || 0) + dt;
+    if (state.waveClearT >= COMBAT.waveClearDelay) {
+      state.waveClearT = 0;
+      nextWave(state);
+    }
+  } else {
+    state.waveClearT = 0;
   }
 
   // --- Dano só dos mobs VIVOS (mortos ficam apagados até a onda virar) ---
