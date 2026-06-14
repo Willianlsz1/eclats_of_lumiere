@@ -1,8 +1,8 @@
-// Simulador — Camada 1 (Núcleo de combate CLEAVE, CP-1 / ADR 0002).
-// Mostra como a RENDA passa a escalar sob cleave: cada ataque atinge a onda
-// inteira, então os kills/s = (tamanho da onda) × APS quando você ONE-SHOTA, e
-// caem quando o HP do mob passa do seu dano (= a Wall). Contrasta com o modelo
-// ANTIGO (teto de 1 kill/ataque → renda limitada ao APS).
+// Simulador — efeito do UNLOCK de CLEAVE/AoE (ADR 0002 revisado).
+// ⚠️ O combate BASE é single-target (1 kill/ataque, renda ≤ APS). Este sim modela
+// o que acontece QUANDO o cleave/AoE é DESBLOQUEADO: o ataque atinge a onda
+// inteira, então kills/s = (tamanho da onda) × APS ao ONE-SHOTAR, e caem quando o
+// HP do mob passa do dano (= a Wall). A coluna "ANTIGO/base" = single-target (≤ APS).
 // Uso: `node tools/sim/cleave.mjs`
 
 import { MAPS, COMBAT, ECONOMY } from '../../src/data/constants.js';

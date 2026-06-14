@@ -11,9 +11,10 @@ pro mapa seguinte. Quando o HP da onda/boss passa do seu dano, você **travou** 
 farmar o **Hollow** daquele mapa pra ficar mais forte → quebra a Wall → segue.
 **Sem reset de mapa, sem backtrack.**
 
-## Combate — CLEAVE — ADR 0002
-**Cada ataque atinge TODOS os mobs da tela.** Mob morre quando o dano ≥ HP dele. Forte =
-limpa a onda num golpe; HP demais = Wall. (Substitui a velha regra "1 kill/ataque".)
+## Combate — base SINGLE-TARGET; CLEAVE é unlock — ADR 0002 (revisado)
+**Base = 1 mob por ataque** (âncora "1 kill/ataque" vale no base). O **cleave/AoE** (atingir
+vários/todos) é **desbloqueável** por passiva/mecânica (estilo Gaiadon). HP do mob > seu
+dano = Wall. ⚠️ Correção 2026-06-14: cleave NÃO é o estado base (era engano).
 
 ## Os dois lados do loop
 - **Mapa principal = renda IDLE** (passiva, offline): **Lumens** (nível do Gear),
@@ -75,11 +76,11 @@ Não +dano% genérico (evita redundância com Nível/Convergence). 3 árvores ×
 
 ### Reconciliação das 45 (as do GDD §7 já existem; o redesign reparou algumas)
 Aprovado tree-by-tree em 2026-06-14. **As 45 nomeadas+calibradas do GDD §7 ficam**, com reparos:
-- **ÉCLAT (4 reparos):** *Refraction* = crit dobra no alvo de **maior HP** (era ricochete) ·
-  *Shard Burst* = golpe periódico de **dano por % vida máx** (anti-tank) · *Overkill* =
-  excedente vai pro **mob de maior HP** (anti-boss) · *Luminal Explosion* = **pulso
-  periódico de dano massivo**. (Cleave tornou os antigos "espalhar/transbordar" redundantes;
-  some o "kill paga ~50%".)
+- **ÉCLAT:** *Refraction* = crit dobra no alvo de **maior HP** (era ricochete). ⚠️
+  **Revisar (2026-06-14):** *Shard Burst* (espalhar), *Overkill* (transbordo) e *Luminal
+  Explosion* (detonar a onda) eu havia "consertado" achando que **cleave era base** — mas
+  o cleave é **unlock** (ADR 0002 revisado). Logo essas 3 **voltam a ser candidatas a
+  CONCEDER o AoE/cleave** (efeito de espalhar dano). Mecanismo do unlock = sessão de passivas.
 - **VESTIGE (1 refino):** *Beast Caller* = fortalece o **Echo (Gatekeeper A3)**.
 - **Offline (regra global + 2 passivas):** **eficiência ≤ ~50% do ativo (teto 60%)**;
   **tempo acumula 8h inicial → 24h máx**. *Dreamwalker* = **eficiência** (rumo a 50%);

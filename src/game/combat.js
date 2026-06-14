@@ -1,10 +1,10 @@
-// Núcleo de combate — modelo de ONDAS, estilo Gaiadon · CLEAVE (ADR 0002, CP-1).
-// - CLEAVE: cada ataque atinge TODOS os mobs vivos da onda de uma vez; cada mob
-//   morre quando o dano acumulado ≥ HP dele. Um ataque pode matar vários (ou a
-//   onda inteira). Substitui a antiga regra "1 kill por ataque" (que ancorava a
-//   economia). A Wall = quando o HP do mob/boss passa do seu dano por hit.
-// - A renda agora escala com (tamanho da onda × velocidade de limpar); a economia
-//   por kill (economy.js) será re-ancorada nos números da recalibração (Camada 1).
+// Núcleo de combate — modelo de ONDAS, estilo Gaiadon (ADR 0002, revisado).
+// - BASE = SINGLE-TARGET: cada ataque atinge 1 mob (o primeiro vivo). Vale a âncora
+//   "máx 1 kill por ataque" → kill rate ≤ APS (ancora a economia base).
+// - CLEAVE / AoE (atingir vários/todos) é DESBLOQUEÁVEL por passiva/mecânica na
+//   progressão (estilo Gaiadon: começa em 1, libera multi-alvo lá na frente). Quando
+//   ligado, `cleaveTargets()` retorna >1 e o ataque excede o teto de kills. ⏳ o
+//   unlock real (qual passiva, como escala) será wirado num CP de passivas.
 // - Mob morto NÃO respawna: fica na cena (apagado) e para de causar dano. Só
 //   quando TODA a onda é limpa é que a próxima onda surge. Reset da onda só
 //   acontece ao trocar de subárea ou morrer.
@@ -121,20 +121,29 @@ export function combatTick(state, dt) {
   }
 }
 
-// Um ataque (CLEAVE): atinge TODOS os mobs vivos da onda de uma vez. Cada mob
-// morre quando seu HP zera; um ataque pode matar vários (ou a onda toda). SEM
-// respawn — os mortos ficam na cena (apagados) até a onda inteira ser limpa.
-function playerAttack(state, hpMax) {
-  const alive = state.enemies.filter((m) => m.hp > 0);
-  if (alive.length === 0) return; // onda toda morta (será trocada no tick)
+// Quantos mobs um ataque atinge. BASE = 1 (single-target — âncora "1 kill/ataque").
+// O CLEAVE/AoE é DESBLOQUEÁVEL (passiva/mecânica); quando ligado, retorna >1 e o
+// ataque limpa vários alvos. ⏳ TODO(CP passivas): ler o unlock real (qual passiva /
+// como escala — ex.: +1 alvo por nível, ou "todos"). Hoje sempre 1 = base correto.
+function cleaveTargets() {
+  return 1;
+}
 
-  // Crit ⏳ provisório (GDD §16.6): rola UMA vez por ataque (o golpe inteiro crita
-  // ou não), e o multiplicador se aplica a todos os mobs atingidos pelo cleave.
+// Um ataque: atinge os primeiros `cleaveTargets()` mobs vivos da onda (frente → trás).
+// BASE = 1 (single-target). Cada mob atingido morre quando seu HP zera. SEM respawn —
+// os mortos ficam na cena (apagados) até a onda inteira ser limpa.
+function playerAttack(state, hpMax) {
+  // Crit ⏳ provisório (GDD §16.6): rola UMA vez por ataque; vale pro golpe inteiro
+  // (se/quando o cleave atingir vários, todos herdam o mesmo crit).
   const isCrit = Math.random() < critChance(state);
   const base = damagePerHit(state) * (isCrit ? critDamageMult(state) : 1);
 
-  for (const target of alive) {
-    // Dano em boss (§13/§11): afixo bossDmg do gear × #7 de la Chute — por mob (só no boss)
+  let remaining = cleaveTargets(); // BASE 1; >1 quando o AoE estiver desbloqueado
+  for (const target of state.enemies) {
+    if (remaining <= 0) break;
+    if (target.hp <= 0) continue; // pula mortos (mantém a ordem frente → trás)
+    remaining -= 1;
+    // Dano em boss (§13/§11): afixo bossDmg do gear × #7 de la Chute — só no boss
     const bossMult = target.isBoss ? gearBossDmgMult(state) * memoireBossDmgMult(state) : 1;
     const raw = base * bossMult;
     // Defesa de INIMIGOS (§4, razão virada): hit = raw² / (def_inimigo + raw).

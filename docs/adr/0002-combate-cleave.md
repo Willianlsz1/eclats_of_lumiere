@@ -1,25 +1,32 @@
-# Combate vira CLEAVE total (substitui a âncora "1 kill por ataque")
+# Combate: base SINGLE-TARGET; CLEAVE/AoE é desbloqueável
 
-A regra-âncora antiga (`CLAUDE.md`: *"máximo de 1 kill por ataque — kill rate nunca
-excede o APS; isto ancora toda a economia"*) **é substituída**. Novo modelo (estilo
-Gaiadon, referência que Willian joga): **cada ataque atinge TODOS os mobs na tela
-(cleave total)**; cada mob morre quando o dano acumulado **≥ HP dele**. Quando você está
-forte, um golpe limpa a onda inteira (renda alta); quando a onda/boss tem **HP demais
-para o seu dano por hit**, você **trava** — e isso É a **Wall** (vá farmar Gear no
-**Hollow**). Decidido com Willian em 2026-06-14.
+> **Revisado 2026-06-14** (durante o CP-1). A versão anterior dizia "combate vira cleave
+> TOTAL, substitui a âncora 1-kill". **Estava errado** — Willian esclareceu: o cleave é um
+> **unlock de progressão** (estilo Gaiadon: começa em 1 alvo, libera multi-alvo lá na
+> frente), **não** o estado base.
 
-## Consequência crítica (assumida conscientemente)
-- **TODA a calibração atual é invalidada.** O orçamento de poder (~95 décadas), o
-  simulador de sobrevivência (`tools/sim/`), e todas as fórmulas de renda por kill
-  (lumens/xp/vestiges) foram construídos sobre o teto de 1 kill/ataque. **O jogo será
-  recalibrado do zero** (Willian: "vamos recalibrar todo o game").
-- A renda agora escala com **DPS × tamanho da onda** (não mais limitada a 1/ataque) →
-  re-derivar lumens/xp/vestiges por kill e as curvas de HP/dano dos mobs.
-- A **Wall** ganha definição mecânica limpa: *HP do mob/boss > dano por hit* (ou
-  clear-rate baixo demais antes de morrer). Casa com o spine do ADR 0001.
-- **`CLAUDE.md` precisa ser atualizado** (a regra-âncora citada lá deixou de valer).
-- `packSizes` (mobs por onda) e sub-áreas (5→7-8) agora afetam renda diretamente
-  (cleave) — relevante na recalibração.
+**Base = SINGLE-TARGET:** cada ataque atinge **1 mob** (o primeiro vivo, frente → trás).
+Vale a âncora **"máx 1 kill por ataque" → kill rate ≤ APS**, que **continua ancorando a
+economia base**. O **CLEAVE / AoE** (atingir vários ou todos os mobs da onda) é
+**DESBLOQUEÁVEL** por uma passiva/mecânica; quando ligado, o ataque **excede** o teto de
+kills (renda escala com o nº de alvos × velocidade de limpar).
+
+## Implementação (CP-1)
+`playerAttack` atinge os primeiros `cleaveTargets()` mobs vivos. **`cleaveTargets()` = 1
+por padrão** (= single-target, base correto). Quando o AoE for desbloqueado, retorna >1.
+⏳ O **unlock real** (qual passiva concede, como escala — ex.: +1 alvo/nível, ou "todos")
+será wirado num CP de passivas.
+
+## Consequências
+- A âncora **1-kill/ataque NÃO morreu** — ela vale no **base**; o cleave é um multiplicador
+  que a ultrapassa **quando desbloqueado**. (Reverte o texto anterior; o `CLAUDE.md` e o
+  redesign doc foram realinhados.)
+- As passivas de AoE (**Overkill** = transbordo · **Shard Burst** = espalhar · **Luminal
+  Explosion** = detonar a onda) **voltam a ser candidatas naturais a CONCEDER o cleave/AoE**
+  (eu as havia "consertado" achando que cleave era base — reverter na sessão de passivas).
+- A recalibração ainda vale, mas o "núcleo de combate" da Camada 1 = single-target base +
+  o cleave como camada de unlock por cima.
 
 ## Status
-accepted — mecanismo fechado (cleave total); **calibração numérica pendente** (pass próprio).
+accepted (revisado) — base single-target implementado (CP-1). **Mecanismo do unlock de
+AoE: a definir** (sessão de passivas).

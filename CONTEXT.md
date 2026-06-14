@@ -71,12 +71,13 @@ o tier vai T1→T5 = **4 despertares**, são **4 habilidades** (encaixe exato, s
 **Fuel:** **todas em cooldown**, manual; **auto-cast** depois via **Gatekeeper A4**. (Sem
 Ultimate, sem barra-Chaser — descartados; 4 bastam.) Números = calibração.
 
-### Combate — CLEAVE (decidido 2026-06-14, ADR 0002)
-**Cada ataque atinge TODOS os mobs na tela** (cleave total); um mob morre quando o dano
-acumulado **≥ HP dele**. Forte = limpa a onda num golpe; HP demais = trava (= **Wall**).
-**Substitui a antiga âncora "1 kill por ataque"** (que ancorava a economia) — `CLAUDE.md`
-desatualizado nesse ponto. **Toda a calibração será refeita** (renda agora escala com
-DPS × tamanho da onda).
+### Combate — base SINGLE-TARGET; CLEAVE é unlock (ADR 0002, revisado 2026-06-14)
+**Base = single-target:** cada ataque atinge **1 mob**; vale a âncora **"máx 1 kill por
+ataque" → kill rate ≤ APS** (ancora a economia base). O **CLEAVE/AoE** (atingir vários/
+todos) é **DESBLOQUEÁVEL** por passiva/mecânica (estilo Gaiadon: começa em 1, libera
+multi-alvo depois); quando ligado, **excede** o teto de kills. No código:
+`cleaveTargets()` = 1 no base; >1 quando desbloqueado (⏳ unlock a wirar). **A Wall** =
+HP do mob/boss maior que o seu dano por hit.
 
 ### Avanço é escolha do jogador (decidido 2026-06-14)
 **"Sempre pra frente" = sem backtrack/reset**, NÃO auto-avanço. O mapa **farma sozinho
