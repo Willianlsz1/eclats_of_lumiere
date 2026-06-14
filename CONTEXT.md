@@ -126,16 +126,23 @@ materiais + gear exclusivo do nobre** (→ *raridade* do Gear, os saltos que que
 Wall). O Gear precisa das **duas metades**, então mapa (idle) e Hollow (ativo) se
 alternam. O sistema de **Craft/Materiais** já desenhado **permanece**.
 
-**Quantidade (decidido 2026-06-14):** **um Hollow por mapa (5 no Jogo base)**, cada um
-ancorado por **um nobre** com **set de gear próprio**, liberado ao chegar no mapa,
-**repetível e com profundidade crescente**.
+**Quantidade + raridade por mapa (revisado 2026-06-14):** **Hollows só do Map 2 pra
+frente — 4 no total (M2, M3, M4, M5)**. **Map 1 NÃO tem Hollow** (você joga só no
+**Faded**, levelando com Lumens). Cada Hollow dropa o **material específico** que sobe
+**uma raridade**, encaixe 1:1 com as 5 raridades:
+- Map 1 (sem Hollow): **Faded** (só level).
+- Map 2 Hollow: Faded → **Kindled** · Map 3: → **Luminous** · Map 4: → **Radiant** ·
+  Map 5: → **Converged** (topo).
+Cada Hollow também dropa um **acessório/Reliquat** (a definir em passo próprio).
 
 ### Gear — duas camadas (decidido 2026-06-14)
 - **Camada 1 — as 6 peças-núcleo** (Waning Edge, Silent Vigil, Veil of Cinders, Grasp
   of the Unnamed, Last Resonance, Band of Dusk). *O que você é.* Crescem por **nível**
-  (Lumens, do mapa) e **raridade** (materiais, do **Hollow** do mapa). A raridade sobe
-  Kindled → Converged ao longo dos mapas (as **30 artes** já feitas). É o **poder que
-  quebra a Wall**.
+  (Lumens, do mapa) e **raridade** (materiais, do **Hollow** — Faded no Map 1, sobe um
+  tier por Hollow M2-M5 até Converged; as **30 artes** já feitas). É o **poder que quebra
+  a Wall**. **Afixos (decidido 2026-06-14):** cada afixo dá **FLAT por nível** (ex.: +X
+  dano, +Y APS, somado à base do stat) **+** o **% multiplicativo**; escala de nível
+  ampla. Números = calibração.
 - **Camada 2 — Reliquats** (2ª aba do Gear). *O que você venceu.* **Slots NOVOS de
   acessório** (brincos, colar, asas, etc.); cada **Hollow/nobre** dropa **1 Reliquat
   exclusivo** (troféu com arte própria). 5 no Jogo base (um por mapa).

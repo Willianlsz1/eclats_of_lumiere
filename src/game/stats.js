@@ -7,7 +7,8 @@
 // no CP-3a; somem no CP-3b (rework do Player UI).
 
 import { COMBAT, LEVEL, CRIT, CONVERGENCE, DEFENSE } from '../data/constants.js';
-import { gearDamageMult, gearHpMult, gearCritAdd, gearDefesaMult, gearCritDmgAdd, gearApsMult } from './gear.js';
+import { gearDamageMult, gearHpMult, gearCritAdd, gearDefesaMult, gearCritDmgAdd, gearApsMult,
+  gearDamageFlat, gearHpFlat, gearApsFlat } from './gear.js';
 import { passiveDmgMult, passiveHpMult, passiveCritAdd, passiveEnemyPen, passiveEnemyReduce, passiveApsMult } from './passives.js';
 import { memoireDmgMult, memoireHpMult, memoireCritDmgMult, memoireSurvivalMult } from './memoires.js';
 import { ascMult, despertarMult } from './ascension.js';
@@ -31,7 +32,8 @@ export function convMult(state) {
 // APS = baseAPS × Fracture Pulse (passiva) × Resonance (gear, amortecido por log), teto apsCap.
 export function currentAPS(state) {
   const resonance = 1 + 0.3 * Math.log10(Math.max(1, gearApsMult(state)));
-  const aps = COMBAT.baseAPS * passiveApsMult(state) * resonance;
+  // CP-4: gear soma APS FLAT na base (capado no apsCap)
+  const aps = (COMBAT.baseAPS + gearApsFlat(state)) * passiveApsMult(state) * resonance;
   return Math.min(COMBAT.apsCap, aps);
 }
 
@@ -47,9 +49,9 @@ export function critDamageMult(state) {
   return (CRIT.baseDamageMult + overflow * CRIT.overflowFactor + gearCritDmgAdd(state)) * memoireCritDmgMult(state);
 }
 
-// ───── Dano e HP (base FLAT do nível × multiplicadores) ─────
-const baseDamage = (state) => COMBAT.baseDmg + runLevel(state) * LEVEL.dmgPerLevel;
-const baseHp = (state) => COMBAT.playerBaseHp + runLevel(state) * LEVEL.hpPerLevel;
+// ───── Dano e HP (base FLAT: nível do Seeker + flat do Gear) × multiplicadores ─────
+const baseDamage = (state) => COMBAT.baseDmg + runLevel(state) * LEVEL.dmgPerLevel + gearDamageFlat(state);
+const baseHp = (state) => COMBAT.playerBaseHp + runLevel(state) * LEVEL.hpPerLevel + gearHpFlat(state);
 
 // dano_por_hit = (baseDmg + nível×dmgPerLevel) × convMult × gear × passiva × mémoire × asc × despertar
 export function damagePerHit(state) {

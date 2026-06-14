@@ -52,6 +52,26 @@ export const gearApsMult      = (s) => gearMultBy(s, 'aps');      // ⛓️ cons
 export const gearRegenMult    = (s) => gearMultBy(s, 'regen');    // ⛓️ consumidor no regen (passo futuro)
 export const gearBossDmgMult  = (s) => gearMultBy(s, 'bossDmg');  // ⛓️ consumidor no hit em boss (passo futuro)
 
+// ── Afixo FLAT por nível (CP-4): soma flat à BASE do stat (não multiplica).
+//    Primário = valor cheio; secundário = × secondaryExp. Escala pela raridade.
+function gearFlatBy(state, type) {
+  const per = GEAR.flatPerLevel[type] || 0;
+  if (!per) return 0;
+  let flat = 0;
+  for (const def of GEAR.pieces) {
+    const p = state.gear[def.key];
+    const rm = GEAR.rarityMult[p.rarity];
+    if (def.primary === type) flat += p.level * per * rm;
+    for (const sec of activeSecondaries(def, p.rarity)) {
+      if (sec === type) flat += p.level * per * rm * GEAR.secondaryExp;
+    }
+  }
+  return flat;
+}
+export const gearDamageFlat = (s) => gearFlatBy(s, 'dmg'); // soma na base de dano
+export const gearHpFlat     = (s) => gearFlatBy(s, 'hp');  // soma na base de HP
+export const gearApsFlat    = (s) => gearFlatBy(s, 'aps'); // soma na base de APS (capado depois)
+
 // ── Afixos de FARM (Lumens/XP/Materiais) — REGRA Bloco 3: só flat/% ADITIVO, NUNCA o motor ×.
 // Valor LINEAR do afixo (sem o 1.0039^L): mantém o farm como bônus modesto, não motor de décadas.
 function farmLinear(level, rarity, isSec) {
@@ -108,9 +128,10 @@ export function levelCapFor(piece, state) {
 }
 export const atLevelCap = (piece, state) => piece.level >= levelCapFor(piece, state);
 
-// custo de upar 1 nível = base × ramp^nível × costMult[raridade]
+// CP-4: custo de 1 nível LINEAR (suporta milhões de níveis; expo estouraria).
+// cost(L) = base × (L+1) × costMult[raridade]
 export function levelCost(piece) {
-  return GEAR.levelCostBase * GEAR.levelCostRamp ** piece.level * GEAR.costMult[piece.rarity];
+  return GEAR.levelCostBase * (piece.level + 1) * GEAR.costMult[piece.rarity];
 }
 
 // Tier de material que paga a raridade atual→próxima (= índice da raridade atual: T1 paga 0→1)
@@ -138,14 +159,25 @@ export function buyLevel(state, key) {
   return true;
 }
 
-// Compra n níveis (ou até o cap / acabar Lumens); n grande = "MAX"
+// Bulk-buy FECHADO (CP-4): compra o máximo de níveis que o orçamento permite — custo
+// linear → soma quadrática → resolve k em O(1). Suporta milhões de níveis. n grande = MAX.
 export function buyLevels(state, key, n) {
-  let bought = 0;
-  for (let i = 0; i < n; i++) {
-    if (!buyLevel(state, key)) break;
-    bought++;
-  }
-  return bought;
+  const p = state.gear[key];
+  const cap = levelCapFor(p, state);
+  const room = cap - p.level;
+  if (room <= 0) return 0;
+  const K = GEAR.levelCostBase * GEAR.costMult[p.rarity]; // cost(L) = K × (L+1)
+  const c = p.level;
+  // máx k pelo orçamento: K/2 × [(c+k)(c+k+1) − c(c+1)] ≤ lumens → quadrática em (c+k)
+  const disc = Math.sqrt(1 + 4 * (c * (c + 1) + 2 * state.lumens / K));
+  let k = Math.min(n, room, Math.max(0, Math.floor((disc - 1) / 2) - c));
+  if (k <= 0) return buyLevel(state, key) ? 1 : 0; // cobre arredondamento (tenta 1)
+  let cost = (K / 2) * ((c + k) * (c + k + 1) - c * (c + 1));
+  while (cost > state.lumens && k > 0) { k -= 1; cost = (K / 2) * ((c + k) * (c + k + 1) - c * (c + 1)); }
+  if (k <= 0) return 0;
+  state.lumens -= cost;
+  p.level += k;
+  return k;
 }
 
 export function doRarityUp(state, key) {

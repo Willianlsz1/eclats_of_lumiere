@@ -26,12 +26,20 @@ const AFFIX_LABELS = {
   aps: 'attack speed', regen: 'regen', bossDmg: 'boss damage', lumens: 'Lumens', xp: 'XP',
   materiais: 'materials', erosao: 'erosion',
 };
+// flat do afixo (CP-4): nível × flatPerLevel × rarityMult × (secundário? secondaryExp)
+function affixFlat(type, level, rarity, isSec) {
+  const per = GEAR.flatPerLevel[type] || 0;
+  return level * per * GEAR.rarityMult[rarity] * (isSec ? GEAR.secondaryExp : 1);
+}
 function affixDesc(type, level, rarity, isSec) {
-  const w = isSec ? 0.30 : 1;
+  const w = isSec ? GEAR.secondaryExp : 1;
   if (type === 'crit') return `+${(critOf(level, rarity) * w * 100).toFixed(2)}% crit`;
   if (type === 'critDmg') return `+${(critDmgOf(level, rarity) * w * 100).toFixed(0)}% crit dmg`;
   const m = isSec ? secondaryMult(level, rarity) : primaryMult(level, rarity);
-  return `×${formatNumber(m)} ${AFFIX_LABELS[type]}`;
+  const label = AFFIX_LABELS[type];
+  const flat = affixFlat(type, level, rarity, isSec);
+  // afixos com FLAT (dano/HP/APS/defesa/regen): "+flat label · ×%"; farm (Lumens/XP): só "×%"
+  return flat > 0 ? `+${formatNumber(flat)} ${label} · ×${formatNumber(m)}` : `×${formatNumber(m)} ${label}`;
 }
 
 // Multiplicador GLOBAL de level-up (aplica a qualquer slot)

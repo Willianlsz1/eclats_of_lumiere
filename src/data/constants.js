@@ -158,19 +158,22 @@ export const GEAR = {
   ],
   // por raridade (índice 0..4): força do afixo sobe, cap de nível sobe, custo sobe
   rarityMult: [1, 1.5, 2.25, 3.5, 5],
-  levelCap:   [25, 50, 100, 175, 300],
+  // CP-4: NÍVEIS ALTOS (até milhões nas raridades altas). ⏳ SEMENTES — calibrar.
+  levelCap:   [1000, 20000, 200000, 2e6, 20e6],
   costMult:   [1, 4, 16, 64, 256],
-  // ── Modelo de valor calibrado (Camada 3 / `tools/sim/gear.mjs`) ──
-  affixPctRate: 0.02,        // sabor %: 1 + nível × 0.02 × rarityMult  (linear, toda raridade)
-  affixMultBase: 1.0039,     // sabor ×: 1.0039^nível (a partir de Luminous) — agregado de dano ≈ 10 déc
-  affixMultFromRarity: 2,    // Luminous (idx 2) destrava o sabor × (motor sem-teto)
-  secondaryExp: 0.30,        // afixo SECUNDÁRIO = primário^0.30 (30% das décadas; crit/critDmg = 30% do valor plano)
-  capPerAsc: 500,            // a Ascension soma +500 ao cap de nível da raridade TOPO (Converged) — sem-teto
-  critPerLevel: 0.0015,      // ✅ CALIBRADO (Bloco 5): afixo crit (chance) — Grasp + Luminal Edge fecham 100% no mid
-  critDmgPerLevel: 0.01,     // afixo critDmg (bônus plano sobre a base ×2) = nível × critDmgPerLevel × rarityMult
-  // custo de upar 1 nível = base × ramp^nível × costMult[raridade]
-  levelCostBase: 50,
-  levelCostRamp: 1.12,
+  // ── Afixo FLAT por nível (CP-4): cada nível soma valor flat à BASE do stat,
+  //    escalado pela raridade. É o "dano base +X/nível" do Willian. ⏳ SEMENTES.
+  flatPerLevel: { dmg: 100, hp: 50, defesa: 30, aps: 0.0015, regen: 0.0005, bossDmg: 0, lumens: 0, xp: 0, crit: 0, critDmg: 0, materiais: 0 },
+  // ── Sabor % (multiplicativo) — segue existindo, ALÉM do flat ──
+  affixPctRate: 0.0002,      // % por nível (menor, pois nível vai a milhões): 1 + nível × rate × rarityMult
+  affixMultBase: 1.0000005,  // sabor × (a partir de Luminous) — amortecido p/ níveis altos
+  affixMultFromRarity: 2,    // Luminous (idx 2) destrava o sabor ×
+  secondaryExp: 0.30,        // afixo SECUNDÁRIO = primário^0.30 (e flat secundário × secondaryExp)
+  capPerAsc: 100000,         // a Ascension soma +cap ao nível da raridade TOPO — sem-teto. ⏳ semente
+  critPerLevel: 1e-6,        // afixo crit (chance) — menor p/ níveis altos. ⏳ semente
+  critDmgPerLevel: 1e-5,     // afixo critDmg (bônus plano sobre a base ×2). ⏳ semente
+  // CP-4: custo de nível LINEAR (suporta milhões; expo estouraria): base × (nível+1) × costMult.
+  levelCostBase: 5,
   // (Subir raridade = gate duplo: nível no cap + MATERIAIS do tier — ver CRAFT, Passo 4.)
 };
 
