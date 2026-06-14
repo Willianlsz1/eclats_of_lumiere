@@ -39,7 +39,18 @@ ou imagem fixa temática. Decisão registrada na ficha de cada uma.
 4. Aba (tab) · Divisor/ornamento de canto
 
 Já existentes que entram no kit: slot de item (`slot_frame`, box tintado por raridade),
-nameplate (Lucius/Maël), ícones de nav (azul-gelo).
+nameplate (Lucius/Maël/**Séraphine**), ícones de nav (azul-gelo).
+
+## Regra: piso de tipografia 16px (acessibilidade)
+Nenhuma fonte da UI abaixo de **16px** (Willian, 13/jun — legibilidade). Tokens
+`--fs-sm`/`--fs-xs` = 16px; reset `button/input { font: inherit }` mata o default
+~13.33px do navegador. Títulos/valores maiores preservados. Varredura idempotente:
+`tools/eclats-pipeline/_font_floor.py`.
+
+## Telas de NPC (cena única)
+Forge (Maël), Gear (Lucius) e **Ascension (Séraphine)** seguem a mesma "house style":
+NPC embutido numa cena pintada/escura com moldura de filigrana dourada; UI flutua
+sobre a arte (sem caixas pesadas). Detalhe em `eclats_art_direction.md` §9.
 
 ---
 

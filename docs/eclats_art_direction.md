@@ -475,4 +475,25 @@ Render only the texts quoted above, all crisp and legible; no other words anywhe
     d. Echoes (pets) — nunca iniciados
     e. Ícones de Mémoires (15) e telas de menu (Passivas, Gear, Echoes)
 
+---
+
+## 9. TELAS DE NPC — "house style" de cena única (✅ 2026-06-13)
+
+Algumas telas de estação têm um **NPC-identidade embutido na arte da cena** (NPC + fundo numa imagem só, não overlay separado). Padrão fechado e consistente:
+
+- **Maël**, o ferreiro — tela da **Forge** (`eclats/forge/forge_screen`).
+- **Lucius**, o armeiro — tela do **Gear** (`eclats/gear/screen`).
+- **Séraphine**, a Doyenne — tela da **Ascension** (`eclats/ascension/hall.webp`).
+
+**House style (obrigatório p/ casar as três):** ilustração **pintada semi-realista, cinematográfica, escura** (acabamento tipo interior de Dark Souls — NÃO anime, NÃO clara/limpa); **luz quente low-key** vinda de um lado (lareira/lustres) + sombras profundas, brasas; **moldura de filigrana dourada** em volta da cena 16:9 com volutas nos cantos + **degrau de pedra** na base do primeiro plano; o NPC **dentro** da cena. As **laterais ficam mais escuras/calmas** para receber os painéis de UI flutuantes (a tela não usa caixas pesadas — texto sobre a arte com scrims, no estilo Mémoires/Passivas).
+
+### Ascension — a cena (✅ aprovada 2026-06-13)
+Grande **salão cerimonial da Ordre** (Belle Époque, inspiração Palais Garnier): arquitetura dourada, colunas de mármore, **grande escada** subindo a um sanctum iluminado, afresco no teto meio-perdido na sombra, lustres/candelabros. **Séraphine ao pé da escada**, levemente voltada ao jogador, **a mão indicando os degraus** — convidando o Seeker a ascender. Ela: olhos **vendados** (renda), cabelo branco/prata, **coroa de filigrana** (ouro + metal escuro), vestido escuro com bordado dourado + insígnia da Ordre, acentos azul-gelo. (Identidade/lore: ver `eclats_lore_bible.md`, Parte V — Séraphine, Doyenne de l'Ordre.) Layout da tela: rank flutuante no topo, **Comissão** à esquerda, **Gatekeepers** à direita, sobre a arte.
+
+---
+
+## 10. TIPOGRAFIA — piso global de legibilidade (✅ 2026-06-13)
+
+**Regra de acessibilidade:** nenhuma fonte da UI do jogo abaixo de **16px**. Toda `font-size` menor foi elevada a 16px (tokens `--fs-sm`/`--fs-xs` = 16px; reset `button/input` herda a fonte para matar o default ~13.33px do navegador). Tamanhos maiores (títulos, valores) preservados. Ferramenta: `tools/eclats-pipeline/_font_floor.py` (idempotente).
+
 **Regra de produção:** gere, aprove, e a imagem aprovada vira âncora da sua categoria. Nunca gere categoria nova sem âncora anexada.

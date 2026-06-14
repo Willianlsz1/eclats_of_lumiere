@@ -462,6 +462,8 @@ Os outros 11 mantidos. Os efeitos exóticos ainda contam só via Clarté no cód
 - ✅ **Bordas de inimigo:** moldura comum (universal) + 5 bordas de boss (M1-M5), aplicadas no card de combate.
 - ✅ **Backgrounds** dos 5 mapas (Map 2 em high-res).
 - ✅ **Molduras do card do Seeker T1-T5** (T4 = radiante, T5 = Lumière — confirmadas).
+- ✅ **Telas de NPC (cena única):** Forge (Maël), Gear (Lucius) e **Ascension (Séraphine, a Doyenne)** — arte do salão da Ordre com a NPC embutida ao pé da escada (`eclats/ascension/hall.webp`, 2026-06-13). Ver `eclats_art_direction.md` §9 + lore bible (Séraphine).
+- ✅ **Tipografia:** piso global de **16px** em toda a UI (acessibilidade, 2026-06-13; `_font_floor.py`).
 
 ### `TODO(canon)` (nomes / posições / outros)
 - **Sem arte própria por design:** Guardiões das Subs 1-4 usam um mob do mapa como placeholder (o GDD não define arte de sub-boss).

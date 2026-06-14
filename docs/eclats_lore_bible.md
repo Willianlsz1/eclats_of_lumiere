@@ -141,6 +141,16 @@ Cada Ascension do jogador é uma cerimônia de rank (a comissão da Ordre, Parte
 - **LUMIÈRE = duplo sentido canônico:** é **a era/civilização primeira** *e* **o rank máximo**. Alcançar o rank é **ser chamado pelo nome do que o mundo era** — você não vira "iluminado", vira *a própria Lumière*.
 - **Regra prática de nomenclatura de títulos:** títulos altos novos → **francês**; títulos comuns → **inglês**; **hebraico só em texto morto / Mémoires** (a verdade que o mundo esqueceu).
 
+### Séraphine, Doyenne de l'Ordre (✅ canon — sessão de arte jun/2026)
+
+A **dignitária que preside cada Ascension**. Quando o Seeker derrota o boss final de um mapa e está pronto para ascender, é **Séraphine** quem o recebe no **grande salão cerimonial da Ordre** (a corte iluminada, Belle Époque) e o **comissiona à próxima fronteira** — ela o convida, ao pé da escada, a subir.
+
+- **Quem é:** a **Decana** da Ordre, alta autoridade que certifica os ranks. Figura de corte, não de batalha — gravitas serena.
+- **A venda (canon):** Séraphine tem os **olhos vendados** (renda fina). Ela **não certifica com os olhos**: "vê" a Luz e as essências por dentro. A venda é a marca de seu ofício — a vidente que atesta. (Eco temático do **Le Premier Éclat** que "lembra" sem ver.)
+- **Aparência:** cabelo branco/prata, **coroa de filigrana** (ouro + metal escuro), vestido escuro Belle Époque com bordado dourado e a insígnia da Ordre; acentos azul-gelo (a luz da Ordre).
+- **Onde aparece:** é o **NPC da tela de Ascension** — embutida na arte da cena (mesma "house style" pintada/escura do **Maël** na Forge e do **Lucius** no Gear). Ver `docs/eclats_art_direction.md`.
+- **Idioma:** título em **francês** (*Doyenne de l'Ordre*), coerente com a regra de títulos altos.
+
 ---
 
 ## PARTE VI — O SEEKER
