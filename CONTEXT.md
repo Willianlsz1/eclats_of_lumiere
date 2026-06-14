@@ -148,6 +148,14 @@ do Gear.** ⚠️ **Não confundir** com **Mémoire** (relíquia da meta-progres
 (coleciona e mantém) **+ um bônus local forte** na região/Hollow de origem (gancho com
 o Echo). As **6 peças seguem como eixo** que quebra walls; Reliquats = eixo de coleção.
 
+### Mémoire (≠ Reliquat)
+A meta-progressão profunda (moeda **Éclats**, tela das 15). Modelo **Artifacts do TT2**:
+fortes, **max-all** (sem escassez dolorosa). **Princípio canônico (2026-06-14):** cada
+Mémoire é uma **knob GLOBAL ou META** — multiplica uma **categoria inteira** (todo dano /
+toda economia / todos os Éclats) **ou amplifica outro sistema** (×Convergence, ×Gear,
+×Hollow, ×Ascension, ×habilidades, ×todas as Mémoires). **Nunca duplica uma Passiva** (que
+é granular). ≠ **Reliquat** (gear-troféu do Hollow). Os 15 efeitos: ver redesign doc.
+
 ### ~~Loadout~~ (APOSENTADO 2026-06-14)
 Ideia descartada. Com apenas **~5 habilidades** (uma por Despertar), não há pool maior
 que slots, então não há loadout/escolha de composição. A profundidade das Habilidades

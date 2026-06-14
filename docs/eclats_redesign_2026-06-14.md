@@ -93,14 +93,32 @@ Aprovado tree-by-tree em 2026-06-14. **As 45 nomeadas+calibradas do GDD §7 fica
 > **As 45 estão fechadas (efeitos).** Posicionamento (grupos 1/2/3) e maxLevel/custos do GDD
 > §7 seguem válidos; os NÚMEROS finos entram na recalibração geral.
 
-## Mémoires — modelo "Artifacts" (TT2)
-Direção: Mémoires viram algo como os **Artifacts do Tap Titans 2** — **15 bônus fortes e
-diversos** (game-changers), upáveis com **Éclats**. **Sem escassez dolorosa**: dá pra
-maximizar todos com o tempo (coleção, "soma tudo" — não é a camada de escolha de build).
-Efeitos **diversos** (multiplicadores grandes + mudanças de mecânica), não "15× o mesmo
-dano%"; a Clarté vira só **uma** delas (ou espinha leve). 🌱 **Os 15 efeitos serão
-desenhados 1 a 1 com o Willian** (refs: TT2 Artifacts — wiki + tier list).
-Refs: https://tap-titans-2.fandom.com/wiki/Artifacts · tier list r/TapTitans2.
+## Mémoires — modelo "Artifacts" (TT2) — ✅ EFEITOS FECHADOS (2026-06-14)
+Mémoires = **Artifacts do TT2**: bônus fortes, upáveis com **Éclats**, **max-all** (sem
+escassez dolorosa). **Princípio de não-redundância:** Mémoire = **knob GLOBAL / META**
+(multiplica uma categoria inteira **ou** amplifica outro sistema) — **nunca** duplica uma
+passiva (que é granular). Clarté some como motor único. Refs: TT2 Artifacts, Grand Chase
+party passive, Gaiadon.
+
+| Era | Mémoire | Knob (global/meta) |
+|---|---|---|
+| 1 | **du Premier Matin** | ×TODO o dano (grande motor) |
+| 1 | **des Rires** | ×TODA a economia (Lumens+XP+Vestiges+materiais) |
+| 1 | **de la Marche** | ×a **Convergence** (amplifica o +15%) |
+| 2 | **de la Forme** | ×todo o **Gear** (6 peças + Reliquats) |
+| 2 | **du Façonnage** | ×saída dos **Hollows** (materiais + qualidade do Reliquat) |
+| 2 | **des Profondeurs** | ×renda conforme a **profundidade** (mais fundo = maior) |
+| 3 | **de la Chute** | ×dano em **boss/Wall** |
+| 3 | **des Cendres** | ×a **Ascension** (amplifica o multiplicador) |
+| 3 | **du Dernier Chant** | ×**habilidades** (potência + redução de cooldown) |
+| 4 | **de la Blessure** | ×dano (**multiplicativo**, 2º motor) |
+| 4 | **de la Résistance** | ×**sobrevivência** (HP+defesa+regen) |
+| 4 | **du Temps Brisé** | ×**TODOS os Éclats** (drip + bolsas) — o "Book of Shadows" |
+| 5 | **du Vide** | ×recompensas em **dificuldades altas** (Nightmare/Tormento) |
+| 5 | **de la Lumière Entière** | ×**TODAS as outras Mémoires** ⚠️ (meta-das-metas; calibrar c/ cuidado) |
+| 5 | **du Choix** | ×toda a **sua saída** (dano+economia+sobrevivência) |
+
+🌱 Resta: números (magnitudes/custos em Éclats) na recalibração. Nomes já são canônicos.
 
 ## Removidos / Aposentados
 - **Gold Stats** (tarefa repetitiva) → Nível assume o stat base.
@@ -109,10 +127,13 @@ Refs: https://tap-titans-2.fandom.com/wiki/Artifacts · tier list r/TapTitans2.
 
 ## Pendências grandes (próximas sessões)
 1. ✅ **Efeitos das 4 habilidades** — FECHADO (Surto/Torpor/Maré Dourada/Égide). Resta: nomes de lore + números.
-2. **Os 15 efeitos das Mémoires** — desenhar **1 a 1 com o Willian** (refs TT2 Artifacts).
+2. ✅ **15 efeitos das Mémoires** — FECHADO (knobs globais/meta). Resta: números (magnitudes/custos).
 3. ✅ **Passivas** — 45 reconciliadas (efeitos). Resta: números (recalibração).
 4. **Pacing pra ~30 dias** (números: sub-áreas 7-8, ritmo Walls/Hollows/Convergences).
 5. **RECALIBRAÇÃO GERAL** (o cleave invalidou a calibração antiga — pass próprio).
+
+> **Todo o DESIGN do redesign está fechado.** O que resta é **NÚMEROS** (#4 pacing + #5
+> recalibração) — um pass próprio, mais técnico.
 
 ✅ **Já feito nesta sessão:** spine (ADR 0001), cleave (ADR 0002), economia/Hollows/Gear-2-camadas,
 Nível/Convergence/Ascension, fonte+fuel das habilidades, **Gatekeepers A1-A5**, papel das
