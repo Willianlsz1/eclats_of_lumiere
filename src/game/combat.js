@@ -1,7 +1,10 @@
-// Núcleo de combate — GDD §4 (modelo de ONDAS, estilo Gaiadon).
-// - Jogador ataca um mob por vez (o primeiro vivo na ordem da onda: frente → trás).
-// - Cap físico: máximo de 1 kill por ataque — o hit atinge um único mob e o
-//   excedente de dano se perde; kill rate nunca excede o APS atual.
+// Núcleo de combate — modelo de ONDAS, estilo Gaiadon · CLEAVE (ADR 0002, CP-1).
+// - CLEAVE: cada ataque atinge TODOS os mobs vivos da onda de uma vez; cada mob
+//   morre quando o dano acumulado ≥ HP dele. Um ataque pode matar vários (ou a
+//   onda inteira). Substitui a antiga regra "1 kill por ataque" (que ancorava a
+//   economia). A Wall = quando o HP do mob/boss passa do seu dano por hit.
+// - A renda agora escala com (tamanho da onda × velocidade de limpar); a economia
+//   por kill (economy.js) será re-ancorada nos números da recalibração (Camada 1).
 // - Mob morto NÃO respawna: fica na cena (apagado) e para de causar dano. Só
 //   quando TODA a onda é limpa é que a próxima onda surge. Reset da onda só
 //   acontece ao trocar de subárea ou morrer.
@@ -118,38 +121,36 @@ export function combatTick(state, dt) {
   }
 }
 
-// Um ataque: alvo único = o PRIMEIRO mob vivo na ordem da onda (frente → trás),
-// nunca aleatório. Máx 1 kill. SEM respawn — o mob morto fica na cena (apagado)
-// até a onda inteira ser limpa.
+// Um ataque (CLEAVE): atinge TODOS os mobs vivos da onda de uma vez. Cada mob
+// morre quando seu HP zera; um ataque pode matar vários (ou a onda toda). SEM
+// respawn — os mortos ficam na cena (apagados) até a onda inteira ser limpa.
 function playerAttack(state, hpMax) {
-  let target = null;
-  for (const m of state.enemies) {
-    if (m.hp > 0) { target = m; break; } // foca o da frente até morrer, depois o próximo
-  }
-  if (!target) return; // onda toda morta (será trocada no tick)
+  const alive = state.enemies.filter((m) => m.hp > 0);
+  if (alive.length === 0) return; // onda toda morta (será trocada no tick)
 
-  // Crit ⏳ provisório (GDD §16.6): rola por ataque, multiplica o hit
+  // Crit ⏳ provisório (GDD §16.6): rola UMA vez por ataque (o golpe inteiro crita
+  // ou não), e o multiplicador se aplica a todos os mobs atingidos pelo cleave.
   const isCrit = Math.random() < critChance(state);
-  // Dano em boss (§13/§11): afixo bossDmg do gear × #7 de la Chute (só em boss)
-  const bossMult = target.isBoss ? gearBossDmgMult(state) * memoireBossDmgMult(state) : 1;
-  const raw = damagePerHit(state) * (isCrit ? critDamageMult(state) : 1) * bossMult;
-  // Defesa de INIMIGOS (§4, razão virada): hit = raw² / (def_inimigo + raw).
-  // Early (def_inimigo=0) → hit = raw = comportamento original.
-  const edef = enemyDefesa(state, target);
-  const hit = edef > 0 ? (raw * raw) / (edef + raw) : raw;
-  target.hp -= hit;
-  // Fila dos números flutuantes (a UI consome; teto evita acúmulo em background)
-  if (state.fx.length < 50) state.fx.push({ mobId: target.id, amount: hit, isCrit });
-  if (target.hp <= 0) {
-    awardKill(state, target);
-    // Regen on-kill: 2% do HP máx (× afixo Regen × #11 Résistance)
-    state.player.hp = Math.min(hpMax, state.player.hp + hpMax * COMBAT.regenOnKill * regenFactor(state));
-    if (target.isBoss) {
-      onBossKill(state);
-    } else {
-      state.killsInSubarea += 1;
+  const base = damagePerHit(state) * (isCrit ? critDamageMult(state) : 1);
+
+  for (const target of alive) {
+    // Dano em boss (§13/§11): afixo bossDmg do gear × #7 de la Chute — por mob (só no boss)
+    const bossMult = target.isBoss ? gearBossDmgMult(state) * memoireBossDmgMult(state) : 1;
+    const raw = base * bossMult;
+    // Defesa de INIMIGOS (§4, razão virada): hit = raw² / (def_inimigo + raw).
+    // Early (def_inimigo=0) → hit = raw = comportamento original.
+    const edef = enemyDefesa(state, target);
+    const hit = edef > 0 ? (raw * raw) / (edef + raw) : raw;
+    target.hp -= hit;
+    // Fila dos números flutuantes (a UI consome; teto evita acúmulo em background)
+    if (state.fx.length < 50) state.fx.push({ mobId: target.id, amount: hit, isCrit });
+    if (target.hp <= 0) {
+      awardKill(state, target);
+      // Regen on-kill: 2% do HP máx por kill (× afixo Regen × #11 Résistance)
+      state.player.hp = Math.min(hpMax, state.player.hp + hpMax * COMBAT.regenOnKill * regenFactor(state));
+      if (target.isBoss) onBossKill(state);
+      else state.killsInSubarea += 1;
     }
-    // sem respawn individual — o morto permanece até a onda limpar (nextWave)
   }
 }
 
