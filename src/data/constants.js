@@ -53,7 +53,7 @@ export const MAPS = [
   },
   {
     id: 2, name: 'Cavernes Luminis', continent: 'worldmap.continent2', bg: 'backgrounds.map2',
-    lvlLo: 1000, lvlHi: 1e5, hpLo: 1e6, hpHi: 1e16, dmgLo: 2e4, dmgHi: 2e14,
+    lvlLo: 1000, lvlHi: 1e5, hpLo: 1e6, hpHi: 1e14, dmgLo: 2e4, dmgHi: 2e12,
     subareaCount: 6, packSizes: PACK, bossKillThreshold: 200,
     enemyNames: ['Crystalbound Husk', 'Luminis Pilgrim', 'Hollowflame Adept'],
     enemyArts: ['enemies.map2.crystal_being', 'enemies.map2.cyan_ghost', 'enemies.map2.teal_flame'],
@@ -62,7 +62,7 @@ export const MAPS = [
   },
   {
     id: 3, name: 'The Ashen Ruins', continent: 'worldmap.continent3', bg: 'backgrounds.map3',
-    lvlLo: 1e5, lvlHi: 1e7, hpLo: 1e16, hpHi: 1e34, dmgLo: 2e14, dmgHi: 2e32,
+    lvlLo: 1e5, lvlHi: 1e7, hpLo: 1e14, hpHi: 1e24, dmgLo: 2e12, dmgHi: 2e22,
     subareaCount: 7, packSizes: PACK, bossKillThreshold: 350,
     enemyNames: ['Ember Revenant', 'Emberhorn Penitent', 'Ash Choir'],
     enemyArts: ['enemies.map3.thorn_sentinel', 'enemies.map3.horned_statue', 'enemies.map3.three_faces'],
@@ -71,7 +71,7 @@ export const MAPS = [
   },
   {
     id: 4, name: 'The Fractured Peaks', continent: 'worldmap.continent4', bg: 'backgrounds.map4',
-    lvlLo: 1e7, lvlHi: 1e8, hpLo: 1e34, hpHi: 1e62, dmgLo: 2e32, dmgHi: 2e60,
+    lvlLo: 1e7, lvlHi: 1e8, hpLo: 1e24, hpHi: 1e35, dmgLo: 2e22, dmgHi: 2e33,
     subareaCount: 8, packSizes: PACK, bossKillThreshold: 500,
     enemyNames: ['Fissure Stalker', 'Sundered Titan', 'Claimed Vanguard'],
     enemyArts: ['enemies.map4.fissure_stalker', 'enemies.map4.chained_giant', 'enemies.map4.claimed_vanguard'],
@@ -80,7 +80,7 @@ export const MAPS = [
   },
   {
     id: 5, name: 'Nil Aeternum', continent: 'worldmap.continent5', bg: 'backgrounds.map5',
-    lvlLo: 1e8, lvlHi: 1e9, hpLo: 1e62, hpHi: 1e100, dmgLo: 2e60, dmgHi: 2e98,
+    lvlLo: 1e8, lvlHi: 1e9, hpLo: 1e35, hpHi: 1e45, dmgLo: 2e33, dmgHi: 2e43,
     subareaCount: 8, packSizes: PACK, bossKillThreshold: 800,
     enemyNames: ['Pale Courtier', 'Crownless King', 'Crimson Wyrmlord'],
     enemyArts: ['enemies.map5.white_mask_priest', 'enemies.map5.crown_bearer', 'enemies.map5.dragon_lancer'],

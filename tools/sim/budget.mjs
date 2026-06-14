@@ -1,44 +1,43 @@
-// Camada 3 (abertura) — ORÇAMENTO DE PODER.
-// Quantas décadas (potências de 10) de multiplicador o dano precisa crescer no
-// jogo todo, e como distribuí-las entre os andares. Uso: node tools/sim/budget.mjs
+// FRAMEWORK do orçamento de poder (redesign 2026-06-14).
+// Quantas décadas o dano cresce no Jogo base (Normal) e como distribuí-las entre os
+// sistemas NOVOS. O alvo do Normal é ~1e45 (dificuldades estendem até ~1e308 por cima).
+// Os números do split são o NORTE; o lock-in por sistema acontece nos CPs 5-10 + CP-12.
+// Uso: node tools/sim/budget.mjs
 
 import { COMBAT, MAPS } from '../../src/data/constants.js';
 import { hpForLevel, subareaLevelRange } from '../../src/game/enemies.js';
 
-// Para one-shotar o mob mais fundo (M5 sub5 representativo), o dano por hit
-// precisa alcançar ~ HP desse mob. Décadas = log10(alvo / baseDmg).
+// Mob mais fundo do Normal = sub-área mais funda do Map 5 (boss = ×bossHpMult).
 const m5 = MAPS[4];
-const deepLevel = Math.sqrt(subareaLevelRange(m5, 5).lo * subareaLevelRange(m5, 5).hi);
-const deepHp = hpForLevel(m5, deepLevel);
+const deepLevel = Math.round(subareaLevelRange(m5, m5.subareaCount).hi);
+const deepHp = hpForLevel(m5, deepLevel) * COMBAT.bossHpMult;
 const decadesNeeded = Math.log10(deepHp / COMBAT.baseDmg);
 
-console.log(`Mob mais fundo (M5 sub5) HP ≈ ${deepHp.toExponential(2)}`);
+console.log(`Boss final do Normal (M5) HP ≈ ${deepHp.toExponential(2)}`);
 console.log(`baseDmg = ${COMBAT.baseDmg}`);
-console.log(`→ DÉCADAS de dano necessárias no jogo todo ≈ ${decadesNeeded.toFixed(1)}\n`);
+console.log(`→ DÉCADAS de dano no Jogo base (Normal) ≈ ${decadesNeeded.toFixed(1)}\n`);
+console.log('Dificuldades (endgame) multiplicam por cima: ~1e70 → ~1e190 → ~1e280 (float ~1e308).');
+console.log('break_infinity só acima de 1e308.\n');
 
-// asc_mult conhecido: ×10 (A1) × ×5^4 (A2-5) = ×6250
-// ✅ CALIBRADO (Bloco 1, 2026-06-12): asc_mult ×2/Ascension (×16) + Despertar ×5/tier (×625).
-const ascDecades = Math.log10(2 ** 4);       // ×16 = 1.2 déc
-const despertarDecades = Math.log10(5 ** 4); // ×625 = 2.8 déc
-
+// ── SPLIT proposto (norte) — soma ≈ décadas do Normal ──
 const budget = [
-  ['Mémoires (Clarté, motor)',     70, 'engrenagem principal do late'],
-  ['Gear',                         10, 'estável, nunca morre (× flavor)'],
-  ['Passivas',                      8, 'mecânicas + poder'],
-  ['Gold Stats',                    4, 'rodinhas do early (depois somem)'],
-  ['Convergence',                   4, 'bola de neve composta'],
-  ['Despertar',  +despertarDecades.toFixed(1), 'mudança de classe ×5/tier (×625)'],
-  ['Ascension',  +ascDecades.toFixed(1), 'marco de mapa ×2 (×16)'],
-  ['Level bonus',                 3.8, 'heroLevel CAPADO em 1e9 (§3) → satura ~3.8 déc constante'],
+  ['Mémoires (Artifacts ×todo dano)', 18, 'engrenagem profunda do late (Éclats)'],
+  ['Gear (flat + % + níveis altos + raridade)', 13, 'agora pesa muito (milhões de níveis)'],
+  ['Passivas (alavancas)',             4, 'crit/APS/dano-em-boss + motores do grupo 3'],
+  ['Ascension (multiplica Conv+Awaken)', 3, 'meta-multiplicador por mapa'],
+  ['Despertar/Awaken (×poder/tier)',   2.5, 'mudança de classe'],
+  ['Nível (flat/nível, reseta na conv)', 2, 'base por-run (limitada)'],
+  ['Convergence (+15% aditivo)',       1.5, 'dial inicial, bola-de-neve leve'],
 ];
 
 let total = 0;
-console.log('ANDAR                         | décadas | papel');
-console.log('-'.repeat(72));
+console.log('SISTEMA                                  | décadas | papel');
+console.log('-'.repeat(82));
 for (const [name, dec, role] of budget) {
   total += Number(dec);
-  console.log(`${name.padEnd(29)} | ${String(dec).padStart(7)} | ${role}`);
+  console.log(`${name.padEnd(40)} | ${String(dec).padStart(7)} | ${role}`);
 }
-console.log('-'.repeat(72));
-console.log(`${'TOTAL'.padEnd(29)} | ${total.toFixed(1).padStart(7)} | (alvo ≈ ${decadesNeeded.toFixed(0)})`);
-console.log(`\nHP do jogador segue o MESMO orçamento (via vit/gear_hp/passive_hp/memoire_hp).`);
+console.log('-'.repeat(82));
+console.log(`${'TOTAL'.padEnd(40)} | ${total.toFixed(1).padStart(7)} | (alvo ≈ ${decadesNeeded.toFixed(0)})`);
+console.log(`\nO HP do jogador segue o MESMO orçamento (gear_hp/passive_hp/memoire_hp/etc.).`);
+console.log('⏳ Cada fatia é calibrada quando o sistema é reimplementado (CP-5..CP-10); CP-12 junta.');

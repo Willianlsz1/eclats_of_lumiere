@@ -15,6 +15,15 @@ a meta é aprofundar/repacear até ~30d, sem adicionar mapas novos). Decidido 20
 O que vem **depois** do Jogo base (prestige / loop infinito / conteúdo repetível).
 Fora do escopo dos "30 dias do início"; desenhado à parte.
 
+### Escala de números (decidido 2026-06-14, revisa o "teto 1e100")
+- **Normal (Jogo base):** dano/HP vão de ~7 a **~1e45** ao longo dos 5 mapas (≈**44
+  décadas** = o **orçamento de poder** a distribuir). Curva de HP por mapa: 1e6 · 1e14 ·
+  1e24 · 1e35 · **1e45**.
+- **Dificuldades** (endgame) multiplicam por cima: ~**1e70** → ~**1e190** → ~**1e280**,
+  usando o range do float até **~1e308**.
+- **break_infinity:** só **acima de 1e308** (futuro). O antigo "teto 1e100" era
+  conservador — o float aguenta até ~1e308, e as dificuldades usam isso.
+
 ### Termos APOSENTADOS (saindo do projeto — ADR 0001, 2026-06-14)
 - **Gold Stats** — compra manual de str/vit/agi/lck/frt/wis com Lumens. Removido
   ("ação repetitiva demais"). Lumens → nível do Gear. O papel de **dial base de
