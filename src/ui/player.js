@@ -28,6 +28,8 @@ const TIER_NUM = { I: 1, II: 2, III: 3, IV: 4, V: 5 };
 
 const $ = (id) => document.getElementById(id);
 const pct = (x) => `${(x * 100).toFixed(1)}%`;
+// ganho de um multiplicador em +% (×1.30 → "+30%") — mais agradável que "×1.30"
+const gainPct = (mult) => `+${formatNumber((mult - 1) * 100).replace(/\.0$/, '')}%`;
 
 // fatores de um breakdown — kind: base | active | idle (×1) | locked (pós-MVP)
 const M = (label, v, postMvp = false) => {
@@ -131,8 +133,8 @@ const STATS = {
     ],
   },
   lumensMult: {
-    label: 'Lumens / kill ×',
-    value: (s) => formatMult(convMult(s) * gearLumensMult(s) * passiveEcoMult(s) * memoireLumensMult(s)),
+    label: 'Lumens / kill',
+    value: (s) => gainPct(convMult(s) * gearLumensMult(s) * passiveEcoMult(s) * memoireLumensMult(s)),
     note: 'Multiplier on the Lumens you earn from each kill.',
     breakdown: (s) => [
       { label: 'Base', disp: formatMult(1), kind: 'base' },
@@ -143,8 +145,8 @@ const STATS = {
     ],
   },
   xpMult: {
-    label: 'XP / kill ×',
-    value: (s) => formatMult(convMult(s) * gearXpMult(s) * passiveEcoMult(s) * memoireXpMult(s)),
+    label: 'XP / kill',
+    value: (s) => gainPct(convMult(s) * gearXpMult(s) * passiveEcoMult(s) * memoireXpMult(s)),
     note: 'Multiplier on the XP you earn from each kill.',
     breakdown: (s) => [
       { label: 'Base', disp: formatMult(1), kind: 'base' },
@@ -165,8 +167,8 @@ const STATS = {
     ],
   },
   convergence: {
-    label: 'Convergence ×',
-    value: (s) => formatMult(convMult(s)),
+    label: 'Convergence',
+    value: (s) => gainPct(convMult(s)),
     note: 'A permanent boost to Damage, HP, XP and Lumens. +15% per Convergence.',
     breakdown: (s) => [
       { label: 'Base', disp: formatMult(1), kind: 'base' },
@@ -293,8 +295,8 @@ export function buildPlayerView(root, state) {
     openConvergence({
       points: '+15%',
       pointsNote: 'permanent boost',
-      factor: `×${convMult(state).toFixed(2)}`,
-      prevFactor: `×${(convMult(state)).toFixed(2)}`,
+      factor: gainPct(1 + CONV_BONUS_PER * (state.convergences + 1)), // após convergir
+      prevFactor: gainPct(convMult(state)),                            // atual
       returns: ['Your Level (run XP)', 'Gear levels'],
       keeps: ['<b>Gear rarity</b> &amp; the map you’re on', '<b>Lumens</b> &amp; <b>Vestiges</b>', '<b>Passives</b>, <b>Mémoires</b>, <b>Awakenings</b>'],
       onConverge: () => { doConverge(state); renderPlayer(state); },
@@ -347,7 +349,7 @@ function renderConverge(state) {
   const prog = convergeProgress(state);
   const able = canConverge(state);
   $('pl-conv-count').textContent = formatNumber(state.convergences);
-  $('pl-conv-bonus').textContent = `×${convMult(state).toFixed(2)}`;
+  $('pl-conv-bonus').textContent = gainPct(convMult(state));
   $('pl-conv-prog-lbl').textContent = `Level ${formatNumber(lvl)} / ${formatNumber(gate)}`;
   $('pl-conv-prog-pct').textContent = `${Math.floor(prog * 100)}%`;
   $('pl-conv-fill').style.width = `${prog * 100}%`;
