@@ -26,7 +26,8 @@ export const ECONOMY = {
 // TODOS os mapas (dmgLo=hpLo×0.02, dmgHi=hpHi×0.02). Validado no simulador
 // (tools/sim/survival.mjs): a Defesa decide vida/morte na entrada de cada mapa.
 // packSizes: densidade de mobs por sub-área (índice = sub-área − 1).
-// CP-2 (redesign): 8 sub-áreas por mapa (era 5). PACK estendido p/ 8 entradas.
+// CP-2 (redesign): nº de sub-áreas CRESCENTE por mapa — Map1=5 · Map2=6 · Map3=7 ·
+// Map4=Map5=8 (era 5 fixo). PACK tem 8 entradas; cada mapa usa as primeiras N.
 // ⏳ números a re-ancorar na recalibração; curva suave 2→12 por enquanto.
 // TODO canon: vínculo nome↔arte dos Maps 2-5 (arte de alguns trios incompleta).
 const PACK = [2, 3, 4, 5, 6, 8, 10, 12];
@@ -34,7 +35,7 @@ export const MAPS = [
   {
     id: 1, name: 'The Dreaming Wood', continent: 'worldmap.continent1', bg: 'backgrounds.map1',
     lvlLo: 1, lvlHi: 1000, hpLo: 10, hpHi: 1e6, dmgLo: 0.2, dmgHi: 2e4,
-    subareaCount: 8, packSizes: PACK, bossKillThreshold: 100,
+    subareaCount: 5, packSizes: PACK, bossKillThreshold: 100,
     enemyNames: ['Candlewisp Shade', 'Mothlight Herald', 'Dreamhorn Warden'],
     enemyArts: ['enemies.map1.constellation_weaver', 'enemies.map1.moth_lantern', 'enemies.map1.deer_spirit'],
     guardianArt: 'enemies.map1.constellation_weaver',
@@ -43,7 +44,7 @@ export const MAPS = [
   {
     id: 2, name: 'Cavernes Luminis', continent: 'worldmap.continent2', bg: 'backgrounds.map2',
     lvlLo: 1000, lvlHi: 1e5, hpLo: 1e6, hpHi: 1e16, dmgLo: 2e4, dmgHi: 2e14,
-    subareaCount: 8, packSizes: PACK, bossKillThreshold: 200,
+    subareaCount: 6, packSizes: PACK, bossKillThreshold: 200,
     enemyNames: ['Crystalbound Husk', 'Luminis Pilgrim', 'Hollowflame Adept'],
     enemyArts: ['enemies.map2.crystal_being', 'enemies.map2.cyan_ghost', 'enemies.map2.teal_flame'],
     guardianArt: 'enemies.map2.crystal_being',
@@ -52,7 +53,7 @@ export const MAPS = [
   {
     id: 3, name: 'The Ashen Ruins', continent: 'worldmap.continent3', bg: 'backgrounds.map3',
     lvlLo: 1e5, lvlHi: 1e7, hpLo: 1e16, hpHi: 1e34, dmgLo: 2e14, dmgHi: 2e32,
-    subareaCount: 8, packSizes: PACK, bossKillThreshold: 350,
+    subareaCount: 7, packSizes: PACK, bossKillThreshold: 350,
     enemyNames: ['Ember Revenant', 'Emberhorn Penitent', 'Ash Choir'],
     enemyArts: ['enemies.map3.thorn_sentinel', 'enemies.map3.horned_statue', 'enemies.map3.three_faces'],
     guardianArt: 'enemies.map3.vortex',
