@@ -127,12 +127,6 @@ export function buildForgeView(root, state) {
       </button>`).join('')}
   `).join('');
 
-  const matsHTML = MATS.map((m) => `
-    <div class="fg-chip ${m.key}" id="fg-chip-${m.key}">
-      <div class="fg-th"><img src="${m.img}" alt=""></div>
-      <div><b id="fg-mat-${m.key}">0</b><span>${m.label}</span></div>
-    </div>`).join('');
-
   root.innerHTML = `
     <div class="fg-screen"></div>
 
@@ -143,9 +137,6 @@ export function buildForgeView(root, state) {
         <div class="fg-mael-title">Blacksmith of the Ordre</div>
       </div>
     </div>
-
-    <!-- materiais -->
-    <aside class="fg-mats"><div class="fg-matrow">${matsHTML}</div></aside>
 
     <!-- altar central (preview antes→depois / refino) -->
     <section class="fg-altar" id="fg-altar"></section>

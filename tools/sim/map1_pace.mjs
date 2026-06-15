@@ -3,7 +3,7 @@
 // Tuna curveDiv pra bater ~8h. Uso: node tools/sim/map1_pace.mjs
 const BASE = 3500, DMG_PER_LVL = 5000, GOLD = 0.10, XP = 0.08, EXP = 0.4, GOLD_PER_LVL = 1500, LUM_FLOOR = 30000;
 const N = 9, hpLo = 5000, hpHi = 5e8, BOSSMULT = 15, lvlLo = 1, lvlHi = 1000, KILLGATE = 100;
-const CAP = 1000, COSTBASE = 700000, APS0 = 0.90, APS_FLAT = 2e-4, CRIT_PER = 3e-4, DMG_FLAT = 30000, PCT = 0.02, APSCAP = 5;
+const CAP = 750, COSTBASE = 420000, APS0 = 0.90, APS_FLAT = 2e-4, CRIT_PER = 3e-4, DMG_FLAT = 30000, PCT = 0.02, APSCAP = 5;
 const R = (lvlHi / lvlLo) ** (1 / N);
 const unlockLvl = (n) => n <= 1 ? 0 : Math.round(lvlLo * R ** (n - 1)); // = subareaLevelRange(.lo)
 const mobHpOf = (s) => hpLo * (hpHi / hpLo) ** ((s - 0.5) / N);
@@ -39,8 +39,8 @@ function pace(DIV, COSTX = 1) {
 const fmtT = (s) => s < 5400 ? `${(s / 60).toFixed(1)}min` : `${(s / 3600).toFixed(2)}h`;
 console.log('unlock levels:', Array.from({ length: N }, (_, i) => unlockLvl(i + 1)).join(' '));
 console.log('curveDiv | cost× | tempo Map1 | level fim | gear wl');
-for (const COSTX of [0.6, 0.75]) {
-  for (const DIV of [11000, 13000, 15000, 18000, 22000, 26000]) {
+for (const COSTX of [1]) {
+  for (const DIV of [11000]) {
     const r = pace(DIV, COSTX);
     console.log(`${String(DIV).padStart(8)} | ${String(COSTX).padStart(4)} | ${fmtT(r.t).padStart(10)} | ${String(r.lvl).padStart(8)} | ${r.wl}`);
   }

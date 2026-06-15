@@ -5,6 +5,17 @@
    ============================================================ */
 
 * { box-sizing: border-box; }
+
+/* ---- barra de rolagem temática (navy + dourado), global ---- */
+* { scrollbar-width: thin; scrollbar-color: rgba(217,164,65,.55) transparent; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: rgba(8,12,24,.5); border-radius: 8px; }
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(217,164,65,.75), rgba(168,120,40,.7));
+  border-radius: 8px; border: 2px solid rgba(8,12,24,.6); background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, #e7c47a, #c79a44); background-clip: padding-box; }
+::-webkit-scrollbar-corner { background: transparent; }
 /* controles herdam a fonte (sem o default ~13.33px do <button> do navegador) */
 button, input, select, textarea { font-family: inherit; font-size: inherit; }
 html, body { height: 100%; margin: 0; }

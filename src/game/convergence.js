@@ -25,10 +25,11 @@ export function doConverge(state) {
   if (!canConverge(state)) return false;
 
   state.convergences += 1;
-  // Reset: SÓ o nível da run (xpRun). ✅ Map 1 (14/jun): o GEAR é MANTIDO (sem strand).
-  // Convergence = acelerador ×: +15% permanente sem perder o gear.
+  // Reset (14/jun, ajuste Willian): o nível da run (xpRun) E os Lumens. O GEAR é
+  // MANTIDO (sem strand) — Convergence = acelerador ×: +15% permanente sem perder o gear.
   state.xpRun = 0;
-  // NÃO reseta: gear (nível+raridade), map/subarea/unlockedSubarea/bossDefeated, Lumens, Vestiges.
+  state.lumens = 0;
+  // NÃO reseta: gear (nível+raridade), map/subarea/unlockedSubarea/bossDefeated, Vestiges.
 
   // Renasce cheio na posição atual; reinicia a onda (você está mais fraco agora).
   state.player.dead = false;

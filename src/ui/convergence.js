@@ -10,15 +10,20 @@ import './convergence.css';
 
 const ornSrc = (n) => `eclats/convergence/ornaments/${n}.png`;
 
-// Dados PLACEHOLDER (mockup v3) — substituir pelos reais no disparo.
+// Dados (o disparador passa os reais via openConvergence({...})).
 const PLACEHOLDER = {
-  points: '+12',
-  pointsNote: 'peak XP · boss bonus ✓',
-  factor: '×1.41',
-  prevFactor: '×1.34',
-  returns: ['Lumens · 8.4e12', 'Gold Stats levels', 'Hero progress this cycle'],
-  keeps: ['<b>Passives</b> &amp; Vestiges', '<b>Gear</b> — levels, rarity, affixes', '<b>Mémoires</b> &amp; Éclats', '<b>Awakenings</b> &amp; map progress'],
-  lore: '"To keep the world, you let it go. The Seed remembers the pattern — and every release teaches it to gather faster."',
+  convergences: 0,
+  bonus: '+0%',                 // bônus permanente acumulado
+  gateLabel: 'Level 1 / 40',
+  progressPct: 0,
+  able: false,                 // já pode convergir?
+  gate: 40,
+  grant: '+15%',
+  grantTags: ['Damage', 'HP', 'XP', 'Lumens'],
+  tribute: '0',                // Lumens pagos como tributo ao convergir
+  returns: ['Your Level (run XP)'],
+  keeps: ['Gear rarity', 'Map position', 'Lumens &amp; Vestiges', 'Passives &amp; Mémoires'],
+  lore: 'To keep the world, you let it go. Each new threshold lets the Seed disperse the light it gathered — and remember the pattern stronger.',
   note: 'Auto-Convergence available after Ascension I — the Rhythm will carry this rite for you.',
 };
 
@@ -29,24 +34,12 @@ const PARTICLES = [
   { c: '', x: 22, y: 18 }, { c: 's', x: 76, y: 14 }, { c: '', x: 80, y: 84 }, { c: 's', x: 18, y: 84 },
 ];
 
-let host = null;
-let onConverge = null; // callback opcional do disparador
-
-function overlayHost() {
-  return document.getElementById('overlay-host') || document.getElementById('stage') || document.body;
-}
-
-export function openConvergence(data) {
+// Agora é uma TELA (pane), não overlay: renderConvergence(host, data) preenche um
+// container — usado como conteúdo da aba "Convergence" na tela do Seeker.
+export function renderConvergence(host, data) {
   const d = { ...PLACEHOLDER, ...(data || {}) };
-  closeConvergence();               // limpa um overlay anterior (zera onConverge)...
-  onConverge = d.onConverge || null; // ...e SÓ ENTÃO registra o callback (bug fix CP-3b)
-
-  host = document.createElement('div');
-  host.className = 'cv-overlay';
+  host.classList.add('cv-pane');
   host.innerHTML = `
-    <div class="cv-combat-bg"></div>
-    <div class="cv-veil"></div>
-
     <div class="cv-burst">
       <div class="cv-core"></div>
       ${PARTICLES.map((p) => `<span class="cv-p ${p.c}" style="left:${p.x}%;top:${p.y}%"></span>`).join('')}
@@ -65,15 +58,25 @@ export function openConvergence(data) {
 
       <div class="cv-gain-strip">
         <div class="cv-g points">
-          <div class="cv-l">Points this cycle</div>
-          <div class="cv-v">${d.points}</div>
-          <div class="cv-d">${d.pointsNote}</div>
+          <div class="cv-l">Permanent bonus</div>
+          <div class="cv-v">${d.bonus}</div>
         </div>
-        <div class="cv-g">
-          <div class="cv-l">Convergence factor</div>
-          <div class="cv-v">${d.factor}</div>
-          <div class="cv-d">was ${d.prevFactor}</div>
+      </div>
+
+      <div class="cv-threshold">
+        <div class="cv-thr-top">
+          <span class="cv-l">Next threshold</span>
+          <span class="cv-thr-v"><b>${d.gateLabel}</b> · ${d.progressPct}%</span>
         </div>
+        <div class="cv-bar"><i style="width:${d.progressPct}%"></i></div>
+      </div>
+
+      <div class="cv-effect">
+        <div class="cv-effect-head">
+          <span class="cv-effect-l">Each Convergence grants</span>
+          <b class="cv-effect-v">${d.grant}</b>
+        </div>
+        <div class="cv-effect-chips">${d.grantTags.map((t) => `<span class="cv-chip">${t}</span>`).join('')}</div>
       </div>
 
       <div class="cv-cols">
@@ -88,31 +91,12 @@ export function openConvergence(data) {
       </div>
 
       <div class="cv-actions">
-        <button type="button" class="cv-later">Not yet</button>
-        <button type="button" class="cv-converge">Converge</button>
+        <button type="button" class="cv-converge" ${d.able ? '' : 'disabled'}>${d.able ? 'Converge' : `Reach Level ${d.gate}`}</button>
       </div>
-      <div class="cv-note">${d.note}</div>
     </div>
   `;
-  overlayHost().appendChild(host);
-
-  host.querySelector('.cv-later').addEventListener('click', closeConvergence);
-  host.querySelector('.cv-converge').addEventListener('click', () => {
-    // TODO(lógica): aplicar a Convergência real (dispersar Lumens/Gold Stats/
-    // progresso do ciclo; somar points; atualizar conv_factor) no state.
-    if (typeof onConverge === 'function') onConverge();
-    closeConvergence();
+  host.querySelector('.cv-converge').addEventListener('click', (e) => {
+    if (e.currentTarget.disabled) return;         // ainda não atingiu o threshold
+    if (typeof d.onConverge === 'function') d.onConverge();
   });
-  document.addEventListener('keydown', onKey);
-  requestAnimationFrame(() => host && host.classList.add('show'));
-  return host;
 }
-
-export function closeConvergence() {
-  document.removeEventListener('keydown', onKey);
-  if (host && host.parentNode) host.parentNode.removeChild(host);
-  host = null;
-  onConverge = null;
-}
-
-function onKey(e) { if (e.key === 'Escape') closeConvergence(); }

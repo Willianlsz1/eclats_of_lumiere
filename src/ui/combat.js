@@ -9,7 +9,7 @@
 
 import { formatNumber } from '../core/format.js';
 import { picture, bg } from '../data/assets.js';
-import { runLevel, playerHpMax, currentAPS } from '../game/stats.js';
+import { runLevel, playerHpMax, currentAPS, levelProgress, levelXpInfo } from '../game/stats.js';
 import { changeSubarea, subareaUnlockLevel } from '../game/combat.js';
 import { getCurrentMap, subareaLevelRange } from '../game/enemies.js';
 import { currentRank } from '../game/ascension.js';
@@ -80,8 +80,8 @@ function spawnPos(i, total, bossOut) {
   if (rows === 1) {
     y = bossOut ? 22.5 : 50;
   } else if (rows === 2) {
-    // 2 fileiras → bandas alta/baixa (abrem a do meio pro boss quando ele entra)
-    y = bossOut ? (row === 0 ? 22.5 : 78) : (row === 0 ? 30 : 70.5);
+    // 2 fileiras → bandas alta/baixa (mais separadas: sprites altos não colidem)
+    y = bossOut ? (row === 0 ? 21 : 78) : (row === 0 ? 28 : 71);
   } else {
     // 3+ fileiras → distribui uniformemente entre o topo e a base da arena
     const top = 18, bot = 86;
@@ -92,6 +92,9 @@ function spawnPos(i, total, bossOut) {
 
 // Janela de suavização das taxas do HUD (EMA simples)
 let rates = null;
+let prevT1 = null;   // último total de material T1 (pra detectar o drop)
+let lastDropAt = 0;  // quando dropou material pela última vez (pra sumir o box depois)
+let dropAccum = 0;   // quanto DROPOU no burst atual (some/zera quando o box some)
 
 // Troca o retrato e a moldura do Seeker conforme o tier (só quando muda)
 function updateSeekerCard(seekerEl, cardId) {
@@ -124,13 +127,20 @@ export function buildCombatView(root, state) {
       <div class="sfig-info">
         <div class="scard-hpbar"><i id="cb-hp-fill"></i>
           <span id="cb-hp-text">—</span></div>
-        <div class="scard-lvbar"><i></i>
+        <div class="scard-lvbar"><i id="cb-lv-fill"></i>
           <span id="cb-lv-text">LVL 1</span></div>
         <div class="cb-status" id="cb-status" hidden></div>
       </div>
     </aside>
 
     <div class="cb-arena" id="cb-arena"><!-- enemy cards (JS) --></div>
+
+    <!-- Box de drops do mapa (T1) — bg = arte do material; mostra o que DROPOU -->
+    <div class="cb-drops" id="cb-drops">
+      <div class="cb-drop-info">
+        <b class="cb-drop-val" id="cb-drop-t1">+0</b>
+      </div>
+    </div>
 
     <!-- camada de FX: cortes de luz do Seeker voando até o alvo -->
     <div class="cb-fx" id="cb-fx" aria-hidden="true"></div>
@@ -175,7 +185,24 @@ export function renderCombat(state) {
   $('cb-hp-fill').style.width = `${Math.max(0, (state.player.hp / hpMax) * 100)}%`;
   $('cb-hp-text').textContent =
     `HP: ${formatNumber(Math.max(0, state.player.hp))}/${formatNumber(hpMax)}`;
-  $('cb-lv-text').textContent = `LVL ${formatNumber(runLevel(state))}`;
+  const xpi = levelXpInfo(state);
+  $('cb-lv-text').textContent =
+    `LVL ${formatNumber(runLevel(state))} · ${formatNumber(xpi.into)}/${formatNumber(xpi.total)} XP`;
+  $('cb-lv-fill').style.width = `${levelProgress(state) * 100}%`;
+
+  // Box de drops T1: SÓ aparece ao dropar; mostra o QUANTO dropou (burst), não o
+  // total guardado; some + zera após ~3.5s sem drop novo (não fixo).
+  const t1 = state.materiais[0] || 0;
+  const drops = $('cb-drops');
+  if (prevT1 !== null && t1 > prevT1) {
+    dropAccum += t1 - prevT1;
+    lastDropAt = performance.now();
+    drops.classList.add('show');
+    drops.classList.remove('drop'); void drops.offsetWidth; drops.classList.add('drop');
+  }
+  if (lastDropAt && performance.now() - lastDropAt > 3500) { drops.classList.remove('show'); dropAccum = 0; }
+  $('cb-drop-t1').textContent = `+${formatNumber(dropAccum)}`;
+  prevT1 = t1;
 
   const status = $('cb-status');
   const seeker = $('cb-seeker');

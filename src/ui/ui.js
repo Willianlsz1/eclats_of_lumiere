@@ -46,8 +46,13 @@ function paintBackdrop() {
 // ícones: PNGs dedicados das moedas (caminho Vite direto em public/)
 const COINS = [
   { id: 'lumens',   src: 'eclats/offline/icons/lumens.png',   name: 'Lumens',   get: (s) => formatNumber(s.lumens) },
-  { id: 'vestiges', src: 'eclats/offline/icons/vestiges.png', name: 'Vestiges', get: (s) => formatNumber(s.vestiges) },
-  { id: 'eclats',   src: 'eclats/offline/icons/eclats.png',   name: 'Éclats',   get: (s) => formatNumber(s.eclats) },
+  // Vestiges: sink (Passivas/Ascension/Despertar) é Map 2+. Esconde no Map 1 — só
+  // aparece quando o jogador alcança o Map 2. ⏳ TODO: tooltip da Vestige.
+  { id: 'vestiges', src: 'eclats/offline/icons/vestiges.png', name: 'Vestiges', get: (s) => formatNumber(s.vestiges),
+    visible: (s) => (s.maxMap || s.map || 1) >= 2 },
+  // Éclats: fonte = Mémoires/Ascension (Map 2+). Esconde no Map 1 (igual Vestiges).
+  { id: 'eclats',   src: 'eclats/offline/icons/eclats.png',   name: 'Éclats',   get: (s) => formatNumber(s.eclats),
+    visible: (s) => (s.maxMap || s.map || 1) >= 2 },
 ];
 
 // telas. icon = id de nav confirmado pelo Willian. locked = pós-MVP da main.
@@ -226,10 +231,12 @@ function fit() {
 export function renderUI(state) {
   gameState = state;
   paintBackdrop(); // mantém o backdrop no mapa atual (atualiza ao viajar/ascender)
-  // moedas (state real)
+  // moedas (state real) — algumas só aparecem quando desbloqueadas (ex.: Vestiges)
   for (const c of COINS) {
     const el = document.getElementById('coin-' + c.id);
     if (el) el.textContent = c.get(state);
+    const pill = document.querySelector('.chud-' + c.id);
+    if (pill) pill.style.display = (c.visible && !c.visible(state)) ? 'none' : '';
   }
   // só renderiza a tela ativa (por custo)
   if (current === 'combat') renderCombat(state);

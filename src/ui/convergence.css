@@ -4,16 +4,15 @@
    Classes cv-. Monta em #overlay-host (inset:0 do palco 1920×1080).
    ============================================================ */
 
-.cv-overlay { position: absolute; inset: 0; z-index: 10; overflow: hidden;
+/* começa ABAIXO do HUD (topbar 84px) pra a barra de moedas/nav ficar visível */
+.cv-overlay { position: absolute; top: 84px; left: 0; right: 0; bottom: 0; z-index: 10; overflow: hidden;
   opacity: 0; transition: opacity .3s ease; font-family: var(--font-ui, 'Inter', sans-serif); }
 .cv-overlay.show { opacity: 1; }
 
-.cv-combat-bg { position: absolute; inset: 0; filter: brightness(.38) saturate(.6);
-  background:
-    radial-gradient(900px 600px at 20% 75%, rgba(63, 208, 182, .14), transparent 60%),
-    radial-gradient(1000px 700px at 85% 20%, rgba(157, 123, 219, .10), transparent 60%),
-    #0b0f16; }
-.cv-veil { position: absolute; inset: 0; background: rgba(4, 6, 12, .66); }
+/* mesmo fundo (e MESMA faixa de cor) da tela do Codex/HUD — sem escurecer demais */
+.cv-combat-bg { position: absolute; inset: 0; filter: brightness(.92) saturate(.95);
+  background: url('eclats/codex/codex_screen.webp') center / cover no-repeat, #0b1226; }
+.cv-veil { position: absolute; inset: 0; background: rgba(8, 12, 26, .32); }
 
 /* núcleo branco-azul se desfazendo + fragmentos */
 .cv-burst { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
@@ -29,6 +28,10 @@
 @keyframes cv-drift { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(0, -8px); } }
 
 /* modal */
+/* modo TELA (pane): card centralizado, estático (não overlay flutuante) */
+.cv-pane { position: relative; width: 100%; height: 100%; display: grid; place-items: center; padding: 24px 0; }
+.cv-pane .cv-modal { position: static; transform: none; }
+
 .cv-modal { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 640px;
   border: 1px solid var(--eclat, #aac8ff); border-radius: 16px; background: rgba(8, 12, 24, .92);
   box-shadow: 0 0 0 1px rgba(170, 200, 255, .18), 0 0 80px -20px rgba(170, 200, 255, .55), 0 30px 90px -30px #000;
@@ -37,8 +40,8 @@
 .cv-eyebrow { text-align: center; font-size: 16px; letter-spacing: .4em; text-transform: uppercase; color: var(--dim, #8fa3c8); }
 .cv-title { font-family: var(--font-display, 'Cormorant Garamond', serif); font-weight: 700; font-size: 44px; text-align: center;
   color: #f2f7ff; margin-top: 4px; letter-spacing: .04em; text-shadow: 0 0 24px rgba(170, 200, 255, .45); }
-.cv-lore { margin: 10px auto 22px; max-width: 480px; text-align: center;
-  font-family: var(--font-display, 'Cormorant Garamond', serif); font-style: italic; font-size: 16px; color: var(--dim, #8fa3c8); line-height: 1.5; }
+.cv-lore { margin: 10px auto 22px; max-width: 540px; text-align: center;
+  font-family: var(--font-display, 'Cormorant Garamond', serif); font-style: italic; font-size: 21px; color: var(--ink, #cdd9f0); line-height: 1.5; }
 
 /* ganho central */
 .cv-gain-strip { display: flex; gap: 12px; justify-content: center; margin-bottom: 20px; }
@@ -49,6 +52,31 @@
   color: var(--eclat, #aac8ff); margin-top: 2px; text-shadow: 0 0 16px rgba(170, 200, 255, .4); font-variant-numeric: tabular-nums; }
 .cv-g .cv-d { font-size: 16px; color: var(--dim, #8fa3c8); margin-top: 2px; font-variant-numeric: tabular-nums; }
 .cv-g.points .cv-v { color: #f2f7ff; }
+
+/* threshold (estado "ainda não pronto") */
+.cv-threshold { margin-bottom: 18px; }
+.cv-thr-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 7px; }
+.cv-thr-top .cv-l { font-size: 16px; letter-spacing: .2em; text-transform: uppercase; color: var(--faint, #5a6678); }
+.cv-thr-v { font-size: 17px; color: var(--ink, #dbe6ff); font-variant-numeric: tabular-nums; }
+.cv-thr-v b { color: #f2f7ff; }
+.cv-bar { height: 12px; border-radius: 7px; overflow: hidden;
+  background: rgba(14, 20, 36, .9); border: 1px solid var(--line-soft, rgba(170, 200, 255, .13)); }
+.cv-bar i { display: block; height: 100%; width: 0;
+  background: linear-gradient(90deg, var(--eclat, #aac8ff), #f2f7ff); box-shadow: 0 0 14px rgba(170, 200, 255, .6); }
+
+/* efeito por Convergence — título centralizado + chips dos stats */
+.cv-effect { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-bottom: 20px; }
+.cv-effect-head { display: flex; align-items: baseline; gap: 10px; }
+.cv-effect-l { font-size: 16px; color: var(--faint, #5a6678); text-transform: uppercase; letter-spacing: .14em; }
+.cv-effect-v { color: var(--gold, #d9a441); font-weight: 700; font-size: 24px; }
+.cv-effect-chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.cv-chip { font-size: 15px; color: var(--eclat, #aac8ff); letter-spacing: .04em;
+  background: rgba(170, 200, 255, .1); border: 1px solid rgba(170, 200, 255, .26);
+  border-radius: 999px; padding: 4px 13px; }
+
+/* botão Converge desabilitado (threshold não atingido) */
+.cv-converge:disabled { cursor: default; background: rgba(20, 28, 46, .85);
+  color: var(--dim, #8fa3c8); box-shadow: none; filter: none; }
 
 /* dispersa / permanece */
 .cv-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 22px; }
@@ -62,6 +90,15 @@
 .cv-col.lost li::before { background: var(--gold, #d9a441); box-shadow: 0 0 6px rgba(217, 164, 65, .6); }
 .cv-col.kept li::before { background: var(--eclat, #aac8ff); box-shadow: 0 0 6px rgba(170, 200, 255, .6); }
 .cv-col.kept li b { color: var(--ink, #dbe6ff); font-weight: 600; }
+
+/* tributo (Lumens pagos ao convergir) */
+.cv-tribute { display: flex; align-items: baseline; flex-wrap: wrap; gap: 9px; justify-content: center;
+  margin-bottom: 16px; padding: 12px 14px; border-radius: 12px;
+  background: rgba(40, 30, 14, .55); border: 1px solid var(--gold, #d9a441); }
+.cv-tribute-l { font-size: 16px; letter-spacing: .22em; text-transform: uppercase; color: var(--gold, #d9a441); }
+.cv-tribute-v { font-family: var(--font-display, serif); font-weight: 700; font-size: 22px; color: #f2dca0;
+  font-variant-numeric: tabular-nums; }
+.cv-tribute-note { width: 100%; text-align: center; font-size: 15px; color: var(--faint, #5a6678); font-style: italic; }
 
 .cv-actions { display: flex; gap: 12px; }
 .cv-later { appearance: none; cursor: pointer; flex: 1; height: 54px; border: 1px solid var(--line, rgba(170, 200, 255, .26));

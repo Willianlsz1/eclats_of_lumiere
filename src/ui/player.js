@@ -19,7 +19,7 @@ import { passiveDmgMult, passiveHpMult, passiveCritAdd, passiveApsMult, passiveE
 import { memoireDmgMult, memoireHpMult, memoireCritDmgMult, memoireLumensMult, memoireXpMult } from '../game/memoires.js';
 import { ascMult, despertarMult, currentRank } from '../game/ascension.js';
 import { canConverge, doConverge, convGateLevel, convergeProgress } from '../game/convergence.js';
-import { openConvergence } from './convergence.js';
+import { renderConvergence } from './convergence.js';
 import { COMBAT, CRIT, LEVEL } from '../data/constants.js';
 import { buildAwakenPane, renderAwakenPane } from './awaken.js';
 
@@ -224,52 +224,8 @@ export function buildPlayerView(root, state) {
     </div>
     </div><!-- /pl-codex-pane -->
 
-    <div class="pl-pane pl-conv-pane" data-pane="converge" hidden>
-      <div class="pl-conv-card">
-        <header class="pl-conv-head">
-          <div class="pl-conv-eyebrow">The rite of dispersal</div>
-          <h2 class="pl-conv-title">Convergence</h2>
-          <p class="pl-conv-lore">To keep the world, you let it go. Each new threshold lets the Seed disperse the light it gathered — and remember the pattern stronger.</p>
-        </header>
-
-        <div class="pl-conv-stats">
-          <div class="pl-conv-stat">
-            <b class="pl-conv-v" id="pl-conv-count">0</b>
-            <span class="pl-conv-l">Convergences</span>
-          </div>
-          <div class="pl-conv-stat">
-            <b class="pl-conv-v t-gold" id="pl-conv-bonus">+0%</b>
-            <span class="pl-conv-l">Permanent bonus</span>
-          </div>
-        </div>
-
-        <div class="pl-conv-action">
-          <div class="pl-conv-action-top">
-            <span class="pl-conv-action-l">Next threshold</span>
-            <span class="pl-conv-action-v"><b id="pl-conv-prog-lbl">Level 1 / 40</b> · <span id="pl-conv-prog-pct">0%</span></span>
-          </div>
-          <div class="pl-conv-bar"><i id="pl-conv-fill"></i></div>
-          <button type="button" class="pl-conv-btn" id="pl-conv-btn" disabled>Reach the threshold</button>
-        </div>
-
-        <div class="pl-conv-effect">
-          <span class="pl-conv-effect-l">Each Convergence grants</span>
-          <b class="pl-conv-effect-v">+15%</b>
-          <span class="pl-conv-effect-tags">Damage · HP · XP · Lumens</span>
-        </div>
-
-        <div class="pl-conv-cols">
-          <div class="pl-conv-col returns">
-            <h4>Returns to the world</h4>
-            <ul><li>Your Level <em>(run XP)</em></li><li>Gear levels</li></ul>
-          </div>
-          <div class="pl-conv-col keeps">
-            <h4>The Seed keeps</h4>
-            <ul><li>Gear rarity</li><li>Map position</li><li>Lumens &amp; Vestiges</li><li>Passives &amp; Mémoires</li></ul>
-          </div>
-        </div>
-      </div>
-    </div>
+    <!-- Convergence: tela (pane) renderizada por renderConvergence -->
+    <div class="pl-pane pl-conv-pane" data-pane="converge" hidden></div>
 
     <div class="pl-pane pl-awaken-pane" data-pane="awaken" hidden></div>
 
@@ -304,20 +260,6 @@ export function buildPlayerView(root, state) {
   $('pl-modal-x').addEventListener('click', closeModal);
   $('pl-modal-back').addEventListener('click', closeModal);
 
-  // Botão Converge — abre a cerimônia (overlay) que aplica o doConverge real.
-  $('pl-conv-btn').addEventListener('click', () => {
-    if (!canConverge(state)) return;
-    openConvergence({
-      points: '+15%',
-      pointsNote: 'permanent boost',
-      factor: gainPct(1 + CONV_BONUS_PER * (state.convergences + 1)), // após convergir
-      prevFactor: gainPct(convMult(state)),                            // atual
-      returns: ['Your Level (run XP)', 'Gear levels'],
-      keeps: ['<b>Gear rarity</b> &amp; the map you’re on', '<b>Lumens</b> &amp; <b>Vestiges</b>', '<b>Passives</b>, <b>Mémoires</b>, <b>Awakenings</b>'],
-      onConverge: () => { doConverge(state); renderPlayer(state); },
-    });
-  });
-
   // Aba Awakening — pane no formato Gear/Forge (módulo próprio)
   buildAwakenPane(root.querySelector('.pl-awaken-pane'), state);
 
@@ -328,8 +270,38 @@ export function buildPlayerView(root, state) {
       root.querySelectorAll('.pl-tab').forEach((t) => t.classList.toggle('on', t === tab));
       root.querySelectorAll('.pl-pane').forEach((p) => { p.hidden = p.dataset.pane !== activePane; });
       if (activePane === 'awaken') renderAwakenPane(state);
-      if (activePane === 'converge') renderConverge(state);
+      if (activePane === 'converge') renderConvergence(root.querySelector('.pl-conv-pane'), convData(state));
     }));
+}
+
+// "The Seed keeps": só o que está LIBERADO. Map 1 = só Gear; os sistemas Map 2+
+// (posição no mapa multi, Vestiges, Passivas, Mémoires) entram quando desbloqueiam.
+function convKeeps(state) {
+  const list = ['Gear rarity &amp; levels'];
+  if ((state.maxMap || state.map || 1) >= 2) list.push('Map position', 'Vestiges', 'Passives &amp; Mémoires');
+  return list;
+}
+
+// Monta os dados reais do overlay de Convergence a partir do state.
+function convData(state) {
+  const lvl = runLevel(state);
+  const gate = convGateLevel(state.convergences);
+  return {
+    convergences: formatNumber(state.convergences),
+    bonus: gainPct(convMult(state)),
+    gateLabel: `Level ${formatNumber(lvl)} / ${formatNumber(gate)}`,
+    progressPct: Math.floor(convergeProgress(state) * 100),
+    able: canConverge(state),
+    gate: formatNumber(gate),
+    grant: '+15%',
+    grantTags: ['Damage', 'HP', 'XP', 'Lumens'],
+    // RESETA ao convergir: LVL (nível da run) + Lumens. MANTÉM: gear.
+    returns: ['LVL', 'Lumens'],
+    keeps: convKeeps(state),
+    lore: 'To keep the world, you let it go. Each new threshold lets the Seed disperse the light it gathered — and remember the pattern stronger.',
+    note: 'Auto-Convergence available after Ascension I — the Rhythm will carry this rite for you.',
+    onConverge: () => { doConverge(state); renderPlayer(state); },
+  };
 }
 
 function openStat(state, id) {
@@ -357,25 +329,12 @@ function renderModal(state) {
   note.hidden = !st.note;
 }
 
-// Atualiza a aba Convergence (contagem, bônus, barra, botão)
-function renderConverge(state) {
-  const lvl = runLevel(state);
-  const gate = convGateLevel(state.convergences);
-  const prog = convergeProgress(state);
-  const able = canConverge(state);
-  $('pl-conv-count').textContent = formatNumber(state.convergences);
-  $('pl-conv-bonus').textContent = gainPct(convMult(state));
-  $('pl-conv-prog-lbl').textContent = `Level ${formatNumber(lvl)} / ${formatNumber(gate)}`;
-  $('pl-conv-prog-pct').textContent = `${Math.floor(prog * 100)}%`;
-  $('pl-conv-fill').style.width = `${prog * 100}%`;
-  const btn = $('pl-conv-btn');
-  btn.disabled = !able;
-  btn.textContent = able ? 'Converge' : `Reach Level ${formatNumber(gate)}`;
-}
-
 export function renderPlayer(state) {
   if (activePane === 'awaken') renderAwakenPane(state);
-  if (activePane === 'converge') renderConverge(state);
+  if (activePane === 'converge') {
+    const cp = document.querySelector('#view-player .pl-conv-pane');
+    if (cp) renderConvergence(cp, convData(state));
+  }
 
   const rank = currentRank(state);
   $('pl-codex-rank').textContent = rank.name;

@@ -21,6 +21,27 @@ export function runLevel(state) {
 // Nível a partir de um XP qualquer (usado pra display; mesma curva).
 export const heroLevel = (xp) => Math.max(1, Math.floor(((xp || 0) / LEVEL.curveDiv) ** LEVEL.curveExp));
 
+// XP do nível atual: xp(L) = curveDiv × L^(1/curveExp) (inverso da curva).
+function levelXpBounds(state) {
+  const L = runLevel(state);
+  const inv = 1 / LEVEL.curveExp;
+  return { xpL: LEVEL.curveDiv * L ** inv, xpN: LEVEL.curveDiv * (L + 1) ** inv };
+}
+// Progresso (0..1) do XP da run dentro do nível atual → enche a barra de LVL.
+export function levelProgress(state) {
+  const { xpL, xpN } = levelXpBounds(state);
+  return Math.max(0, Math.min(1, (state.xpRun - xpL) / (xpN - xpL)));
+}
+// Valores de XP do nível: acumulado no nível atual / total p/ subir / faltando.
+export function levelXpInfo(state) {
+  const { xpL, xpN } = levelXpBounds(state);
+  return {
+    into: Math.max(0, state.xpRun - xpL),
+    total: xpN - xpL,
+    remaining: Math.max(0, xpN - state.xpRun),
+  };
+}
+
 // ───── Convergence (+15% ADITIVO por converge) ─────
 // Entra em dano, HP, XP e Lumens. O reset (nível da run + nível do gear) é feito
 // em convergence.js; aqui é só o multiplicador permanente.
@@ -29,11 +50,15 @@ export function convMult(state) {
 }
 
 // ───── APS e crit (sem Gold Stats — vêm de gear/passivas) ─────
-// APS = baseAPS × Fracture Pulse (passiva) × Resonance (gear, amortecido por log), teto apsCap.
+// APS = baseAPS + ganho DIRETO do afixo de APS (Amuleto), front-loaded e saturante:
+//   p = força do afixo (gearApsMult−1 ≈ nível×0.02); ganho = apsBonusMax × p/(p+apsHalf).
+// Cresce rápido cedo e satura (≈+0.45 → APS ~1.35). Substitui o log "resonance".
+export function apsBonus(state) {
+  const p = Math.max(0, gearApsMult(state) - 1);
+  return COMBAT.apsBonusMax * p / (p + COMBAT.apsHalf);
+}
 export function currentAPS(state) {
-  const resonance = 1 + 0.3 * Math.log10(Math.max(1, gearApsMult(state)));
-  // CP-4: gear soma APS FLAT na base (capado no apsCap)
-  const aps = (COMBAT.baseAPS + gearApsFlat(state)) * passiveApsMult(state) * resonance;
+  const aps = (COMBAT.baseAPS + apsBonus(state)) * passiveApsMult(state);
   return Math.min(COMBAT.apsCap, aps);
 }
 

@@ -145,11 +145,11 @@ export function combatTick(state, dt) {
   // Gate por nível: libera sub-áreas conforme o nível sobe (sem Guardião)
   updateUnlockByLevel(state);
 
-  // --- Morte: recua uma subárea e a onda reinicia ---
+  // --- Morte: respawna na MESMA área (sem recuar). O jogador volta de área só
+  //     se quiser, pelas setas de navegação. ---
   if (player.hp <= 0) {
     player.dead = true;
     player.respawnTimer = COMBAT.deathRespawnSeconds;
-    state.subarea = Math.max(1, state.subarea - 1); // recua uma subárea
     state.killsInSubarea = 0; // boss some; o muro exige farmar de novo
     state.wave = 1;
     state.enemies = [];

@@ -8,11 +8,13 @@
 
 import { formatNumber } from '../core/format.js';
 import { picture } from '../data/assets.js';
-import { GEAR, GEAR_RARITIES, GEAR_RARITY_LABELS } from '../data/constants.js';
+import { GEAR, GEAR_RARITIES, GEAR_RARITY_LABELS, COMBAT } from '../data/constants.js';
+import { apsBonus } from '../game/stats.js';
 import {
   primaryMult, secondaryMult, critOf, critDmgOf, activeSecondaries,
   levelCost, atLevelCap, buyLevels,
   gearDamageMult, gearHpMult, gearLumensMult, gearCritAdd, gearDefesaMult, gearApsMult,
+  gearDamageFlat, gearHpFlat, gearDefesaFlat, gearApsFlat,
 } from '../game/gear.js';
 
 const $ = (id) => document.getElementById(id);
@@ -67,12 +69,20 @@ function slotMarkup(def) {
 
 // Afixos exibíveis: cada um vira { val, label, per (descritor por nível), primary }.
 // Afixos de stat (dano/HP/APS/defesa/regen) viram 2 linhas: FLAT (base) e % (multiplicador).
-function affixEntries(def, piece) {
+function affixEntries(def, piece, state) {
   const lvl = piece.level, rar = piece.rarity, rm = GEAR.rarityMult[rar];
   const out = [];
   const add = (type, isSec) => {
     const w = isSec ? GEAR.secondaryExp : 1;
     const prim = !isSec;
+    if (type === 'aps') {
+      // APS é saturante (não-linear) → mostra o GANHO REAL de velocidade (% mais rápido),
+      // não o "30%" cru que não multiplicava. Só no primário (Amuleto = fonte do APS).
+      if (!prim) return; // secundário de aps já está somado no total do Amuleto
+      const pctFaster = state ? (apsBonus(state) / COMBAT.baseAPS) * 100 : 0;
+      out.push({ val: `+${pctFaster.toFixed(0)}%`, label: 'attack speed', per: '', primary: true });
+      return;
+    }
     if (type === 'crit') {
       out.push({ val: `+${formatNumber(critOf(lvl, rar) * w * 100)}%`, label: 'crit rate',
         per: perN(GEAR.critPerLevel * rm * w * 100, '%'), primary: prim });
@@ -90,15 +100,18 @@ function affixEntries(def, piece) {
         per: perN(GEAR.flatPerLevel[type] * rm * w), primary: prim });
     }
     if (isSec) {
-      // secundário: contribuição combinada como % (NUNCA ×) — afixo do tier
-      out.push({ val: `+${formatNumber((secondaryMult(lvl, rar) - 1) * 100)}%`, label, per: '', primary: false });
+      // secundário: contribuição combinada como % (NUNCA ×) — afixo do tier.
+      // "bonus" deixa claro que é MULTIPLICADOR, não valor flat.
+      out.push({ val: `+${formatNumber((secondaryMult(lvl, rar) - 1) * 100)}%`, label: `${label} bonus`, per: '', primary: false });
     } else {
-      // primário: 2 afixos = FLAT (acima) + % (aqui). ×Multiplier removido (Map 1, 14/jun).
-      out.push({ val: `+${formatNumber(lvl * GEAR.bonusRate * rm * 100)}%`, label,
+      // primário: 2 afixos = FLAT (acima, valor base) + % (aqui, multiplicador).
+      out.push({ val: `+${formatNumber(lvl * GEAR.bonusRate * rm * 100)}%`, label: `${label} bonus`,
         per: perN(GEAR.bonusRate * rm * 100, '%'), primary: true });
     }
   };
   add(def.primary, false);
+  // Mostra SÓ os afixos já LIBERADOS (ativos pela raridade); os bloqueados aparecem
+  // conforme a raridade sobe (sem listar os travados).
   for (const sec of activeSecondaries(def, rar)) add(sec, true);
   return out;
 }
@@ -112,14 +125,7 @@ export function buildGearView(root, state) {
 
     <aside class="gr-summary">
       <h3>Equipment Bonuses</h3>
-      <dl class="gr-totals">
-        <div><dt>Damage</dt><dd id="gr-t-dmg">×1</dd></div>
-        <div><dt>HP</dt><dd id="gr-t-hp">×1</dd></div>
-        <div><dt>Defense</dt><dd id="gr-t-defesa">×1</dd></div>
-        <div><dt>Crit</dt><dd id="gr-t-crit">+0%</dd></div>
-        <div><dt>Attack Speed</dt><dd id="gr-t-aps">×1</dd></div>
-        <div><dt>Lumens</dt><dd id="gr-t-lumens">×1</dd></div>
-      </dl>
+      <div class="gr-breakdown" id="gr-breakdown"></div>
       <p class="gr-note">Raise rarity at The Forge.</p>
     </aside>
 
@@ -162,12 +168,16 @@ export function buildGearView(root, state) {
 }
 
 export function renderGear(state) {
-  $('gr-t-dmg').textContent = `×${formatNumber(gearDamageMult(state))}`;
-  $('gr-t-hp').textContent = `×${formatNumber(gearHpMult(state))}`;
-  $('gr-t-defesa').textContent = `×${formatNumber(gearDefesaMult(state))}`;
-  $('gr-t-crit').textContent = `+${(gearCritAdd(state) * 100).toFixed(2)}%`;
-  $('gr-t-aps').textContent = `×${formatNumber(gearApsMult(state))}`;
-  $('gr-t-lumens').textContent = `×${formatNumber(gearLumensMult(state))}`;
+  // Breakdown POR PEÇA: lista cada afixo LIBERADO (primário flat+% + secundários
+  // ativos) com seu valor. Mais detalhado que o agregado por stat.
+  const bd = $('gr-breakdown');
+  if (bd) {
+    // só os bônus liberados (sem nome da peça nem raridade) — 1 linha por afixo
+    bd.innerHTML = GEAR.pieces.map((def) =>
+      affixEntries(def, state.gear[def.key], state).map((e) =>
+        `<li><b>${e.val}</b> <span>${e.label}</span></li>`).join('')
+    ).join('');
+  }
 
   for (const def of GEAR.pieces) {
     const slot = document.querySelector(`.gr-slot[data-key="${def.key}"]`);
@@ -189,10 +199,12 @@ export function renderGear(state) {
         <h4 class="gr-tip-name r-${rar}">${def.name}</h4>
         <div class="gr-tip-sub">${GEAR_RARITY_LABELS[piece.rarity]} ${SLOT_EN[def.slot]} · Lv ${formatNumber(piece.level)}</div>
         <div class="gr-tip-affixes">
-          ${affixEntries(def, piece).map((e) =>
-            `<div class="gr-aff ${e.primary ? 'primary' : ''}">`
-            + `<span class="gr-aff-v">${e.val}</span> <span class="gr-aff-l">${e.label}</span>`
-            + `<i class="gr-aff-per">${e.per}</i></div>`).join('')}
+          ${affixEntries(def, piece, state).map((e) => e.locked
+            ? `<div class="gr-aff locked"><span class="gr-aff-v">🔒</span> <span class="gr-aff-l">${e.label}</span>`
+              + `<i class="gr-aff-per">${e.unlock}</i></div>`
+            : `<div class="gr-aff ${e.primary ? 'primary' : ''}">`
+              + `<span class="gr-aff-v">${e.val}</span> <span class="gr-aff-l">${e.label}</span>`
+              + `<i class="gr-aff-per">${e.per}</i></div>`).join('')}
         </div>`;
     }
     const cost = levelCost(piece);

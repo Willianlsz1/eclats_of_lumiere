@@ -97,7 +97,8 @@
    ============================================================ */
 .cb-enemy.emob {
   position: absolute; z-index: 5;
-  width: min(calc(var(--stage-w) * 0.12), 210px);
+  /* sprites são ALTOS (~2:1) → largura menor p/ a altura caber em 2 fileiras sem colidir */
+  width: min(calc(var(--stage-w) * 0.10), 175px);
   transform: translate(-50%, -50%);
   display: flex; flex-direction: column; align-items: center; gap: 4px;
   pointer-events: auto; background: transparent;
@@ -190,6 +191,35 @@
 
 /* ---------------- FX: cortes de luz do Seeker ---------------- */
 .cb-fx { position: absolute; inset: 0; z-index: 7; pointer-events: none; overflow: hidden; }
+
+/* Box de drops do mapa (T1) — bg = ARTE do material; canto inf-esq, acima do HUD */
+.cb-drops {
+  position: absolute; z-index: 8; left: 36px; bottom: 104px;
+  display: flex; align-items: center; justify-content: flex-end;
+  min-width: 190px; min-height: 64px; padding: 10px 18px 10px 70px;
+  /* arte do material à esquerda + gradiente escuro p/ o texto ficar legível à direita */
+  background-image:
+    linear-gradient(90deg, rgba(8,12,24,.25), rgba(8,12,24,.94) 62%),
+    url('eclats/forge/t1_kindled.webp');
+  background-size: cover, auto 130%;
+  background-position: center, left -6px center;
+  background-repeat: no-repeat, no-repeat;
+  border: 1px solid rgba(217,164,65,.5); border-radius: 14px;
+  box-shadow: 0 8px 26px -10px #000, inset 0 0 0 1px rgba(217,164,65,.12);
+  /* oculto por padrão — só aparece quando dropa material */
+  opacity: 0; visibility: hidden; transform: translateY(8px);
+  transition: opacity .25s ease, transform .25s ease, visibility .25s;
+}
+.cb-drops.show { opacity: 1; visibility: visible; transform: translateY(0); }
+.cb-drop-info { display: flex; flex-direction: column; align-items: flex-end; text-align: right; }
+.cb-drop-lbl { font-size: 13px; color: var(--dim); text-transform: uppercase; letter-spacing: .1em; }
+.cb-drop-val { font-size: 22px; font-weight: 700; color: var(--gold); font-variant-numeric: tabular-nums; }
+.cb-drops.drop { animation: cb-drop-pulse .45s ease; }
+@keyframes cb-drop-pulse {
+  0% { transform: scale(1); box-shadow: 0 8px 26px -10px #000, 0 0 0 0 rgba(217,164,65,.5); }
+  40% { transform: scale(1.06); box-shadow: 0 8px 26px -10px #000, 0 0 18px 3px rgba(217,164,65,.6); }
+  100% { transform: scale(1); box-shadow: 0 8px 26px -10px #000, 0 0 0 0 rgba(217,164,65,0); }
+}
 /* container voa da origem (left/top) até origem+dx,dy; a imagem dentro rotaciona
    pra apontar no alvo. mix-blend-mode: screen some com o fundo preto da arte. */
 .cb-proj {

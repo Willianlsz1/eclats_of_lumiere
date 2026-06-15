@@ -7,6 +7,11 @@ export const COMBAT = {
   baseAPS: 0.90,          // intervalo de ataque ~1.11s (ajuste pedido pelo Willian: 0.40 → 0.90)
   apsCap: 5,              // teto de 5 kills/s (18k/h) — ajuste pedido pelo Willian (confortável; 15 rápido, 2 lento).
   agiApsCap: 3.75,        // sub-cap do AGI: AGI sozinho leva o APS até ~3.4 (0.90 × 3.75)
+  // APS do gear (afixo do Amuleto): curva DIRETA e front-loaded. ganho = max × p/(p+half),
+  // p = força do afixo (~nível×0.02). Cresce rápido cedo e satura: +0.45 → APS ~1.35 no teto;
+  // ~1.30 no fim do M1 (gear ~686). Substitui o log "resonance" (que matava os 30%).
+  apsBonusMax: 0.45,
+  apsHalf: 1.7,
   playerBaseHp: 25000,    // rescale ×500
   regenPerSec: 0.01,      // 1% do HP máx por segundo
   regenOnKill: 0.02,      // 2% do HP máx por kill
@@ -168,12 +173,12 @@ export const GEAR = {
   // por raridade (índice 0..4): força do afixo e CUSTO sobem
   rarityMult: [1, 1.5, 2.25, 3.5, 5],
   // CAP de nível por raridade (✅ Map 1: Faded = 1000). M2+ = placeholder (a discutir).
-  levelCap:   [1000, 2000, 3000, 4000, 5000],
+  levelCap:   [750, 2000, 3000, 4000, 5000],
   // CUSTO por tier. Faded = ×1 (→ 1400×(L+1), ✅ Map 1). M2+ = placeholder seguro (a discutir).
   costMult:   [1, 10, 100, 1000, 10000],
   // ── MODELO MAP 1 (calibrado 14/jun): 2 AFIXOS por peça — flat + % ──
   // Primary (flat, por tipo) — soma à base. Bonus% (%) — multiplica. (×Multiplier removido.)
-  flatPerLevel: { dmg: 30000, hp: 12500, defesa: 7500, aps: 2e-4, regen: 0.0005, bossDmg: 0, lumens: 0, xp: 0, crit: 0, critDmg: 0, materiais: 0 },
+  flatPerLevel: { dmg: 30000, hp: 12500, defesa: 7500, aps: 0, regen: 0.0005, bossDmg: 0, lumens: 0, xp: 0, crit: 0, critDmg: 0, materiais: 0 },
   bonusRate: 0.02,           // afixo % : 1 + nível × bonusRate × rarityMult (2%/nv no Faded). ✅ Map 1
   multRate:  0,              // ×Multiplier REMOVIDO (decisão Willian 14/jun — era cópia do Gaiadon)
   affixPctRate: 0.01,        // FARM (lumens/xp/materiais): % linear/nível. (fix do NaN — faltava no constants)

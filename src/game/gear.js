@@ -28,11 +28,14 @@ export const critOf = (level, rarity) => level * GEAR.critPerLevel * GEAR.rarity
 // crit damage (afixo plano, bônus sobre a base): nível × critDmgPerLevel × rarityMult
 export const critDmgOf = (level, rarity) => level * GEAR.critDmgPerLevel * GEAR.rarityMult[rarity];
 
-// Secundários ATIVOS de uma peça conforme a raridade. ✅ 14/jun: o COMUM (Faded)
-// já vem com 2 afixos (primário + 1 secundário) → libera rarity+1 secundários;
-// cada raridade acima destrava mais um (capado pelo tamanho da lista da peça).
+// Secundários ATIVOS de uma peça conforme a raridade. ✅ 14/jun: TODA peça comum
+// (Faded) tem 2 afixos. Peças cujo PRIMÁRIO tem flat (dmg/hp/defesa/aps) já fecham
+// 2 com flat + % → 0 secundário no Faded. Peças sem flat no primário (lumens=anel,
+// crit=grasp) ganham 1 secundário já no Faded pra fechar 2. Cada raridade acima
+// destrava +1 secundário, capado pelo tamanho da lista.
 export function activeSecondaries(def, rarity) {
-  return def.secondary.slice(0, rarity + 1);
+  const primaryHasFlat = (GEAR.flatPerLevel[def.primary] || 0) > 0;
+  return def.secondary.slice(0, rarity + (primaryHasFlat ? 0 : 1));
 }
 
 // ───── Agregação por tipo de afixo ─────
@@ -76,6 +79,7 @@ function gearFlatBy(state, type) {
 export const gearDamageFlat = (s) => gearFlatBy(s, 'dmg'); // soma na base de dano
 export const gearHpFlat     = (s) => gearFlatBy(s, 'hp');  // soma na base de HP
 export const gearApsFlat    = (s) => gearFlatBy(s, 'aps'); // soma na base de APS (capado depois)
+export const gearDefesaFlat = (s) => gearFlatBy(s, 'defesa'); // soma na base de Defesa
 
 // ── Afixos de FARM (Lumens/XP/Materiais) — REGRA Bloco 3: só flat/% ADITIVO, NUNCA o motor ×.
 // Valor LINEAR do afixo (sem o 1.0039^L): mantém o farm como bônus modesto, não motor de décadas.

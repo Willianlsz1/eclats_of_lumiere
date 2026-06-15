@@ -10,7 +10,6 @@ import { playerHpMax } from './game/stats.js';
 import { simulateOffline } from './game/offline.js';
 import { maybeApplyDevUnlock, showDevBadge, setupDevButton, setupDevPanel, setupResetButton } from './core/dev.js';
 import { setupUI, renderUI, showOfflineSummary } from './ui/ui.js';
-import { openConvergence, closeConvergence } from './ui/convergence.js';
 import { openOffline, closeOffline } from './ui/offline.js';
 
 // Carrega o save (se houver) e reconstrói o runtime
@@ -47,9 +46,7 @@ renderUI(state);
 // lógica de disparo não existe. Ex.: eclatsCeremonies.awaken({ tier: 3 }).
 // TODO(lógica): disparar Awakening ao vencer o Guardião da Sub 3 (checkDespertar)
 // e Convergence no ciclo de dispersão; passar dados reais (ganhos calculados).
-window.eclatsCeremonies = {
-  converge: openConvergence, closeConverge: closeConvergence,
-};
+// Convergence agora é uma TELA (aba do Seeker), não um overlay — sem hooks de cerimônia.
 
 // Modal de entrada offline — exposto para teste manual. Ex.: eclatsOffline.open().
 // TODO(lógica): disparar na inicialização com os ganhos offline reais (o

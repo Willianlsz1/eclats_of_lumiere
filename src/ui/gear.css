@@ -16,12 +16,12 @@
 
 /* ---------- esquerda: stats (sobreposto, dentro da área limpa) ---------- */
 .gr-summary {
-  position: absolute; left: 7.5%; top: 15.5%; width: 232px; max-height: 60%; z-index: 3;
+  position: absolute; left: 7.5%; top: 15.5%; width: 270px; max-height: 64%; z-index: 3;
   background: color-mix(in srgb, #0b1226 92%, transparent);
   border: 1px solid rgba(217, 164, 65, .35); border-radius: 14px;
   box-shadow: 0 0 40px -14px #000, inset 0 0 0 1px rgba(217,164,65,.1);
   backdrop-filter: blur(3px);
-  padding: 18px; overflow-y: auto;
+  padding: 18px; overflow-y: auto; overflow-x: hidden;
 }
 
 /* colunas de slots nas áreas LATERAIS (o Armeiro da arte fica entre elas) */
@@ -31,8 +31,19 @@
 .gr-totals > div { display: flex; justify-content: space-between; align-items: baseline;
   background: var(--panel-2); border: var(--border-soft); border-radius: var(--radius-sm); padding: 9px 12px; }
 .gr-totals dt { font-size: var(--fs-xs); color: var(--dim); text-transform: uppercase; letter-spacing: .1em; }
-.gr-totals dd { margin: 0; font-size: var(--fs-md); font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; }
+.gr-totals dd { margin: 0; display: flex; align-items: baseline; gap: 7px;
+  font-variant-numeric: tabular-nums; }
+.gr-totals dd b { font-size: var(--fs-md); font-weight: 700; color: var(--gold); }
+.gr-totals dd i { font-size: var(--fs-xs); font-style: normal; font-weight: 600; color: var(--dim); }
 .gr-note { margin-top: 14px; font-size: var(--fs-xs); color: var(--faint); font-style: italic; }
+
+/* Breakdown — só os bônus liberados (1 linha por afixo, sem nome/raridade) */
+.gr-breakdown { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.gr-breakdown li { display: flex; align-items: baseline; gap: 8px;
+  background: var(--panel-2); border: var(--border-soft); border-radius: var(--radius-sm);
+  padding: 8px 12px; font-size: var(--fs-sm); font-variant-numeric: tabular-nums; }
+.gr-breakdown li b { color: var(--gold); font-weight: 700; }
+.gr-breakdown li span { color: var(--ink); }
 
 /* ---------- centro: Armeiro (pés ancorados na base = plataforma) ---------- */
 /* ---------- slots (colunas flanqueando o Armeiro da arte) — frame dourado uniforme ---------- */
@@ -101,23 +112,27 @@
 /* tooltip de atributos (hover do slot) */
 .gr-tip {
   display: none; position: absolute; top: 50%; transform: translateY(-50%); z-index: 20;
-  width: 252px; text-align: left; pointer-events: none;
-  background: rgba(8, 12, 24, .97); border: 1px solid rgba(217, 164, 65, .6); border-radius: 12px;
-  padding: 14px 16px; box-shadow: 0 12px 34px -8px #000;
+  width: 320px; text-align: left; pointer-events: none;
+  background: rgba(8, 12, 24, .97); border: 1px solid rgba(217, 164, 65, .6); border-radius: 14px;
+  padding: 18px 20px; box-shadow: 0 12px 34px -8px #000;
 }
 .gr-slot:hover .gr-tip { display: block; }
 .side-left .gr-tip { left: 114%; }
 .side-right .gr-tip { right: 114%; }
-.gr-tip-name { margin: 0 0 2px; font-family: var(--font-display); font-size: 19px; font-weight: 700; }
-.gr-tip-sub { font-size: 16px; color: var(--dim); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 11px; }
-.gr-tip-affixes { display: grid; gap: 4px; }
+.gr-tip-name { margin: 0 0 3px; font-family: var(--font-display); font-size: 22px; font-weight: 700; }
+.gr-tip-sub { font-size: 16px; color: var(--dim); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 14px; }
+.gr-tip-affixes { display: grid; gap: 9px; }
 /* cada afixo: valor (bold) + label, e o descritor "per level" (dim) à direita */
-.gr-aff { display: flex; align-items: baseline; gap: 6px; font-size: 16px; color: var(--dim);
+.gr-aff { display: flex; align-items: baseline; gap: 7px; font-size: 17px; color: var(--dim);
   font-variant-numeric: tabular-nums; }
 .gr-aff-v { color: var(--ink); font-weight: 700; }
-.gr-aff-l { color: var(--dim); }
-.gr-aff-per { margin-left: auto; font-style: normal; font-size: 13px; color: var(--faint); }
+.gr-aff-l { color: var(--ink); }
+.gr-aff-per { margin-left: auto; font-style: normal; font-size: 14px; color: var(--faint); }
 .gr-aff.primary .gr-aff-v { color: var(--gold); }
+/* afixo bloqueado: dimmed, mostra a raridade que destrava à direita */
+.gr-aff.locked { opacity: .5; }
+.gr-aff.locked .gr-aff-l { color: var(--dim); }
+.gr-aff.locked .gr-aff-per { color: var(--gold); opacity: .8; text-transform: uppercase; letter-spacing: .06em; }
 
 /* ---------- nameplate do Armeiro (Lucius), aos pés — mesmo estilo do Maël ---------- */
 .gr-npc-id {
