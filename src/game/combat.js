@@ -205,8 +205,8 @@ function onBossKill(state) {
   state.bossDefeated[state.subarea - 1] = true;
   state.unlockedSubarea = Math.max(state.unlockedSubarea, Math.min(map.subareaCount, state.subarea + 1));
   state.killsInSubarea = 0;
-  // §8 redesign: vencer o Guardião da Sub 3 só DESTRAVA a Prova (bossDefeated[2]);
-  // o Despertar agora é ato do jogador na tela (doDespertar, gasta Nitzotzot+Vestiges).
+  // O Despertar NÃO depende mais de boss (combate single-boss 14/jun): é a checklist
+  // de ascension.js (Nível+Material T1+Nitzotzot+Vestiges), ato do jogador na tela.
 }
 
 // Viagem entre mapas já alcançados (id ≤ maxMap). Guarda o progresso do mapa

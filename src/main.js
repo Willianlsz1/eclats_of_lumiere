@@ -44,8 +44,8 @@ renderUI(state);
 
 // Cerimônias (overlays) — expostas para teste manual no console enquanto a
 // lógica de disparo não existe. Ex.: eclatsCeremonies.awaken({ tier: 3 }).
-// TODO(lógica): disparar Awakening ao vencer o Guardião da Sub 3 (checkDespertar)
-// e Convergence no ciclo de dispersão; passar dados reais (ganhos calculados).
+// O Despertar é um ATO DO JOGADOR na aba Awaken (cumprir a checklist → botão
+// Awaken → doDespertar). A cerimônia aqui é só o overlay opcional de teste.
 // Convergence agora é uma TELA (aba do Seeker), não um overlay — sem hooks de cerimônia.
 
 // Modal de entrada offline — exposto para teste manual. Ex.: eclatsOffline.open().

@@ -3,8 +3,10 @@
 // A1 também libera o drip de Éclats (§10). Persiste sempre. Só Map 1 existe
 // no MVP → só A1 é completável; A2-A5 exigem Maps 2-5.
 
-import { ASCENSIONS, ECLATS_DRIP, MAPS, SEEKER_RANKS, DESPERTAR, DESPERTAR_REQ } from '../data/constants.js';
+import { ASCENSIONS, ECLATS_DRIP, MAPS, SEEKER_RANKS, DESPERTAR, DESPERTAR_REQ,
+  DESPERTAR_GATE_LEVEL, DESPERTAR_MAT_T1 } from '../data/constants.js';
 import { hpForLevel, subareaLevelRange, getCurrentMap } from './enemies.js';
+import { runLevel } from './stats.js';
 import { memoireEclatsAllMult } from './memoires.js';
 
 // Próximo marco de Ascension (ou null se já no fim)
@@ -77,18 +79,28 @@ export function despertarReq(state) {
   return t == null ? null : DESPERTAR_REQ[t];
 }
 
-// Prova: vencer o Guardião da Sub 3 do mapa do tier alvo (bossDefeated[2] = Sub3).
-export function despertarProvaMet(state) {
+// CHECKLIST de requisitos do próximo despertar (redesign 14/jun): lista de gates,
+// cada um { key, label, have, need, ok }. Vazia quando já é Lumière (T5). A Prova do
+// Guardião da Sub 3 saiu (combate single-boss); entram Nível + Material T1. A UI itera
+// esta lista; `canDespertar` = todos os gates ok (lógica E).
+export function despertarRequirements(state) {
   const t = despertarTarget(state);
-  if (t == null) return false;
-  return state.map >= t && Array.isArray(state.bossDefeated) && state.bossDefeated[2] === true;
+  if (t == null) return [];
+  const req = despertarReq(state) || { nitzotz: Infinity, vestiges: Infinity };
+  const haveMatT1 = (state.materiais && state.materiais[0]) || 0; // T1 = materiais[0] (mesmo do upgrade de gear)
+  const gates = [
+    { key: 'level',    label: 'Level',       have: runLevel(state),                  need: DESPERTAR_GATE_LEVEL[t] },
+    { key: 'material', label: 'Material T1', have: haveMatT1,                         need: DESPERTAR_MAT_T1[t] },
+    { key: 'nitzotz',  label: 'Nitzotzot',   have: Math.floor(state.nitzotzot || 0), need: req.nitzotz },
+    { key: 'vestiges', label: 'Vestiges',    have: Math.floor(state.vestiges || 0),  need: req.vestiges },
+  ];
+  return gates.map((g) => ({ ...g, ok: g.have >= g.need }));
 }
 
-// Pode despertar? Prova + Oferenda + Tributo, todos atendidos.
+// Pode despertar? Toda a checklist atendida (lógica E).
 export function canDespertar(state) {
-  const req = despertarReq(state);
-  if (!req || !despertarProvaMet(state)) return false;
-  return (state.nitzotzot || 0) >= req.nitzotz && (state.vestiges || 0) >= req.vestiges;
+  const reqs = despertarRequirements(state);
+  return reqs.length > 0 && reqs.every((g) => g.ok);
 }
 
 // Executa o despertar (gasta Nitzotzot + Vestiges, sobe o tier). Idempotente/seguro.

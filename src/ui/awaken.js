@@ -1,8 +1,8 @@
 // Aba AWAKENING da tela Seeker — a "mudança de classe" (estilo Grand Chase).
 // Formato Gear/Forge: cena full-bleed (câmara de despertar) + resumo (esq) +
 // palco central com o CARD do tier + trilha dos 5 tiers (dir).
-// Gate de 3 camadas (§8 redesign): Prova (Guardião Sub3) + Oferenda (Nitzotzot) +
-// Tributo (Vestiges). Botão "Awaken" → doDespertar + cerimônia (splash).
+// Gate = CHECKLIST (§8 redesign 14/jun): Nível + Material T1 + Oferenda (Nitzotzot)
+// + Tributo (Vestiges), lógica E. Botão "Awaken" → doDespertar + cerimônia (splash).
 //
 // Contrato: buildAwakenPane(root, state) monta uma vez; renderAwakenPane(state) por tick.
 
@@ -11,8 +11,8 @@ import { formatNumber } from '../core/format.js';
 import { picture, url } from '../data/assets.js';
 import { SEEKER_RANKS, DESPERTAR } from '../data/constants.js';
 import {
-  despertarTier, despertarMult, despertarReq,
-  despertarProvaMet, canDespertar, doDespertar,
+  despertarTier, despertarMult, despertarRequirements,
+  canDespertar, doDespertar,
 } from '../game/ascension.js';
 import { damagePerHit, playerHpMax } from '../game/stats.js';
 
@@ -169,12 +169,16 @@ function footSkeleton(t, st) {
     <p class="awk-req">Awaken <b>${SEEKER_RANKS[t - 1].name}</b> first.</p></div>`;
 }
 
+// Rótulos de exibição da checklist (por chave de requisito de despertarRequirements).
+const GATE_LABEL = {
+  level: 'Threshold · Level',
+  material: 'Materials · Tier I',
+  nitzotz: 'Offering · Nitzotzot',
+  vestiges: 'Tribute · Vestiges',
+};
+
 // Atualiza só os VALORES do rodapé 'next' por tick (sem recriar o botão).
 function updateNextFoot(state) {
-  const req = despertarReq(state);
-  const prova = despertarProvaMet(state);
-  const haveN = Math.floor(state.nitzotzot || 0), needN = req.nitzotz;
-  const haveV = Math.floor(state.vestiges || 0), needV = req.vestiges;
   const dmgB = damagePerHit(state), hpB = playerHpMax(state), m = DESPERTAR.mult;
   const gains = $('awk-gains');
   if (gains) {
@@ -184,10 +188,11 @@ function updateNextFoot(state) {
   }
   const gates = $('awk-gates');
   if (gates) {
-    gates.innerHTML =
-      gateRow('Trial · Guardian of Sub-area 3', prova, prova ? 'Done' : 'Pending', prova ? 100 : 0)
-      + gateRow('Offering · Nitzotzot', haveN >= needN, `${formatNumber(haveN)} / ${formatNumber(needN)}`, (haveN / needN) * 100)
-      + gateRow('Tribute · Vestiges', haveV >= needV, `${formatNumber(haveV)} / ${formatNumber(needV)}`, (haveV / needV) * 100);
+    gates.innerHTML = despertarRequirements(state).map((g) =>
+      gateRow(GATE_LABEL[g.key] || g.label, g.ok,
+        `${formatNumber(g.have)} / ${formatNumber(g.need)}`,
+        g.need > 0 ? (g.have / g.need) * 100 : 100)
+    ).join('');
   }
   const btn = $('awk-do');
   if (btn) btn.disabled = !canDespertar(state);

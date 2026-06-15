@@ -136,7 +136,9 @@ export const DEFENSE = {
 };
 
 // CP-3 (redesign): Convergence SEM reset de mapa. Gate por NÍVEL; +15% ADITIVO
-// permanente (dano/HP/XP/Lumens). Reseta o nível da run (xpRun) + o nível do Gear.
+// permanente (dano/HP/XP/Lumens). VERDADE DO CÓDIGO (convergence.js doConverge):
+// reseta o nível da run (xpRun) + os Lumens; MANTÉM o Gear (nível E raridade) e a
+// posição no mapa. (O Gatekeeper A1 "não resetar o Gear" já é o comportamento atual.)
 // ⏳ VALORES PLACEHOLDER — Willian vai calibrar por teste (15% fixo? variável?).
 export const CONVERGENCE = {
   bonusPerConv: 0.15,    // convMult = 1 + 0.15 × convergences (ADITIVO) — acelerador, não motor
@@ -296,8 +298,9 @@ export const ASCENSIONS = [
 export const ECLATS_DRIP = { coef: 0.1, exp: 0.9 };
 
 // §8 — DESPERTAR / TIER (Passo 7). O tier T1→T5 é DESACOPLADO do nº de ascensions:
-// vence o Guardião da Sub 3 do mapa → +1 tier (gate de poder no meio do mapa).
-// Map N Sub3 → despertares=N (T_{N+1}); Map 5 já é T5. index despertares = 0..4.
+// cumprir a CHECKLIST de requisitos → +1 tier (gate de poder no meio do mapa).
+// index despertares = 0..4. (Antes do redesign de combate 14/jun o gate era "vencer
+// o Guardião da Sub 3"; esse Guardião não existe mais — só a última sub-área tem boss.)
 export const SEEKER_RANKS = [
   { name: 'Seeker',     tier: 'I' },
   { name: 'Illuminate', tier: 'II' },
@@ -308,9 +311,10 @@ export const SEEKER_RANKS = [
 // ×poder permanente por tier de Despertar (dano E HP). ⏳ PROVISÓRIO — calibração na Escala.
 export const DESPERTAR = { mult: 5 };
 
-// §8 redesign (13/jun) — gate do Despertar em 3 camadas: Prova (Guardião Sub3) +
-// Oferenda (Nitzotzot) + Tributo (Vestiges). ⏳ NÚMEROS = LISTA DE CALIBRAÇÃO.
-// Drop do Nitzotz: só nas Sub-áreas 3+; chunk garantido em boss (Guardião).
+// §8 redesign (14/jun) — gate do Despertar = CHECKLIST de requisitos COMBINADOS
+// (lógica E): Nível (gargalo) + Material T1 + Oferenda (Nitzotzot) + Tributo
+// (Vestiges). ⏳ NÚMEROS = LISTA DE CALIBRAÇÃO. Substitui a "Prova: Guardião Sub3"
+// (órfã desde o combate single-boss de 14/jun). Drop do Nitzotz: só nas Sub-áreas 3+.
 export const NITZOTZ = { dropChance: 0.02, bossChunk: 5 };
 // Requisito por TIER ALVO (índice = despertares+1 = 1..4 → T2..T5). [0] não usado (T1 = início).
 export const DESPERTAR_REQ = [
@@ -319,6 +323,24 @@ export const DESPERTAR_REQ = [
   { nitzotz: 40,  vestiges: 285_000 },   // → T3 Éclairé     (~15% Asc Map2)
   { nitzotz: 80,  vestiges: 600_000 },   // → T4 L'Éveillé   (~15% Asc Map3)
   { nitzotz: 160, vestiges: 1_200_000 }, // → T5 Lumière     (~15% Asc Map4)
+];
+// Nível mínimo da run por TIER ALVO (gargalo principal da checklist). Índice = tier
+// alvo 1..4. [0] não usado. ⏳ só o tier 1 tem placeholder pedido; 2-4 acompanham.
+export const DESPERTAR_GATE_LEVEL = [
+  0,
+  30,  // → T2  // PLACEHOLDER - calibrar depois com o sim
+  120, // → T3  (placeholder folgado; recalibrar com o sim)
+  300, // → T4  (placeholder folgado; recalibrar com o sim)
+  600, // → T5  (placeholder folgado; recalibrar com o sim)
+];
+// Material T1 (materiais[0], o MESMO do upgrade de raridade do gear) por TIER ALVO.
+// Índice = tier alvo 1..4. [0] não usado.
+export const DESPERTAR_MAT_T1 = [
+  0,
+  20,  // → T2  // PLACEHOLDER - calibrar depois com o sim
+  60,  // → T3  (placeholder folgado; recalibrar com o sim)
+  120, // → T4  (placeholder folgado; recalibrar com o sim)
+  240, // → T5  (placeholder folgado; recalibrar com o sim)
 ];
 
 // §10/§11 — ÉCLATS + MÉMOIRES (✅ motor canônico do GDD). 15 relíquias, 3 por era,
