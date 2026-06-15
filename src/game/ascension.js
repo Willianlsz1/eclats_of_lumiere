@@ -103,13 +103,16 @@ export function canDespertar(state) {
   return reqs.length > 0 && reqs.every((g) => g.ok);
 }
 
-// Executa o despertar (gasta Nitzotzot + Vestiges, sobe o tier). Idempotente/seguro.
+// Executa o despertar (gasta Material T1 + Nitzotzot + Vestiges, sobe o tier).
+// Idempotente/seguro: canDespertar barra antes (material/nitzotz/vestiges nunca negativam).
 export function doDespertar(state) {
   if (!canDespertar(state)) return false;
   const req = despertarReq(state);
+  const t = despertarTarget(state);
+  state.materiais[0] -= DESPERTAR_MAT_T1[t]; // T1 = materiais[0] (mesmo pool do upgrade de raridade do gear)
   state.nitzotzot -= req.nitzotz;
   state.vestiges -= req.vestiges;
-  state.despertares = despertarTarget(state);
+  state.despertares = t;
   return true;
 }
 
