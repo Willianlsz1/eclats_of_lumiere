@@ -91,14 +91,16 @@ Vida geométrica do 1º mob (5.000) à Wall (~10M). Crescimento ~**1,84× por su
 ## 6. Convergence (1º prestígio) ✅ / 🔧
 | Parâmetro | Valor | Nota |
 |---|---|---|
-| 1ª Convergence | ao **entrar na sub-área 2** (nível 30) | "cedo, como aperitivo" |
-| Frequência | **frequente** (~14 no Map 1) | gate ×**1,3** por convergência |
+| Libera | na **sub-área 2** | "cedo, como aperitivo" |
+| Gatilho (1º LV) | **LV 40** | dispara na área 2 (entre 30 e 69) |
+| Frequência | **frequente** (~13 no Map 1) | gatilho sobe ×**1,3** por convergência |
+| Escada de LV | 40·52·68·88·114·149·193·251·326·424·551·717·932 | passa de 1.000 → libera a área 9/Wall |
 | Bônus dano | **+15%** aditivo | 🔧 hoje `bonusPerConv` é um nº único |
 | Bônus vida | **+15%** aditivo | 🔧 separar do dano |
 | Bônus Lumens | **+3%** aditivo | 🔧 canal próprio |
 | Bônus XP | **0%** | XP vem do Gear |
-| `CONVERGENCE.gateLevelBase` | **30** | = gate da sub-área 2 |
-| `CONVERGENCE.gateLevelGrowth` | **1,3** | |
+| `CONVERGENCE.gateLevelBase` | **40** | gatilho da 1ª Convergence |
+| `CONVERGENCE.gateLevelGrowth` | **1,3** | cada conv exige um LV maior |
 
 > Reseta: **só o `xpRun`** (nível da run). **NÃO reseta o nível do Gear** (correção Willian
 > 2026-06-17 — o Gear é permanente; a arma acumula o mapa inteiro). Mantém: nível e raridade
@@ -123,10 +125,10 @@ Revisado pelo Willian: **deixou de ser no Guardião da sub-3** e **não libera h
 ## Validação de pacing (`tools/sim/map1_blank.mjs`)
 Com `curveExp=0,455 / curveDiv=262` (Gear persistente):
 - **Nível 2:** ~9s ✅ (alvo ~8s)
-- **1ª Convergence:** ~11 min ✅ (cedo, sub-área 2)
-- **Despertar (sub-7):** ~18,7h ✅ (pré-Wall, ~metade do mapa)
-- **Wall derrotada / Map 1 limpo:** ~**1,3 dias** (32h) de tempo-de-combate ✅ ("médio")
-- **Nº de Convergences:** 14 ✅ ("frequente")
+- **1ª Convergence:** LV 40, ~12 min ✅ (cedo, sub-área 2)
+- **Despertar (sub-7):** ~19,3h ✅ (pré-Wall, ~metade do mapa)
+- **Wall derrotada / Map 1 limpo:** ~**1,3 dias** (33h) de tempo-de-combate ✅ ("médio")
+- **Nº de Convergences:** 13 ✅ ("frequente", gatilho ×1,3)
 - **Nível final da arma:** ~173 (Gear persiste através das Convergences)
 
 > ⚠️ O sim mede **renda/poder** (pacing), **não morte**. A Wall aqui é "parede de dano".

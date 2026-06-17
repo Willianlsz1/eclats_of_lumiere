@@ -97,9 +97,11 @@ console.log('gates de unlock (sub1..sub9):', gates.join(' '));
 console.log('curveExp | curveDiv | t→lvl2 | t→sub2(1ª conv) | t→despertar | tempo Map1 | nº conv | gearLvl fim');
 // ✅ ESCOLHIDO (Willian, 2026-06-17): curveExp=0.455 / curveDiv≈262 → Map 1 ~1,3 dias
 // (com Gear persistente, packs 2×7+3+3, boss junto na sub9, sem cap de nível de mob).
+// Convergence: gatilho 1º = LV 40 (decisão Willian); cresce ×1,3 a cada conv.
+const CONV_BASE = 40, CONV_GROWTH = 1.3;
 const curveExp = 0.455, curveDiv = Math.round(fitDiv(curveExp));
 {
-  const r = pace(curveDiv, curveExp, gates, 1.3);
+  const r = pace(curveDiv, curveExp, gates, CONV_GROWTH, CONV_BASE);
   const m = r.M;
   console.log(`${String(curveExp).padStart(8)} | ${String(curveDiv).padStart(8)} | ${fmtT(m.lvl2).padStart(6)} | ${fmtT(m.sub2 ?? m.conv1).padStart(15)} | ${fmtT(m.awaken).padStart(11)} | ${fmtT(r.t).padStart(10)} | ${String(r.conv).padStart(6)} | ${String(r.gearLvl).padStart(10)}`);
 }
