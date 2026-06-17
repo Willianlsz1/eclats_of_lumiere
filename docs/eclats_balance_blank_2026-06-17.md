@@ -253,6 +253,20 @@ Telas enviadas (Dewdrop Dale lvl 1501; Boreal Bay lvl 42701). Observações úte
 - 🌱 **IDEIA — "Rage" (maestria por KILLS).** A arma tem um nível Rage que sobe **matando**
   (10,9B/21,2B kills → +448k% Attack), não com gold. Eixo de progressão por uso acumulado.
 
+### Tela Ascension/Transcendence (prestígio de 2 níveis) — 2026-06-17
+**SACRIFICE ASCENSION** (interno): por sacrifício → **+15% Attack/Level**, **+15% Health/Level**,
+**+0,5% Crit Rate**, **+2 Starting Ascension** (recomeça à frente). **SACRIFICE TRANSCENDENCE**
+(externo): reseta a Ascension, dá **+50% Attack Mastery** (camada ×) + masteries + **+10 Starting
+Ascension** + redução de penalidade de XP.
+- ✅ **Valida nosso Convergence:** +15% Attack/+15% Health por ciclo = exatamente o que o Willian
+  escolheu. **+15%/prestígio é magnitude padrão do gênero.**
+- **Mapa de hierarquia:** Gaiadon Ascension ≈ nosso **Convergence** (interno, +15%/level); Gaiadon
+  Transcendence ≈ nossa **Ascension** (externa, dá camada **Mastery ×** + grande head-start).
+- 🩹 **IDEIA-FIX — head-start ("Starting Ascension"):** cada prestígio recomeça **à frente**, não do
+  zero. Aplicar à nossa **Convergence**: resetar p/ um **"nível inicial" que cresce** com o nº de
+  convergences (em vez de nível 1). **Conserta o death-loop** (não estranda no nível 1 em área funda)
+  **e** mata a tediosidade de re-upar do zero. ⏳ a calibrar.
+
 ## 10. Offline (decisão Willian 2026-06-17) ✅ / 🔧
 | Parâmetro | Valor | Nota |
 |---|---|---|
