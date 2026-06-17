@@ -9,13 +9,17 @@ import { combatTick, enterSubarea, bossActive, resetPack } from '../../src/game/
 import { currentAPS, dps, playerHpMax, runLevel } from '../../src/game/stats.js';
 import { buyLevel } from '../../src/game/gear.js';
 import { canConverge, doConverge, convGateLevel } from '../../src/game/convergence.js';
-import { GEAR } from '../../src/data/constants.js';
+import { canDespertar, doDespertar } from '../../src/game/ascension.js';
+import { GEAR, DESPERTAR_REQ } from '../../src/data/constants.js';
 import { levelCost, atLevelCap } from '../../src/game/gear.js';
 import { getCurrentMap, subareaLevelRange, hpForLevel, dmgForLevel } from '../../src/game/enemies.js';
 import { playerDefesa } from '../../src/game/stats.js';
 
 const DT = 0.1;
 if (process.env.GCOST) GEAR.levelCostBase = +process.env.GCOST; // sweep do custo de gear
+if (process.env.DKILLS) DESPERTAR_REQ[1].kills = +process.env.DKILLS; // sweep do gate do Despertar
+if (process.env.DLEVEL) DESPERTAR_REQ[1].level = +process.env.DLEVEL;
+if (process.env.DT1) DESPERTAR_REQ[1].t1 = +process.env.DT1;
 const fmtT = (s) => s == null ? '  —  ' : s < 90 ? `${s.toFixed(0)}s` : s < 5400 ? `${(s/60).toFixed(1)}min` : s < 86400*2 ? `${(s/3600).toFixed(1)}h` : `${(s/86400).toFixed(2)}d`;
 const fmt = (n) => n >= 1e9 ? (n/1e9).toFixed(2)+'bi' : n >= 1e6 ? (n/1e6).toFixed(2)+'M' : n >= 1e3 ? (n/1e3).toFixed(1)+'k' : Math.round(n).toString();
 
@@ -62,7 +66,8 @@ const state = createInitialState();
 state.player.hp = playerHpMax(state);
 resetPack(state); // boot da 1ª onda (o main.js faz isso no jogo)
 
-const M = { lvl2: null, conv1: null, sub9: null, wallSpawn: null, wallKill: null };
+const M = { lvl2: null, conv1: null, despertar: null, sub9: null, wallSpawn: null, wallKill: null };
+let despSnap = null;
 let t = 0, deaths = 0, wallAttempts = 0, prevDead = false;
 let firstWallHp = null, firstWallSnap = null;
 const CAP_T = 60 * 3600; // 60h de teto
@@ -77,6 +82,7 @@ while (t < CAP_T) {
 
   buyGearGreedy(state);
   if (canConverge(state)) { doConverge(state); if (M.conv1 === null) M.conv1 = t; }
+  if (canDespertar(state)) { doDespertar(state); if (M.despertar === null) { M.despertar = t; despSnap = { lvl: runLevel(state), gear: avgGearLevel(state), kills: state.killsTotal, sub: state.unlockedSubarea }; } }
 
   const lvl = runLevel(state);
   if (M.lvl2 === null && lvl >= 2) M.lvl2 = t;
@@ -102,6 +108,7 @@ const g = avgGearLevel(state);
 console.log('=== HARNESS: combate REAL do jogo (recalibração "em branco") ===');
 console.log(`nível 2 .............. ${fmtT(M.lvl2)}`);
 console.log(`1ª Convergence ....... ${fmtT(M.conv1)}  (gate nível ${convGateLevel(0)})`);
+console.log(`Despertar (T2) ....... ${fmtT(M.despertar)}${despSnap ? `  (Sub ${despSnap.sub} · nível ${despSnap.lvl} · gear ${despSnap.gear.toFixed(0)} · ${despSnap.kills} kills)` : ''}`);
 console.log(`Sub 9 liberada ....... ${fmtT(M.sub9)}`);
 console.log(`Wall (boss) surge .... ${fmtT(M.wallSpawn)}`);
 console.log(`Wall derrotada ....... ${fmtT(M.wallKill)}  ${M.wallKill ? '✅ Map 1 limpo' : '(não limpou no teto de 60h)'}`);

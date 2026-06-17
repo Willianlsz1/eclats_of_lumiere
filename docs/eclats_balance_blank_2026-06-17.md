@@ -314,12 +314,25 @@ sub-área mais funda sustentável, compra gear guloso, converge no gate). Result
 - `gear.js`: custo de nível exponencial (cria teto-suave ~300) + `buyLevels` por loop.
 - `convergence.js`: **head-start** — `xpRun` reseta p/ `headstartFrac × nível`, não pro 1.
 
-> ⚠️ **BUG DE DESIGN ENCONTRADO (pré-existente, NÃO introduzido aqui):** o **Despertar** exige
-> a Prova = vencer o Guardião da **Sub 3** (`bossDefeated[2]`), mas o redesign 14/jun removeu os
-> guardiões das sub-áreas intermediárias (só a Sub 9 tem boss). Logo **o Despertar é inalcançável
-> no Map 1** hoje. A calibração foi ajustada p/ a Wall ser vencível **só com gear+nível+conv** (sem
-> o ×5 do Despertar). Decidir com Willian: religar a Prova noutra sub-área, ou rebalancear o
-> Despertar como ato opcional. (Sim assumia um "awaken" ×2 na Sub 7 — não existe assim no jogo.)
+### ✅ DESPERTAR religado (2026-06-17, decisão Willian)
+O bug (Prova exigia o Guardião da Sub 3, removido no redesign) foi corrigido. **Novo gate:**
+profundidade (Sub 7 liberada) + **kills** (15.000) + **nível** (2.000) + **materiais do T1** (50,
+consumidos no ato). **Efeitos por tier** (decisão Willian): **×2 dano, ×2 vida, +200% crit damage,
++5% crit rate, +30% Lumens, +20% XP** (Lumens/XP calibrados). `DESPERTAR.mult` 5→2 (global; afeta
+os 5 tiers — Willian ciente). Validado no harness:
+
+| Marco | Tempo |
+|---|---|
+| Despertar (T2) | **~11,4h** (Sub 9, nível 2.000, gear ~196, 15k kills) — spike de meio-fim |
+| Wall derrotada | **~17,9h** (~6,5h curtindo o ×2+crit antes de arrombar a Wall) |
+| Convergences / APS fim / mortes | 22 · 2,56 · **401** (perigo C forte) |
+
+> ⚠️ **Nota de pacing (p/ Willian decidir):** o jogo libera sub-áreas **por nível, muito rápido**
+> (Sub 9 já em ~4h). Então quando os requisitos (kills/nível/T1) são atendidos, o jogador já está
+> **nominalmente na Sub 9** — o Despertar acontece *antes do BOSS da Wall*, mas não literalmente
+> "na área 7/8". Para forçar o Despertar na 7/8, ou se baixa muito o gate (vira cedo demais, ~2h)
+> ou se repensa o ritmo de unlock das sub-áreas (redesign à parte). Custo do Gear subiu 600→8.000
+> p/ acomodar o ×2 do Despertar e manter o pacing (~18h).
 
 ## Pendências desta recalibração
 - 🔧 **WIRING restante:** `DEFENSE`/Veil ainda ativo (o sim usou "só HP"; mantido modesto, o

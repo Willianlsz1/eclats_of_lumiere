@@ -198,7 +198,7 @@ export const GEAR = {
   // ✅ recalibração "em branco": custo EXPONENCIAL por peça (sim) — barato cedo, dobra a cada
   // 10 níveis (costRamp) → cria teto-SUAVE (~280) bem abaixo do cap duro (400). custo(L) =
   // base × costRamp^L × costMult[raridade], clampado a NUMBER_CAP (M2+ recalibra à parte).
-  levelCostBase: 600,        // ✅ calibrado no harness (game_harness.mjs): Map 1 limpo em ~27h
+  levelCostBase: 8000,       // ✅ calibrado no harness c/ Despertar no loop: Map 1 ~18h
   costRamp: 1.0717734625,    // 2^(1/10): o custo de 1 nível dobra a cada 10 níveis
   // (Subir raridade = gate duplo: nível no cap + MATERIAIS do tier — ver CRAFT, Passo 4.)
 };
@@ -317,20 +317,29 @@ export const SEEKER_RANKS = [
   { name: 'L’Éveillé',  tier: 'IV' },
   { name: 'Lumière',    tier: 'V' },
 ];
-// ×poder permanente por tier de Despertar (dano E HP). ⏳ PROVISÓRIO — calibração na Escala.
-export const DESPERTAR = { mult: 5 };
+// ✅ DESPERTAR (recalibração "em branco" 2026-06-17) — pacote de efeitos por tier, igual ao
+// "awaken" do sim + economia. Ato do jogador, alcançável ANTES da Wall (Sub 7).
+export const DESPERTAR = {
+  mult: 2,            // ×2 dano E vida por tier (era ×5; decisão Willian)
+  critRateAdd: 0.05,  // +5% crit rate por tier
+  critDmgAdd: 2.0,    // +200% crit damage por tier (somado à base ×2 e ao gear)
+  lumensBonus: 0.30,  // +30% Lumens por tier (calibrado no harness)
+  xpBonus: 0.20,      // +20% XP por tier (calibrado no harness)
+};
 
-// §8 redesign (13/jun) — gate do Despertar em 3 camadas: Prova (Guardião Sub3) +
-// Oferenda (Nitzotzot) + Tributo (Vestiges). ⏳ NÚMEROS = LISTA DE CALIBRAÇÃO.
-// Drop do Nitzotz: só nas Sub-áreas 3+; chunk garantido em boss (Guardião).
+// ✅ GATE do Despertar (recalibração "em branco" 2026-06-17, decisão Willian): profundidade
+// (Sub 7+) + KILLS (total) + NÍVEL (da run) + MATERIAIS do T1 (consumidos no ato). Substitui
+// o gate Prova-Sub3/Nitzotzot/Vestiges (a Prova-Sub3 era inalcançável após o redesign 14/jun).
+// Drop do Nitzotz mantido (vestigial por ora; pode virar moeda de outra coisa).
 export const NITZOTZ = { dropChance: 0.02, bossChunk: 5 };
 // Requisito por TIER ALVO (índice = despertares+1 = 1..4 → T2..T5). [0] não usado (T1 = início).
+// subarea = profundidade mín. liberada · kills = total de kills · level = nível da run · t1 = materiais[0].
 export const DESPERTAR_REQ = [
   null,
-  { nitzotz: 20,  vestiges: 75_000 },    // → T2 Illuminate  (~15% Asc Map1)
-  { nitzotz: 40,  vestiges: 285_000 },   // → T3 Éclairé     (~15% Asc Map2)
-  { nitzotz: 80,  vestiges: 600_000 },   // → T4 L'Éveillé   (~15% Asc Map3)
-  { nitzotz: 160, vestiges: 1_200_000 }, // → T5 Lumière     (~15% Asc Map4)
+  { subarea: 7, kills: 15000,  level: 2000,   t1: 50 },   // → T2 (Map 1) ✅ calibrado: Despertar ~11h, clear ~18h
+  { subarea: 5, kills: 30_000, level: 5_000,  t1: 120 },  // → T3 (Map 2) ⏳ placeholder
+  { subarea: 6, kills: 1e5,    level: 1e5,    t1: 300 },  // → T4 (Map 3) ⏳ placeholder
+  { subarea: 7, kills: 3e5,    level: 1e6,    t1: 600 },  // → T5 (Map 4) ⏳ placeholder
 ];
 
 // §10/§11 — ÉCLATS + MÉMOIRES (✅ motor canônico do GDD). 15 relíquias, 3 por era,
