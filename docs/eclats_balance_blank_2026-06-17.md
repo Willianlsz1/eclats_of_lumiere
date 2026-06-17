@@ -271,6 +271,26 @@ Ascension** + redução de penalidade de XP.
 - ✅ **IMPLEMENTADO — head-start:** aplicado à Convergence (`headstartFrac = 0,5` → reseta p/ 50%
   do nível atual, não pro 1). Conserta o death-loop das áreas 4–8 e a tediosidade. Ver §6.
 
+### Lote 3 — Corruption/World Tiers + Ranks de inimigos + Spawn Streak (2026-06-17)
+Planilhas "Gem_Cly_Calc" do Gaiadon (Map 5, World Tiers WT31–56). **Referência p/ fases FUTURAS**
+(Maps 2–5, World Tiers/Corruption, escala de Convergence/Ascension) — **nada entra no Map 1**.
+
+- **Curva de HP dos inimigos em 2 eixos** (tela "Enemy Corruption Level"):
+  - **Por World Tier:** ~**×11–12,5 por tier** (wt31 `1.79e51` → wt40 `1.37e61` → wt56 `1e92`).
+  - **Por nível (dentro do tier):** ~**+7,4%/nível** (`1.76e51`→`1.89e51`→`2.03e51`…).
+  - 🌱 Norte p/ esticar Maps 2–5 e a escala das eras (geométrico em 2 eixos: tier × nível).
+- **"Atk to 1-shot" ≈ HP do mob** é coluna de 1ª classe → eles raciocinam em *"dano pra matar em
+  1 hit"* (= nosso "matar em N hits"). **Splash 101,625%** = AoE/overkill (= nosso cleave, stub
+  `cleaveTargets()`).
+- 🌱 **MECÂNICA NOVA — Ranks de inimigos / "Kills to Spawn"** (tela de bestiário): inimigos têm
+  **ranks** (Normals → Fiends → Demons → Titans), cada rank **surge após X kills acumulados**
+  (50, 100, 250, 500…4k), gateado por **Min World Tier**, dando **pontos/kill** crescentes. Tipo
+  elites/mini-bosses por kill-streak. Hoje só temos 1 boss final (threshold 100). Candidato a
+  enriquecer o combate (ver também "variantes de elite", Lote 1). ⏳ vira proposta quando pedido.
+- 🌱 **MECÂNICA NOVA — Spawn Streak / KPM** (tela "KPM 2170"): cadência de recompensa por
+  **sequência de kills** — streaks de 7k–30k kills, ~115–781 streaks/dia a um dado KPM. Modelo de
+  pacing de drops por kill-rate; relevante p/ o loop de drops/Hollow. ⏳ referência.
+
 ## 10. Offline (decisão Willian 2026-06-17) ✅ / 🔧
 | Parâmetro | Valor | Nota |
 |---|---|---|
