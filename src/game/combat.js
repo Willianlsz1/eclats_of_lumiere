@@ -65,10 +65,12 @@ export function bossActive(state) {
 }
 
 // Redesign 14/jun: a progressão entre sub-áreas é GATE POR NÍVEL (sem Guardião).
-// A sub-área n (n≥2) libera quando o nível do jogador alcança o início da sua
-// faixa de level (= subareaLevelRange(map, n).lo). Sub-área 1 sempre aberta.
+// ✅ 17/jun (estilo Gaiadon): se o mapa define unlockLevels (bandas largas, DESACOPLADAS
+// da faixa de nível dos mobs), usa-as; senão cai no início da faixa geométrica (Maps 2-5).
+// Sub-área 1 sempre aberta.
 export function subareaUnlockLevel(map, n) {
   if (n <= 1) return 0;
+  if (map.unlockLevels && map.unlockLevels[n - 1] != null) return map.unlockLevels[n - 1];
   return Math.max(1, Math.round(subareaLevelRange(map, n).lo));
 }
 

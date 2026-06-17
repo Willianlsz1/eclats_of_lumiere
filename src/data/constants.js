@@ -60,6 +60,11 @@ export const MAPS = [
     // Wall (boss ×15) = ~32,5 bi. Dano dos mobs = curva PRÓPRIA (80 → 700k), Wall "perigo C".
     lvlLo: 1, lvlHi: 1000, hpLo: 2000, hpHi: 2169085656, dmgLo: 80, dmgHi: 7e5,
     subareaCount: 9, packSizes: PACK, bossKillThreshold: 100,
+    // ✅ GATE DE NÍVEL estilo Gaiadon (2026-06-17): bandas LARGAS espalhadas pela jornada
+    // real de níveis (que vai a ~12k via Convergence), DESACOPLADO da faixa de nível dos mobs
+    // (lvlLo/lvlHi → HP/dano seguem como antes). Sub 7/8/9 viram marcos TARDIOS. unlockLevels[n-1]
+    // = nível p/ liberar a Sub n. ⏳ calibrado no harness (game_harness.mjs).
+    unlockLevels: [1, 40, 120, 300, 700, 1500, 3000, 5000, 7500],
     enemyNames: ['Candlewisp Shade', 'Mothlight Herald', 'Dreamhorn Warden', 'Hollowroot Crawler', 'Glowmere Drifter'],
     enemyArts: ['enemies.map1.candlewisp_shade', 'enemies.map1.mothlight_herald', 'enemies.map1.dreamhorn_warden', 'enemies.map1.hollowroot_crawler', 'enemies.map1.glowmere_drifter'],
     guardianArt: 'enemies.map1.dreamhorn_warden',

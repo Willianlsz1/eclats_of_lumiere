@@ -327,12 +327,21 @@ os 5 tiers — Willian ciente). Validado no harness:
 | Wall derrotada | **~17,9h** (~6,5h curtindo o ×2+crit antes de arrombar a Wall) |
 | Convergences / APS fim / mortes | 22 · 2,56 · **401** (perigo C forte) |
 
-> ⚠️ **Nota de pacing (p/ Willian decidir):** o jogo libera sub-áreas **por nível, muito rápido**
-> (Sub 9 já em ~4h). Então quando os requisitos (kills/nível/T1) são atendidos, o jogador já está
-> **nominalmente na Sub 9** — o Despertar acontece *antes do BOSS da Wall*, mas não literalmente
-> "na área 7/8". Para forçar o Despertar na 7/8, ou se baixa muito o gate (vira cedo demais, ~2h)
-> ou se repensa o ritmo de unlock das sub-áreas (redesign à parte). Custo do Gear subiu 600→8.000
-> p/ acomodar o ×2 do Despertar e manter o pacing (~18h).
+### ✅ GATE DE NÍVEL re-espaçado estilo Gaiadon (2026-06-17, decisão Willian)
+Referência: o mapa-mundi do Gaiadon usa **poucas zonas com faixas LARGAS** (a inicial cobre Lvl
+1–250). Adotamos o princípio **só no gate de nível** (resto do design intacto): os limiares de
+unlock das sub-áreas foram **desacoplados** da faixa de nível dos mobs (lvlLo/lvlHi → HP/dano
+seguem iguais) e **espalhados pela jornada real** (que vai a ~12k via Convergence):
+
+`unlockLevels = [1, 40, 120, 300, 700, 1500, 3000, 5000, 7500]` (Sub 1..9)
+
+**Efeito (harness):** a Sub 9 deixa de abrir em ~4h; agora as Sub 7/8/9 são marcos **tardios**.
+O **Despertar acontece de fato na Sub 7** (nível 3000, ~21h) e o Map 1 fecha em **~25h**.
+
+> ⚠️ **Efeito colateral (p/ Willian decidir):** como agora você **chega na Sub 9 já forte** (nível
+> ~6k + despertado, HP ~118M), a Wall caiu de ~400 mortes (perigo C) p/ **~4 mortes** — virou um
+> clímax vencível, não mais um death-grind. Respeitei o "mudar só o gate" e **não** re-tunei a Wall.
+> Se quiser a Wall mortal de novo, é um passo à parte (subir dano/HP do boss p/ a nova força de chegada).
 
 ## Pendências desta recalibração
 - 🔧 **WIRING restante:** `DEFENSE`/Veil ainda ativo (o sim usou "só HP"; mantido modesto, o
