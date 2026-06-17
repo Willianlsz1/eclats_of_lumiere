@@ -283,7 +283,7 @@ function convKeeps(state) {
 }
 
 // Monta os dados reais do overlay de Convergence a partir do state.
-function convData(state) {
+export function convData(state) {
   const lvl = runLevel(state);
   const gate = convGateLevel(state.convergences);
   return {
