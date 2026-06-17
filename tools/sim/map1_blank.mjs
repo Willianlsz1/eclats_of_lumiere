@@ -42,6 +42,32 @@ const CONV_DMG = 0.15, CONV_LUM = 0.03; // por convergência (aditivo; XP = 0, v
 const AWAKEN_SUB = 7, AWAKEN_MULT = 2, AWAKEN_APS = 0.3, AWAKEN_CRIT = 0.05, AWAKEN_CDMG = 2.0; // crit dmg base 0% +200%
 
 const fmtT = (s) => s == null ? '  —  ' : s < 90 ? `${s.toFixed(0)}s` : s < 5400 ? `${(s / 60).toFixed(1)}min` : s < 86400 * 2 ? `${(s / 3600).toFixed(1)}h` : `${(s / 86400).toFixed(2)}d`;
+const REGEN_S = 0.01, REGEN_KILL = 0.02; // 1%/s + 2%/kill da vida máx (decisão Willian)
+const PACK_OF = (s) => s <= 7 ? 2 : 3;    // 2 mobs até sub7, 3 nas sub8/9
+
+// Luta UMA onda cheia, tick a tick. Só HP (sem defesa). Retorna {vive, minFrac, t}.
+// snap = {maxHp, hit, aps, cc, cm} ; mob = {hp, dmg} ; boss = {hp, dmg}|null
+function fightWave(snap, pack, mob, boss) {
+  const eff = snap.hit * (1 + snap.cc * (snap.cm - 1)); // golpe esperado (com crit médio)
+  let hp = snap.maxHp, trash = pack, bossHp = boss ? boss.hp : 0, atkCD = 0, t = 0, minFrac = 1;
+  const dt = 0.02;
+  while (t < 600) {
+    const incoming = trash * mob.dmg + (bossHp > 0 ? boss.dmg : 0);
+    hp -= incoming * dt;
+    hp = Math.min(snap.maxHp, hp + snap.maxHp * REGEN_S * dt);
+    if (hp <= 0) return { vive: false, minFrac: 0, t };
+    minFrac = Math.min(minFrac, hp / snap.maxHp);
+    atkCD -= dt;
+    while (atkCD <= 0 && (trash > 0 || bossHp > 0)) {
+      atkCD += 1 / snap.aps;
+      if (trash > 0) { trash--; hp = Math.min(snap.maxHp, hp + snap.maxHp * REGEN_KILL); } // 1 kill/ataque
+      else { bossHp -= eff; if (bossHp <= 0) hp = Math.min(snap.maxHp, hp + snap.maxHp * REGEN_KILL); }
+    }
+    if (trash <= 0 && bossHp <= 0) return { vive: true, minFrac, t };
+    t += dt;
+  }
+  return { vive: true, minFrac, t };
+}
 
 function pace(curveDiv, curveExp, gates, convGrowth, convBase = gates[1]) {
   // estado persistente (sobrevive à Convergence)
@@ -60,9 +86,12 @@ function pace(curveDiv, curveExp, gates, convGrowth, convBase = gates[1]) {
   const critMult = () => 1 + gearLvl * G_CDMG_PCT + (awakened ? AWAKEN_CDMG : 0); // base 0% bônus
   const dmgHit = () => (BASE + level * DMG_LVL + gearLvl * G_DMG_FLAT) * (1 + gearLvl * G_DMG_PCT) * convDmg() * awMult();
   const dps = () => dmgHit() * aps() * (1 + critChance() * (critMult() - 1));
+  const maxHp = () => (BASE_HP + level * HP_LVL + gearLvl * G_HP_FLAT) * (1 + gearLvl * G_HP_PCT) * convDmg() * awMult();
   const goldMult = () => (1 + gearLvl * G_GOLD_PCT) * convLum();
   const xpMult = () => 1 + gearLvl * G_XP_PCT;
   const stepCost = () => PIECES * GEAR_COST0 * GEAR_RAMP ** gearLvl; // subir as 6 de L→L+1
+  // pior momento (menor HP) por área, p/ a checagem de sobrevivência
+  const worst = {}; const snap = () => ({ maxHp: maxHp(), hit: dmgHit(), aps: aps(), cc: critChance(), cm: critMult(), level, gearLvl, conv });
 
   let guard = 0;
   while (guard++ < 5e7) {
@@ -70,6 +99,9 @@ function pace(curveDiv, curveExp, gates, convGrowth, convBase = gates[1]) {
     const d = dps();
     const tpk = Math.max(1 / aps(), mobHp / d);
     t += tpk;
+    // registra o pior momento (menor maxHp) na área atual
+    const mh = maxHp();
+    if (!worst[unlocked] || mh < worst[unlocked].maxHp) worst[unlocked] = snap();
     lumens += mobHp * GOLD * goldMult();
     xpRun += mobHp * XP_RATIO * xpMult();
     level = Math.max(1, Math.floor((xpRun / curveDiv) ** curveExp));
@@ -78,6 +110,7 @@ function pace(curveDiv, curveExp, gates, convGrowth, convBase = gates[1]) {
       unlocked++;
       if (unlocked === 2 && M.sub2 === null) M.sub2 = t;
       if (unlocked === AWAKEN_SUB) { awakened = true; if (M.awaken === null) M.awaken = t; }
+      if (unlocked === N) worst[N] = snap(); // captura o estado na ENTRADA da Wall
     }
     // compra gulosa de Gear (as 6 peças juntas; PERSISTE pela Convergence)
     let b = 0; while (lumens >= stepCost() && b++ < 5000) { lumens -= stepCost(); gearLvl++; }
@@ -91,7 +124,7 @@ function pace(curveDiv, curveExp, gates, convGrowth, convBase = gates[1]) {
     if (unlocked === N && d >= bossHp() / 30) { M.wall = t; break; }
     if (t > 86400 * 10) break;
   }
-  return { t, conv: convCount, unlocked, awakened, gearLvl, M, events };
+  return { t, conv: convCount, unlocked, awakened, gearLvl, M, events, worst };
 }
 
 // ── calibração: varrer curveDiv / curveExp / gates ──
@@ -113,6 +146,24 @@ const curveExp = 0.41, curveDiv = Math.round(fitDiv(curveExp));
   const r = pace(curveDiv, curveExp, gates, CONV_GROWTH, CONV_BASE);
   const m = r.M;
   console.log(`${String(curveExp).padStart(8)} | ${String(curveDiv).padStart(8)} | ${fmtT(m.lvl2).padStart(6)} | ${fmtT(m.sub2 ?? m.conv1).padStart(15)} | ${fmtT(m.awaken).padStart(11)} | ${fmtT(r.t).padStart(10)} | ${String(r.conv).padStart(6)} | ${String(r.gearLvl).padStart(10)}`);
+}
+
+// ── SOBREVIVÊNCIA (só HP) — luta a onda no pior momento de cada área ──
+console.log('\n=== sobrevivência (só HP) — pior momento (menor HP) por área ===');
+console.log('área | HP no pior momento | dano onda/s | vive? | HP mínimo na luta | nota');
+{
+  const r = pace(curveDiv, curveExp, gates, CONV_GROWTH, CONV_BASE);
+  const fmt = (n) => n >= 1e6 ? (n / 1e6).toFixed(2) + 'M' : Math.round(n).toLocaleString('pt-BR');
+  for (let s = 1; s <= N; s++) {
+    const w = r.worst[s]; if (!w) continue;
+    const mob = { hp: mobHpOf(s), dmg: mobHpOf(s) * 0.04 };
+    const boss = s === N ? { hp: bossHp(), dmg: mobHpOf(N) * 0.04 * 3 } : null;
+    const pack = PACK_OF(s);
+    const res = fightWave(w, pack, mob, boss);
+    const wave = pack * mob.dmg + (boss ? boss.dmg : 0);
+    const nota = s === N ? `Wall (boss ${fmt(bossHp())})` : `lvl ${w.level}, gear ${w.gearLvl}, conv ${w.conv}`;
+    console.log(`${String(s).padStart(4)} | ${fmt(w.maxHp).padStart(18)} | ${fmt(wave).padStart(11)} | ${(res.vive ? ' SIM ' : '☠ MORRE').padStart(7)} | ${(res.vive ? (res.minFrac * 100).toFixed(0) + '%' : '0%').padStart(17)} | ${nota}`);
+  }
 }
 
 // ── Estudo do GATILHO da Convergence (Willian vai escolher) ──
