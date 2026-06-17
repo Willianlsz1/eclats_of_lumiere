@@ -3,7 +3,7 @@
 // ACELERADOR (~×2 ao fim do Map 1), não um motor. O botão RESETA só o nível da RUN
 // (xpRun→0); o GEAR é MANTIDO (sem strand). NÃO reseta: mapa/posição, Lumens, Vestiges.
 
-import { CONVERGENCE } from '../data/constants.js';
+import { CONVERGENCE, LEVEL } from '../data/constants.js';
 import { runLevel, playerHpMax } from './stats.js';
 import { resetPack } from './combat.js';
 
@@ -24,10 +24,13 @@ export function convergeProgress(state) {
 export function doConverge(state) {
   if (!canConverge(state)) return false;
 
+  // HEAD-START (2026-06-17): o nível da run NÃO volta pro 1 — reseta p/ headstartFrac ×
+  // nível atingido. Convertemos esse nível-alvo de volta em xpRun (inverso da curva).
+  const startLevel = Math.max(1, Math.floor(CONVERGENCE.headstartFrac * runLevel(state)));
   state.convergences += 1;
-  // Reset (14/jun, ajuste Willian): o nível da run (xpRun) E os Lumens. O GEAR é
-  // MANTIDO (sem strand) — Convergence = acelerador ×: +15% permanente sem perder o gear.
-  state.xpRun = 0;
+  // Reset: nível da run (via xpRun) com head-start + os Lumens. O GEAR é MANTIDO (sem strand)
+  // — Convergence = acelerador ×: +15% permanente sem perder o gear.
+  state.xpRun = LEVEL.curveDiv * startLevel ** (1 / LEVEL.curveExp);
   state.lumens = 0;
   // NÃO reseta: gear (nível+raridade), map/subarea/unlockedSubarea/bossDefeated, Vestiges.
 

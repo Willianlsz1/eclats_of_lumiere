@@ -290,11 +290,41 @@ são **tempo de combate**, não wall-clock; os "dias reais" dependem do estilo +
 > Cresce via passivas futuras: *Dreamwalker* = +eficiência (rumo a ~50%); *Nil's Embrace* =
 > +teto de tempo (8h→24h). Offline modesto estica o casual p/ ~1 semana no Map 1 (gênero-friendly).
 
+## ✅ WIRING NO JOGO (2026-06-17) — IMPLEMENTADO
+A recalibração foi conectada ao código e **validada rodando o combate REAL do jogo**
+(`tools/sim/game_harness.mjs` importa `src/game/*` e simula um jogador sensato: farma a
+sub-área mais funda sustentável, compra gear guloso, converge no gate). Resultado no jogo:
+
+| Métrica | Alvo (sim) | No jogo (harness) |
+|---|---|---|
+| Nível 2 | ~8s | **9s** |
+| Map 1 limpo | ~27h | **26,7h** |
+| Convergences | ~22 | **24** |
+| APS no fim | ~3 | **2,91** |
+| Gear no fim | ~282 | **309** (teto-suave; cap duro 400) |
+| Wall | perigo C | **deadly** (centenas de mortes no death-grind até o poder bastar) |
+
+**Mudanças no código:**
+- `constants.js`: `COMBAT` (baseDmg 1000 · apsCap 10 · playerBaseHp 30000 · regenOnKill 0 ·
+  bossDmg×3), `LEVEL` (curveDiv 77 · curveExp 0.38 · dmg/hpPerLevel 150), `MAPS[0]` (mesh
+  2.000→2,169bi · dmg 80→700k · Wall ×15 = 32,5bi), `CONVERGENCE` (growth 1.3 + **headstartFrac 0.5**),
+  `GEAR` (afixos reescalados p/ o agregado do sim · custo **EXPONENCIAL** `costRamp`=2^(1/10),
+  `levelCostBase` 600, cap Faded 400), `ECONOMY.lumensFloor` 0, `SCHEMA_VERSION` 7.
+- `stats.js`: APS agora **linear** no afixo do Amuleto (`gearApsFlat`), não mais saturante.
+- `gear.js`: custo de nível exponencial (cria teto-suave ~300) + `buyLevels` por loop.
+- `convergence.js`: **head-start** — `xpRun` reseta p/ `headstartFrac × nível`, não pro 1.
+
+> ⚠️ **BUG DE DESIGN ENCONTRADO (pré-existente, NÃO introduzido aqui):** o **Despertar** exige
+> a Prova = vencer o Guardião da **Sub 3** (`bossDefeated[2]`), mas o redesign 14/jun removeu os
+> guardiões das sub-áreas intermediárias (só a Sub 9 tem boss). Logo **o Despertar é inalcançável
+> no Map 1** hoje. A calibração foi ajustada p/ a Wall ser vencível **só com gear+nível+conv** (sem
+> o ×5 do Despertar). Decidir com Willian: religar a Prova noutra sub-área, ou rebalancear o
+> Despertar como ato opcional. (Sim assumia um "awaken" ×2 na Sub 7 — não existe assim no jogo.)
+
 ## Pendências desta recalibração
-- 🔧 **WIRING no código** (a estrutura atual difere do design): curva de custo do Gear
-  (linear→geométrica), gates de sub-área (geométrico→tabela), Convergence (bônus único →
-  dano/vida/Lumens separados; sem XP), Despertar (sub-3→sub-7 + crit/APS + sem skill), dano
-  do mob (2%→4%), `lumensFloor`/`goldPerLevel`→0, **remoção do sistema `DEFENSE`/Veil**.
+- 🔧 **WIRING restante:** `DEFENSE`/Veil ainda ativo (o sim usou "só HP"; mantido modesto, o
+  harness considera a mitigação real); **Despertar inalcançável** (ver bug acima); dano do mob
+  segue curva própria (não 2%/4%). Maps 2–5 ainda nos números antigos.
 - ⏳ **Próximas fases de design (números):** Hollow + materiais (HP/Gear), Reliquats,
   Ascension (×mult por mapa), Mémoires (knobs globais), Passivas (alavancas), habilidades
   ativas, e o **pacing dos Maps 2–5** rumo aos ~30 dias.
