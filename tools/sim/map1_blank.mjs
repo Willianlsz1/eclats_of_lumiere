@@ -39,7 +39,7 @@ function pace(curveDiv, curveExp, gates, convGrowth) {
   let xpRun = 0, level = 1, gearLvl = 0, lumens = 0;
   let kills9 = 0, convCount = 0;
   // marcos
-  const M = { lvl2: null, sub2: null, conv1: null, awaken: null };
+  const M = { lvl2: null, sub2: null, conv1: null, awaken: null, wall: null };
 
   const convDmg = () => 1 + CONV_DMG * conv;
   const convHp = () => 1 + CONV_DMG * conv;
@@ -54,38 +54,36 @@ function pace(curveDiv, curveExp, gates, convGrowth) {
 
   let guard = 0;
   while (guard++ < 5e7) {
-    const onBoss = unlocked === N && kills9 >= 50; // entra a Wall após farmar a sub9
-    const mobHp = onBoss ? bossHp() : mobHpOf(unlocked);
+    const mobHp = mobHpOf(unlocked); // sempre farma o mob da sub-área (boss vem junto na sub9)
     const d = dps();
     const tpk = Math.max(1 / aps(), mobHp / d);
     const dt = tpk, k = 1; // 1 kill por passo
     t += dt;
     // renda ancorada ao mob mais fundo farmado
-    lumens += k * mobHpOf(unlocked) * GOLD * convLum();
-    xpRun += k * mobHpOf(unlocked) * XP_RATIO;
+    lumens += k * mobHp * GOLD * convLum();
+    xpRun += k * mobHp * XP_RATIO;
     level = Math.max(1, Math.floor((xpRun / curveDiv) ** curveExp));
     if (M.lvl2 === null && level >= 2) M.lvl2 = t;
-    if (unlocked === N) kills9 += k;
     // unlock de sub-áreas por nível
     while (unlocked < N && level >= gates[unlocked]) {
       unlocked++;
       if (unlocked === 2 && M.sub2 === null) M.sub2 = t;
       if (unlocked === AWAKEN_SUB) { awakened = true; if (M.awaken === null) M.awaken = t; } // Despertar ao entrar na sub7
     }
-    // compra gulosa de Gear
+    // compra gulosa de Gear (PERSISTE — Convergence não reseta o Gear)
     let b = 0; while (lumens >= gearCost() && b++ < 5000) { lumens -= gearCost(); gearLvl++; }
-    // Convergence: ao atingir o gate de nível (frequente). Reseta run; mantém posição+conv.
-    if (level >= convGate && unlocked >= 2 && !onBoss) {
+    // Convergence: ao atingir o gate de nível (frequente). Reseta SÓ o nível da run.
+    if (level >= convGate && unlocked >= 2) {
       conv++; convCount++;
       if (M.conv1 === null) M.conv1 = t;
       convGate = Math.max(convGate * convGrowth, level + 1); // próximo gate sobe
-      xpRun = 0; level = 1; gearLvl = 0; lumens = 0;
+      xpRun = 0; level = 1; lumens = 0; // Gear NÃO reseta
     }
-    // Wall derrotável → Map 1 limpo
-    if (onBoss && d * 3 >= bossHp()) break;
+    // Wall (boss da sub9) derrotável em ~30s → Map 1 limpo
+    if (unlocked === N && d >= bossHp() / 30) { M.wall = t; break; }
     if (t > 86400 * 10) break; // trava de segurança
   }
-  return { t, conv: convCount, unlocked, awakened, M };
+  return { t, conv: convCount, unlocked, awakened, gearLvl, M };
 }
 
 // ── calibração: varrer curveDiv / curveExp / gates ──
@@ -95,11 +93,12 @@ const XP1 = hpLo * XP_RATIO; // xp do 1º mob
 // curveDiv fixado p/ level-2 acontecer em ~3 kills (≈8s): xpRun(lvl2)=3×XP1
 const fitDiv = (curveExp) => (3 * XP1) / (2 ** (1 / curveExp));
 console.log('gates de unlock (sub1..sub9):', gates.join(' '));
-console.log('curveExp | curveDiv | t→lvl2 | t→sub2(1ª conv) | t→despertar | tempo Map1 | nº conv');
-// ✅ ESCOLHIDO (Willian, 2026-06-17): curveExp=0.47 / curveDiv≈275 → Map 1 ~1,3 dias.
-for (const curveExp of [0.47]) {
+console.log('curveExp | curveDiv | t→lvl2 | t→sub2(1ª conv) | t→despertar | tempo Map1 | nº conv | gearLvl fim');
+// ✅ ESCOLHIDO (Willian, 2026-06-17): curveExp=0.455 / curveDiv≈262 → Map 1 ~1,3 dias
+// (com Gear persistente, packs 2×7+3+3, boss junto na sub9, sem cap de nível de mob).
+for (const curveExp of [0.455]) {
   const curveDiv = Math.round(fitDiv(curveExp));
   const r = pace(curveDiv, curveExp, gates, 1.3);
   const m = r.M;
-  console.log(`${String(curveExp).padStart(8)} | ${String(curveDiv).padStart(8)} | ${fmtT(m.lvl2).padStart(6)} | ${fmtT(m.sub2 ?? m.conv1).padStart(15)} | ${fmtT(m.awaken).padStart(11)} | ${fmtT(r.t).padStart(10)} | ${String(r.conv).padStart(6)}`);
+  console.log(`${String(curveExp).padStart(8)} | ${String(curveDiv).padStart(8)} | ${fmtT(m.lvl2).padStart(6)} | ${fmtT(m.sub2 ?? m.conv1).padStart(15)} | ${fmtT(m.awaken).padStart(11)} | ${fmtT(r.t).padStart(10)} | ${String(r.conv).padStart(6)} | ${String(r.gearLvl).padStart(10)}`);
 }

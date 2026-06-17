@@ -54,13 +54,13 @@ ondas + Gear), **Melvor Idle / Clicker Heroes / Realm Grinder / TT2**, e a teori
 ## 4. Nível & XP (motor de stat base) ✅
 | Constante | Valor | Decisão |
 |---|---|---|
-| `LEVEL.curveDiv` | **275** | nível-2 em ~8s |
-| `LEVEL.curveExp` | **0,47** | Map 1 em **~1,3 dias** (validado no sim) |
+| `LEVEL.curveDiv` | **262** | nível-2 em ~9s |
+| `LEVEL.curveExp` | **0,455** | Map 1 em **~1,3 dias** (validado no sim, c/ Gear persistente) |
 | `LEVEL.dmgPerLevel` | **150** | +dano por nível |
 | `LEVEL.hpPerLevel` | **150** | +vida por nível |
 
-> `level = (xpRun / 275) ^ 0,47`. Convergence reseta o `xpRun`. Sem bônus de XP na
-> Convergence (o XP escalado vem do **Gear**, decisão do Willian).
+> `level = (xpRun / 262) ^ 0,455`. Convergence reseta **só o `xpRun`** (nível da run).
+> Sem bônus de XP na Convergence (o XP escalado vem do **Gear**, decisão do Willian).
 
 ## 5. Malha do Map 1 — 9 sub-áreas ✅ / 🔧
 Vida geométrica do 1º mob (5.000) à Wall (~10M). Crescimento ~**1,84× por sub-área**.
@@ -75,13 +75,17 @@ Vida geométrica do 1º mob (5.000) à Wall (~10M). Crescimento ~**1,84× por su
 | 6 | The Gilded Mire | ~107.000 | 10.700 | 350 |
 | 7 | The Hollowed Grove | ~197.000 | 19.700 | 520 ← **Despertar** |
 | 8 | The Stillwatch | ~363.000 | 36.300 | 740 |
-| 9 | The Hollow Heart | ~670.000 | 67.000 | 1.000 ← **Wall** |
+| 9 | The Hollow Heart | ~670.000 | 67.000 | 1.000+ ← **Wall (boss junto)** |
 
 | Constante | Valor | Nota |
 |---|---|---|
 | `MAPS[0].hpHi` | **670.000** | escala "contida" (Wall ~10M) |
 | `MAPS[0].bossHpMult` | **15** | Wall = 670k × 15 ≈ **10M** |
+| `MAPS[0].bossDmgMult` | **3** | dano da Wall = 26.800 × 3 = 80.400 |
 | dano dos mobs | **4% da vida** 🔧 | `dmgLo=200`, `dmgHi=26.800` (era 2%) |
+| `packSizes` | **[2,2,2,2,2,2,2,3,3]** 🔧 | 2 mobs até a sub-7; **3** nas sub-8/9 (era curva 2→14) |
+| Boss da sub-9 | **aparece junto com os mobs** 🔧 | sem `bossKillThreshold`; a Wall já está na sub-9 |
+| Nível dos mobs | **sem cap** 🔧 | sub-9 = faixa aberta 1000+ (não fixa em 1000) |
 | Gates de unlock | array acima 🔧 | hoje o código deriva por faixa geométrica 1→1000; trocar p/ esta tabela |
 
 ## 6. Convergence (1º prestígio) ✅ / 🔧
@@ -96,8 +100,10 @@ Vida geométrica do 1º mob (5.000) à Wall (~10M). Crescimento ~**1,84× por su
 | `CONVERGENCE.gateLevelBase` | **30** | = gate da sub-área 2 |
 | `CONVERGENCE.gateLevelGrowth` | **1,3** | |
 
-> Reseta: `xpRun` (nível da run) + **nível do Gear**. Mantém: raridade do Gear, posição no
-> mapa, contagem de convergências. ~14 convs no Map 1 ⇒ ~+210% dano/vida acumulados.
+> Reseta: **só o `xpRun`** (nível da run). **NÃO reseta o nível do Gear** (correção Willian
+> 2026-06-17 — o Gear é permanente; a arma acumula o mapa inteiro). Mantém: nível e raridade
+> do Gear, posição no mapa, contagem de convergências. ~14 convs no Map 1 ⇒ ~+210% dano/vida.
+> Por o Gear persistir, o jogador termina o Map 1 com a **arma no nível ~173** (cap do Faded ≥ ~175).
 
 ## 7. Despertar (sub-área 7) ✅ / 🔧
 Revisado pelo Willian: **deixou de ser no Guardião da sub-3** e **não libera habilidade**.
@@ -115,12 +121,13 @@ Revisado pelo Willian: **deixou de ser no Guardião da sub-3** e **não libera h
 ---
 
 ## Validação de pacing (`tools/sim/map1_blank.mjs`)
-Com `curveExp=0,47 / curveDiv=275`:
+Com `curveExp=0,455 / curveDiv=262` (Gear persistente):
 - **Nível 2:** ~9s ✅ (alvo ~8s)
-- **1ª Convergence:** ~9 min ✅ (cedo, sub-área 2)
-- **Despertar (sub-7):** ~14h ✅ (pré-Wall, ~metade do mapa)
-- **Wall derrotada / Map 1 limpo:** ~**1,3 dias** de tempo-de-combate ✅ ("médio")
+- **1ª Convergence:** ~11 min ✅ (cedo, sub-área 2)
+- **Despertar (sub-7):** ~18,7h ✅ (pré-Wall, ~metade do mapa)
+- **Wall derrotada / Map 1 limpo:** ~**1,3 dias** (32h) de tempo-de-combate ✅ ("médio")
 - **Nº de Convergences:** 14 ✅ ("frequente")
+- **Nível final da arma:** ~173 (Gear persiste através das Convergences)
 
 > ⚠️ O sim mede **renda/poder** (pacing), **não morte**. A Wall aqui é "parede de dano".
 > A camada de **sobrevivência/Defesa (Veil)** depende do **Hollow + materiais** (fase futura)
