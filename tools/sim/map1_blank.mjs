@@ -10,8 +10,8 @@ const BASE = 1000;        // baseDmg
 const DMG_LVL = 150;      // +dano por nível do Seeker
 const HP_LVL = 150;       // +vida por nível do Seeker
 const BASE_HP = 30000;    // playerBaseHp
-const APS0 = 0.9;         // baseAPS (≈ Gaiadon 0.904; cresce até ~1,5 no fim do Map 1)
-const APSCAP = 10;        // teto GLOBAL de kills/s (Map 1 só chega a ~1,5)
+const APS0 = 0.9;         // baseAPS (≈ Gaiadon 0.904)
+const APSCAP = 3;         // teto de APS (Map 1 chega a ~1,7; folga até 3) — decisão Willian
 // ── Economia ──
 const GOLD = 0.10;        // lumens/kill = mobHp × GOLD
 let   XP_RATIO = 0.08;    // xp/kill = mobHp × XP_RATIO  (livre — ajustável)
@@ -22,6 +22,7 @@ let   XP_RATIO = 0.08;    // xp/kill = mobHp × XP_RATIO  (livre — ajustável)
 const GEAR_COST0 = 2000;          // custo do 1º nível (1 peça)
 const GEAR_RAMP = 2 ** (1 / 10);  // dobra a cada 10 níveis (~1.0718)
 const PIECES = 6;
+const GEAR_CAP = 400; // cap de nível do Faded (decisão Willian; jogador alcança ~278)
 // afixos por nível (agregados das 6 peças):
 const G_DMG_FLAT = 50;            // Weapon: +50 dano flat/nv
 const G_DMG_PCT = 0.01 + 0.01;    // Weapon 1% + Amuleto 1% = dano%/nv
@@ -33,7 +34,8 @@ let   G_APS = 0.0016;             // Amuleto: atk speed/nv (calibrado p/ APS ~1,
 const G_GOLD_PCT = 0.02 + 0.02;   // Luvas 2% + Anel 2% = gold%/nv
 const G_XP_PCT = 0.01;            // Anel: +1% XP/nv
 // ── Malha do Map 1 ──
-const N = 9, hpLo = 2000, hpHi = 670000, BOSSMULT = 15; // 1º mob 2 hits (2000); Wall ≈ 10M
+// Wall ≈ 32,5 bi (número orgânico, não-redondo): hpHi × 15. 1º mob 2.000 (2 hits).
+const N = 9, hpLo = 2000, hpHi = 2169085656, BOSSMULT = 15; // Wall = 32.536.284.840
 const mobHpOf = (s) => hpLo * (hpHi / hpLo) ** ((s - 1) / (N - 1));
 const bossHp = () => mobHpOf(N) * BOSSMULT;
 // ── Convergence ──
@@ -113,7 +115,7 @@ function pace(curveDiv, curveExp, gates, convGrowth, convBase = gates[1]) {
       if (unlocked === N) worst[N] = snap(); // captura o estado na ENTRADA da Wall
     }
     // compra gulosa de Gear (as 6 peças juntas; PERSISTE pela Convergence)
-    let b = 0; while (lumens >= stepCost() && b++ < 5000) { lumens -= stepCost(); gearLvl++; }
+    let b = 0; while (gearLvl < GEAR_CAP && lumens >= stepCost() && b++ < 5000) { lumens -= stepCost(); gearLvl++; }
     // Convergence: reseta SÓ o nível da run (Gear persiste)
     if (level >= convGate && unlocked >= 2) {
       conv++; convCount++; events.push({ area: unlocked, lvl: level });
@@ -141,9 +143,9 @@ console.log('curveExp | curveDiv | t→lvl2 | t→sub2(1ª conv) | t→despertar
 const CONV_BASE = 40, CONV_GROWTH = 1.3;
 // ✅ ESCOLHIDO (Willian): com Gear completo (6 peças, 2 afixos flat+%, 2 camadas),
 // curveExp=0.41 / curveDiv≈221 → Map 1 ~1,2 dias. Gear termina ~nível 184.
-// ✅ ESCOLHIDO: baseAPS 0.9, 1º mob 2 hits, sem regen-por-kill, APS→~1,5 no fim.
-const curveExp = 0.43, curveDiv = Math.round(fitDiv(curveExp));
-G_APS = 0.0019; // amuleto: fecha APS ~1,5 no fim (gear ~160)
+// ✅ ESCOLHIDO: Wall 32,5bi · aceitar ~24 conv · apsCap 3 · gear cap 400.
+G_APS = 0.0019;
+const curveExp = 0.41, curveDiv = Math.round(fitDiv(curveExp));
 {
   const r = pace(curveDiv, curveExp, gates, CONV_GROWTH, CONV_BASE);
   const m = r.M;
