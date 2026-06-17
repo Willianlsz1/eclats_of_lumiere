@@ -221,16 +221,20 @@ function show(id) {
   document.querySelectorAll('.view').forEach((n) => n.classList.toggle('active', n.id === 'view-' + id));
   document.querySelectorAll('.navbtn').forEach((n) => n.classList.toggle('active', n.dataset.view === id));
   paintBackdrop();
+  fit(); // re-avalia o modo (só o Gear reflui no mobile; o resto fica escalado)
 }
 
 function fit() {
   const W = window.innerWidth, H = window.innerHeight;
   const stage = $('#stage');
-  // MODO MOBILE: janela estreita (celular, ex. Redmi Note 13 Pro) → abandona o
-  // palco escalado e deixa o CSS (mobile.css) refluir as telas em coluna rolável.
+  // MODO MOBILE: janela estreita (celular, ex. Redmi Note 13 Pro). Decisão Willian:
+  // só o GEAR precisava melhorar — o resto já é jogável escalado. Então SÓ a tela de
+  // Gear reflui em lista fluida (body.m-flow); as outras telas seguem escaladas.
   const isMobile = W <= 920;
+  const flow = isMobile && current === 'gear';
   document.body.classList.toggle('mobile', isMobile);
-  if (isMobile) {
+  document.body.classList.toggle('m-flow', flow);
+  if (flow) {
     stage.style.transform = 'none';
     stage.style.width = '';
     document.documentElement.style.removeProperty('--stage-w');
