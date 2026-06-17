@@ -24,14 +24,15 @@ ondas + Gear), **Melvor Idle / Clicker Heroes / Realm Grinder / TT2**, e a teori
 | Constante (`constants.js`) | Valor | Decisão de design |
 |---|---|---|
 | `COMBAT.baseDmg` | **1.000** | dano "gordo/impactante" no 1º golpe |
-| `COMBAT.baseAPS` | **2,0** | ritmo "médio" (~2 golpes/s) |
-| `COMBAT.apsCap` | **10** | teto "frenético" de kills/s |
-| `MAPS[0].hpLo` | **5.000** | 1º mob morre em ~5 golpes = **~2,5s** |
+| `COMBAT.baseAPS` | **0,9** | ≈ Gaiadon (0,904); cresce até **~1,5 no fim** do Map 1 |
+| `COMBAT.apsCap` | **10** | teto GLOBAL (Map 1 só chega a ~1,5; é o teto p/ mapas futuros) |
+| `MAPS[0].hpLo` | **2.000** | 1º mob morre em **2 golpes** (ref. Gaiadon) = **~2,2s** |
 | `COMBAT.playerBaseHp` | **30.000** | vida inicial "resistente" |
-| `COMBAT.regenPerSec` | **0,01** (1%/s) | segura o dano do early sozinha |
-| `COMBAT.regenOnKill` | **0,02** (2%/kill) | torna o early "passeio seguro" |
+| `COMBAT.regenPerSec` | **0,01** (1%/s) | única regen base — segura o early |
+| `COMBAT.regenOnKill` | **0** | ❌ removido do base (vira **passiva** no futuro — decisão Willian) |
 
-**Resultado:** começa matando ~0,4 mob/s → no talo 10/s (25× de espaço de progressão).
+**Resultado:** começa matando ~0,45 mob/s (2 hits ÷ 0,9 APS); APS sobe a ~1,5 no fim do Map 1
+(amuleto +0,0019/nv + Despertar +0,3). O teto global 10 só importa nos mapas seguintes.
 
 ## 2. Economia por kill ✅ / 🔧
 | Constante | Valor | Nota |
@@ -53,16 +54,16 @@ ver §9): *soma dentro da camada, multiplica entre camadas.* Por ora **2 camadas
 | **Elmo** | HP **+300**/nv | HP **+1%**/nv |
 | **Manto** | HP **+300**/nv | Crit Damage **+2%**/nv |
 | **Luvas** | Crit Chance **+0,1%**/nv | Gold **+2%**/nv |
-| **Amuleto** | Atk Speed **+0,01**/nv | Dmg **+1%**/nv |
+| **Amuleto** | Atk Speed **+0,0019**/nv | Dmg **+1%**/nv |
 | **Anel** | Gold **+2%**/nv | XP **+1%**/nv |
 
 **Agregado por nível** (as 6 peças): dano flat +50 · dano% +2% (weapon+amuleto) · HP flat
-+600 (elmo+manto) · HP% +1% · crit chance +0,1% · crit dmg% +2% · APS +0,01 · gold% +4%
++600 (elmo+manto) · HP% +1% · crit chance +0,1% · crit dmg% +2% · APS +0,0019 · gold% +4%
 (luvas+anel) · XP% +1%.
 
 **Custo (por peça):** 1º nível **~2.000 Lumens**, **dobra a cada ~10 níveis** (ramp ≈ 1,072) 🔧
 (hoje o código é linear; mudar p/ geométrico). No sim assumo as 6 peças no mesmo nível
-(compra equilibrada → subir L→L+1 custa 6× o custo de 1 peça). Gear termina o Map 1 ~**nível 184**.
+(compra equilibrada → subir L→L+1 custa 6× o custo de 1 peça). Gear termina o Map 1 ~**nível 160**.
 
 **Crit:** base **0%** de crit damage (decisão Willian — crit ≠ ×2 no início). Crit damage =
 1 + Σ(crit dmg%): Manto +2%/nv + Despertar +200%. Crit chance: Luvas +0,1%/nv + Despertar +5%.
@@ -78,7 +79,7 @@ não pelo cap (chegar ao 200 ≈ 1,9e11 Lumens; ao 750 ≈ 6,3e27 — inviável 
 | Constante | Valor | Decisão |
 |---|---|---|
 | `LEVEL.curveDiv` | **262** | nível-2 em ~9s |
-| `LEVEL.curveExp` | **0,41** | Map 1 em **~1,2 dias** (validado no sim c/ Gear completo de 6 peças) |
+| `LEVEL.curveExp` | **0,43** | Map 1 em **~1,3 dias** (validado: APS 0,9, 1º mob 2 hits, sem regen-kill) |
 | `LEVEL.dmgPerLevel` | **150** | +dano por nível |
 | `LEVEL.hpPerLevel` | **150** | +vida por nível |
 
@@ -86,18 +87,19 @@ não pelo cap (chegar ao 200 ≈ 1,9e11 Lumens; ao 750 ≈ 6,3e27 — inviável 
 > Sem bônus de XP na Convergence (o XP escalado vem do **Gear**, decisão do Willian).
 
 ## 5. Malha do Map 1 — 9 sub-áreas ✅ / 🔧
-Vida geométrica do 1º mob (5.000) à Wall (~10M). Crescimento ~**1,84× por sub-área**.
+Vida geométrica do 1º mob (2.000) à Wall (~10M). Crescimento ~**2,07× por sub-área**.
+Packs: **2 mobs** nas sub-áreas 1–7, **3 mobs** nas 8–9.
 
 | Sub | Nome | Vida mob | Lumens/kill | Gate de nível 🔧 |
 |---|---|---|---|---|
-| 1 | Lanternroot Glade | 5.000 | 500 | 1 |
-| 2 | Glimmercap Hollow | ~9.000 | 900 | 30 ← 1ª Convergence |
-| 3 | The Lightfall Stair | ~17.000 | 1.700 | 70 |
-| 4 | The Dreaming Gate | ~31.000 | 3.100 | 130 |
-| 5 | The Verdant Deep | ~58.000 | 5.800 | 220 |
-| 6 | The Gilded Mire | ~107.000 | 10.700 | 350 |
-| 7 | The Hollowed Grove | ~197.000 | 19.700 | 520 ← **Despertar** |
-| 8 | The Stillwatch | ~363.000 | 36.300 | 740 |
+| 1 | Lanternroot Glade | 2.000 | 200 | 1 |
+| 2 | Glimmercap Hollow | ~4.100 | 410 | 30 ← 1ª Convergence |
+| 3 | The Lightfall Stair | ~8.600 | 860 | 70 |
+| 4 | The Dreaming Gate | ~17.700 | 1.770 | 130 |
+| 5 | The Verdant Deep | ~36.600 | 3.660 | 220 |
+| 6 | The Gilded Mire | ~75.700 | 7.570 | 350 |
+| 7 | The Hollowed Grove | ~156.500 | 15.650 | 520 ← **Despertar** |
+| 8 | The Stillwatch | ~323.600 | 32.360 | 740 |
 | 9 | The Hollow Heart | ~670.000 | 67.000 | 1.000+ ← **Wall (boss junto)** |
 
 | Constante | Valor | Nota |
@@ -105,7 +107,7 @@ Vida geométrica do 1º mob (5.000) à Wall (~10M). Crescimento ~**1,84× por su
 | `MAPS[0].hpHi` | **670.000** | escala "contida" (Wall ~10M) |
 | `MAPS[0].bossHpMult` | **15** | Wall = 670k × 15 ≈ **10M** |
 | `MAPS[0].bossDmgMult` | **3** | dano da Wall = 26.800 × 3 = 80.400 |
-| dano dos mobs | **4% da vida** 🔧 | `dmgLo=200`, `dmgHi=26.800` (era 2%) |
+| dano dos mobs | **4% da vida** 🔧 | `dmgLo=80`, `dmgHi=26.800` (era 2%) |
 | `packSizes` | **[2,2,2,2,2,2,2,3,3]** 🔧 | 2 mobs até a sub-7; **3** nas sub-8/9 (era curva 2→14) |
 | Boss da sub-9 | **aparece junto com os mobs** 🔧 | sem `bossKillThreshold`; a Wall já está na sub-9 |
 | Nível dos mobs | **sem cap** 🔧 | sub-9 = faixa aberta 1000+ (não fixa em 1000) |
@@ -146,24 +148,24 @@ Revisado pelo Willian: **deixou de ser no Guardião da sub-3** e **não libera h
 ---
 
 ## Validação de pacing (`tools/sim/map1_blank.mjs`)
-Com `curveExp=0,41 / curveDiv=221` (Gear completo de 6 peças, 2 camadas):
-- **Nível 2:** ~7s ✅ (alvo ~8s)
-- **1ª Convergence:** LV 40, ~16 min ✅ (cedo, sub-área 2)
-- **Despertar (sub-7):** ~16,7h ✅ (pré-Wall, ~metade do mapa)
-- **Wall derrotada / Map 1 limpo:** ~**1,2 dias** (29h) de tempo-de-combate ✅ ("médio")
+Com `curveExp=0,43 / curveDiv=96` (APS 0,9 · 1º mob 2 hits · sem regen-por-kill):
+- **Nível 2:** ~8s ✅
+- **1ª Convergence:** LV 40, ~27 min ✅ (cedo, sub-área 2)
+- **Despertar (sub-7):** ~21,6h ✅ (pré-Wall)
+- **Wall derrotada / Map 1 limpo:** ~**1,3 dias** (30,7h) ✅ ("médio")
 - **Nº de Convergences:** 13 ✅ ("frequente", gatilho ×1,3)
-- **Nível final do Gear:** ~184 (Gear persiste através das Convergences)
+- **APS no fim:** **1,50** ✅ (teto pedido p/ Map 1) · **Gear no fim:** ~160
 
-> ⚠️ O sim mede **renda/poder** (pacing), **não morte**. A Wall aqui é "parede de dano".
-> A camada de **sobrevivência** depende do **HP** (vida base + nível + Gear de HP + regen)
-> vs dano da onda — **NÃO há sistema de Defesa** (decisão Willian 2026-06-17: só HP). Será
-> validada em `tools/sim/survival.mjs`. ⏳
-
-## Sobrevivência = SÓ HP (decisão Willian 2026-06-17) 🔧
+## Sobrevivência = SÓ HP — VALIDADA (`fightWave` no sim) ✅
 **Removido do jogo:** mitigação/armadura/Veil e o bloco `DEFENSE`. A vida é a única defesa.
+**Regen-por-kill removido do base** (vira passiva futura) → só regen passivo 1%/s.
 - `dano_recebido = dano_da_onda` (direto no HP; sem fórmula de razão/armadura).
 - A peça **Veil of Cinders** deixa de ser "defesa" → vira **HP** (ou é repensada no Hollow).
-- A Mémoire *de la Résistance* e a passiva *de sobrevivência* multiplicam **HP/regen** (não defesa).
+- A Mémoire *de la Résistance* e a passiva *de sobrevivência* multiplicam **HP/regen**.
+
+**Resultado da validação:** o jogador **sobrevive a 100% das ondas em todas as áreas**;
+a única que arranha é a **Wall (96% de HP no pior momento)**. Map 1 é **passeio seguro
+ponta a ponta** — a ameaça de morte real fica pros Maps 2+ / gating por Hollow. ✅
 
 ## Avançar de área = NÍVEL (LVs por área) ✅
 Cada sub-área pede um nível maior do Seeker pra desbloquear. Tabela atual (ajustável):

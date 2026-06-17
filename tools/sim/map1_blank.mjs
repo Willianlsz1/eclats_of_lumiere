@@ -10,8 +10,8 @@ const BASE = 1000;        // baseDmg
 const DMG_LVL = 150;      // +dano por nível do Seeker
 const HP_LVL = 150;       // +vida por nível do Seeker
 const BASE_HP = 30000;    // playerBaseHp
-const APS0 = 2.0;         // baseAPS
-const APSCAP = 10;        // teto de kills/s
+const APS0 = 0.9;         // baseAPS (≈ Gaiadon 0.904; cresce até ~1,5 no fim do Map 1)
+const APSCAP = 10;        // teto GLOBAL de kills/s (Map 1 só chega a ~1,5)
 // ── Economia ──
 const GOLD = 0.10;        // lumens/kill = mobHp × GOLD
 let   XP_RATIO = 0.08;    // xp/kill = mobHp × XP_RATIO  (livre — ajustável)
@@ -29,11 +29,11 @@ const G_HP_FLAT = 300 + 300;      // Elmo 300 + Manto 300 = HP flat/nv
 const G_HP_PCT = 0.01;            // Elmo: HP%/nv
 const G_CRIT = 0.001;             // Luvas: +0.1% crit chance/nv
 const G_CDMG_PCT = 0.02;          // Manto: +2% crit damage/nv (base 0%)
-const G_APS = 0.01;               // Amuleto: +0.01 atk speed/nv
+let   G_APS = 0.0016;             // Amuleto: atk speed/nv (calibrado p/ APS ~1,5 no fim)
 const G_GOLD_PCT = 0.02 + 0.02;   // Luvas 2% + Anel 2% = gold%/nv
 const G_XP_PCT = 0.01;            // Anel: +1% XP/nv
 // ── Malha do Map 1 ──
-const N = 9, hpLo = 5000, hpHi = 670000, BOSSMULT = 15; // Wall ≈ 10M
+const N = 9, hpLo = 2000, hpHi = 670000, BOSSMULT = 15; // 1º mob 2 hits (2000); Wall ≈ 10M
 const mobHpOf = (s) => hpLo * (hpHi / hpLo) ** ((s - 1) / (N - 1));
 const bossHp = () => mobHpOf(N) * BOSSMULT;
 // ── Convergence ──
@@ -42,7 +42,7 @@ const CONV_DMG = 0.15, CONV_LUM = 0.03; // por convergência (aditivo; XP = 0, v
 const AWAKEN_SUB = 7, AWAKEN_MULT = 2, AWAKEN_APS = 0.3, AWAKEN_CRIT = 0.05, AWAKEN_CDMG = 2.0; // crit dmg base 0% +200%
 
 const fmtT = (s) => s == null ? '  —  ' : s < 90 ? `${s.toFixed(0)}s` : s < 5400 ? `${(s / 60).toFixed(1)}min` : s < 86400 * 2 ? `${(s / 3600).toFixed(1)}h` : `${(s / 86400).toFixed(2)}d`;
-const REGEN_S = 0.01, REGEN_KILL = 0.02; // 1%/s + 2%/kill da vida máx (decisão Willian)
+const REGEN_S = 0.01, REGEN_KILL = 0.00; // só 1%/s (regen-por-kill removido → vira passiva futura)
 const PACK_OF = (s) => s <= 7 ? 2 : 3;    // 2 mobs até sub7, 3 nas sub8/9
 
 // Luta UMA onda cheia, tick a tick. Só HP (sem defesa). Retorna {vive, minFrac, t}.
@@ -141,11 +141,14 @@ console.log('curveExp | curveDiv | t→lvl2 | t→sub2(1ª conv) | t→despertar
 const CONV_BASE = 40, CONV_GROWTH = 1.3;
 // ✅ ESCOLHIDO (Willian): com Gear completo (6 peças, 2 afixos flat+%, 2 camadas),
 // curveExp=0.41 / curveDiv≈221 → Map 1 ~1,2 dias. Gear termina ~nível 184.
-const curveExp = 0.41, curveDiv = Math.round(fitDiv(curveExp));
+// ✅ ESCOLHIDO: baseAPS 0.9, 1º mob 2 hits, sem regen-por-kill, APS→~1,5 no fim.
+const curveExp = 0.43, curveDiv = Math.round(fitDiv(curveExp));
+G_APS = 0.0019; // amuleto: fecha APS ~1,5 no fim (gear ~160)
 {
   const r = pace(curveDiv, curveExp, gates, CONV_GROWTH, CONV_BASE);
   const m = r.M;
-  console.log(`${String(curveExp).padStart(8)} | ${String(curveDiv).padStart(8)} | ${fmtT(m.lvl2).padStart(6)} | ${fmtT(m.sub2 ?? m.conv1).padStart(15)} | ${fmtT(m.awaken).padStart(11)} | ${fmtT(r.t).padStart(10)} | ${String(r.conv).padStart(6)} | ${String(r.gearLvl).padStart(10)}`);
+  const endAps = Math.min(APSCAP, APS0 + r.gearLvl * G_APS + 0.3);
+  console.log(`${String(curveExp).padStart(8)} | ${String(curveDiv).padStart(8)} | ${fmtT(m.lvl2).padStart(6)} | ${fmtT(m.sub2 ?? m.conv1).padStart(15)} | ${fmtT(m.awaken).padStart(11)} | ${fmtT(r.t).padStart(10)} | ${String(r.conv).padStart(6)} | ${String(r.gearLvl).padStart(8)} | APSfim ${endAps.toFixed(2)}`);
 }
 
 // ── SOBREVIVÊNCIA (só HP) — luta a onda no pior momento de cada área ──
