@@ -238,6 +238,21 @@ Telas enviadas (Dewdrop Dale lvl 1501; Boreal Bay lvl 42701). Observações úte
 - Vida do mob no Gaiadon em lvl 1501 ≈ 99M; em 42701 ≈ 9–72T. Confirma que **números grandes**
   são a norma do gênero (reforça a decisão da Wall a 32,5bi).
 
+### Lote 2 de telas (stat-breakdowns + arma/anel) — 2026-06-17
+- **Camadas confirmadas em TODO stat** (Attack, XP, HP, Crit Damage, Enemy HP Reduction, APS):
+  Primary · Bonus · Multiplier · Mastery · … Nosso **2 camadas (Flat+Bonus%)** = subconjunto early;
+  Multiplier/Mastery = raridade/prestígio. ✅
+- **Taxas/nível da arma lendária (Warlord's Greatsword)** batem com as nossas: **+50 Attack/nv (flat)**,
+  **+2%/nv**, Crit Damage +0,132%/**3 nv**, Crit Rate +0,062%/**25 nv**, APS +0,0017/**50 nv**.
+  → confirma crit/APS escalando bem devagar (stats delicados). (Nós: +50 flat ✅, +1% bonus, crit +0,1%/nv.)
+- **HP base do jogo = 300** no Gaiadon (nível/equip carregam). Filosofia igual; diferença nossa
+  **proposital**: Convergence reseta o nível → o **Gear permanente é o motor**, nível é transiente.
+- 🌱 **IDEIA — overflow de stat capado → dano.** Padrão recorrente: APS (cap 15→Mastery 1:100),
+  Enemy HP Reduction (cap 50→Mastery 1:0.8). **Generalizar:** todo stat utilitário no teto
+  (crit rate 100%, redução de inimigo…) **vira dano** em vez de desperdiçar. Já temos p/ APS.
+- 🌱 **IDEIA — "Rage" (maestria por KILLS).** A arma tem um nível Rage que sobe **matando**
+  (10,9B/21,2B kills → +448k% Attack), não com gold. Eixo de progressão por uso acumulado.
+
 ## 10. Offline (decisão Willian 2026-06-17) ✅ / 🔧
 | Parâmetro | Valor | Nota |
 |---|---|---|
