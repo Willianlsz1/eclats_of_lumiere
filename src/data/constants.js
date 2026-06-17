@@ -23,11 +23,15 @@ export const COMBAT = {
 };
 
 // §12 — Lumens · §6 — XP
+// ✅ recalibração 2026-06-17 (mobs relativos ao player): a recompensa é DESACOPLADA do HP do
+// mob (que agora = seu dano → criava feedback explosivo no nível). XP/Lumens por kill =
+// BASE FIXA × areaReward[área] × convMult × gear/mémoires. Assim o nível paceia pela
+// PROFUNDIDADE + taxa de kill, não pelo seu dano. (goldRatio/xpRatio viram legado.)
 export const ECONOMY = {
-  goldRatio: 0.10,  // lumens_por_kill = mob_hp × 0.10 (× convMult; sem frt — CP-3)
-  xpRatio: 0.08,    // xp_por_kill     = mob_hp × 0.08 (× convMult; sem wis — CP-3)
-  // ✅ recalibração "em branco": SEM piso (lumens = mobHp×0.10, como no sim). O 1º nível
-  // de gear (custo 300) sai em ~2 kills do mob inicial (200 lumens/kill).
+  lumBase: 4000,    // Lumens base por kill (× areaReward × convMult × gear …) → compra de gear
+  xpRatio: 0.10,    // XP por kill = HP do mob × xpRatio (HP = seu dano × 3 → sobe LISO com nível)
+  goldRatio: 0.10,  // legado
+  xpBase: 90,       // legado
   lumensFloor: 0,
 };
 
@@ -37,16 +41,34 @@ export const ECONOMY = {
 export const LEVEL = {
   // ✅ RECALIBRAÇÃO "EM BRANCO": curveDiv=77 (nível 2 em ~3 kills/~8s), curveExp=0.38
   // → Map 1 ~27h no sim (com head-start). level = (xpRun / 77)^0.38.
-  curveDiv: 77, curveExp: 0.38,
+  curveDiv: 500, curveExp: 0.42, // XP/kill ∝ nível-baseline; sobe liso (curva achatada). Pace ~10-20h.
   dmgPerLevel: 150,  // +dano flat por nível (sim DMG_LVL)
   hpPerLevel: 150,   // +HP flat por nível (sim HP_LVL)
   goldPerLevel: 0,   // sem bônus de Lumens por nível (sim: lumens = mobHp×0.10 + piso)
 };
 
+// ✅ INIMIGOS RELATIVOS AO PLAYER (recalibração 2026-06-17, decisão Willian: "números
+// grandes, mobs te seguem"). HP/dano/nível dos mobs derivam do PODER ATUAL do player —
+// não mais da malha estática. Coerente por construção (e imune ao reset da Convergence):
+//   mob.level   = nível do player × (fator leve por área)
+//   mob.hpMax   = dano_por_hit do player × hitsToKill × areaHp[área]   → ~3 golpes p/ matar
+//   mob.dmg/s   = HP_máx do player × dmgFrac × areaDmg[área]           → ameaça real (~30%+)
+//   recompensa  = HP do mob × ratio × areaReward[área]                 → fundo = mais ganho
+// Boss (Wall) = mob × bossHpMult (HP) e × bossDmgMult (dano). Índices = sub-área − 1.
+export const ENEMY = {
+  hitsToKill: 3,
+  areaHp:     [1, 1.05, 1.1, 1.15, 1.2, 1.3, 1.4, 1.5, 1.6],   // ~3-5 golpes em qualquer área (sem slog)
+  dmgFrac:    0.009,                                           // dano da ONDA = HP_baseline × dmgFrac × areaDmg /s
+  areaDmg:    [1, 1.4, 1.9, 2.6, 3.4, 4.4, 5.6, 7.0, 9.0],     // profundidade = MUITO mais perigo (Wall mata)
+  areaReward: [1, 1.6, 2.6, 4.2, 6.8, 11, 18, 29, 47],         // Lumens crescem com a profundidade
+  bossHpMult: 12,                                              // boss (Wall) = mob × 12 de HP (~luta de ~15s)
+  bossDmgMult: 5,                                              // boss causa 5× o dano-onda de um mob
+  levelPerArea: 0.03,                                          // mob.level = playerLevel × (1 + 0.03×(área−1))
+};
+
 // §3 — Malha geométrica dos 5 mapas (✅ levels/HP/threshold canônicos).
-// ✅ CALIBRADO 2026-06-11 (Camada 2): dano dos mobs = RAZÃO CONSTANTE 0.02 × HP em
-// TODOS os mapas (dmgLo=hpLo×0.02, dmgHi=hpHi×0.02). Validado no simulador
-// (tools/sim/survival.mjs): a Defesa decide vida/morte na entrada de cada mapa.
+// ⚠️ HP/dano dos mobs agora vêm de ENEMY (relativo ao player); os campos hp*/dmg* abaixo
+// viram LEGADO (mantidos p/ compat de imports e do nível geométrico de unlock).
 // packSizes: densidade de mobs por sub-área (índice = sub-área − 1).
 // CP-2 (redesign): nº de sub-áreas CRESCENTE por mapa — Map1=5 · Map2=6 · Map3=7 ·
 // Map4=Map5=8 (era 5 fixo). PACK tem 8 entradas; cada mapa usa as primeiras N.
@@ -64,7 +86,7 @@ export const MAPS = [
     // real de níveis (que vai a ~12k via Convergence), DESACOPLADO da faixa de nível dos mobs
     // (lvlLo/lvlHi → HP/dano seguem como antes). Sub 7/8/9 viram marcos TARDIOS. unlockLevels[n-1]
     // = nível p/ liberar a Sub n. ⏳ calibrado no harness (game_harness.mjs).
-    unlockLevels: [1, 40, 120, 300, 700, 1500, 3000, 5000, 7500],
+    unlockLevels: [1, 25, 60, 130, 240, 380, 540, 720, 950],
     enemyNames: ['Candlewisp Shade', 'Mothlight Herald', 'Dreamhorn Warden', 'Hollowroot Crawler', 'Glowmere Drifter'],
     enemyArts: ['enemies.map1.candlewisp_shade', 'enemies.map1.mothlight_herald', 'enemies.map1.dreamhorn_warden', 'enemies.map1.hollowroot_crawler', 'enemies.map1.glowmere_drifter'],
     guardianArt: 'enemies.map1.dreamhorn_warden',
@@ -203,7 +225,7 @@ export const GEAR = {
   // ✅ recalibração "em branco": custo EXPONENCIAL por peça (sim) — barato cedo, dobra a cada
   // 10 níveis (costRamp) → cria teto-SUAVE (~280) bem abaixo do cap duro (400). custo(L) =
   // base × costRamp^L × costMult[raridade], clampado a NUMBER_CAP (M2+ recalibra à parte).
-  levelCostBase: 8000,       // ✅ calibrado no harness c/ Despertar no loop: Map 1 ~18h
+  levelCostBase: 200,        // ✅ recalibrado (mobs relativos): bem mais barato/rápido cedo
   costRamp: 1.0717734625,    // 2^(1/10): o custo de 1 nível dobra a cada 10 níveis
   // (Subir raridade = gate duplo: nível no cap + MATERIAIS do tier — ver CRAFT, Passo 4.)
 };
@@ -341,7 +363,7 @@ export const NITZOTZ = { dropChance: 0.02, bossChunk: 5 };
 // subarea = profundidade mín. liberada · kills = total de kills · level = nível da run · t1 = materiais[0].
 export const DESPERTAR_REQ = [
   null,
-  { subarea: 7, kills: 15000,  level: 2000,   t1: 50 },   // → T2 (Map 1) ✅ calibrado: Despertar ~11h, clear ~18h
+  { subarea: 7, kills: 6000,   level: 480,    t1: 40 },   // → T2 (Map 1): cai na Sub 7 (decisão Willian)
   { subarea: 5, kills: 30_000, level: 5_000,  t1: 120 },  // → T3 (Map 2) ⏳ placeholder
   { subarea: 6, kills: 1e5,    level: 1e5,    t1: 300 },  // → T4 (Map 3) ⏳ placeholder
   { subarea: 7, kills: 3e5,    level: 1e6,    t1: 600 },  // → T5 (Map 4) ⏳ placeholder

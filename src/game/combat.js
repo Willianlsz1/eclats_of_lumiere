@@ -31,14 +31,16 @@ const regenFactor = (state) => gearRegenMult(state) * memoireSurvivalMult(state)
 // substituindo 1 mob do pack (§4); na Sub 1 (pack de 1) ele vem sozinho.
 function makeWave(state) {
   const map = getCurrentMap(state);
-  const pack = spawnPack(map, state.subarea);
+  // Contexto do player (poder atual): inimigos derivam disso → sempre ~no seu nível/poder.
+  const ctx = { dmg: damagePerHit(state), hp: playerHpMax(state), level: runLevel(state) };
+  const pack = spawnPack(map, state.subarea, ctx);
   // +cap de mobs: Fate Keeper A4 + passiva Void Awareness (rumo ao teto ~24)
   const extra = (state.ascensions >= 4 ? FATE.a4MobBonus : 0) + passiveMobBonus(state);
-  for (let i = 0; i < extra; i++) pack.push(spawnMob(map, state.subarea));
+  for (let i = 0; i < extra; i++) pack.push(spawnMob(map, state.subarea, ctx));
   // Redesign 14/jun: SEM Guardião nas sub-áreas 1..N-1; só a ÚLTIMA tem boss
   // (o boss final do mapa). O threshold de kills ainda é o muro que invoca o boss.
   if (state.subarea === map.subareaCount && state.killsInSubarea >= map.bossKillThreshold) {
-    pack[0] = spawnBoss(map, state.subarea);
+    pack[0] = spawnBoss(map, state.subarea, ctx);
   }
   // Dificuldade (§8): ×HP e ×dano nos mobs da onda
   const d = effectiveDifficulty(state);

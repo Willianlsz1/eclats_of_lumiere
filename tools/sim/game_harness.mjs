@@ -10,13 +10,17 @@ import { currentAPS, dps, playerHpMax, runLevel } from '../../src/game/stats.js'
 import { buyLevel } from '../../src/game/gear.js';
 import { canConverge, doConverge, convGateLevel } from '../../src/game/convergence.js';
 import { canDespertar, doDespertar } from '../../src/game/ascension.js';
-import { GEAR, DESPERTAR_REQ } from '../../src/data/constants.js';
+import { GEAR, DESPERTAR_REQ, ENEMY, ECONOMY, LEVEL, COMBAT } from '../../src/data/constants.js';
 import { levelCost, atLevelCap } from '../../src/game/gear.js';
-import { getCurrentMap, subareaLevelRange, hpForLevel, dmgForLevel } from '../../src/game/enemies.js';
-import { playerDefesa } from '../../src/game/stats.js';
+import { getCurrentMap } from '../../src/game/enemies.js';
+import { playerDefesa, damagePerHit } from '../../src/game/stats.js';
 
 const DT = 0.1;
 if (process.env.GCOST) GEAR.levelCostBase = +process.env.GCOST; // sweep do custo de gear
+if (process.env.XPRATIO) ECONOMY.xpRatio = +process.env.XPRATIO; // XP = mobHp × xpRatio
+if (process.env.LUMBASE) ECONOMY.lumBase = +process.env.LUMBASE;
+if (process.env.CDIV) LEVEL.curveDiv = +process.env.CDIV;
+if (process.env.DFRAC) ENEMY.dmgFrac = +process.env.DFRAC;
 if (process.env.DKILLS) DESPERTAR_REQ[1].kills = +process.env.DKILLS; // sweep do gate do Despertar
 if (process.env.DLEVEL) DESPERTAR_REQ[1].level = +process.env.DLEVEL;
 if (process.env.DT1) DESPERTAR_REQ[1].t1 = +process.env.DT1;
@@ -46,18 +50,17 @@ const avgGearLevel = (state) => totalGearLevel(state) / GEAR.pieces.length;
 // nível médio-geométrico da faixa da sub-área. Sobrevivência ≈ dano levado p/ limpar < HP.
 function bestFarmArea(state) {
   const map = getCurrentMap(state);
-  const d = dps(state), hp = playerHpMax(state), def = playerDefesa(state);
+  const d = dps(state), hp = playerHpMax(state), def = playerDefesa(state), lvl = runLevel(state);
+  const bDmg = COMBAT.baseDmg + lvl * LEVEL.dmgPerLevel;             // baseline do nível (sem multiplicadores)
+  const bHp = COMBAT.playerBaseHp + lvl * LEVEL.hpPerLevel;
   for (let s = state.unlockedSubarea; s >= 1; s--) {
-    const { lo, hi } = subareaLevelRange(map, s);
-    const lvl = Math.max(1, Math.round(Math.sqrt(lo * hi)));
-    const mobHp = hpForLevel(map, lvl), mobDmg = dmgForLevel(map, lvl);
+    const mobHp = bDmg * ENEMY.hitsToKill * ENEMY.areaHp[s - 1];     // baseline → gear/conv/despertar matam mais rápido
     const size = map.packSizes[s - 1];
-    const tClear = (size * mobHp) / d;              // tempo p/ limpar a onda (single-target)
-    if (tClear > 120) continue;                      // só rejeita o absurdamente lento
-    const packDps = size * mobDmg;                   // dano da onda cheia (pior caso)
+    const tClear = (size * mobHp) / d;              // tempo p/ limpar a onda (dps REAL do player)
+    const packDps = hp * ENEMY.dmgFrac * ENEMY.areaDmg[s - 1];       // onda inteira (HP REAL → perigo persiste)
     const armored = (packDps * packDps) / (def + packDps);
-    const taken = armored * (tClear / 2) - hp * 0.01 * (tClear / 2); // ~metade da onda viva em média, menos regen
-    if (taken < hp * 0.85) return s;                 // sobrevive com folga
+    const taken = armored * (tClear / 2) - hp * 0.01 * (tClear / 2); // ~metade da onda viva, menos regen
+    if (taken < hp * 0.8) return s;                  // sobrevive com folga
   }
   return 1;
 }
