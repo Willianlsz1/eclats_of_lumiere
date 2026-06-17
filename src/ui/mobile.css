@@ -1,0 +1,122 @@
+/* ============================================================
+   Éclats of Lumière — MODO MOBILE ("apenas jogável")
+   Ativado por body.mobile (definido no fit() quando a janela é estreita,
+   ex.: Redmi Note 13 Pro). Abandona o palco 1920×1080 escalado e reflui as
+   telas em COLUNA ROLÁVEL com alvos de toque grandes. Foco: ver itens /
+   comprar gear / convergir. Telas de cena (combate/mapa) ficam CONTIDAS.
+   ============================================================ */
+@media (max-width: 920px) {
+  body.mobile { overflow: auto; height: auto; }
+
+  /* viewport vira documento rolável (sem palco escalado) */
+  body.mobile #screen { position: static; inset: auto; overflow: visible; height: auto; }
+  body.mobile #stage {
+    position: static; transform: none !important; transform-origin: 0 0;
+    width: 100% !important; height: auto; min-height: 100vh; box-shadow: none;
+  }
+  body.mobile #stage-backdrop { position: fixed; inset: 0; }   /* fundo borrado fixo atrás */
+  body.mobile .stage-main { position: static; inset: auto; height: auto; }
+  body.mobile #toosmall { display: none !important; }
+
+  /* ---- barra de topo FIXA: moedas em cima, nav (rolável) embaixo ---- */
+  body.mobile .topbar {
+    position: fixed; inset: 0 0 auto 0; height: auto; z-index: 60;
+    flex-direction: column-reverse; align-items: stretch; gap: 6px;
+    padding: 8px; background: rgba(5,7,15,.95); border-bottom: 1px solid var(--line);
+    backdrop-filter: blur(8px);
+  }
+  body.mobile .topbar .nav {
+    display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px;
+    -webkit-overflow-scrolling: touch; justify-content: flex-start;
+  }
+  body.mobile .navbtn {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+    width: auto; min-width: 58px; height: auto; flex: none; padding: 7px 9px;
+  }
+  body.mobile .navbtn .ico { position: relative; inset: auto; width: 26px; height: 26px; }
+  body.mobile .navbtn .lbl {
+    display: block; font-size: 10px; line-height: 1; color: var(--dim);
+    white-space: nowrap; letter-spacing: .02em;
+  }
+  body.mobile .navbtn.active .lbl { color: var(--eclat); }
+  body.mobile .coins { display: flex; justify-content: center; }
+
+  /* ---- telas: uma por vez, em coluna; padding-top livra a barra fixa ---- */
+  body.mobile .view {
+    position: static !important; inset: auto !important;
+    opacity: 1 !important; visibility: visible !important; pointer-events: auto !important;
+    transition: none !important;
+    display: none; height: auto; min-height: 100vh;
+    padding: 124px 12px 32px;
+  }
+  body.mobile .view.active { display: block; }
+
+  /* ---- telas de CENA (combate/mapa) e pós-MVP: contidas num box (arte intacta) ---- */
+  body.mobile .view.combat.active,
+  body.mobile .view.map.active,
+  body.mobile .view.forge.active,
+  body.mobile .view.passives.active,
+  body.mobile .view.memoires.active,
+  body.mobile .view.ascension.active {
+    position: relative !important; display: block;
+    height: 74vh; min-height: 0; margin: 124px 0 0; padding: 0; overflow: hidden;
+    border-bottom: 1px solid var(--line);
+  }
+
+  /* ============================================================
+     GEAR — reflui o paper-doll numa LISTA vertical (prioridade do Willian)
+     ============================================================ */
+  body.mobile .view.gear.active { display: flex; flex-direction: column; gap: 0; }
+  body.mobile .gr-screen,
+  body.mobile .gr-npc-id { display: none !important; }     /* arte de fundo + nameplate decorativos */
+  body.mobile .gr-tip { display: none !important; }        /* tooltip de hover não serve no toque */
+
+  /* barra de multiplicador no TOPO (escolhe ×1/×100/MAX antes de comprar) */
+  body.mobile .gr-multbar {
+    position: static !important; inset: auto !important; order: 1;
+    margin: 0 0 14px; flex-wrap: wrap; justify-content: center; row-gap: 8px;
+  }
+  body.mobile .gr-mults { flex-wrap: wrap; justify-content: center; }
+  body.mobile .gr-mults button { padding: 10px 14px; }
+
+  /* as 6 peças, em linhas full-width */
+  body.mobile .gr-slots-col {
+    position: static !important; transform: none !important; inset: auto !important;
+    order: 2; width: auto; display: block;
+  }
+  body.mobile .gr-slot {
+    flex-direction: row !important; align-items: center; gap: 12px;
+    width: 100%; margin-bottom: 12px; padding: 10px;
+    background: color-mix(in srgb, #0b1226 88%, transparent);
+    border: 1px solid rgba(217,164,65,.3); border-radius: 12px;
+  }
+  body.mobile .gr-slot-box { width: 78px; }
+  body.mobile .gr-slot-lvl { font-size: 13px; top: -8px; }
+  body.mobile .gr-slot-actions { width: auto; flex: 1 1 auto; }
+  body.mobile .gr-slot-up { padding: 15px 0; font-size: 17px; }   /* alvo de toque grande */
+  body.mobile .gr-slot-cost { padding: 9px; font-size: 16px; }
+
+  /* resumo de bônus por último (referência) */
+  body.mobile .gr-summary {
+    position: static !important; inset: auto !important; order: 3;
+    width: auto; max-height: none; margin: 4px 0 0;
+  }
+
+  /* ============================================================
+     SEEKER / PLAYER — Codex + CONVERGENCE acessíveis (botão de converger)
+     ============================================================ */
+  body.mobile .view.player.active { display: block; }
+  body.mobile .view.player .pl-hero,
+  body.mobile .view.player .pl-hero-art { display: none !important; } /* retrato decorativo */
+  body.mobile .view.player .pl-pane {
+    position: static !important; inset: auto !important; height: auto;
+  }
+  body.mobile .view.player .pl-pane[hidden] { display: none !important; }
+  body.mobile .view.player .pl-sheet {
+    position: static !important; inset: auto !important; width: auto !important; max-width: none;
+  }
+  body.mobile .pl-tabs { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 0 14px !important; }
+  body.mobile .pl-tab { flex: 1 1 30%; padding: 12px 6px; }
+  body.mobile .pl-stats-list { overflow: visible !important; max-height: none !important; }
+  body.mobile .pl-conv-btn { height: 56px; }                 /* botão Converge tappável */
+}

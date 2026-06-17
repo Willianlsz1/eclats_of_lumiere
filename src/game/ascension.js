@@ -6,6 +6,7 @@
 import { ASCENSIONS, ECLATS_DRIP, MAPS, SEEKER_RANKS, DESPERTAR, DESPERTAR_REQ } from '../data/constants.js';
 import { hpForLevel, subareaLevelRange, getCurrentMap } from './enemies.js';
 import { memoireEclatsAllMult } from './memoires.js';
+import { runLevel } from './stats.js';
 
 // Próximo marco de Ascension (ou null se já no fim)
 export const nextAscension = (state) =>
@@ -59,8 +60,14 @@ export const despertarTier = (state) => Math.min(SEEKER_RANKS.length - 1, state.
 // Rank/tier atual da Ordre — lê o tier de DESPERTAR (não as ascensions).
 export const currentRank = (state) => SEEKER_RANKS[despertarTier(state)];
 
-// ×poder permanente do Despertar (dano E HP): mult^despertares.
+// ×poder permanente do Despertar (dano E HP): mult^despertares (×2 por tier).
 export const despertarMult = (state) => DESPERTAR.mult ** (state.despertares || 0);
+// Efeitos ADITIVOS do Despertar por tier (somam ao gear/base): crit rate, crit damage,
+// e bônus de economia (Lumens/XP). Todos = valor × nº de despertares.
+export const despertarCritRateAdd = (state) => DESPERTAR.critRateAdd * (state.despertares || 0);
+export const despertarCritDmgAdd  = (state) => DESPERTAR.critDmgAdd  * (state.despertares || 0);
+export const despertarLumensMult  = (state) => 1 + DESPERTAR.lumensBonus * (state.despertares || 0);
+export const despertarXpMult      = (state) => 1 + DESPERTAR.xpBonus    * (state.despertares || 0);
 
 // ── Gate do Despertar em 3 camadas (§8 redesign, 13/jun) — ATO DO JOGADOR ──
 // Não dispara mais sozinho: vencer o Guardião só destrava a Prova.
@@ -77,26 +84,27 @@ export function despertarReq(state) {
   return t == null ? null : DESPERTAR_REQ[t];
 }
 
-// Prova: vencer o Guardião da Sub 3 do mapa do tier alvo (bossDefeated[2] = Sub3).
+// Prova (recalibração "em branco"): ter LIBERADO a profundidade exigida (Sub 7 no Map 1).
 export function despertarProvaMet(state) {
-  const t = despertarTarget(state);
-  if (t == null) return false;
-  return state.map >= t && Array.isArray(state.bossDefeated) && state.bossDefeated[2] === true;
+  const req = despertarReq(state);
+  if (!req) return false;
+  return (state.unlockedSubarea || 1) >= req.subarea;
 }
 
-// Pode despertar? Prova + Oferenda + Tributo, todos atendidos.
+// Pode despertar? Profundidade + Kills + Nível + Materiais do T1, todos atendidos.
 export function canDespertar(state) {
   const req = despertarReq(state);
   if (!req || !despertarProvaMet(state)) return false;
-  return (state.nitzotzot || 0) >= req.nitzotz && (state.vestiges || 0) >= req.vestiges;
+  return (state.killsTotal || 0) >= req.kills
+    && runLevel(state) >= req.level
+    && (state.materiais?.[0] || 0) >= req.t1;
 }
 
-// Executa o despertar (gasta Nitzotzot + Vestiges, sobe o tier). Idempotente/seguro.
+// Executa o despertar (consome os materiais do T1; kills/nível são limiares, não gastos). Seguro.
 export function doDespertar(state) {
   if (!canDespertar(state)) return false;
   const req = despertarReq(state);
-  state.nitzotzot -= req.nitzotz;
-  state.vestiges -= req.vestiges;
+  state.materiais[0] -= req.t1;
   state.despertares = despertarTarget(state);
   return true;
 }

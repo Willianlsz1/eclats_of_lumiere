@@ -5,7 +5,7 @@
 // secundário = primário^0.30 (30% das décadas). Cap de nível da raridade topo sobe
 // +capPerAsc por Ascension (motor sem-teto). Persiste sempre (não reseta).
 
-import { GEAR, GEAR_RARITIES, CRAFT } from '../data/constants.js';
+import { GEAR, GEAR_RARITIES, CRAFT, NUMBER_CAP } from '../data/constants.js';
 
 const maxRarity = GEAR_RARITIES.length - 1;
 
@@ -137,10 +137,12 @@ export function levelCapFor(piece, state) {
 }
 export const atLevelCap = (piece, state) => piece.level >= levelCapFor(piece, state);
 
-// CP-4: custo de 1 nível LINEAR (suporta milhões de níveis; expo estouraria).
-// cost(L) = base × (L+1) × costMult[raridade]
+// ✅ recalibração "em branco": custo de 1 nível EXPONENCIAL (sim) — dobra a cada 10 níveis.
+// cost(L) = base × costRamp^L × costMult[raridade]. Cria teto-SUAVE (~280) abaixo do cap
+// duro (400). Clampado a NUMBER_CAP (caps altos de M2+ serão recalibrados num CP próprio).
 export function levelCost(piece) {
-  return GEAR.levelCostBase * (piece.level + 1) * GEAR.costMult[piece.rarity];
+  const c = GEAR.levelCostBase * GEAR.costRamp ** piece.level * GEAR.costMult[piece.rarity];
+  return Math.min(NUMBER_CAP, c);
 }
 
 // Tier de material que paga a raridade atual→próxima (= índice da raridade atual: T1 paga 0→1)
@@ -179,25 +181,20 @@ export function buyLevel(state, key) {
   return true;
 }
 
-// Bulk-buy FECHADO (CP-4): compra o máximo de níveis que o orçamento permite — custo
-// linear → soma quadrática → resolve k em O(1). Suporta milhões de níveis. n grande = MAX.
+// Bulk-buy: compra o máximo de níveis que o orçamento permite. Com custo EXPONENCIAL o
+// teto duro é baixo (≤ 400 no Faded; ≤ 5000 nas raridades altas) → loop simples e seguro
+// (sem closed-form). O custo cresce rápido, então poucas iterações por chamada na prática.
 export function buyLevels(state, key, n) {
   const p = state.gear[key];
-  const cap = levelCapFor(p, state);
-  const room = cap - p.level;
-  if (room <= 0) return 0;
-  const K = GEAR.levelCostBase * GEAR.costMult[p.rarity]; // cost(L) = K × (L+1)
-  const c = p.level;
-  // máx k pelo orçamento: K/2 × [(c+k)(c+k+1) − c(c+1)] ≤ lumens → quadrática em (c+k)
-  const disc = Math.sqrt(1 + 4 * (c * (c + 1) + 2 * state.lumens / K));
-  let k = Math.min(n, room, Math.max(0, Math.floor((disc - 1) / 2) - c));
-  if (k <= 0) return buyLevel(state, key) ? 1 : 0; // cobre arredondamento (tenta 1)
-  let cost = (K / 2) * ((c + k) * (c + k + 1) - c * (c + 1));
-  while (cost > state.lumens && k > 0) { k -= 1; cost = (K / 2) * ((c + k) * (c + k + 1) - c * (c + 1)); }
-  if (k <= 0) return 0;
-  state.lumens -= cost;
-  p.level += k;
-  return k;
+  let bought = 0;
+  while (bought < n && !atLevelCap(p, state)) {
+    const cost = levelCost(p);
+    if (state.lumens < cost) break;
+    state.lumens -= cost;
+    p.level += 1;
+    bought += 1;
+  }
+  return bought;
 }
 
 export function doRarityUp(state, key) {

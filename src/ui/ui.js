@@ -14,11 +14,14 @@ import './forge.css';
 import './passives.css';
 import './memoires.css';
 import './ascension.css';
+import './mobile.css';
 import { formatNumber } from '../core/format.js';
 import { picture, bg } from '../data/assets.js';
 import { buildCombatView, renderCombat } from './combat.js';
 import { buildMapView, renderMap } from './map.js';
-import { buildPlayerView, renderPlayer } from './player.js';
+import { buildPlayerView, renderPlayer, convData } from './player.js';
+import { renderConvergence } from './convergence.js';
+import { doConverge } from '../game/convergence.js';
 import { buildGearView, renderGear } from './gear.js';
 import { buildForgeView, renderForge } from './forge.js';
 import { buildPassivesView, renderPassives } from './passives.js';
@@ -57,10 +60,11 @@ const COINS = [
 
 // telas. icon = id de nav confirmado pelo Willian. locked = pós-MVP da main.
 const VIEWS = [
-  { id: 'combat',    label: 'Combate',   icon: 'icons.nav.2' },
-  { id: 'map',       label: 'Mapa',      icon: 'icons.nav.5' },
-  { id: 'player',    label: 'Seeker',    icon: 'icons.nav.1' },
-  { id: 'gear',      label: 'Gear',      icon: 'icons.nav.4' },
+  { id: 'combat',      label: 'Combate',     icon: 'icons.nav.2' },
+  { id: 'map',         label: 'Mapa',        icon: 'icons.nav.5' },
+  { id: 'player',      label: 'Seeker',      icon: 'icons.nav.1' },
+  { id: 'convergence', label: 'Convergence', icon: 'icons.currency.convergence' },
+  { id: 'gear',        label: 'Gear',        icon: 'icons.nav.4' },
   { id: 'forge',     label: 'The Forge', iconSrc: 'eclats/icons/nav/nav_forge.webp' },
   { id: 'passives',  label: 'Passivas',  icon: 'icons.nav.3' },
   { id: 'memoires',  label: 'Mémoires',  icon: 'icons.nav.6' },
@@ -68,6 +72,11 @@ const VIEWS = [
 ];
 
 let current = 'combat';
+
+// Dados da tela de Convergence (reusa o builder do Seeker); ao convergir, refresca a casca.
+function convergeData(state) {
+  return { ...convData(state), onConverge: () => { doConverge(state); renderUI(state); } };
+}
 
 export function setupUI(state) {
   gameState = state;
@@ -101,7 +110,7 @@ function buildNav() {
     const ico = v.iconSrc
       ? `<img src="${v.iconSrc}" alt="${v.label}">`
       : (v.glyph ? v.glyph : picture(v.icon, { alt: v.label }));
-    btn.innerHTML = `<span class="ico">${ico}</span>`;
+    btn.innerHTML = `<span class="ico">${ico}</span><span class="lbl">${v.label}</span>`;
     if (!v.locked) btn.addEventListener('click', () => show(v.id));
     nav.appendChild(btn);
   }
@@ -132,6 +141,13 @@ function buildViews(state) {
       view.className = 'view';
       main.appendChild(view);
       buildPlayerView(view, state);
+      continue;
+    }
+    // Convergence: tela própria (atalho do rito que também vive no Seeker).
+    if (v.id === 'convergence') {
+      view.className = 'view';
+      main.appendChild(view);
+      renderConvergence(view, convergeData(state));
       continue;
     }
     // Gear: 6 peças upáveis com Lumens (pós-MVP, valores provisórios).
@@ -209,12 +225,23 @@ function show(id) {
 
 function fit() {
   const W = window.innerWidth, H = window.innerHeight;
+  const stage = $('#stage');
+  // MODO MOBILE: janela estreita (celular, ex. Redmi Note 13 Pro) → abandona o
+  // palco escalado e deixa o CSS (mobile.css) refluir as telas em coluna rolável.
+  const isMobile = W <= 920;
+  document.body.classList.toggle('mobile', isMobile);
+  if (isMobile) {
+    stage.style.transform = 'none';
+    stage.style.width = '';
+    document.documentElement.style.removeProperty('--stage-w');
+    $('#toosmall').style.display = 'none';
+    return;
+  }
   // Palco com altura de referência fixa (1080) e LARGURA DINÂMICA seguindo a
   // proporção da janela: o jogo preenche a tela toda (sem letterbox) em
   // qualquer aspect ratio, sem distorcer nem cortar. Clamp de segurança para
   // proporções extremas (ultrawide / retrato).
   const stageW = Math.max(1280, Math.min(2560, Math.round(1080 * (W / H))));
-  const stage = $('#stage');
   stage.style.width = `${stageW}px`;
   document.documentElement.style.setProperty('--stage-w', `${stageW}px`);
   const s = Math.min(W / stageW, H / 1080);
@@ -223,8 +250,6 @@ function fit() {
   const x = (W - stageW * s) / 2;
   const y = (H - 1080 * s) / 2;
   stage.style.transform = `translate(${x}px, ${y}px) scale(${s})`;
-  // Corte baixo só para janelas realmente minúsculas — celulares (mesmo em
-  // retrato, ~0.21) passam. Mobile é só para visualizar/testar; o alvo é desktop.
   $('#toosmall').style.display = s < 0.12 ? 'grid' : 'none';
 }
 
@@ -242,6 +267,7 @@ export function renderUI(state) {
   if (current === 'combat') renderCombat(state);
   else if (current === 'map') renderMap(state);
   else if (current === 'player') renderPlayer(state);
+  else if (current === 'convergence') renderConvergence(document.getElementById('view-convergence'), convergeData(state));
   else if (current === 'gear') renderGear(state);
   else if (current === 'forge') renderForge(state);
   else if (current === 'passives') renderPassives(state);

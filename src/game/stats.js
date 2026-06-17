@@ -11,7 +11,7 @@ import { gearDamageMult, gearHpMult, gearCritAdd, gearDefesaMult, gearCritDmgAdd
   gearDamageFlat, gearHpFlat, gearApsFlat } from './gear.js';
 import { passiveDmgMult, passiveHpMult, passiveCritAdd, passiveEnemyPen, passiveEnemyReduce, passiveApsMult } from './passives.js';
 import { memoireDmgMult, memoireHpMult, memoireCritDmgMult, memoireSurvivalMult } from './memoires.js';
-import { ascMult, despertarMult } from './ascension.js';
+import { ascMult, despertarMult, despertarCritRateAdd, despertarCritDmgAdd } from './ascension.js';
 
 // ───── Nível (motor de stat base) ─────
 // O nível vem do XP da RUN (reseta na Convergence). level = (xpRun / div)^exp.
@@ -50,28 +50,28 @@ export function convMult(state) {
 }
 
 // ───── APS e crit (sem Gold Stats — vêm de gear/passivas) ─────
-// APS = baseAPS + ganho DIRETO do afixo de APS (Amuleto), front-loaded e saturante:
-//   p = força do afixo (gearApsMult−1 ≈ nível×0.02); ganho = apsBonusMax × p/(p+apsHalf).
-// Cresce rápido cedo e satura (≈+0.45 → APS ~1.35). Substitui o log "resonance".
+// APS = baseAPS + bônus LINEAR do afixo de APS (Amuleto) — recalibração "em branco":
+//   gearApsFlat ≈ nível × 0.0065 → APS sobe 0.90 → ~2.7 no fim do Map 1 (gear ~280),
+//   bem abaixo do teto global apsCap=10. (Era a curva saturante ~1.35; agora linear, como o sim.)
 export function apsBonus(state) {
-  const p = Math.max(0, gearApsMult(state) - 1);
-  return COMBAT.apsBonusMax * p / (p + COMBAT.apsHalf);
+  return gearApsFlat(state);
 }
 export function currentAPS(state) {
   const aps = (COMBAT.baseAPS + apsBonus(state)) * passiveApsMult(state);
   return Math.min(COMBAT.apsCap, aps);
 }
 
-// Crit ⏳ provisório: rate vem de gear (Grasp) + passivas (Luminal Edge). Sem LCK.
+// Crit ⏳ provisório: rate vem de gear (Grasp) + passivas (Luminal Edge) + Despertar (+5%/tier). Sem LCK.
 export function critChanceRaw(state) {
-  return CRIT.baseChance + gearCritAdd(state) + passiveCritAdd(state);
+  return CRIT.baseChance + gearCritAdd(state) + passiveCritAdd(state) + despertarCritRateAdd(state);
 }
 export function critChance(state) {
   return Math.min(1, critChanceRaw(state));
 }
 export function critDamageMult(state) {
   const overflow = Math.max(0, critChanceRaw(state) - 1); // crit chance > 100% transborda
-  return (CRIT.baseDamageMult + overflow * CRIT.overflowFactor + gearCritDmgAdd(state)) * memoireCritDmgMult(state);
+  // base ×2 + transbordo + gear + Despertar (+200%/tier)
+  return (CRIT.baseDamageMult + overflow * CRIT.overflowFactor + gearCritDmgAdd(state) + despertarCritDmgAdd(state)) * memoireCritDmgMult(state);
 }
 
 // ───── Dano e HP (base FLAT: nível do Seeker + flat do Gear) × multiplicadores ─────

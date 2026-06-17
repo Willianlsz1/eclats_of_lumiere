@@ -3,20 +3,20 @@
 
 // §4 — Constantes-âncora do núcleo de combate
 export const COMBAT = {
-  baseDmg: 3500,          // rescale ×500 (14/jun): números iniciais em centenas/milhares (não 0.2/7)
-  baseAPS: 0.90,          // intervalo de ataque ~1.11s (ajuste pedido pelo Willian: 0.40 → 0.90)
-  apsCap: 5,              // teto de 5 kills/s (18k/h) — ajuste pedido pelo Willian (confortável; 15 rápido, 2 lento).
-  agiApsCap: 3.75,        // sub-cap do AGI: AGI sozinho leva o APS até ~3.4 (0.90 × 3.75)
-  // APS do gear (afixo do Amuleto): curva DIRETA e front-loaded. ganho = max × p/(p+half),
-  // p = força do afixo (~nível×0.02). Cresce rápido cedo e satura: +0.45 → APS ~1.35 no teto;
-  // ~1.30 no fim do M1 (gear ~686). Substitui o log "resonance" (que matava os 30%).
+  // ✅ RECALIBRAÇÃO "EM BRANCO" (2026-06-17) — valores travados no sim map1_blank.mjs
+  // + doc docs/eclats_balance_blank_2026-06-17.md. Substituem o rescale ×500 antigo.
+  baseDmg: 1000,          // dano base do Seeker (sim BASE)
+  baseAPS: 0.90,          // intervalo de ataque ~1.11s (≈ Gaiadon 0.904)
+  apsCap: 10,             // teto GLOBAL de APS (decisão Willian); Map 1 chega a ~2.7-3
+  // APS agora cresce LINEAR com o afixo do Amuleto (gearApsFlat), como no sim — não mais
+  // a curva saturante. Mantemos as 2 chaves abaixo só por compat de imports (não usadas).
   apsBonusMax: 0.45,
   apsHalf: 1.7,
-  playerBaseHp: 25000,    // rescale ×500
+  playerBaseHp: 30000,    // HP base (sim BASE_HP)
   regenPerSec: 0.01,      // 1% do HP máx por segundo
-  regenOnKill: 0.02,      // 2% do HP máx por kill
-  bossHpMult: 15,         // usado no CP-D
-  bossDmgMult: 3,         // usado no CP-D
+  regenOnKill: 0,         // regen-por-kill REMOVIDO (vira passiva futura — decisão Willian)
+  bossHpMult: 15,         // Wall = mob da Sub 9 (nível 1000) × 15 = ~32,5 bi
+  bossDmgMult: 3,         // dano do boss ×3 (sim BOSSDMG)
   deathRespawnSeconds: 3, // morte: respawn com HP cheio, sem perdas
   waveClearDelay: 0.3,    // beat entre ondas: cobre o voo do projétil (PROJ_BASE_MS 200ms + frame)
                           // p/ a morte do ÚLTIMO mob chegar ANTES da próxima onda surgir.
@@ -26,19 +26,21 @@ export const COMBAT = {
 export const ECONOMY = {
   goldRatio: 0.10,  // lumens_por_kill = mob_hp × 0.10 (× convMult; sem frt — CP-3)
   xpRatio: 0.08,    // xp_por_kill     = mob_hp × 0.08 (× convMult; sem wis — CP-3)
-  // ✅ Map 1 (14/jun): PISO fixo de lumens/kill. Pesa cedo (mob vale pouco) e some tarde
-  // (mob vale milhares) → 1º nível comprável em ~1min (era ~9min). Acelera o early (ok, Willian).
-  lumensFloor: 30000,  // rescale ×500 (acompanha o mob_hp ×500; pacing idêntico)
+  // ✅ recalibração "em branco": SEM piso (lumens = mobHp×0.10, como no sim). O 1º nível
+  // de gear (custo 300) sai em ~2 kills do mob inicial (200 lumens/kill).
+  lumensFloor: 0,
 };
 
 // CP-3 (redesign) — NÍVEL = motor de stat base (substitui os Gold Stats).
 // O nível vem do XP da RUN (xpRun): level = (xpRun / div)^exp. Reseta na Convergence.
 // Cada nível dá stat FLAT. ⏳ VALORES PLACEHOLDER — Willian vai calibrar por teste.
 export const LEVEL = {
-  curveDiv: 11000, curveExp: 0.4, // calibrado p/ ~8h no Map 1 (gate por nível; sim map1_pace.mjs)
-  dmgPerLevel: 5000,  // +dano flat por nível (rescale ×500)
-  hpPerLevel: 2500,   // +HP flat por nível (rescale ×500)
-  goldPerLevel: 1500, // +Lumens base por kill por nível (rescale ×500)
+  // ✅ RECALIBRAÇÃO "EM BRANCO": curveDiv=77 (nível 2 em ~3 kills/~8s), curveExp=0.38
+  // → Map 1 ~27h no sim (com head-start). level = (xpRun / 77)^0.38.
+  curveDiv: 77, curveExp: 0.38,
+  dmgPerLevel: 150,  // +dano flat por nível (sim DMG_LVL)
+  hpPerLevel: 150,   // +HP flat por nível (sim HP_LVL)
+  goldPerLevel: 0,   // sem bônus de Lumens por nível (sim: lumens = mobHp×0.10 + piso)
 };
 
 // §3 — Malha geométrica dos 5 mapas (✅ levels/HP/threshold canônicos).
@@ -54,8 +56,15 @@ const PACK = [2, 3, 4, 5, 6, 8, 10, 12, 14];
 export const MAPS = [
   {
     id: 1, name: 'The Dreaming Wood', continent: 'worldmap.continent1', bg: 'backgrounds.map1',
-    lvlLo: 1, lvlHi: 1000, hpLo: 5000, hpHi: 5e8, dmgLo: 100, dmgHi: 1e7,
+    // ✅ RECALIBRAÇÃO "EM BRANCO": mob 2.000 (2 hits) → Sub 9 nível 1000 = 2,169 bi;
+    // Wall (boss ×15) = ~32,5 bi. Dano dos mobs = curva PRÓPRIA (80 → 700k), Wall "perigo C".
+    lvlLo: 1, lvlHi: 1000, hpLo: 2000, hpHi: 2169085656, dmgLo: 80, dmgHi: 7e5,
     subareaCount: 9, packSizes: PACK, bossKillThreshold: 100,
+    // ✅ GATE DE NÍVEL estilo Gaiadon (2026-06-17): bandas LARGAS espalhadas pela jornada
+    // real de níveis (que vai a ~12k via Convergence), DESACOPLADO da faixa de nível dos mobs
+    // (lvlLo/lvlHi → HP/dano seguem como antes). Sub 7/8/9 viram marcos TARDIOS. unlockLevels[n-1]
+    // = nível p/ liberar a Sub n. ⏳ calibrado no harness (game_harness.mjs).
+    unlockLevels: [1, 40, 120, 300, 700, 1500, 3000, 5000, 7500],
     enemyNames: ['Candlewisp Shade', 'Mothlight Herald', 'Dreamhorn Warden', 'Hollowroot Crawler', 'Glowmere Drifter'],
     enemyArts: ['enemies.map1.candlewisp_shade', 'enemies.map1.mothlight_herald', 'enemies.map1.dreamhorn_warden', 'enemies.map1.hollowroot_crawler', 'enemies.map1.glowmere_drifter'],
     guardianArt: 'enemies.map1.dreamhorn_warden',
@@ -141,7 +150,11 @@ export const DEFENSE = {
 export const CONVERGENCE = {
   bonusPerConv: 0.15,    // convMult = 1 + 0.15 × convergences (ADITIVO) — acelerador, não motor
   gateLevelBase: 40,     // 1ª Convergence: atingir nível 40
-  gateLevelGrowth: 1.25, // ✅ Map 1: o alvo de nível sobe ×1.25 a cada Convergence (~12 converges/M1)
+  gateLevelGrowth: 1.3,  // ✅ Map 1: o alvo de nível sobe ×1.3 a cada Convergence (~22 converges/M1)
+  // ✅ HEAD-START (2026-06-17, ref. Gaiadon "Starting Ascension"): ao convergir, o nível da
+  // run NÃO volta pro 1 — reseta p/ headstartFrac × nível atingido. Conserta o death-loop
+  // das áreas fundas e corta a tediosidade de re-upar do zero. Validado no sim.
+  headstartFrac: 0.5,
 };
 
 // §7 — Vestiges (renda; gasto em Passivas/Ascension é pós-MVP)
@@ -172,22 +185,26 @@ export const GEAR = {
   ],
   // por raridade (índice 0..4): força do afixo e CUSTO sobem
   rarityMult: [1, 1.5, 2.25, 3.5, 5],
-  // CAP de nível por raridade (✅ Map 1: Faded = 1000). M2+ = placeholder (a discutir).
-  levelCap:   [750, 2000, 3000, 4000, 5000],
+  // CAP de nível por raridade (✅ recalibração "em branco": Faded = 400). M2+ = placeholder.
+  levelCap:   [400, 2000, 3000, 4000, 5000],
   // CUSTO por tier. Faded = ×1 (→ 1400×(L+1), ✅ Map 1). M2+ = placeholder seguro (a discutir).
   costMult:   [1, 10, 100, 1000, 10000],
-  // ── MODELO MAP 1 (calibrado 14/jun): 2 AFIXOS por peça — flat + % ──
-  // Primary (flat, por tipo) — soma à base. Bonus% (%) — multiplica. (×Multiplier removido.)
-  flatPerLevel: { dmg: 30000, hp: 12500, defesa: 7500, aps: 0, regen: 0.0005, bossDmg: 0, lumens: 0, xp: 0, crit: 0, critDmg: 0, materiais: 0 },
-  bonusRate: 0.02,           // afixo % : 1 + nível × bonusRate × rarityMult (2%/nv no Faded). ✅ Map 1
-  multRate:  0,              // ×Multiplier REMOVIDO (decisão Willian 14/jun — era cópia do Gaiadon)
-  affixPctRate: 0.01,        // FARM (lumens/xp/materiais): % linear/nível. (fix do NaN — faltava no constants)
+  // ── MODELO MAP 1 (✅ recalibração "em branco" 2026-06-17): 2 AFIXOS por peça — flat + % ──
+  // Os valores reproduzem o AGREGADO das 6 peças do sim (Faded): +50 dano/nv, +2%/nv dano,
+  // +600 HP/nv, +0.0065 APS/nv (Amuleto), 0.1% crit/nv (Grasp), +4% Lumens/nv (Anel). Gear → ~280.
+  flatPerLevel: { dmg: 50, hp: 600, defesa: 200, aps: 0.0065, regen: 0.0005, bossDmg: 0, lumens: 0, xp: 0, crit: 0, critDmg: 0, materiais: 0 },
+  bonusRate: 0.02,           // afixo % : 1 + nível × bonusRate × rarityMult (2%/nv no Faded)
+  multRate:  0,              // ×Multiplier REMOVIDO (decisão Willian — era cópia do Gaiadon)
+  affixPctRate: 0.04,        // FARM (lumens/xp/materiais): % linear/nível (Anel 4% Lumens/nv)
   secondaryExp: 0.30,        // afixo SECUNDÁRIO = primário^0.30 (e flat/camadas × secondaryExp)
   capPerAsc: 0,
-  critPerLevel: 3e-4,        // afixo crit (chance): GRADUAL, ~15% no fim do M1 (Grasp ~490 Faded)
-  critDmgPerLevel: 1e-3,     // afixo critDmg (bônus plano sobre ×2): escala até o cap 1000 do gear
-  // custo de nível LINEAR: base × (nível+1) × costMult[raridade]. Calibrado p/ ~8h Map 1 (sim map1_pace.mjs).
-  levelCostBase: 420000,
+  critPerLevel: 1e-3,        // afixo crit (chance): ~28% no fim do M1 (Grasp ~280 Faded)
+  critDmgPerLevel: 0.0667,   // afixo critDmg (secundário a 0.30 → ~+2%/nv efetivo, como o sim)
+  // ✅ recalibração "em branco": custo EXPONENCIAL por peça (sim) — barato cedo, dobra a cada
+  // 10 níveis (costRamp) → cria teto-SUAVE (~280) bem abaixo do cap duro (400). custo(L) =
+  // base × costRamp^L × costMult[raridade], clampado a NUMBER_CAP (M2+ recalibra à parte).
+  levelCostBase: 8000,       // ✅ calibrado no harness c/ Despertar no loop: Map 1 ~18h
+  costRamp: 1.0717734625,    // 2^(1/10): o custo de 1 nível dobra a cada 10 níveis
   // (Subir raridade = gate duplo: nível no cap + MATERIAIS do tier — ver CRAFT, Passo 4.)
 };
 
@@ -305,20 +322,29 @@ export const SEEKER_RANKS = [
   { name: 'L’Éveillé',  tier: 'IV' },
   { name: 'Lumière',    tier: 'V' },
 ];
-// ×poder permanente por tier de Despertar (dano E HP). ⏳ PROVISÓRIO — calibração na Escala.
-export const DESPERTAR = { mult: 5 };
+// ✅ DESPERTAR (recalibração "em branco" 2026-06-17) — pacote de efeitos por tier, igual ao
+// "awaken" do sim + economia. Ato do jogador, alcançável ANTES da Wall (Sub 7).
+export const DESPERTAR = {
+  mult: 2,            // ×2 dano E vida por tier (era ×5; decisão Willian)
+  critRateAdd: 0.05,  // +5% crit rate por tier
+  critDmgAdd: 2.0,    // +200% crit damage por tier (somado à base ×2 e ao gear)
+  lumensBonus: 0.30,  // +30% Lumens por tier (calibrado no harness)
+  xpBonus: 0.20,      // +20% XP por tier (calibrado no harness)
+};
 
-// §8 redesign (13/jun) — gate do Despertar em 3 camadas: Prova (Guardião Sub3) +
-// Oferenda (Nitzotzot) + Tributo (Vestiges). ⏳ NÚMEROS = LISTA DE CALIBRAÇÃO.
-// Drop do Nitzotz: só nas Sub-áreas 3+; chunk garantido em boss (Guardião).
+// ✅ GATE do Despertar (recalibração "em branco" 2026-06-17, decisão Willian): profundidade
+// (Sub 7+) + KILLS (total) + NÍVEL (da run) + MATERIAIS do T1 (consumidos no ato). Substitui
+// o gate Prova-Sub3/Nitzotzot/Vestiges (a Prova-Sub3 era inalcançável após o redesign 14/jun).
+// Drop do Nitzotz mantido (vestigial por ora; pode virar moeda de outra coisa).
 export const NITZOTZ = { dropChance: 0.02, bossChunk: 5 };
 // Requisito por TIER ALVO (índice = despertares+1 = 1..4 → T2..T5). [0] não usado (T1 = início).
+// subarea = profundidade mín. liberada · kills = total de kills · level = nível da run · t1 = materiais[0].
 export const DESPERTAR_REQ = [
   null,
-  { nitzotz: 20,  vestiges: 75_000 },    // → T2 Illuminate  (~15% Asc Map1)
-  { nitzotz: 40,  vestiges: 285_000 },   // → T3 Éclairé     (~15% Asc Map2)
-  { nitzotz: 80,  vestiges: 600_000 },   // → T4 L'Éveillé   (~15% Asc Map3)
-  { nitzotz: 160, vestiges: 1_200_000 }, // → T5 Lumière     (~15% Asc Map4)
+  { subarea: 7, kills: 15000,  level: 2000,   t1: 50 },   // → T2 (Map 1) ✅ calibrado: Despertar ~11h, clear ~18h
+  { subarea: 5, kills: 30_000, level: 5_000,  t1: 120 },  // → T3 (Map 2) ⏳ placeholder
+  { subarea: 6, kills: 1e5,    level: 1e5,    t1: 300 },  // → T4 (Map 3) ⏳ placeholder
+  { subarea: 7, kills: 3e5,    level: 1e6,    t1: 600 },  // → T5 (Map 4) ⏳ placeholder
 ];
 
 // §10/§11 — ÉCLATS + MÉMOIRES (✅ motor canônico do GDD). 15 relíquias, 3 por era,
@@ -367,5 +393,5 @@ export const TICK_SECONDS = 0.1;     // tick fixo de 100ms
 export const MAX_CATCHUP_TICKS = 50; // teto de catch-up por frame (ausências longas: offline §15 no reload)
 export const AUTOSAVE_MS = 10_000;
 export const SAVE_KEY = 'eclats_save_v1';
-export const SCHEMA_VERSION = 6; // v6 (14/jun): modelo Map 1 — gear 2 afixos + cap 1000 + custo/conv novos (descarta saves antigos incompatíveis)
+export const SCHEMA_VERSION = 7; // v7 (17/jun): recalibração "em branco" — escala nova (baseDmg 1000, mob 2k→32,5bi, APS linear, head-start). Descarta saves v6.
 export const NUMBER_CAP = 1e100;     // teto do jogo base — cabe no float nativo
