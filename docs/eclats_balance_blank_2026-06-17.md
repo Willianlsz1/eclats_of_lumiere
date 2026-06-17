@@ -67,8 +67,12 @@ ver §9): *soma dentro da camada, multiplica entre camadas.* Por ora **2 camadas
 **Crit:** base **0%** de crit damage (decisão Willian — crit ≠ ×2 no início). Crit damage =
 1 + Σ(crit dmg%): Manto +2%/nv + Despertar +200%. Crit chance: Luvas +0,1%/nv + Despertar +5%.
 
+**Cap de nível — Faded = 200** (decisão Willian): folga curta sobre os ~184 que o jogador
+atinge no Map 1. O cap é **teto**, não meta — o nível alcançado é limitado pela **renda × custo**,
+não pelo cap (chegar ao 200 ≈ 1,9e11 Lumens; ao 750 ≈ 6,3e27 — inviável no Map 1).
+
 > ⏳ **Raridade (Hollow):** além de multiplicar os afixos, **adiciona afixos novos** (camada ×
-> e além) — Willian define os extras depois. Cap de nível por raridade idem (Faded ≥ ~185).
+> e além) — Willian define os extras depois. Caps das raridades acima (Kindled+) idem.
 
 ## 4. Nível & XP (motor de stat base) ✅
 | Constante | Valor | Decisão |
