@@ -15,74 +15,81 @@ const APSCAP = 10;        // teto de kills/s
 // ── Economia ──
 const GOLD = 0.10;        // lumens/kill = mobHp × GOLD
 let   XP_RATIO = 0.08;    // xp/kill = mobHp × XP_RATIO  (livre — ajustável)
-// ── Gear (arma) ──
-const GEAR_DMG_FLAT = 50; // +dano por nível de arma
-const GEAR_COST0 = 2000;  // custo do 1º nível
-const GEAR_RAMP = 2 ** (1 / 10); // dobra a cada 10 níveis (~1.0718)
+// ── Gear: 6 peças, 2 afixos cada (flat + bônus%), 2 CAMADAS (Flat + Bonus%).
+//    1 nível por peça escala os 2 afixos. Assumo as 6 no MESMO nível L (compra
+//    equilibrada): subir L→L+1 custa 6× o custo de 1 peça. Camada Multiplier ×
+//    fica pro Hollow/raridades (decisão Willian: "versão 2 camadas" agora).
+const GEAR_COST0 = 2000;          // custo do 1º nível (1 peça)
+const GEAR_RAMP = 2 ** (1 / 10);  // dobra a cada 10 níveis (~1.0718)
+const PIECES = 6;
+// afixos por nível (agregados das 6 peças):
+const G_DMG_FLAT = 50;            // Weapon: +50 dano flat/nv
+const G_DMG_PCT = 0.01 + 0.01;    // Weapon 1% + Amuleto 1% = dano%/nv
+const G_HP_FLAT = 300 + 300;      // Elmo 300 + Manto 300 = HP flat/nv
+const G_HP_PCT = 0.01;            // Elmo: HP%/nv
+const G_CRIT = 0.001;             // Luvas: +0.1% crit chance/nv
+const G_CDMG_PCT = 0.02;          // Manto: +2% crit damage/nv (base 0%)
+const G_APS = 0.01;               // Amuleto: +0.01 atk speed/nv
+const G_GOLD_PCT = 0.02 + 0.02;   // Luvas 2% + Anel 2% = gold%/nv
+const G_XP_PCT = 0.01;            // Anel: +1% XP/nv
 // ── Malha do Map 1 ──
 const N = 9, hpLo = 5000, hpHi = 670000, BOSSMULT = 15; // Wall ≈ 10M
 const mobHpOf = (s) => hpLo * (hpHi / hpLo) ** ((s - 1) / (N - 1));
 const bossHp = () => mobHpOf(N) * BOSSMULT;
 // ── Convergence ──
-const CONV_DMG = 0.15, CONV_LUM = 0.03; // por convergência (aditivo)
+const CONV_DMG = 0.15, CONV_LUM = 0.03; // por convergência (aditivo; XP = 0, vem do Gear)
 // ── Despertar (sub-área 7) ──
-const AWAKEN_SUB = 7, AWAKEN_MULT = 2, AWAKEN_APS = 0.3, AWAKEN_CRIT = 0.05, AWAKEN_CDMG = 2; // +200% → ×4
+const AWAKEN_SUB = 7, AWAKEN_MULT = 2, AWAKEN_APS = 0.3, AWAKEN_CRIT = 0.05, AWAKEN_CDMG = 2.0; // crit dmg base 0% +200%
 
-// Níveis-alvo de unlock das 9 sub-áreas (LIVRES — é o que estamos calibrando).
-// Convergence frequente = 1ª na sub-área 2; gate de conv = unlock da sub-área alcançada.
 const fmtT = (s) => s == null ? '  —  ' : s < 90 ? `${s.toFixed(0)}s` : s < 5400 ? `${(s / 60).toFixed(1)}min` : s < 86400 * 2 ? `${(s / 3600).toFixed(1)}h` : `${(s / 86400).toFixed(2)}d`;
 
 function pace(curveDiv, curveExp, gates, convGrowth, convBase = gates[1]) {
   // estado persistente (sobrevive à Convergence)
-  let conv = 0, unlocked = 1, t = 0, awakened = false, convGate = convBase; // gatilho da 1ª conv
-  const events = []; // {area, lvl} de cada Convergence
-  // estado da run (reseta na Convergence)
+  let conv = 0, unlocked = 1, t = 0, awakened = false, convGate = convBase;
+  const events = [];
+  // estado da run (reseta na Convergence — exceto o Gear)
   let xpRun = 0, level = 1, gearLvl = 0, lumens = 0;
-  let kills9 = 0, convCount = 0;
-  // marcos
+  let convCount = 0;
   const M = { lvl2: null, sub2: null, conv1: null, awaken: null, wall: null };
 
   const convDmg = () => 1 + CONV_DMG * conv;
-  const convHp = () => 1 + CONV_DMG * conv;
   const convLum = () => 1 + CONV_LUM * conv;
   const awMult = () => awakened ? AWAKEN_MULT : 1;
-  const aps = () => Math.min(APSCAP, APS0 + (awakened ? AWAKEN_APS : 0));
-  const critChance = () => awakened ? AWAKEN_CRIT : 0;
-  const critMult = () => awakened ? (2 + AWAKEN_CDMG) : 2; // ×2 base, ×4 pós-despertar
-  const dmgHit = () => (BASE + level * DMG_LVL + gearLvl * GEAR_DMG_FLAT) * convDmg() * awMult();
+  const aps = () => Math.min(APSCAP, APS0 + gearLvl * G_APS + (awakened ? AWAKEN_APS : 0));
+  const critChance = () => Math.min(1, gearLvl * G_CRIT + (awakened ? AWAKEN_CRIT : 0));
+  const critMult = () => 1 + gearLvl * G_CDMG_PCT + (awakened ? AWAKEN_CDMG : 0); // base 0% bônus
+  const dmgHit = () => (BASE + level * DMG_LVL + gearLvl * G_DMG_FLAT) * (1 + gearLvl * G_DMG_PCT) * convDmg() * awMult();
   const dps = () => dmgHit() * aps() * (1 + critChance() * (critMult() - 1));
-  const gearCost = () => GEAR_COST0 * GEAR_RAMP ** gearLvl;
+  const goldMult = () => (1 + gearLvl * G_GOLD_PCT) * convLum();
+  const xpMult = () => 1 + gearLvl * G_XP_PCT;
+  const stepCost = () => PIECES * GEAR_COST0 * GEAR_RAMP ** gearLvl; // subir as 6 de L→L+1
 
   let guard = 0;
   while (guard++ < 5e7) {
-    const mobHp = mobHpOf(unlocked); // sempre farma o mob da sub-área (boss vem junto na sub9)
+    const mobHp = mobHpOf(unlocked);
     const d = dps();
     const tpk = Math.max(1 / aps(), mobHp / d);
-    const dt = tpk, k = 1; // 1 kill por passo
-    t += dt;
-    // renda ancorada ao mob mais fundo farmado
-    lumens += k * mobHp * GOLD * convLum();
-    xpRun += k * mobHp * XP_RATIO;
+    t += tpk;
+    lumens += mobHp * GOLD * goldMult();
+    xpRun += mobHp * XP_RATIO * xpMult();
     level = Math.max(1, Math.floor((xpRun / curveDiv) ** curveExp));
     if (M.lvl2 === null && level >= 2) M.lvl2 = t;
-    // unlock de sub-áreas por nível
     while (unlocked < N && level >= gates[unlocked]) {
       unlocked++;
       if (unlocked === 2 && M.sub2 === null) M.sub2 = t;
-      if (unlocked === AWAKEN_SUB) { awakened = true; if (M.awaken === null) M.awaken = t; } // Despertar ao entrar na sub7
+      if (unlocked === AWAKEN_SUB) { awakened = true; if (M.awaken === null) M.awaken = t; }
     }
-    // compra gulosa de Gear (PERSISTE — Convergence não reseta o Gear)
-    let b = 0; while (lumens >= gearCost() && b++ < 5000) { lumens -= gearCost(); gearLvl++; }
-    // Convergence: ao atingir o gate de nível (frequente). Reseta SÓ o nível da run.
+    // compra gulosa de Gear (as 6 peças juntas; PERSISTE pela Convergence)
+    let b = 0; while (lumens >= stepCost() && b++ < 5000) { lumens -= stepCost(); gearLvl++; }
+    // Convergence: reseta SÓ o nível da run (Gear persiste)
     if (level >= convGate && unlocked >= 2) {
       conv++; convCount++; events.push({ area: unlocked, lvl: level });
       if (M.conv1 === null) M.conv1 = t;
-      convGate = Math.max(convGate * convGrowth, level + 1); // próximo gate sobe
-      xpRun = 0; level = 1; lumens = 0; // Gear NÃO reseta
+      convGate = Math.max(convGate * convGrowth, level + 1);
+      xpRun = 0; level = 1; lumens = 0;
     }
-    // Wall (boss da sub9) derrotável em ~30s → Map 1 limpo
     if (unlocked === N && d >= bossHp() / 30) { M.wall = t; break; }
-    if (t > 86400 * 10) break; // trava de segurança
+    if (t > 86400 * 10) break;
   }
   return { t, conv: convCount, unlocked, awakened, gearLvl, M, events };
 }
@@ -99,7 +106,9 @@ console.log('curveExp | curveDiv | t→lvl2 | t→sub2(1ª conv) | t→despertar
 // (com Gear persistente, packs 2×7+3+3, boss junto na sub9, sem cap de nível de mob).
 // Convergence: gatilho 1º = LV 40 (decisão Willian); cresce ×1,3 a cada conv.
 const CONV_BASE = 40, CONV_GROWTH = 1.3;
-const curveExp = 0.455, curveDiv = Math.round(fitDiv(curveExp));
+// ✅ ESCOLHIDO (Willian): com Gear completo (6 peças, 2 afixos flat+%, 2 camadas),
+// curveExp=0.41 / curveDiv≈221 → Map 1 ~1,2 dias. Gear termina ~nível 184.
+const curveExp = 0.41, curveDiv = Math.round(fitDiv(curveExp));
 {
   const r = pace(curveDiv, curveExp, gates, CONV_GROWTH, CONV_BASE);
   const m = r.M;

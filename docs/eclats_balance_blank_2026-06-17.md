@@ -41,21 +41,40 @@ ondas + Gear), **Melvor Idle / Clicker Heroes / Realm Grinder / TT2**, e a teori
 | `ECONOMY.lumensFloor` | **0** 🔧 | **sem piso** neste design (era 30.000) |
 | `LEVEL.goldPerLevel` | **0** 🔧 | Lumens vêm só do mob; nível não dá Lumens base |
 
-## 3. Gear — arma (1ª compra) ✅ / 🔧
-| Parâmetro | Valor | Nota |
-|---|---|---|
-| Custo do 1º nível | **~2.000 Lumens** | ~4 kills ≈ **10s** até a 1ª compra |
-| `GEAR.flatPerLevel.dmg` | **50** | +5% do dano base por nível (upgrade granular) |
-| Curva de custo | **dobra a cada ~10 níveis** (ramp ≈ **1,072**) 🔧 | hoje o código é custo LINEAR; mudar p/ geométrico |
+## 3. Gear — 6 peças, 2 afixos cada (flat + bônus%) ✅ / 🔧
+**Modelo (decisão Willian 2026-06-17):** cada peça tem **2 afixos** (1 flat + 1 bônus%), e
+**1 nível por peça** escala os dois. **Arquitetura de CAMADAS** (lição das telas do Gaiadon,
+ver §9): *soma dentro da camada, multiplica entre camadas.* Por ora **2 camadas — Flat
+(Primary) + Bonus% (Bonus)** — a camada **Multiplier ×** entra com o Hollow/raridades.
 
-> Batida do coração: pra dobrar o dano (1.000→2.000) = 20 níveis de arma; o preço dobrando
-> a cada 10 níveis cria a desaceleração que empurra o jogador a "ir mais fundo".
+| Peça | Afixo 1 (flat) | Afixo 2 (%) |
+|---|---|---|
+| **Weapon** | Dano **+50**/nv | Dano **+1%**/nv |
+| **Elmo** | HP **+300**/nv | HP **+1%**/nv |
+| **Manto** | HP **+300**/nv | Crit Damage **+2%**/nv |
+| **Luvas** | Crit Chance **+0,1%**/nv | Gold **+2%**/nv |
+| **Amuleto** | Atk Speed **+0,01**/nv | Dmg **+1%**/nv |
+| **Anel** | Gold **+2%**/nv | XP **+1%**/nv |
+
+**Agregado por nível** (as 6 peças): dano flat +50 · dano% +2% (weapon+amuleto) · HP flat
++600 (elmo+manto) · HP% +1% · crit chance +0,1% · crit dmg% +2% · APS +0,01 · gold% +4%
+(luvas+anel) · XP% +1%.
+
+**Custo (por peça):** 1º nível **~2.000 Lumens**, **dobra a cada ~10 níveis** (ramp ≈ 1,072) 🔧
+(hoje o código é linear; mudar p/ geométrico). No sim assumo as 6 peças no mesmo nível
+(compra equilibrada → subir L→L+1 custa 6× o custo de 1 peça). Gear termina o Map 1 ~**nível 184**.
+
+**Crit:** base **0%** de crit damage (decisão Willian — crit ≠ ×2 no início). Crit damage =
+1 + Σ(crit dmg%): Manto +2%/nv + Despertar +200%. Crit chance: Luvas +0,1%/nv + Despertar +5%.
+
+> ⏳ **Raridade (Hollow):** além de multiplicar os afixos, **adiciona afixos novos** (camada ×
+> e além) — Willian define os extras depois. Cap de nível por raridade idem (Faded ≥ ~185).
 
 ## 4. Nível & XP (motor de stat base) ✅
 | Constante | Valor | Decisão |
 |---|---|---|
 | `LEVEL.curveDiv` | **262** | nível-2 em ~9s |
-| `LEVEL.curveExp` | **0,455** | Map 1 em **~1,3 dias** (validado no sim, c/ Gear persistente) |
+| `LEVEL.curveExp` | **0,41** | Map 1 em **~1,2 dias** (validado no sim c/ Gear completo de 6 peças) |
 | `LEVEL.dmgPerLevel` | **150** | +dano por nível |
 | `LEVEL.hpPerLevel` | **150** | +vida por nível |
 
@@ -123,13 +142,13 @@ Revisado pelo Willian: **deixou de ser no Guardião da sub-3** e **não libera h
 ---
 
 ## Validação de pacing (`tools/sim/map1_blank.mjs`)
-Com `curveExp=0,455 / curveDiv=262` (Gear persistente):
-- **Nível 2:** ~9s ✅ (alvo ~8s)
-- **1ª Convergence:** LV 40, ~12 min ✅ (cedo, sub-área 2)
-- **Despertar (sub-7):** ~19,3h ✅ (pré-Wall, ~metade do mapa)
-- **Wall derrotada / Map 1 limpo:** ~**1,3 dias** (33h) de tempo-de-combate ✅ ("médio")
+Com `curveExp=0,41 / curveDiv=221` (Gear completo de 6 peças, 2 camadas):
+- **Nível 2:** ~7s ✅ (alvo ~8s)
+- **1ª Convergence:** LV 40, ~16 min ✅ (cedo, sub-área 2)
+- **Despertar (sub-7):** ~16,7h ✅ (pré-Wall, ~metade do mapa)
+- **Wall derrotada / Map 1 limpo:** ~**1,2 dias** (29h) de tempo-de-combate ✅ ("médio")
 - **Nº de Convergences:** 13 ✅ ("frequente", gatilho ×1,3)
-- **Nível final da arma:** ~173 (Gear persiste através das Convergences)
+- **Nível final do Gear:** ~184 (Gear persiste através das Convergences)
 
 > ⚠️ O sim mede **renda/poder** (pacing), **não morte**. A Wall aqui é "parede de dano".
 > A camada de **sobrevivência** depende do **HP** (vida base + nível + Gear de HP + regen)
@@ -159,6 +178,37 @@ Cada sub-área pede um nível maior do Seeker pra desbloquear. Tabela atual (aju
 > isso que produz as ~14 Convergences. Gatilho menor = mais Convergences; maior = menos.
 
 ---
+
+## 9. Aprendizados do Gaiadon (referência, NÃO cópia) — 2026-06-17
+Análise das telas do Gaiadon enviadas pelo Willian (ATTACK, XP, anéis, ATTACK SPEED).
+**Pegamos o princípio, jogamos fora os números.**
+
+### Motor de CAMADAS (a regra de ouro = Pecorella)
+As colunas do Gaiadon (Primary · Bonus · Multiplier · Mastery · Apotheosis · Gemcraft ·
+Soulcraft) são **camadas de cálculo**. As linhas (Equipment, Pets, Fame, Skills…) são as
+**fontes**, cada uma despeja em uma ou mais camadas:
+```
+Total = Primary × (1+ΣBonus%) × (ΠMultiplier) × (1+ΣMastery%) × (1+ΣApotheosis%) × …
+```
+> **Soma DENTRO da camada, multiplica ENTRE camadas.** Somar = adicionar conteúdo infinito sem
+> quebrar o balanço; multiplicar = a explosão idle. Subir de raridade **destrava afixos de
+> camadas MAIS ALTAS** (Multiplier/Mastery) — por isso raridade nova é um salto, não um "+10%".
+
+**Nossa pilha (enxuta, cresce com o jogo):**
+| Camada | De onde vem (nosso jogo) | Quando |
+|---|---|---|
+| Flat (Primary) | afixo flat do Gear + Nível | Map 1 ✅ |
+| Bonus % | afixo % do Gear | Map 1 ✅ |
+| Multiplier × | afixos de raridade alta + Despertar + Ascension | Hollow / Despertar |
+| Meta % (Mastery) | Mémoires / Passivas (knobs globais) | pós-Ascension |
+
+### Attack Speed (tela "Capped at 15")
+Gaiadon: base 0,95/s, **teto 15**, e *"values exceeding the cap → Attack Mastery a 1:100"*.
+Ou seja: APS bruto pode ser enorme, mas trava no teto e o **excedente vira dano** (camada
+Mastery). **Lição p/ nós:** o teto de APS (10) **não desperdiça** — passado o teto, velocidade
+**vira dano** (já temos o gancho: passiva *Void Awareness*). APS é stat de 1 camada (flat),
+contido de propósito, pois a economia é ancorada em "1 kill/ataque". ⏳ Calibrar fontes de APS
+(amuleto + Despertar + passivas) rumo ao teto + a conversão overflow→dano numa fase própria.
 
 ## Pendências desta recalibração
 - 🔧 **WIRING no código** (a estrutura atual difere do design): curva de custo do Gear
