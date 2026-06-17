@@ -216,6 +216,25 @@ Mastery). **Lição p/ nós:** o teto de APS (10) **não desperdiça** — passa
 contido de propósito, pois a economia é ancorada em "1 kill/ataque". ⏳ Calibrar fontes de APS
 (amuleto + Despertar + passivas) rumo ao teto + a conversão overflow→dano numa fase própria.
 
+## 10. Offline (decisão Willian 2026-06-17) ✅ / 🔧
+| Parâmetro | Valor | Nota |
+|---|---|---|
+| `OFFLINE.maxSeconds` | **8h** (28.800s) 🔧 | hoje o código tem 30 dias (guarda de engenharia) — virar **8h** de gameplay |
+| Eficiência offline | **40%** do ativo 🔧 | ganha 40% da renda/combate que ganharia ativo; **campo novo** no código |
+
+**Banco offline cheio = 8h × 40% = 3,2h de combate/dia.** As ~30,7h de combate do Map 1
+são **tempo de combate**, não wall-clock; os "dias reais" dependem do estilo + offline:
+
+| Perfil | Combate/dia | Dias reais (Map 1) |
+|---|---|---|
+| Perfeito (24/7 ativo) | 24h | ~1,3 dia |
+| Dedicado (3h ativo + offline) | 6,2h | ~5 dias |
+| Casual (1h ativo + offline) | 4,2h | ~7,3 dias |
+| Leve (só 1 banco/dia) | 3,2h | ~9,6 dias |
+
+> Cresce via passivas futuras: *Dreamwalker* = +eficiência (rumo a ~50%); *Nil's Embrace* =
+> +teto de tempo (8h→24h). Offline modesto estica o casual p/ ~1 semana no Map 1 (gênero-friendly).
+
 ## Pendências desta recalibração
 - 🔧 **WIRING no código** (a estrutura atual difere do design): curva de custo do Gear
   (linear→geométrica), gates de sub-área (geométrico→tabela), Convergence (bônus único →
