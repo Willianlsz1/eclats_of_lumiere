@@ -11,7 +11,7 @@ const DMG_LVL = 150;      // +dano por nível do Seeker
 const HP_LVL = 150;       // +vida por nível do Seeker
 const BASE_HP = 30000;    // playerBaseHp
 const APS0 = 0.9;         // baseAPS (≈ Gaiadon 0.904)
-const APSCAP = 3;         // teto de APS (Map 1 chega a ~1,7; folga até 3) — decisão Willian
+const APSCAP = 10;        // teto GLOBAL de APS (decisão Willian); Map 1 chega a ~3
 // ── Economia ──
 const GOLD = 0.10;        // lumens/kill = mobHp × GOLD
 let   XP_RATIO = 0.08;    // xp/kill = mobHp × XP_RATIO  (livre — ajustável)
@@ -38,6 +38,11 @@ const G_XP_PCT = 0.01;            // Anel: +1% XP/nv
 const N = 9, hpLo = 2000, hpHi = 2169085656, BOSSMULT = 15; // Wall = 32.536.284.840
 const mobHpOf = (s) => hpLo * (hpHi / hpLo) ** ((s - 1) / (N - 1));
 const bossHp = () => mobHpOf(N) * BOSSMULT;
+// DANO dos mobs = CURVA PRÓPRIA (desacoplada da vida — senão o dano dispara 16M× e o HP só ~150×).
+// dmgLo early baixo (passeio seguro) → dmgHi calibrado p/ a Wall ser tensa-mas-vencível (perigo "C").
+let DMG_LO = 80, DMG_HI = 7e5;
+const BOSSDMG = 3;
+const dmgOf = (s) => DMG_LO * (DMG_HI / DMG_LO) ** ((s - 1) / (N - 1));
 // ── Convergence ──
 const CONV_DMG = 0.15, CONV_LUM = 0.03; // por convergência (aditivo; XP = 0, vem do Gear)
 // ── Despertar (sub-área 7) ──
@@ -123,7 +128,7 @@ function pace(curveDiv, curveExp, gates, convGrowth, convBase = gates[1]) {
       convGate = Math.max(convGate * convGrowth, level + 1);
       xpRun = 0; level = 1; lumens = 0;
     }
-    if (unlocked === N && d >= bossHp() / 30) { M.wall = t; break; }
+    if (unlocked === N && d >= bossHp() / 30) { M.wall = t; worst.wallClear = snap(); break; }
     if (t > 86400 * 10) break;
   }
   return { t, conv: convCount, unlocked, awakened, gearLvl, M, events, worst };
@@ -144,7 +149,7 @@ const CONV_BASE = 40, CONV_GROWTH = 1.3;
 // ✅ ESCOLHIDO (Willian): com Gear completo (6 peças, 2 afixos flat+%, 2 camadas),
 // curveExp=0.41 / curveDiv≈221 → Map 1 ~1,2 dias. Gear termina ~nível 184.
 // ✅ ESCOLHIDO: Wall 32,5bi · aceitar ~24 conv · apsCap 3 · gear cap 400.
-G_APS = 0.0019;
+G_APS = 0.0065; // amuleto: APS chega a ~3 no fim do Map 1 (gear ~278)
 const curveExp = 0.41, curveDiv = Math.round(fitDiv(curveExp));
 {
   const r = pace(curveDiv, curveExp, gates, CONV_GROWTH, CONV_BASE);
@@ -153,21 +158,36 @@ const curveExp = 0.41, curveDiv = Math.round(fitDiv(curveExp));
   console.log(`${String(curveExp).padStart(8)} | ${String(curveDiv).padStart(8)} | ${fmtT(m.lvl2).padStart(6)} | ${fmtT(m.sub2 ?? m.conv1).padStart(15)} | ${fmtT(m.awaken).padStart(11)} | ${fmtT(r.t).padStart(10)} | ${String(r.conv).padStart(6)} | ${String(r.gearLvl).padStart(8)} | APSfim ${endAps.toFixed(2)}`);
 }
 
-// ── SOBREVIVÊNCIA (só HP) — luta a onda no pior momento de cada área ──
-console.log('\n=== sobrevivência (só HP) — pior momento (menor HP) por área ===');
-console.log('área | HP no pior momento | dano onda/s | vive? | HP mínimo na luta | nota');
+const fmt = (n) => n >= 1e9 ? (n / 1e9).toFixed(2) + 'bi' : n >= 1e6 ? (n / 1e6).toFixed(2) + 'M' : Math.round(n).toLocaleString('pt-BR');
+
+// ── CALIBRAR dmgHi: a Wall (poder pleno) tem que ser TENSA-mas-vencível (perigo "C") ──
+// A linha-chave é "Wall@clear": estado no momento em que o jogador CONSEGUE vencer a Wall.
+console.log('\n=== calibração do dano (Wall poder pleno) — varrer dmgHi ===');
+console.log('dmgHi   | HP no clear | boss dmg/s | vive a Wall? | HP mín. na luta');
+for (const dh of [3e5, 5e5, 7e5, 9e5, 1.2e6]) {
+  DMG_HI = dh;
+  const r = pace(curveDiv, curveExp, gates, CONV_GROWTH, CONV_BASE);
+  const w = r.worst.wallClear;
+  const boss = { hp: bossHp(), dmg: dmgOf(N) * BOSSDMG };
+  const res = fightWave(w, PACK_OF(N), { hp: mobHpOf(N), dmg: dmgOf(N) }, boss);
+  console.log(`${dh.toExponential(0).padStart(7)} | ${fmt(w.maxHp).padStart(11)} | ${fmt(boss.dmg).padStart(10)} | ${(res.vive ? ' SIM ' : '☠ MORRE').padStart(12)} | ${(res.vive ? (res.minFrac * 100).toFixed(0) + '%' : '0%').padStart(15)}`);
+}
+DMG_HI = 1.2e6; // ✅ travado: Wall tensa-mas-vencível (~30% no poder pleno)
+
+// ── SOBREVIVÊNCIA por área — pior momento (nível 1 pós-Convergence) ──
+console.log('\n=== sobrevivência (só HP) — pior momento por área (perigo "C") ===');
+console.log('área | HP pior momento | dano onda/s | vive? | HP mín | nota');
 {
   const r = pace(curveDiv, curveExp, gates, CONV_GROWTH, CONV_BASE);
-  const fmt = (n) => n >= 1e6 ? (n / 1e6).toFixed(2) + 'M' : Math.round(n).toLocaleString('pt-BR');
   for (let s = 1; s <= N; s++) {
     const w = r.worst[s]; if (!w) continue;
-    const mob = { hp: mobHpOf(s), dmg: mobHpOf(s) * 0.04 };
-    const boss = s === N ? { hp: bossHp(), dmg: mobHpOf(N) * 0.04 * 3 } : null;
+    const mob = { hp: mobHpOf(s), dmg: dmgOf(s) };
+    const boss = s === N ? { hp: bossHp(), dmg: dmgOf(N) * BOSSDMG } : null;
     const pack = PACK_OF(s);
     const res = fightWave(w, pack, mob, boss);
     const wave = pack * mob.dmg + (boss ? boss.dmg : 0);
-    const nota = s === N ? `Wall (boss ${fmt(bossHp())})` : `lvl ${w.level}, gear ${w.gearLvl}, conv ${w.conv}`;
-    console.log(`${String(s).padStart(4)} | ${fmt(w.maxHp).padStart(18)} | ${fmt(wave).padStart(11)} | ${(res.vive ? ' SIM ' : '☠ MORRE').padStart(7)} | ${(res.vive ? (res.minFrac * 100).toFixed(0) + '%' : '0%').padStart(17)} | ${nota}`);
+    const nota = s === N ? `Wall` : `lvl ${w.level}, gear ${w.gearLvl}, conv ${w.conv}`;
+    console.log(`${String(s).padStart(4)} | ${fmt(w.maxHp).padStart(15)} | ${fmt(wave).padStart(11)} | ${(res.vive ? ' SIM ' : '☠ MORRE').padStart(7)} | ${(res.vive ? (res.minFrac * 100).toFixed(0) + '%' : '0%').padStart(6)} | ${nota}`);
   }
 }
 
