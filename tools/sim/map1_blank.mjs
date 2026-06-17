@@ -45,6 +45,7 @@ const BOSSDMG = 3;
 const dmgOf = (s) => DMG_LO * (DMG_HI / DMG_LO) ** ((s - 1) / (N - 1));
 // ── Convergence ──
 const CONV_DMG = 0.15, CONV_LUM = 0.03; // por convergência (aditivo; XP = 0, vem do Gear)
+let HEADSTART_FRAC = 0.5; // head-start: Convergence reseta p/ FRAC × nível atual (não nível 1)
 // ── Despertar (sub-área 7) ──
 const AWAKEN_SUB = 7, AWAKEN_MULT = 2, AWAKEN_APS = 0.3, AWAKEN_CRIT = 0.05, AWAKEN_CDMG = 2.0; // crit dmg base 0% +200%
 
@@ -126,7 +127,8 @@ function pace(curveDiv, curveExp, gates, convGrowth, convBase = gates[1]) {
       conv++; convCount++; events.push({ area: unlocked, lvl: level });
       if (M.conv1 === null) M.conv1 = t;
       convGate = Math.max(convGate * convGrowth, level + 1);
-      xpRun = 0; level = 1; lumens = 0;
+      level = Math.max(1, Math.floor(HEADSTART_FRAC * level)); // head-start (não reseta pro 1)
+      xpRun = curveDiv * level ** (1 / curveExp); lumens = 0;
     }
     if (unlocked === N && d >= bossHp() / 30) { M.wall = t; worst.wallClear = snap(); break; }
     if (t > 86400 * 10) break;
@@ -149,8 +151,9 @@ const CONV_BASE = 40, CONV_GROWTH = 1.3;
 // ✅ ESCOLHIDO (Willian): com Gear completo (6 peças, 2 afixos flat+%, 2 camadas),
 // curveExp=0.41 / curveDiv≈221 → Map 1 ~1,2 dias. Gear termina ~nível 184.
 // ✅ ESCOLHIDO: Wall 32,5bi · aceitar ~24 conv · apsCap 3 · gear cap 400.
-G_APS = 0.0065; // amuleto: APS chega a ~3 no fim do Map 1 (gear ~278)
-const curveExp = 0.41, curveDiv = Math.round(fitDiv(curveExp));
+G_APS = 0.0065; // amuleto: APS chega a ~3 no fim do Map 1 (gear ~280)
+// ✅ ESCOLHIDO: head-start 0.5 → re-fit curveExp 0,38 p/ ~30h (1,3 dia perfeito)
+const curveExp = 0.38, curveDiv = Math.round(fitDiv(curveExp));
 {
   const r = pace(curveDiv, curveExp, gates, CONV_GROWTH, CONV_BASE);
   const m = r.M;

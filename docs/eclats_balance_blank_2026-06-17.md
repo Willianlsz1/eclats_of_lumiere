@@ -78,12 +78,12 @@ não pelo cap (chegar ao 200 ≈ 1,9e11 Lumens; ao 750 ≈ 6,3e27 — inviável 
 ## 4. Nível & XP (motor de stat base) ✅
 | Constante | Valor | Decisão |
 |---|---|---|
-| `LEVEL.curveDiv` | **89** | nível-2 em ~8s |
-| `LEVEL.curveExp` | **0,41** | Map 1 ~**1,3 dias** de combate (re-fit p/ Wall 32,5bi + APS até 3) |
+| `LEVEL.curveDiv` | **77** | nível-2 em ~6s |
+| `LEVEL.curveExp` | **0,38** | Map 1 ~**27h** de combate (re-fit p/ Wall 32,5bi + APS 3 + head-start) |
 | `LEVEL.dmgPerLevel` | **150** | +dano por nível |
 | `LEVEL.hpPerLevel` | **150** | +vida por nível |
 
-> `level = (xpRun / 89) ^ 0,41`. Convergence reseta **só o `xpRun`** (nível da run).
+> `level = (xpRun / 77) ^ 0,38`. Convergence reseta o `xpRun` para um **head-start** (não pro zero).
 > Sem bônus de XP na Convergence (o XP escalado vem do **Gear**, decisão do Willian).
 
 ## 5. Malha do Map 1 — 9 sub-áreas ✅ / 🔧
@@ -130,6 +130,12 @@ casa dos bilhões). Crescimento ~**5,68× por sub-área**. Packs: **2 mobs** nas
 | Bônus XP | **0%** | XP vem do Gear |
 | `CONVERGENCE.gateLevelBase` | **40** | gatilho da 1ª Convergence |
 | `CONVERGENCE.gateLevelGrowth` | **1,3** | cada conv exige um LV maior |
+| **Head-start** (`headstartFrac`) | **0,5** ✅ | reseta p/ **50% do nível atual**, não pro nível 1 |
+
+> 🩹 **Head-start (decisão Willian, ref. Gaiadon):** ao convergir, o nível da run reseta para
+> **0,5 × o nível em que você convergiu** (não pro 1). Como o gatilho cresce, o head-start cresce
+> junto. **Conserta o death-loop** (nas áreas 4–8 o pior momento agora é nível 130–470, não 1 →
+> todas sobrevivem) **e** corta a tediosidade de re-upar do zero. Validado no sim.
 
 > Reseta: **só o `xpRun`** (nível da run). **NÃO reseta o Gear** (Gear é permanente; acumula o
 > mapa inteiro). Mantém: Gear, posição no mapa, convergências. Com a Wall a 32,5bi, vencer exige
@@ -152,28 +158,28 @@ Revisado pelo Willian: **deixou de ser no Guardião da sub-3** e **não libera h
 ---
 
 ## Validação de pacing (`tools/sim/map1_blank.mjs`)
-Com `curveExp=0,41 / curveDiv=89` (APS 0,9→~3 · 1º mob 2 hits · sem regen-kill · Wall 32,5bi):
-- **Nível 2:** ~8s ✅
-- **1ª Convergence:** LV 40, ~34 min ✅ (cedo, sub-área 2)
-- **Despertar (sub-7):** ~3,9h ✅ (pré-Wall)
-- **Wall / Map 1 limpo:** ~**1,3 dias** (15,3h de combate; ~5–9 dias reais c/ offline) ✅
-- **Nº de Convergences:** ~**23** (Willian aceitou mais ciclos p/ a Wall grande)
-- **APS no fim:** **~2,94** ✅ · **Gear no fim:** ~267 (cap 400)
+Com `curveExp=0,38 / curveDiv=77` (APS 0,9→~3 · 1º mob 2 hits · sem regen-kill · Wall 32,5bi · head-start 0,5):
+- **Nível 2:** ~6s ✅
+- **1ª Convergence:** LV 40, ~53 min ✅ (cedo, sub-área 2)
+- **Despertar (sub-7):** ~6,4h ✅ (pré-Wall)
+- **Wall / Map 1 limpo:** ~**27h de combate** (~1,1 dia perfeito; ~5–9 dias reais c/ offline) ✅
+- **Nº de Convergences:** ~**22** (Willian aceitou mais ciclos p/ a Wall grande)
+- **APS no fim:** **~3,03** ✅ · **Gear no fim:** ~282 (cap 400)
 
 ## Sobrevivência = SÓ HP — perigo "C" VALIDADO (`fightWave`) ✅
 **Removido:** mitigação/armadura/Veil + bloco `DEFENSE`. **Regen-por-kill removido** (vira passiva).
 A vida é a única defesa; `dano_recebido = dano_da_onda` direto no HP.
 
-**Resultado (perigo "C" = a Wall pode matar):**
-- Áreas 1–7: seguras (97–100% HP no pior momento).
-- Área 8: aperta (76%).
+**Resultado (perigo "C" = a Wall pode matar), com head-start 0,5:**
+- Áreas 1–7: seguras (98–100% HP no pior momento).
+- Área 8: aperta (87%).
 - **Área 9 / Wall:** chegando **sub-preparado → MORRE** (o perigo real, prenuncia o Hollow);
-  no **poder pleno → sobrevive a ~37%** (tenso-mas-vencível). `dmgHi=700k`, boss ~2,1M/s.
+  no **poder pleno → sobrevive a ~30%** (tenso-mas-vencível). `dmgHi=700k`, boss ~2,1M/s.
 - Morte = recua 1 sub-área + HP cheio (sem perdas) → regroup.
 
-> ⚠️ **Flag p/ implementação:** com perigo "C" + Convergence-reseta-nível + auto-convergir, o
-> jogador pode entrar num loop morre→recua→re-upa nas áreas fundas. A regra de auto-convergir
-> perto da Wall precisa de cuidado no código (ex.: não auto-convergir se vai te deixar fraco demais).
+> ✅ **Death-loop das áreas intermediárias resolvido pelo head-start** (o pior momento nas áreas
+> 4–8 passou de nível 1 → nível 130–470, todas sobrevivem). A Wall segue como o **único** portão de
+> morte, por design (C). Resta o cuidado de **não auto-convergir bem em cima da Wall** (código).
 
 ## Avançar de área = NÍVEL (LVs por área) ✅
 Cada sub-área pede um nível maior do Seeker pra desbloquear. Tabela atual (ajustável):
@@ -262,10 +268,8 @@ Ascension** + redução de penalidade de XP.
   escolheu. **+15%/prestígio é magnitude padrão do gênero.**
 - **Mapa de hierarquia:** Gaiadon Ascension ≈ nosso **Convergence** (interno, +15%/level); Gaiadon
   Transcendence ≈ nossa **Ascension** (externa, dá camada **Mastery ×** + grande head-start).
-- 🩹 **IDEIA-FIX — head-start ("Starting Ascension"):** cada prestígio recomeça **à frente**, não do
-  zero. Aplicar à nossa **Convergence**: resetar p/ um **"nível inicial" que cresce** com o nº de
-  convergences (em vez de nível 1). **Conserta o death-loop** (não estranda no nível 1 em área funda)
-  **e** mata a tediosidade de re-upar do zero. ⏳ a calibrar.
+- ✅ **IMPLEMENTADO — head-start:** aplicado à Convergence (`headstartFrac = 0,5` → reseta p/ 50%
+  do nível atual, não pro 1). Conserta o death-loop das áreas 4–8 e a tediosidade. Ver §6.
 
 ## 10. Offline (decisão Willian 2026-06-17) ✅ / 🔧
 | Parâmetro | Valor | Nota |
