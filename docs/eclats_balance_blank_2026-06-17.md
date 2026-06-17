@@ -338,10 +338,10 @@ seguem iguais) e **espalhados pela jornada real** (que vai a ~12k via Convergenc
 **Efeito (harness):** a Sub 9 deixa de abrir em ~4h; agora as Sub 7/8/9 são marcos **tardios**.
 O **Despertar acontece de fato na Sub 7** (nível 3000, ~21h) e o Map 1 fecha em **~25h**.
 
-> ⚠️ **Efeito colateral (p/ Willian decidir):** como agora você **chega na Sub 9 já forte** (nível
-> ~6k + despertado, HP ~118M), a Wall caiu de ~400 mortes (perigo C) p/ **~4 mortes** — virou um
-> clímax vencível, não mais um death-grind. Respeitei o "mudar só o gate" e **não** re-tunei a Wall.
-> Se quiser a Wall mortal de novo, é um passo à parte (subir dano/HP do boss p/ a nova força de chegada).
+> ✅ **Efeito colateral aceito (decisão Willian):** como agora você **chega na Sub 9 já forte**
+> (nível ~6k + despertado, HP ~118M), a Wall caiu de ~400 mortes (perigo C) p/ **~4 mortes** —
+> virou um **clímax vencível**, não mais um death-grind. **Decisão: deixar vencível** (menos
+> frustrante). A Wall segue 32,5bi; o "perigo C" foi aposentado em favor de um boss-clímax.
 
 ## Pendências desta recalibração
 - 🔧 **WIRING restante:** `DEFENSE`/Veil ainda ativo (o sim usou "só HP"; mantido modesto, o
