@@ -2,13 +2,13 @@
 // lumens_por_kill = mob_hp × 0.10 × frt_total (boss ×5 — CP-D)
 // xp_por_kill     = mob_hp × 0.08 × wis_total
 
-import { ECONOMY, LEVEL, NUMBER_CAP, BOSS_LUMEN_MULT, VESTIGES, CRAFT, NITZOTZ, mapMaterialTier } from '../data/constants.js';
-import { convMult, runLevel } from './stats.js';
+import { ECONOMY, LEVEL, NUMBER_CAP, BOSS_LUMEN_MULT, VESTIGES, CRAFT, NITZOTZ, ENEMY, mapMaterialTier } from '../data/constants.js';
+import { convMult, runLevel, damagePerHit } from './stats.js';
 import { gearLumensMult, gearXpMult, gearMaterialDropMult } from './gear.js';
 import { passiveEcoMult, passiveMaterialMult } from './passives.js';
 import { memoireLumensMult, memoireXpMult, memoireVestigeMult, memoireMateriaisMult, memoireDiffRewardMult } from './memoires.js';
 import { effectiveDifficulty } from './difficulty.js';
-import { getCurrentMap, subareaLevelRange, hpForLevel } from './enemies.js';
+import { getCurrentMap, subareaLevelRange, hpForLevel, areaReward } from './enemies.js';
 import { despertarLumensMult, despertarXpMult } from './ascension.js';
 
 // Multiplicador de YIELD de material (§13B): DIFICULDADE ×rewardMult (×3/×10/×30) ×
@@ -49,13 +49,11 @@ export function vestigesPerKill(state) {
 // Materiais é drop-based: devolvemos a chance e o yield por drop.
 export function perKillEstimate(state, subarea) {
   const map = getCurrentMap(state);
-  const { lo, hi } = subareaLevelRange(map, subarea);
-  const level = Math.max(1, Math.round(Math.sqrt(lo * hi)));
-  const hp = hpForLevel(map, level);
+  // recompensa DESACOPLADA do HP: base fixa × areaReward × multiplicadores.
+  const rew = areaReward(subarea);
   const eco = passiveEcoMult(state);
   const cm = convMult(state);
-  const lumens = (hp * ECONOMY.goldRatio + ECONOMY.lumensFloor + runLevel(state) * LEVEL.goldPerLevel)
-    * cm * gearLumensMult(state) * eco * memoireLumensMult(state);
+  const lumens = ECONOMY.lumBase * rew * cm * gearLumensMult(state) * eco * memoireLumensMult(state);
   const vestiges = Math.ceil(subarea * 0.5) * 3 ** (map.id - 1) * memoireVestigeMult(state);
   const tier = mapMaterialTier(state.map);
   const matPerDrop = materialYieldMult(state);
@@ -69,9 +67,13 @@ export function awardKill(state, mob) {
   const cm = convMult(state);        // CP-3: Convergence +15% em Lumens e XP (sem frt/wis)
   // Lumens base = HP×goldRatio + PISO fixo + nível×goldPerLevel. O piso (✅ Map 1) garante
   // que os primeiros níveis do gear sejam compráveis cedo (mob de HP baixo rende pouco).
-  const lumBase = mob.hpMax * ECONOMY.goldRatio + ECONOMY.lumensFloor + runLevel(state) * LEVEL.goldPerLevel;
+  // recompensa: LUMENS = base fixa × areaReward (profundidade) × multiplicadores (p/ gear).
+  // XP = HP do mob × xpRatio (acompanha SEU poder via mobHp = dano×3, sobe LISO com o nível;
+  // SEM areaReward/convMult em cima — esses amplificadores causavam a bola-de-neve).
+  const rew = mob.rewardMult || 1;
+  const lumBase = ECONOMY.lumBase * rew;
   state.lumens = Math.min(NUMBER_CAP, state.lumens + lumBase * cm * bossMult * gearLumensMult(state) * eco * memoireLumensMult(state) * despertarLumensMult(state));
-  const xp = mob.hpMax * ECONOMY.xpRatio * cm * gearXpMult(state) * eco * memoireXpMult(state) * despertarXpMult(state);
+  const xp = mob.hpMax * ECONOMY.xpRatio * gearXpMult(state) * memoireXpMult(state) * despertarXpMult(state);
   state.xpTotal = Math.min(NUMBER_CAP, state.xpTotal + xp); // vida (level display)
   state.xpRun = Math.min(NUMBER_CAP, state.xpRun + xp);     // run (parede de Convergence)
   // §7: Vestiges nunca resetam; boss paga ×10

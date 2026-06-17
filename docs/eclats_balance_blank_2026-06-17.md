@@ -291,6 +291,35 @@ Planilhas "Gem_Cly_Calc" do Gaiadon (Map 5, World Tiers WT31–56). **Referênci
   **sequência de kills** — streaks de 7k–30k kills, ~115–781 streaks/dia a um dado KPM. Modelo de
   pacing de drops por kill-rate; relevante p/ o loop de drops/Hollow. ⏳ referência.
 
+### Lote 4 — Endgame/Camadas (Gem_Cly_Calc) — 2026-06-17
+Planilhas de cálculo do Gaiadon. **Referência de endgame/escala** (Maps 2-5 / World Tiers):
+- **Asc/Lvl/Gold:** Ascensions aos **milhares** (9.420→15.000), níveis em **bilhões**, Gold em
+  **10^3755–10^5976** (território break_infinity), gear até **~5,5M de nível**. Confirma a escala
+  absurda do gênero no late.
+- **Ranks por Map/WT:** detalhe do **spawn de elites por kill-streak** — Warmaster a cada 2.000
+  kills, Titans a cada 28.000, gateados por **Min World Tier**. (Mecânica candidata; ver Lote 3.)
+- **Breakdown do Attack:** `Total = ΣPrimary × (1+ΣBonus%) × ΠMultiplier × (1+ΣMastery%) = 2.09e28`,
+  com **Character Level → Primary 38,9T** (nível = motor flat gigante). Confirma nossa pilha de camadas.
+
+## INIMIGOS RELATIVOS AO PLAYER (2026-06-17, decisão Willian) ✅
+Feedback do Willian jogando: (1) HP do mob deve acompanhar meu dano; (2) mobs baixos não davam
+dano (≥30% seria melhor); (3) gear caro/devagar; (4) nível do mob deve casar com a área (não
+"player LV 300, mob LV 15"). Escolha: **"números grandes, mobs te seguem"**. Modelo novo (ENEMY
+em constants; enemies.js): inimigos derivam do PODER do player, mas com a chave certa —
+- **HP do mob = BASELINE do nível** (baseDmg + nível×dmgPerLevel) × hitsToKill × areaHp[área].
+  Como o HP segue só o que o NÍVEL dá, seus **multiplicadores** (gear/convergence/despertar)
+  **excedem o baseline → você mata em MENOS golpes** conforme investe (poder importa!). Sub-investido
+  = ~3+ golpes; forte = one-shot (respeita a âncora "1 kill/ataque").
+- **Dano do mob = % do seu HP REAL** × areaDmg[área] (onda inteira, normalizada por pack). Sempre
+  ameaça (mobs podem matar); a defesa real é **matar rápido** (ofensa). Profundidade = muito mais perigo.
+- **Nível do mob = seu nível** (× leve por área) → coerente, fim do "LV 300 vs LV 15".
+- **XP/kill = HP do mob × xpRatio** (segue o baseline → sobe LISO, sem bola-de-neve). **Lumens/kill
+  = base × areaReward[área]** (profundidade = mais Lumens → incentivo a descer). Gear bem mais barato.
+- **Imune à Convergence:** como tudo deriva do nível/poder atual, o reset não quebra nada.
+
+Validado no harness (combate real): nível 2 ~19s · 1ª Convergence ~15min · **Despertar na Sub 7**
+(~10h) · **Map 1 limpo ~19h** · **27 mortes** (Wall mata, sem virar slog) · gear ~240 · ~13 conv.
+
 ## 10. Offline (decisão Willian 2026-06-17) ✅ / 🔧
 | Parâmetro | Valor | Nota |
 |---|---|---|
