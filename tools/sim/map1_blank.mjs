@@ -32,9 +32,10 @@ const AWAKEN_SUB = 7, AWAKEN_MULT = 2, AWAKEN_APS = 0.3, AWAKEN_CRIT = 0.05, AWA
 // Convergence frequente = 1ª na sub-área 2; gate de conv = unlock da sub-área alcançada.
 const fmtT = (s) => s == null ? '  —  ' : s < 90 ? `${s.toFixed(0)}s` : s < 5400 ? `${(s / 60).toFixed(1)}min` : s < 86400 * 2 ? `${(s / 3600).toFixed(1)}h` : `${(s / 86400).toFixed(2)}d`;
 
-function pace(curveDiv, curveExp, gates, convGrowth) {
+function pace(curveDiv, curveExp, gates, convGrowth, convBase = gates[1]) {
   // estado persistente (sobrevive à Convergence)
-  let conv = 0, unlocked = 1, t = 0, awakened = false, convGate = gates[1]; // 1ª conv = gate da sub2
+  let conv = 0, unlocked = 1, t = 0, awakened = false, convGate = convBase; // gatilho da 1ª conv
+  const events = []; // {area, lvl} de cada Convergence
   // estado da run (reseta na Convergence)
   let xpRun = 0, level = 1, gearLvl = 0, lumens = 0;
   let kills9 = 0, convCount = 0;
@@ -74,7 +75,7 @@ function pace(curveDiv, curveExp, gates, convGrowth) {
     let b = 0; while (lumens >= gearCost() && b++ < 5000) { lumens -= gearCost(); gearLvl++; }
     // Convergence: ao atingir o gate de nível (frequente). Reseta SÓ o nível da run.
     if (level >= convGate && unlocked >= 2) {
-      conv++; convCount++;
+      conv++; convCount++; events.push({ area: unlocked, lvl: level });
       if (M.conv1 === null) M.conv1 = t;
       convGate = Math.max(convGate * convGrowth, level + 1); // próximo gate sobe
       xpRun = 0; level = 1; lumens = 0; // Gear NÃO reseta
@@ -83,7 +84,7 @@ function pace(curveDiv, curveExp, gates, convGrowth) {
     if (unlocked === N && d >= bossHp() / 30) { M.wall = t; break; }
     if (t > 86400 * 10) break; // trava de segurança
   }
-  return { t, conv: convCount, unlocked, awakened, gearLvl, M };
+  return { t, conv: convCount, unlocked, awakened, gearLvl, M, events };
 }
 
 // ── calibração: varrer curveDiv / curveExp / gates ──
@@ -96,9 +97,18 @@ console.log('gates de unlock (sub1..sub9):', gates.join(' '));
 console.log('curveExp | curveDiv | t→lvl2 | t→sub2(1ª conv) | t→despertar | tempo Map1 | nº conv | gearLvl fim');
 // ✅ ESCOLHIDO (Willian, 2026-06-17): curveExp=0.455 / curveDiv≈262 → Map 1 ~1,3 dias
 // (com Gear persistente, packs 2×7+3+3, boss junto na sub9, sem cap de nível de mob).
-for (const curveExp of [0.455]) {
-  const curveDiv = Math.round(fitDiv(curveExp));
+const curveExp = 0.455, curveDiv = Math.round(fitDiv(curveExp));
+{
   const r = pace(curveDiv, curveExp, gates, 1.3);
   const m = r.M;
   console.log(`${String(curveExp).padStart(8)} | ${String(curveDiv).padStart(8)} | ${fmtT(m.lvl2).padStart(6)} | ${fmtT(m.sub2 ?? m.conv1).padStart(15)} | ${fmtT(m.awaken).padStart(11)} | ${fmtT(r.t).padStart(10)} | ${String(r.conv).padStart(6)} | ${String(r.gearLvl).padStart(10)}`);
+}
+
+// ── Estudo do GATILHO da Convergence (Willian vai escolher) ──
+console.log('\n=== gatilho da Convergence (1º LV) → quantas conv e em que áreas ===');
+console.log('gatilho | nº conv | áreas onde dispara (a cada conv) | tempo Map1');
+for (const convBase of [30, 50, 80, 120, 180, 250]) {
+  const r = pace(curveDiv, curveExp, gates, 1.3, convBase);
+  const areas = r.events.map(e => e.area).join(',');
+  console.log(`${String(convBase).padStart(7)} | ${String(r.conv).padStart(7)} | ${areas.padEnd(32)} | ${fmtT(r.t)}`);
 }

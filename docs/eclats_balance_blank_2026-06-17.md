@@ -130,8 +130,31 @@ Com `curveExp=0,455 / curveDiv=262` (Gear persistente):
 - **Nível final da arma:** ~173 (Gear persiste através das Convergences)
 
 > ⚠️ O sim mede **renda/poder** (pacing), **não morte**. A Wall aqui é "parede de dano".
-> A camada de **sobrevivência/Defesa (Veil)** depende do **Hollow + materiais** (fase futura)
-> e será validada em `tools/sim/survival.mjs`. ⏳
+> A camada de **sobrevivência** depende do **HP** (vida base + nível + Gear de HP + regen)
+> vs dano da onda — **NÃO há sistema de Defesa** (decisão Willian 2026-06-17: só HP). Será
+> validada em `tools/sim/survival.mjs`. ⏳
+
+## Sobrevivência = SÓ HP (decisão Willian 2026-06-17) 🔧
+**Removido do jogo:** mitigação/armadura/Veil e o bloco `DEFENSE`. A vida é a única defesa.
+- `dano_recebido = dano_da_onda` (direto no HP; sem fórmula de razão/armadura).
+- A peça **Veil of Cinders** deixa de ser "defesa" → vira **HP** (ou é repensada no Hollow).
+- A Mémoire *de la Résistance* e a passiva *de sobrevivência* multiplicam **HP/regen** (não defesa).
+
+## Avançar de área = NÍVEL (LVs por área) ✅
+Cada sub-área pede um nível maior do Seeker pra desbloquear. Tabela atual (ajustável):
+
+| Área | LV p/ desbloquear | | Área | LV p/ desbloquear |
+|---|---|---|---|---|
+| 1 | 1 | | 6 | 350 |
+| 2 | 30 ← Convergence libera | | 7 | 520 ← Despertar |
+| 3 | 70 | | 8 | 740 |
+| 4 | 130 | | 9 | 1.000 (Wall) |
+| 5 | 220 | | | |
+
+> **Gatilho da Convergence** = um LV escolhido (⏳ a decidir). Ela *libera* na área 2 (LV 30),
+> mas dispara quando o nível da run atinge o gatilho; cresce ×1,3 a cada Convergence e reseta o
+> nível da run. O gatilho precisa subir além de 1.000 p/ o jogador enfim alcançar a área 9 — é
+> isso que produz as ~14 Convergences. Gatilho menor = mais Convergences; maior = menos.
 
 ---
 
@@ -139,7 +162,7 @@ Com `curveExp=0,455 / curveDiv=262` (Gear persistente):
 - 🔧 **WIRING no código** (a estrutura atual difere do design): curva de custo do Gear
   (linear→geométrica), gates de sub-área (geométrico→tabela), Convergence (bônus único →
   dano/vida/Lumens separados; sem XP), Despertar (sub-3→sub-7 + crit/APS + sem skill), dano
-  do mob (2%→4%), `lumensFloor`/`goldPerLevel`→0.
-- ⏳ **Próximas fases de design (números):** Hollow + materiais + Defesa/Veil (sobrevivência),
-  Reliquats, Ascension (×mult por mapa), Mémoires (knobs globais), Passivas (alavancas),
-  habilidades ativas, e o **pacing dos Maps 2–5** rumo aos ~30 dias.
+  do mob (2%→4%), `lumensFloor`/`goldPerLevel`→0, **remoção do sistema `DEFENSE`/Veil**.
+- ⏳ **Próximas fases de design (números):** Hollow + materiais (HP/Gear), Reliquats,
+  Ascension (×mult por mapa), Mémoires (knobs globais), Passivas (alavancas), habilidades
+  ativas, e o **pacing dos Maps 2–5** rumo aos ~30 dias.
