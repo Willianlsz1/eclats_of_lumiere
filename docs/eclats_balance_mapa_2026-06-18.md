@@ -122,20 +122,22 @@ modelo clássico: **base PEQUENA + ESCALA geométrica**, e **números grandes (1
 | Parâmetro | Valor | Efeito |
 |---|---|---|
 | Fórmula | `base × costRamp^nível × costMult[raridade]` | clássico do gênero |
-| Base | **50** (`levelCostBase`) | Comum começa baratíssimo (~53 no nível 1) |
+| Base | **800** (`levelCostBase`) | Comum nível 1 = ~857 (early menos instantâneo — decisão Willian) |
 | Ramp | **1,07** (`costRamp`) | +7%/nível → dobra a cada ~10 (a "escala") |
 | Troca de tier | **×10** (`costMult`) | Incomum = a MESMA curva ×10 (base maior) |
 | Cap de nível | **Comum 500 · Incomum 1400** (FIXO) | `GEAR.levelCap` |
 
-**Custo de 1 nível:** Comum **53 → 43K (nv 100) → 2,46e16 (cap 500)** · Incomum = ×10. O gear NÃO chega
-ao cap — para **income-limited em ~213** no Map 1 (parede natural do gênero: renda linear × custo
-geométrico). Os números 1eX no cap são teóricos (nunca pagos), exatamente como nos jogos de referência.
+**Renda área 1 (início):** **4.000 Lumens/kill** · ~1.690/s · TTK 2,2s. **Early:** o 1º nível (~857) sai
+em ~0,5s e **1 kill compra ~4 níveis** (com base 50 antes comprava ~27 — bom demais). **Custo de 1 nível:**
+Comum **857 → ~700K (nv 100) → ~4e17 (cap 500)** · Incomum = ×10. O gear NÃO chega ao cap — para
+**income-limited em ~170** no Map 1 (parede natural: renda linear × custo geométrico); o 1eX no cap é
+teórico (nunca pago), como nos jogos de referência.
 
-**Rates ancorados ao fim income-limited (gear ~213):** `flatPerLevel.aps` **0.002643** e `critPerLevel`
-**0.00061** (razão 0,23 mantida); dmg/hp flat **2500/2000**, `bonusRate` **0.02**, `multRate` **0.0003**,
-`gildedPerLevel` **0.00018**. No fim: **APS 2,49** · **crit 30,2%** · **Gilded ~5%**. Wall `bossHpMult`
-**250** → com Despertar = clímax tenso (**5 mortes**, ~9,6h); **sem Despertar não limpa** (2455 mortes,
-2,37 dias). Pace: 1ª Convergence ~19min, Map 1 ~9,6h.
+**Rates ancorados ao fim (gear ~170):** `flatPerLevel.aps` **0.00326** e `critPerLevel` **0.00075**
+(razão 0,23); dmg/hp flat **2500/2000**, `bonusRate` **0.02**, `multRate` **0.0003**, `gildedPerLevel`
+**0.00018**. No fim: **APS 2,47** · **crit 29,7%** · **Gilded ~5%**. Wall `bossHpMult` **100** → com
+Despertar = clímax tenso (**~22 mortes**, ~11,5h); sem Despertar = grind ~3× mais longo (~37h, Despertar
+fortemente necessário). Pace: 1ª Convergence ~28min, Map 1 ~11,5h, 13 convergences.
 
 > 🔎 Aprendizados da pesquisa (fontes no fim): (1) custo geométrico é universal (×1,07–1,15); (2) tiers
 > diferem pela BASE, mesma curva; (3) números 1eX são esperados (break_infinity existe por isso);

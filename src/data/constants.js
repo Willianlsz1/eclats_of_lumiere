@@ -66,11 +66,10 @@ export const ENEMY = {
   dmgFrac:    0.009,                                           // dano da ONDA = HP_baseline × dmgFrac × areaDmg /s
   areaDmg:    [1, 1.4, 1.9, 2.6, 3.4, 4.4, 5.6, 7.0, 9.0],     // profundidade = MUITO mais perigo (Wall mata)
   areaReward: [1, 1.6, 2.6, 4.2, 6.8, 11, 18, 29, 47],         // Lumens crescem com a profundidade
-  // ✅ "VALORES NO MAPA" (18/jun): Wall (área 9) = mob × 250 de HP → SÓ vencível com o burst do
-  // Despertar (×2 dano/vida + crit). O dano da Wall é % do SEU HP (~8s p/ morrer); sem o Despertar
-  // você não derruba a Wall na janela e morre em loop (NODESP=1 = não limpa em 60h). Com Despertar
-  // é um clímax tenso (dezenas de mortes), não um death-grind.
-  bossHpMult: 250,
+  // ✅ "VALORES NO MAPA" (18/jun): Wall (área 9) = mob × 100 de HP. Com Despertar = clímax tenso
+  // (~20 mortes, ~12h). SEM Despertar = grind ~3× mais longo (~37h) — Despertar fortemente necessário.
+  // (Ajustado p/ a base de custo 800, que deixa o gear ~174 no fim, mais fraco que antes.)
+  bossHpMult: 100,
   bossDmgMult: 5,                                              // boss causa 5× o dano-onda de um mob
   levelPerArea: 0.03,                                          // mob.level = playerLevel × (1 + 0.03×(área−1))
 };
@@ -238,13 +237,13 @@ export const GEAR = {
   // INCOMUM (Kindled+): destrava 1 afixo MULTIPLIER × (camada multiplicativa — ver gear.js;
   // só ativo em rarity ≥ 1). É o "salto" da raridade, não um "+10%".
   // rates calibrados ao FIM income-limited do Map 1 (gear ~260, custo geométrico padrão do gênero).
-  flatPerLevel: { dmg: 2500, hp: 2000, aps: 0.002643, regen: 0.0005, bossDmg: 0, lumens: 0, xp: 0, crit: 0, critDmg: 0, materiais: 0 },
+  flatPerLevel: { dmg: 2500, hp: 2000, aps: 0.00326, regen: 0.0005, bossDmg: 0, lumens: 0, xp: 0, crit: 0, critDmg: 0, materiais: 0 },
   bonusRate: 0.02,           // afixo % : 1 + nível × bonusRate × rarityMult (2%/nv no Faded)
   multRate:  0.0003,         // afixo MULTIPLIER × (só rarity ≥ 1 = Incomum+): 1 + nível × multRate × rarityMult
   affixPctRate: 0.04,        // FARM (lumens/xp/materiais): % linear/nível (Anel 4% Lumens/nv)
   secondaryExp: 0.30,        // afixo SECUNDÁRIO = primário^0.30 (e flat/camadas × secondaryExp)
   capPerAsc: 0,
-  critPerLevel: 0.00061,   // afixo crit (chance) — RAZÃO calibrada p/ crit ACOMPANHAR o APS
+  critPerLevel: 0.00075,   // afixo crit (chance) — RAZÃO calibrada p/ crit ACOMPANHAR o APS
                              // (critPerLevel/apsFlat ≈ 0.230 = 0.25/1.1). Re-ancorado ao MAX do Incomum
                              // (gear 1400 no fim): APS 2,5 → Grasp ~25% + 5% do Despertar = 30%.
   critDmgPerLevel: 0.0667,   // afixo critDmg (secundário a 0.30 → ~+2%/nv efetivo)
@@ -261,7 +260,7 @@ export const GEAR = {
   // Heroes/Cookie Clicker): base PEQUENA e ESCALA. Comum (base ×1) começa baratíssimo (~50) e o
   // custo dobra a cada ~10 níveis; o Incomum é a MESMA curva ×10 (base maior). Números grandes
   // (1eX) são esperados (e ok): o gear para income-limited (~260 no Map 1), longe do cap.
-  levelCostBase: 50,         // base do Comum (bem menor — decisão Willian)
+  levelCostBase: 800,        // base do Comum (decisão Willian: 800 → early menos instantâneo)
   costRamp: 1.07,            // +7%/nível (≈ dobra a cada ~10): a "escala" do custo
   // (Subir raridade = gate duplo: nível no cap + MATERIAIS do tier — ver CRAFT, Passo 4.)
 };
