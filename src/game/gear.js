@@ -155,10 +155,15 @@ export function gearCritDmgAdd(state) {
 
 // ───── Custos e gates ─────
 
-// Cap de nível da peça: a raridade TOPO (Converged) ganha +capPerAsc por Ascension (sem-teto §13)
+// Cap de nível da peça (✅ 18/jun, "mais controlado", ref. Gaiadon): o teto CRESCE LINEAR com
+// as Convergences — cap = capBase + capPerConv × convergences — limitado pelo cap DURO da
+// raridade. Assim o "max purchasable" sobe ~reto a cada prestígio (sem parede exponencial),
+// exatamente como a coluna da referência. A raridade TOPO ainda ganha +capPerAsc por Ascension.
 export function levelCapFor(piece, state) {
-  const base = GEAR.levelCap[piece.rarity];
-  return piece.rarity === maxRarity ? base + (state.ascensions || 0) * GEAR.capPerAsc : base;
+  const hard = GEAR.levelCap[piece.rarity]
+    + (piece.rarity === maxRarity ? (state.ascensions || 0) * GEAR.capPerAsc : 0);
+  const dynamic = GEAR.capBase + GEAR.capPerConv * (state.convergences || 0);
+  return Math.min(hard, dynamic);
 }
 export const atLevelCap = (piece, state) => piece.level >= levelCapFor(piece, state);
 

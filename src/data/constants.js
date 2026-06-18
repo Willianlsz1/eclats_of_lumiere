@@ -66,10 +66,11 @@ export const ENEMY = {
   dmgFrac:    0.009,                                           // dano da ONDA = HP_baseline × dmgFrac × areaDmg /s
   areaDmg:    [1, 1.4, 1.9, 2.6, 3.4, 4.4, 5.6, 7.0, 9.0],     // profundidade = MUITO mais perigo (Wall mata)
   areaReward: [1, 1.6, 2.6, 4.2, 6.8, 11, 18, 29, 47],         // Lumens crescem com a profundidade
-  // ✅ "VALORES NO MAPA" (18/jun): Wall (área 9) = mob × 220 de HP → SÓ vencível com o burst do
-  // Despertar (×2 dano/vida + crit ×16). O dano da Wall é % do SEU HP (~8s p/ morrer); sem o
+  // ✅ "VALORES NO MAPA" (18/jun): Wall (área 9) = mob × 400 de HP → SÓ vencível com o burst do
+  // Despertar (×2 dano/vida + crit ×24). O dano da Wall é % do SEU HP (~8s p/ morrer); sem o
   // Despertar você não derruba a Wall na janela e morre em loop (validado no harness, NODESP=1).
-  bossHpMult: 220,
+  // (Subiu de 220→400 ao re-ancorar o gear pro cap dinâmico, que deixou o player mais forte.)
+  bossHpMult: 400,
   bossDmgMult: 5,                                              // boss causa 5× o dano-onda de um mob
   levelPerArea: 0.03,                                          // mob.level = playerLevel × (1 + 0.03×(área−1))
 };
@@ -236,23 +237,31 @@ export const GEAR = {
   // de fim de Map 1: APS 2,5 e crit rate 30% (com 1 Despertar: +0,5 APS e +5% crit).
   // INCOMUM (Kindled+): destrava 1 afixo MULTIPLIER × (camada multiplicativa — ver gear.js;
   // só ativo em rarity ≥ 1). É o "salto" da raridade, não um "+10%".
-  flatPerLevel: { dmg: 2500, hp: 2000, aps: 0.00304, regen: 0.0005, bossDmg: 0, lumens: 0, xp: 0, crit: 0, critDmg: 0, materiais: 0 },
+  flatPerLevel: { dmg: 2500, hp: 2000, aps: 0.001817, regen: 0.0005, bossDmg: 0, lumens: 0, xp: 0, crit: 0, critDmg: 0, materiais: 0 },
   bonusRate: 0.02,           // afixo % : 1 + nível × bonusRate × rarityMult (2%/nv no Faded)
   multRate:  0.0003,         // afixo MULTIPLIER × (só rarity ≥ 1 = Incomum+): 1 + nível × multRate × rarityMult
   affixPctRate: 0.04,        // FARM (lumens/xp/materiais): % linear/nível (Anel 4% Lumens/nv)
   secondaryExp: 0.30,        // afixo SECUNDÁRIO = primário^0.30 (e flat/camadas × secondaryExp)
   capPerAsc: 0,
-  critPerLevel: 0.0007,      // afixo crit (chance) — RAZÃO calibrada p/ crit ACOMPANHAR o APS:
-                             // critPerLevel/apsFlat = 0.0007/0.00304 ≈ 0.230 = 0.25/1.1 → quando o APS
-                             // chega a 2,5 (gear = +1,1), o Grasp dá ~25% e +5% do Despertar fecha 30%.
+  // ✅ "MAIS CONTROLADO" (18/jun, ref. Gaiadon — max gear ~LINEAR no prestígio): o cap de NÍVEL
+  // do gear cresce +capPerConv a cada Convergence (a partir de capBase), limitado pelo cap duro
+  // da raridade. Isso é o que controla a progressão (não mais a parede exponencial de custo).
+  capBase: 50,               // teto de nível antes da 1ª Convergence (early não fica faminto)
+  capPerConv: 20,            // +20 níveis de teto por Convergence (Map 1 ~13 conv → ~310 no fim)
+  critPerLevel: 0.000419,    // afixo crit (chance) — RAZÃO calibrada p/ crit ACOMPANHAR o APS
+                             // (critPerLevel/apsFlat ≈ 0.230 = 0.25/1.1). Re-ancorado p/ o cap dinâmico
+                             // (gear ~310 no fim): APS 2,5 → Grasp ~25% + 5% do Despertar = 30%.
   critDmgPerLevel: 0.0667,   // afixo critDmg (secundário a 0.30 → ~+2%/nv efetivo)
   gildedPerLevel: 0.00018,   // afixo GILDED (chance, afixo do Manto): nível × × rarityMult, teto GILDED.chanceCap.
                              // Manto realista no fim do Map 1 (~186 Kindled) ≈ 5%; cap GLOBAL 30%.
   // ✅ recalibração "em branco": custo EXPONENCIAL por peça (sim) — barato cedo, dobra a cada
   // 10 níveis (costRamp) → cria teto-SUAVE (~280) bem abaixo do cap duro (400). custo(L) =
   // base × costRamp^L × costMult[raridade], clampado a NUMBER_CAP (M2+ recalibra à parte).
-  levelCostBase: 200,        // ✅ recalibrado (mobs relativos): bem mais barato/rápido cedo
-  costRamp: 1.0717734625,    // 2^(1/10): o custo de 1 nível dobra a cada 10 níveis
+  // ✅ "MAIS CONTROLADO" (18/jun): custo MAIS GENTIL (dobra a cada ~25 níveis, não 10) — agora
+  // quem controla a progressão é o CAP por Convergence (acima), não a parede de custo. O custo
+  // só garante que você FARMA até o teto a cada ciclo (Lumens significam algo), sem estourar.
+  levelCostBase: 200,
+  costRamp: 1.0280,          // ≈ 2^(1/25): o custo de 1 nível dobra a cada ~25 níveis
   // (Subir raridade = gate duplo: nível no cap + MATERIAIS do tier — ver CRAFT, Passo 4.)
 };
 

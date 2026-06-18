@@ -11,7 +11,7 @@ import { buyLevel } from '../../src/game/gear.js';
 import { canConverge, doConverge, convGateLevel } from '../../src/game/convergence.js';
 import { canDespertar, doDespertar } from '../../src/game/ascension.js';
 import { GEAR, GEAR_RARITY_LABELS, DESPERTAR_REQ, ENEMY, ECONOMY, LEVEL, COMBAT } from '../../src/data/constants.js';
-import { levelCost, atLevelCap, canRarityUp, doRarityUp } from '../../src/game/gear.js';
+import { levelCost, atLevelCap, canRarityUp, doRarityUp, levelCapFor } from '../../src/game/gear.js';
 import { getCurrentMap } from '../../src/game/enemies.js';
 import { playerDefesa, damagePerHit, critChance, critDamageMult } from '../../src/game/stats.js';
 
@@ -127,7 +127,7 @@ console.log(`mortes totais ........ ${deaths}`);
 console.log('--- estado no FIM ---');
 console.log(`tempo ................ ${fmtT(t)}`);
 console.log(`nível da run ......... ${runLevel(state)}  · convergences ${state.convergences}`);
-console.log(`gear médio ........... ${g.toFixed(0)}  · raridade mín ${GEAR_RARITY_LABELS[minRarity(state)]} (cap ${GEAR.levelCap[minRarity(state)]})`);
+console.log(`gear médio ........... ${g.toFixed(0)}  · raridade mín ${GEAR_RARITY_LABELS[minRarity(state)]} (cap dinâmico ${levelCapFor({ rarity: minRarity(state), level: 0 }, state)})`);
 console.log(`APS .................. ${currentAPS(state).toFixed(2)}  (ALVO 2,5)  · dps ${fmt(dps(state))}`);
 console.log(`crit rate ............ ${(critChance(state) * 100).toFixed(1)}%  (ALVO 30%)  · crit dmg ×${critDamageMult(state).toFixed(2)}  · despertares ${state.despertares || 0}`);
 console.log(`HP máx ............... ${fmt(playerHpMax(state))}`);

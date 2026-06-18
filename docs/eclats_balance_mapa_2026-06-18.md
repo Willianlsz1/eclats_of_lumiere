@@ -114,6 +114,25 @@ A lista de afixos (tela Gear + tooltip) virou o formato da referência: **VALOR 
 "+x per N levels"**, com **cor**: base/flat/chance = branco · **bônus% / MULTIPLIER × / secundário
 = verde**. O afixo **MULTIPLIER ×** do Incomum agora aparece como linha própria (antes era invisível).
 
+## 10. Custo do Gear "mais controlado" — CAP LINEAR por Convergence (18/jun, ref. Gaiadon) ✅ 🔧
+Antes o custo dobrava a cada 10 níveis → parede exponencial em ~186 e números estourando (1e17
+no cap). A referência do Willian (planilha Gaiadon) mostra **max gear ≈ LINEAR no prestígio**
+(max purchasable ÷ Asc ≈ 367, constante). Adotamos o princípio: **o TETO de nível do gear cresce
++capPerConv a cada Convergence**, e é ELE quem controla a progressão (não a parede de custo).
+
+| Parâmetro | Valor | Constante |
+|---|---|---|
+| Teto antes da 1ª Convergence | **50** | `GEAR.capBase` |
+| +níveis de teto por Convergence | **+20** | `GEAR.capPerConv` |
+| Teto = | `min(cap_duro_raridade, capBase + capPerConv × convergences)` | `gear.js: levelCapFor` |
+| Custo (ramp mais gentil) | dobra a cada **~25 níveis** (era 10) | `GEAR.costRamp = 1.0280` |
+
+**Efeito (harness):** max gear sobe **reto** 50 → 70 → … → **310** (13 convs), o gear FECHA exatamente
+no teto a cada ciclo (Lumens são gastos até lá), e o custo do topo cresce suave (7,7K → 10,2M) —
+sem 1e17. **Re-ancoragem:** `flatPerLevel.aps` 0.00304→**0.001817** e `critPerLevel` 0.0007→**0.000419**
+(razão mantida) → APS **2,50** e crit **30,3%** seguem caindo no fim (gear ~310). A Wall subiu p/
+`bossHpMult` 220→**400** (gear maior deixou o player mais forte) — sem Despertar = **32 mortes**.
+
 ## Fora do escopo desta sessão (decisão Willian)
 Ascension, mecânicas/números dos Maps 2–5, e raridade **Raro+**. A Wall usa `ENEMY.bossHpMult = 220`
 (× HP do mob) p/ exigir o burst do Despertar. `SCHEMA_VERSION` 7 → **8** (descarta saves v7).
