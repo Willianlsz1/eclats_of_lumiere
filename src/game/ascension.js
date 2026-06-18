@@ -66,6 +66,8 @@ export const despertarMult = (state) => DESPERTAR.mult ** (state.despertares || 
 // e bônus de economia (Lumens/XP). Todos = valor × nº de despertares.
 export const despertarCritRateAdd = (state) => DESPERTAR.critRateAdd * (state.despertares || 0);
 export const despertarCritDmgAdd  = (state) => DESPERTAR.critDmgAdd  * (state.despertares || 0);
+// +0,5 de atk speed por tier (somado antes do apsCap) — ✅ 18/jun, decisão Willian.
+export const despertarApsAdd      = (state) => DESPERTAR.apsAdd      * (state.despertares || 0);
 export const despertarLumensMult  = (state) => 1 + DESPERTAR.lumensBonus * (state.despertares || 0);
 export const despertarXpMult      = (state) => 1 + DESPERTAR.xpBonus    * (state.despertares || 0);
 

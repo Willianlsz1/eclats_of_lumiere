@@ -10,10 +10,10 @@ import { currentAPS, dps, playerHpMax, runLevel } from '../../src/game/stats.js'
 import { buyLevel } from '../../src/game/gear.js';
 import { canConverge, doConverge, convGateLevel } from '../../src/game/convergence.js';
 import { canDespertar, doDespertar } from '../../src/game/ascension.js';
-import { GEAR, DESPERTAR_REQ, ENEMY, ECONOMY, LEVEL, COMBAT } from '../../src/data/constants.js';
-import { levelCost, atLevelCap } from '../../src/game/gear.js';
+import { GEAR, GEAR_RARITY_LABELS, DESPERTAR_REQ, ENEMY, ECONOMY, LEVEL, COMBAT } from '../../src/data/constants.js';
+import { levelCost, atLevelCap, canRarityUp, doRarityUp } from '../../src/game/gear.js';
 import { getCurrentMap } from '../../src/game/enemies.js';
-import { playerDefesa, damagePerHit } from '../../src/game/stats.js';
+import { playerDefesa, damagePerHit, critChance, critDamageMult } from '../../src/game/stats.js';
 
 const DT = 0.1;
 if (process.env.GCOST) GEAR.levelCostBase = +process.env.GCOST; // sweep do custo de gear
@@ -42,6 +42,12 @@ function buyGearGreedy(state) {
     if (!buyLevel(state, best)) break;
   }
 }
+// sobe a raridade de QUALQUER peça que possa (materiais + lockstep + cap do mapa)
+function rarityUpGreedy(state) {
+  let did = true;
+  while (did) { did = false; for (const def of GEAR.pieces) if (canRarityUp(state, def.key)) { doRarityUp(state, def.key); did = true; } }
+}
+const minRarity = (state) => Math.min(...GEAR.pieces.map((d) => state.gear[d.key].rarity));
 const totalGearLevel = (state) => GEAR.pieces.reduce((s, d) => s + state.gear[d.key].level, 0);
 const avgGearLevel = (state) => totalGearLevel(state) / GEAR.pieces.length;
 
@@ -84,8 +90,10 @@ while (t < CAP_T) {
   t += DT;
 
   buyGearGreedy(state);
+  rarityUpGreedy(state);
   if (canConverge(state)) { doConverge(state); if (M.conv1 === null) M.conv1 = t; }
-  if (canDespertar(state)) { doDespertar(state); if (M.despertar === null) { M.despertar = t; despSnap = { lvl: runLevel(state), gear: avgGearLevel(state), kills: state.killsTotal, sub: state.unlockedSubarea }; } }
+  // NODESP=1 → jogador NUNCA desperta (contrafactual: "é impossível sem Despertar?")
+  if (!process.env.NODESP && canDespertar(state)) { doDespertar(state); if (M.despertar === null) { M.despertar = t; despSnap = { lvl: runLevel(state), gear: avgGearLevel(state), kills: state.killsTotal, sub: state.unlockedSubarea }; } }
 
   const lvl = runLevel(state);
   if (M.lvl2 === null && lvl >= 2) M.lvl2 = t;
@@ -108,7 +116,7 @@ while (t < CAP_T) {
 }
 
 const g = avgGearLevel(state);
-console.log('=== HARNESS: combate REAL do jogo (recalibração "em branco") ===');
+console.log('=== HARNESS: combate REAL do jogo (recalibração "VALORES NO MAPA" 18/jun) ===');
 console.log(`nível 2 .............. ${fmtT(M.lvl2)}`);
 console.log(`1ª Convergence ....... ${fmtT(M.conv1)}  (gate nível ${convGateLevel(0)})`);
 console.log(`Despertar (T2) ....... ${fmtT(M.despertar)}${despSnap ? `  (Sub ${despSnap.sub} · nível ${despSnap.lvl} · gear ${despSnap.gear.toFixed(0)} · ${despSnap.kills} kills)` : ''}`);
@@ -119,8 +127,9 @@ console.log(`mortes totais ........ ${deaths}`);
 console.log('--- estado no FIM ---');
 console.log(`tempo ................ ${fmtT(t)}`);
 console.log(`nível da run ......... ${runLevel(state)}  · convergences ${state.convergences}`);
-console.log(`gear médio ........... ${g.toFixed(0)} / cap ${GEAR.levelCap[0]}`);
-console.log(`APS .................. ${currentAPS(state).toFixed(2)}  · dps ${fmt(dps(state))}`);
+console.log(`gear médio ........... ${g.toFixed(0)}  · raridade mín ${GEAR_RARITY_LABELS[minRarity(state)]} (cap ${GEAR.levelCap[minRarity(state)]})`);
+console.log(`APS .................. ${currentAPS(state).toFixed(2)}  (ALVO 2,5)  · dps ${fmt(dps(state))}`);
+console.log(`crit rate ............ ${(critChance(state) * 100).toFixed(1)}%  (ALVO 30%)  · crit dmg ×${critDamageMult(state).toFixed(2)}  · despertares ${state.despertares || 0}`);
 console.log(`HP máx ............... ${fmt(playerHpMax(state))}`);
 if (firstWallSnap) {
   console.log('--- 1º encontro com a Wall ---');

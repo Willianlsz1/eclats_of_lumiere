@@ -3,7 +3,7 @@
 // xp_por_kill     = mob_hp × 0.08 × wis_total
 
 import { ECONOMY, LEVEL, NUMBER_CAP, BOSS_LUMEN_MULT, VESTIGES, CRAFT, NITZOTZ, ENEMY, mapMaterialTier } from '../data/constants.js';
-import { convMult, runLevel, damagePerHit } from './stats.js';
+import { convLumensMult, runLevel, damagePerHit } from './stats.js';
 import { gearLumensMult, gearXpMult, gearMaterialDropMult } from './gear.js';
 import { passiveEcoMult, passiveMaterialMult } from './passives.js';
 import { memoireLumensMult, memoireXpMult, memoireVestigeMult, memoireMateriaisMult, memoireDiffRewardMult } from './memoires.js';
@@ -52,7 +52,7 @@ export function perKillEstimate(state, subarea) {
   // recompensa DESACOPLADA do HP: base fixa × areaReward × multiplicadores.
   const rew = areaReward(subarea);
   const eco = passiveEcoMult(state);
-  const cm = convMult(state);
+  const cm = convLumensMult(state); // Gold: canal próprio da Convergence (+0,5%/conv)
   const lumens = ECONOMY.lumBase * rew * cm * gearLumensMult(state) * eco * memoireLumensMult(state);
   const vestiges = Math.ceil(subarea * 0.5) * 3 ** (map.id - 1) * memoireVestigeMult(state);
   const tier = mapMaterialTier(state.map);
@@ -64,7 +64,7 @@ export function awardKill(state, mob) {
   // §12: o ×5 de boss só se aplica a Lumens; o XP já escala pelo HP ×15
   const bossMult = mob.isBoss ? BOSS_LUMEN_MULT : 1;
   const eco = passiveEcoMult(state); // §7 Vestige tree (Lumens/XP) — provisório
-  const cm = convMult(state);        // CP-3: Convergence +15% em Lumens e XP (sem frt/wis)
+  const cm = convLumensMult(state);  // 18/jun: Gold = canal próprio da Convergence (+0,5%/conv); XP não leva conv
   // Lumens base = HP×goldRatio + PISO fixo + nível×goldPerLevel. O piso (✅ Map 1) garante
   // que os primeiros níveis do gear sejam compráveis cedo (mob de HP baixo rende pouco).
   // recompensa: LUMENS = base fixa × areaReward (profundidade) × multiplicadores (p/ gear).

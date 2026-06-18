@@ -5,9 +5,16 @@
 // secundário = primário^0.30 (30% das décadas). Cap de nível da raridade topo sobe
 // +capPerAsc por Ascension (motor sem-teto). Persiste sempre (não reseta).
 
-import { GEAR, GEAR_RARITIES, CRAFT, NUMBER_CAP } from '../data/constants.js';
+import { GEAR, GEAR_RARITIES, CRAFT, NUMBER_CAP, MAPS } from '../data/constants.js';
 
 const maxRarity = GEAR_RARITIES.length - 1;
+
+// Cap de raridade do MAPA atual (✅ 18/jun: Map 1 = Incomum/Kindled, índice 1). Sem o campo
+// `gearRarityCap` no mapa → sem cap (maxRarity). Trava o rarity-up na raridade do mapa.
+export function mapRarityCap(state) {
+  const map = MAPS[((state && state.map) || 1) - 1] || MAPS[0];
+  return map.gearRarityCap != null ? map.gearRarityCap : maxRarity;
+}
 
 // ───── Modelo de valor de um afixo ─────
 
@@ -17,7 +24,9 @@ const maxRarity = GEAR_RARITIES.length - 1;
 export function primaryMult(level, rarity) {
   const rm = GEAR.rarityMult[rarity];
   const bonus = 1 + level * GEAR.bonusRate * rm;
-  const mult = 1 + level * GEAR.multRate * rm;
+  // ✅ 18/jun: afixo MULTIPLIER × (camada multiplicativa) só destrava no INCOMUM (rarity ≥ 1).
+  // No COMUM (Faded) a peça tem só flat + % (mult = 1).
+  const mult = rarity >= 1 ? 1 + level * GEAR.multRate * rm : 1;
   return bonus * mult;
 }
 // afixo SECUNDÁRIO multiplicativo = primário^0.30 (30% das décadas — gear.mjs corrigido)
@@ -165,6 +174,7 @@ function minSetRarity(state) {
 export function canRarityUp(state, key) {
   const p = state.gear[key];
   return p.rarity < maxRarity
+    && p.rarity < mapRarityCap(state)               // ✅ 18/jun: trava no cap de raridade do mapa (Map 1 = Incomum)
     && minSetRarity(state) >= p.rarity              // a peça está no piso do set
     && state.materiais[rarityUpTier(p)] >= CRAFT.rarityUpMaterial;
 }

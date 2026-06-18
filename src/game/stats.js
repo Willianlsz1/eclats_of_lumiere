@@ -11,7 +11,7 @@ import { gearDamageMult, gearHpMult, gearCritAdd, gearDefesaMult, gearCritDmgAdd
   gearDamageFlat, gearHpFlat, gearApsFlat } from './gear.js';
 import { passiveDmgMult, passiveHpMult, passiveCritAdd, passiveEnemyPen, passiveEnemyReduce, passiveApsMult } from './passives.js';
 import { memoireDmgMult, memoireHpMult, memoireCritDmgMult, memoireSurvivalMult } from './memoires.js';
-import { ascMult, despertarMult, despertarCritRateAdd, despertarCritDmgAdd } from './ascension.js';
+import { ascMult, despertarMult, despertarCritRateAdd, despertarCritDmgAdd, despertarApsAdd } from './ascension.js';
 
 // ───── Nível (motor de stat base) ─────
 // O nível vem do XP da RUN (reseta na Convergence). level = (xpRun / div)^exp.
@@ -42,11 +42,14 @@ export function levelXpInfo(state) {
   };
 }
 
-// ───── Convergence (+15% ADITIVO por converge) ─────
-// Entra em dano, HP, XP e Lumens. O reset (nível da run + nível do gear) é feito
-// em convergence.js; aqui é só o multiplicador permanente.
+// ───── Convergence (ADITIVO por converge) — 2 canais (18/jun) ─────
+// dano/HP: +20% por conv. Gold (Lumens): +0,5% por conv (canal próprio, bem menor).
+// XP fica 0% (vem do Gear). O reset (nível/Gold da run) é feito em convergence.js.
 export function convMult(state) {
-  return 1 + CONVERGENCE.bonusPerConv * state.convergences;
+  return 1 + CONVERGENCE.bonusPerConv * state.convergences;        // dano/HP
+}
+export function convLumensMult(state) {
+  return 1 + CONVERGENCE.goldBonusPerConv * state.convergences;    // Gold (Lumens)
 }
 
 // ───── APS e crit (sem Gold Stats — vêm de gear/passivas) ─────
@@ -57,7 +60,8 @@ export function apsBonus(state) {
   return gearApsFlat(state);
 }
 export function currentAPS(state) {
-  const aps = (COMBAT.baseAPS + apsBonus(state)) * passiveApsMult(state);
+  // base + afixo do Amuleto (gear) + Despertar (+0,5/tier), tudo somado ANTES do apsCap.
+  const aps = (COMBAT.baseAPS + apsBonus(state) + despertarApsAdd(state)) * passiveApsMult(state);
   return Math.min(COMBAT.apsCap, aps);
 }
 
