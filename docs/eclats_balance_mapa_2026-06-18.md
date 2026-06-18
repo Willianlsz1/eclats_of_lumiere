@@ -114,29 +114,33 @@ A lista de afixos (tela Gear + tooltip) virou o formato da referência: **VALOR 
 "+x per N levels"**, com **cor**: base/flat/chance = branco · **bônus% / MULTIPLIER × / secundário
 = verde**. O afixo **MULTIPLIER ×** do Incomum agora aparece como linha própria (antes era invisível).
 
-## 10. Custo do Gear "controlado dentro do tier" — MAXAR o tier é a meta (18/jun) ✅ 🔧
-Antes o custo dobrava a cada 10 níveis → estourava DENTRO do tier (1e17 no cap do Comum). Decisão
-Willian (ref. img Gaiadon, tiers curtos): **o custo NÃO explode dentro de um tier; só a TROCA de tier
-sobe** (costMult ×10). E a **meta do Map 1 é MAXAR o gear** (Incomum 1400) — o que segura o ritmo é
-RENDA (Lumens) + MATERIAIS (rarity-up), não a parede de custo.
+## 10. Custo do Gear — GEOMÉTRICO padrão do gênero (18/jun, decisão Willian + pesquisa) ✅ 🔧
+Após pesquisar Clicker Heroes (custo = base × **1,07**^nível), Cookie Clicker (×1,15/compra) e Synergism
+(prestígios gateados em **1e16 / 1e100 / 1e300** — números enormes são a NORMA), o Willian escolheu o
+modelo clássico: **base PEQUENA + ESCALA geométrica**, e **números grandes (1eX) são ok**.
 
 | Parâmetro | Valor | Efeito |
 |---|---|---|
-| Cap de nível | **Comum 500 · Incomum 1400** (FIXO, cap duro) | `GEAR.levelCap` |
-| Ramp do custo | dobra a cada **~200 níveis** (`costRamp 1.00347`) | Comum **×5,6** · Incomum **×22** ponta-a-ponta (flat) |
-| Base do custo | **15.000** (`levelCostBase`) | maxa o Incomum (1400) ~quando a Wall cai (~7h) |
-| Troca de tier | **×10** (`costMult`) | "tier seguinte sobe ok" |
+| Fórmula | `base × costRamp^nível × costMult[raridade]` | clássico do gênero |
+| Base | **50** (`levelCostBase`) | Comum começa baratíssimo (~53 no nível 1) |
+| Ramp | **1,07** (`costRamp`) | +7%/nível → dobra a cada ~10 (a "escala") |
+| Troca de tier | **×10** (`costMult`) | Incomum = a MESMA curva ×10 (base maior) |
+| Cap de nível | **Comum 500 · Incomum 1400** (FIXO) | `GEAR.levelCap` |
 
-**Custo de 1 nível (controlado):** Comum **15K → 85K** (1→500) · Incomum **151K → 19M** (1→1400) —
-sem 1e17. Maxar 1 peça = ~5,3B; set de 6 maxado = **~33B**.
+**Custo de 1 nível:** Comum **53 → 43K (nv 100) → 2,46e16 (cap 500)** · Incomum = ×10. O gear NÃO chega
+ao cap — para **income-limited em ~213** no Map 1 (parede natural do gênero: renda linear × custo
+geométrico). Os números 1eX no cap são teóricos (nunca pagos), exatamente como nos jogos de referência.
 
-**Re-ancoragem ao endpoint do max (gear 1400):** como o gear MAXA em 1400 (não ~310), TODOS os rates
-por-nível foram ÷~4,5 (factor 310/1400) p/ o poder do max-1400 ≈ o fim antigo: `flatPerLevel.dmg`
-2500→**554**, `hp` 2000→**443**, `bonusRate` 0.02→**0.00443**, `multRate` 0.0003→**0.0000664**,
-`flatPerLevel.aps`→**0.000403**, `critPerLevel`→**0.0000929**, `gildedPerLevel`→**0.0000238**. No cap
-Incomum 1400: **APS +1,1 → 2,50** · **crit 25,4% +5% Despertar = 30,4%** · **Gilded 5,0%**. Wall subiu
-p/ `bossHpMult` **2500** (gear maxado deixa o dps muito acima do baseline) → **sem Despertar não limpa
-em 60h (2667 mortes)**; com Despertar = clear limpo (~7h, 11 mortes).
+**Rates ancorados ao fim income-limited (gear ~213):** `flatPerLevel.aps` **0.002643** e `critPerLevel`
+**0.00061** (razão 0,23 mantida); dmg/hp flat **2500/2000**, `bonusRate` **0.02**, `multRate` **0.0003**,
+`gildedPerLevel` **0.00018**. No fim: **APS 2,49** · **crit 30,2%** · **Gilded ~5%**. Wall `bossHpMult`
+**250** → com Despertar = clímax tenso (**5 mortes**, ~9,6h); **sem Despertar não limpa** (2455 mortes,
+2,37 dias). Pace: 1ª Convergence ~19min, Map 1 ~9,6h.
+
+> 🔎 Aprendizados da pesquisa (fontes no fim): (1) custo geométrico é universal (×1,07–1,15); (2) tiers
+> diferem pela BASE, mesma curva; (3) números 1eX são esperados (break_infinity existe por isso);
+> (4) Synergism = muitas CAMADAS, cada uma gateada por um limiar de poder — valida Convergence/Despertar/
+> Ascension como camadas que se multiplicam.
 
 ## Fora do escopo desta sessão (decisão Willian)
 Ascension, mecânicas/números dos Maps 2–5, e raridade **Raro+**. A Wall usa `ENEMY.bossHpMult = 220`
