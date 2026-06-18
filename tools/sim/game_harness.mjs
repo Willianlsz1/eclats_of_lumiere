@@ -127,7 +127,7 @@ console.log(`mortes totais ........ ${deaths}`);
 console.log('--- estado no FIM ---');
 console.log(`tempo ................ ${fmtT(t)}`);
 console.log(`nível da run ......... ${runLevel(state)}  · convergences ${state.convergences}`);
-console.log(`gear médio ........... ${g.toFixed(0)}  · raridade mín ${GEAR_RARITY_LABELS[minRarity(state)]} (cap dinâmico ${levelCapFor({ rarity: minRarity(state), level: 0 }, state)})`);
+console.log(`gear médio ........... ${g.toFixed(0)}  · raridade mín ${GEAR_RARITY_LABELS[minRarity(state)]} (cap ${levelCapFor({ rarity: minRarity(state), level: 0 }, state)})`);
 console.log(`APS .................. ${currentAPS(state).toFixed(2)}  (ALVO 2,5)  · dps ${fmt(dps(state))}`);
 console.log(`crit rate ............ ${(critChance(state) * 100).toFixed(1)}%  (ALVO 30%)  · crit dmg ×${critDamageMult(state).toFixed(2)}  · despertares ${state.despertares || 0}`);
 console.log(`HP máx ............... ${fmt(playerHpMax(state))}`);
