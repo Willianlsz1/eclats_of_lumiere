@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Éclats — Simulador de Valores (Map 1)</title>
+<style>
+  :root{
+    --bg:#f4f7fb; --card:#ffffff; --ink:#11233b; --muted:#5b6b80;
+    --line:#d9e3ef; --blue:#2f6fed; --blue-d:#1c4fbf; --ok:#0f9d58; --warn:#d98300; --bad:#d23f3f;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 system-ui,Segoe UI,Roboto,sans-serif}
+  header{background:linear-gradient(180deg,#ffffff,#eef4ff);border-bottom:1px solid var(--line);padding:14px 20px}
+  header h1{margin:0;font-size:18px}
+  header p{margin:4px 0 0;color:var(--muted);font-size:12px}
+  .wrap{display:grid;grid-template-columns:minmax(360px,460px) 1fr;gap:16px;padding:16px;align-items:start}
+  @media(max-width:980px){.wrap{grid-template-columns:1fr}}
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+  .panel h2{margin:0 0 10px;font-size:14px;text-transform:uppercase;letter-spacing:.04em;color:var(--blue-d)}
+  .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+  button{font:inherit;border:1px solid var(--blue);background:var(--blue);color:#fff;border-radius:8px;padding:9px 16px;cursor:pointer}
+  button.ghost{background:#fff;color:var(--blue-d)}
+  button:hover{background:var(--blue-d);border-color:var(--blue-d);color:#fff}
+  details{border:1px solid var(--line);border-radius:8px;margin-bottom:8px;overflow:hidden}
+  details>summary{cursor:pointer;padding:8px 10px;background:#f0f5ff;font-weight:600;list-style:none}
+  details>summary::-webkit-details-marker{display:none}
+  details>summary::before{content:'▸ ';color:var(--blue)}
+  details[open]>summary::before{content:'▾ '}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 10px;padding:10px}
+  .fld{display:flex;flex-direction:column;gap:2px}
+  .fld.full{grid-column:1 / -1}
+  .fld label{font-size:11px;color:var(--muted)}
+  .fld input{font:inherit;border:1px solid var(--line);border-radius:6px;padding:5px 7px;background:#fbfdff}
+  .fld input:focus{outline:2px solid #bcd2ff;border-color:var(--blue)}
+  #out{white-space:pre-wrap;font:12.5px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace}
+  table{border-collapse:collapse;width:100%;font:12px/1.4 ui-monospace,monospace;margin-top:8px}
+  th,td{border:1px solid var(--line);padding:4px 6px;text-align:right}
+  th{background:#f0f5ff;color:var(--blue-d)}
+  td:first-child,th:first-child{text-align:left}
+  .sum{display:grid;grid-template-columns:1fr 1fr;gap:4px 14px;margin-bottom:10px}
+  .sum div{display:flex;justify-content:space-between;border-bottom:1px dotted var(--line);padding:2px 0}
+  .sum b{font-variant-numeric:tabular-nums}
+  .ok{color:var(--ok)} .warn{color:var(--warn)} .bad{color:var(--bad)}
+  .hint{color:var(--muted);font-size:11px;margin:6px 0 0}
+  .running{opacity:.5}
+</style>
+</head>
+<body>
+<header>
+  <h1>Éclats of Lumière — Simulador de Valores</h1>
+  <p>Edita as constantes do <b>Map 1</b> (e dos sistemas globais) e roda o <b>combate REAL</b>
+     (importa <code>src/game/*</code>). Um "jogador sensato" farma a área mais funda sustentável,
+     compra gear na peça mais barata, sobe raridade, converge e desperta nos gates — até limpar o Map 1.</p>
+</header>
+
+<div class="wrap">
+  <div class="panel">
+    <h2>Valores</h2>
+    <div class="toolbar">
+      <button id="run">▶ Rodar simulação</button>
+      <button id="reset" class="ghost">↺ Restaurar padrão</button>
+    </div>
+    <div id="form"></div>
+    <p class="hint">Dica: notação científica funciona (ex.: <code>1e5</code>). Arrays = lista
+       separada por vírgula (9 áreas no Map 1). Os campos vêm pré-preenchidos com os valores
+       atuais de <code>constants.js</code>.</p>
+  </div>
+
+  <div class="panel">
+    <h2>Resultado</h2>
+    <div id="result"><p class="hint">Clique em <b>Rodar simulação</b>. Pode levar 1–3 s
+       dependendo do teto de horas (a simulação roda tick a tick, 100 ms cada).</p></div>
+  </div>
+</div>
+
+<script type="module">
+import { createInitialState } from '../../src/core/state.js';
+import { combatTick, enterSubarea, bossActive, resetPack } from '../../src/game/combat.js';
+import { currentAPS, dps, playerHpMax, runLevel, damagePerHit, critChance, critDamageMult, playerDefesa } from '../../src/game/stats.js';
+import { buyLevel, levelCost, atLevelCap, canRarityUp, doRarityUp, levelCapFor } from '../../src/game/gear.js';
+import { canConverge, doConverge, convGateLevel } from '../../src/game/convergence.js';
+import { canDespertar, doDespertar } from '../../src/game/ascension.js';
+import { getCurrentMap } from '../../src/game/enemies.js';
+import {
+  COMBAT, LEVEL, ECONOMY, ENEMY, GEAR, GEAR_RARITY_LABELS, CRAFT,
+  CONVERGENCE, DESPERTAR, DESPERTAR_REQ, GILDED, MAPS,
+} from '../../src/data/constants.js';
+
+const M1 = MAPS[0];
+const fmtT = (s) => s == null ? '—' : s < 90 ? `${s.toFixed(0)}s` : s < 5400 ? `${(s/60).toFixed(1)}min` : s < 86400*2 ? `${(s/3600).toFixed(1)}h` : `${(s/86400).toFixed(2)}d`;
+const fmt = (n) => !isFinite(n) ? '∞' : n >= 1e12 ? (n/1e12).toFixed(2)+'T' : n >= 1e9 ? (n/1e9).toFixed(2)+'bi' : n >= 1e6 ? (n/1e6).toFixed(2)+'M' : n >= 1e3 ? (n/1e3).toFixed(1)+'k' : Math.round(n).toString();
+
+// ── Spec dos campos: cada um lê/escreve direto no objeto de constantes (mutável) ──
+// num: input numérico ligado a obj[key]. arr: lista (vírgula) ligada a obj[key] (mantém tamanho).
+const groups = [
+  { t:'Sim — opções', open:true, f:[
+    { l:'Teto de horas', kind:'num', get:()=>SIM.capHours, set:v=>SIM.capHours=v, step:1 },
+    { l:'Sem Despertar (1=nunca desperta)', kind:'num', get:()=>SIM.noDesp, set:v=>SIM.noDesp=v?1:0, step:1 },
+  ]},
+  { t:'Combate (COMBAT)', open:true, f:[
+    { l:'baseDmg (dano base)', kind:'num', o:COMBAT, k:'baseDmg' },
+    { l:'playerBaseHp (HP base)', kind:'num', o:COMBAT, k:'playerBaseHp' },
+    { l:'baseAPS (atk/s inicial)', kind:'num', o:COMBAT, k:'baseAPS', step:0.05 },
+    { l:'apsCap (teto APS)', kind:'num', o:COMBAT, k:'apsCap', step:0.5 },
+    { l:'regenPerSec (% HP/s)', kind:'num', o:COMBAT, k:'regenPerSec', step:0.005 },
+  ]},
+  { t:'Nível (LEVEL)', f:[
+    { l:'curveDiv', kind:'num', o:LEVEL, k:'curveDiv' },
+    { l:'curveExp', kind:'num', o:LEVEL, k:'curveExp', step:0.01 },
+    { l:'dmgPerLevel', kind:'num', o:LEVEL, k:'dmgPerLevel' },
+    { l:'hpPerLevel', kind:'num', o:LEVEL, k:'hpPerLevel' },
+  ]},
+  { t:'Economia (ECONOMY)', f:[
+    { l:'lumBase (Lumens/kill base)', kind:'num', o:ECONOMY, k:'lumBase' },
+    { l:'xpRatio (XP = HP×ratio)', kind:'num', o:ECONOMY, k:'xpRatio', step:0.01 },
+  ]},
+  { t:'Inimigos (ENEMY)', f:[
+    { l:'hitsToKill (alvo de golpes)', kind:'num', o:ENEMY, k:'hitsToKill', step:0.5 },
+    { l:'dmgFrac (dano onda = HP×frac)', kind:'num', o:ENEMY, k:'dmgFrac', step:0.001 },
+    { l:'bossHpMult (Wall ×HP)', kind:'num', o:ENEMY, k:'bossHpMult' },
+    { l:'bossDmgMult (boss ×dano)', kind:'num', o:ENEMY, k:'bossDmgMult' },
+    { l:'levelPerArea', kind:'num', o:ENEMY, k:'levelPerArea', step:0.01 },
+    { l:'areaHp[] (9 áreas)', kind:'arr', o:ENEMY, k:'areaHp' },
+    { l:'areaDmg[] (9 áreas)', kind:'arr', o:ENEMY, k:'areaDmg' },
+    { l:'areaReward[] (9 áreas)', kind:'arr', o:ENEMY, k:'areaReward' },
+  ]},
+  { t:'Mapa 1 (MAPS[0])', open:true, f:[
+    { l:'bossKillThreshold (muro)', kind:'num', o:M1, k:'bossKillThreshold' },
+    { l:'gearRarityCap (0=Faded,1=Kindled)', kind:'num', o:M1, k:'gearRarityCap', step:1 },
+    { l:'unlockLevels[] (nível p/ liberar Sub n)', kind:'arr', o:M1, k:'unlockLevels' },
+    { l:'packSizes[] (mobs por área)', kind:'arr', o:M1, k:'packSizes' },
+  ]},
+  { t:'Gear (GEAR)', f:[
+    { l:'levelCostBase', kind:'num', o:GEAR, k:'levelCostBase' },
+    { l:'costRamp (+/nível)', kind:'num', o:GEAR, k:'costRamp', step:0.01 },
+    { l:'bonusRate (afixo %)', kind:'num', o:GEAR, k:'bonusRate', step:0.005 },
+    { l:'multRate (afixo × Incomum+)', kind:'num', o:GEAR, k:'multRate', step:0.0001 },
+    { l:'secondaryExp', kind:'num', o:GEAR, k:'secondaryExp', step:0.05 },
+    { l:'affixPctRate (farm %/nv)', kind:'num', o:GEAR, k:'affixPctRate', step:0.01 },
+    { l:'critPerLevel', kind:'num', o:GEAR, k:'critPerLevel', step:0.0001 },
+    { l:'gildedPerLevel', kind:'num', o:GEAR, k:'gildedPerLevel', step:0.0001 },
+    { l:'flat dmg/nível', kind:'num', o:GEAR.flatPerLevel, k:'dmg' },
+    { l:'flat hp/nível', kind:'num', o:GEAR.flatPerLevel, k:'hp' },
+    { l:'flat aps/nível', kind:'num', o:GEAR.flatPerLevel, k:'aps', step:0.0005 },
+    { l:'levelCap[] (por raridade)', kind:'arr', o:GEAR, k:'levelCap' },
+    { l:'costMult[] (por raridade)', kind:'arr', o:GEAR, k:'costMult' },
+    { l:'rarityMult[] (por raridade)', kind:'arr', o:GEAR, k:'rarityMult' },
+  ]},
+  { t:'Craft / Materiais (CRAFT)', f:[
+    { l:'dropChance', kind:'num', o:CRAFT, k:'dropChance', step:0.005 },
+    { l:'nextTierChance', kind:'num', o:CRAFT, k:'nextTierChance', step:0.001 },
+    { l:'bossChunk', kind:'num', o:CRAFT, k:'bossChunk' },
+    { l:'rarityUpMaterial', kind:'num', o:CRAFT, k:'rarityUpMaterial' },
+    { l:'refinoRatio', kind:'num', o:CRAFT, k:'refinoRatio' },
+  ]},
+  { t:'Convergence (CONVERGENCE)', f:[
+    { l:'bonusPerConv (+dano/HP)', kind:'num', o:CONVERGENCE, k:'bonusPerConv', step:0.05 },
+    { l:'goldBonusPerConv (+Gold)', kind:'num', o:CONVERGENCE, k:'goldBonusPerConv', step:0.005 },
+    { l:'gateLevelBase (1º gate)', kind:'num', o:CONVERGENCE, k:'gateLevelBase' },
+    { l:'gateLevelGrowth (×gate)', kind:'num', o:CONVERGENCE, k:'gateLevelGrowth', step:0.05 },
+    { l:'headstartFrac', kind:'num', o:CONVERGENCE, k:'headstartFrac', step:0.05 },
+  ]},
+  { t:'Despertar (DESPERTAR + req T2)', f:[
+    { l:'mult (×poder/tier)', kind:'num', o:DESPERTAR, k:'mult', step:0.5 },
+    { l:'critRateAdd (/tier)', kind:'num', o:DESPERTAR, k:'critRateAdd', step:0.01 },
+    { l:'critDmgAdd (/tier)', kind:'num', o:DESPERTAR, k:'critDmgAdd', step:0.5 },
+    { l:'apsAdd (/tier)', kind:'num', o:DESPERTAR, k:'apsAdd', step:0.1 },
+    { l:'lumensBonus (/tier)', kind:'num', o:DESPERTAR, k:'lumensBonus', step:0.1 },
+    { l:'xpBonus (/tier)', kind:'num', o:DESPERTAR, k:'xpBonus', step:0.05 },
+    { l:'req T2: subárea', kind:'num', o:DESPERTAR_REQ[1], k:'subarea', step:1 },
+    { l:'req T2: kills', kind:'num', o:DESPERTAR_REQ[1], k:'kills' },
+    { l:'req T2: nível', kind:'num', o:DESPERTAR_REQ[1], k:'level' },
+    { l:'req T2: materiais T1', kind:'num', o:DESPERTAR_REQ[1], k:'t1' },
+  ]},
+  { t:'Gilded (GILDED)', f:[
+    { l:'chanceCap (teto global)', kind:'num', o:GILDED, k:'chanceCap', step:0.05 },
+    { l:'T1 hpMult', kind:'num', o:GILDED.tiers[0], k:'hpMult', step:0.1 },
+    { l:'T1 lumensMult', kind:'num', o:GILDED.tiers[0], k:'lumensMult', step:0.1 },
+    { l:'T1 xpMult', kind:'num', o:GILDED.tiers[0], k:'xpMult', step:0.1 },
+  ]},
+];
+
+const SIM = { capHours: 48, noDesp: 0 };
+
+// Guarda os valores padrão (deep) p/ o botão Restaurar
+const DEFAULTS = groups.flatMap(g => g.f).map(f => ({ f, val: read(f) }));
+
+function read(f){
+  if (f.get) return f.get();
+  if (f.kind === 'arr') return [...f.o[f.k]];
+  return f.o[f.k];
+}
+function write(f, raw){
+  if (f.kind === 'arr'){
+    const parts = String(raw).split(',').map(s => Number(s.trim())).filter(x => !isNaN(x));
+    const arr = f.get ? f.get() : f.o[f.k];
+    for (let i = 0; i < arr.length && i < parts.length; i++) arr[i] = parts[i];
+    return;
+  }
+  const v = Number(raw);
+  if (isNaN(v)) return;
+  if (f.set) f.set(v); else f.o[f.k] = v;
+}
+
+// ── Monta o formulário ──
+const form = document.getElementById('form');
+for (const g of groups){
+  const d = document.createElement('details'); if (g.open) d.open = true;
+  const s = document.createElement('summary'); s.textContent = g.t; d.appendChild(s);
+  const grid = document.createElement('div'); grid.className = 'grid';
+  for (const f of g.f){
+    const wrap = document.createElement('div'); wrap.className = 'fld' + (f.kind === 'arr' ? ' full' : '');
+    const lab = document.createElement('label'); lab.textContent = f.l;
+    const inp = document.createElement('input');
+    inp.value = f.kind === 'arr' ? read(f).join(', ') : read(f);
+    if (f.kind === 'num'){ inp.type = 'text'; inp.inputMode = 'decimal'; }
+    inp.dataset.idx = groups.flatMap(x=>x.f).indexOf(f);
+    f._input = inp;
+    wrap.appendChild(lab); wrap.appendChild(inp); grid.appendChild(wrap);
+  }
+  d.appendChild(grid); form.appendChild(d);
+}
+
+function applyInputs(){
+  for (const g of groups) for (const f of g.f) write(f, f._input.value);
+}
+
+// ── Simulação (adaptada de tools/sim/game_harness.mjs) ──
+const DT = 0.1;
+const avgGearLevel = (st) => GEAR.pieces.reduce((s,d)=>s+st.gear[d.key].level,0) / GEAR.pieces.length;
+const minRarity = (st) => Math.min(...GEAR.pieces.map(d=>st.gear[d.key].rarity));
+
+function buyGearGreedy(st){
+  let guard=0;
+  while(guard++<5000){
+    let best=null,bestCost=Infinity;
+    for(const def of GEAR.pieces){ const p=st.gear[def.key]; if(atLevelCap(p,st))continue; const c=levelCost(p); if(c<bestCost){bestCost=c;best=def.key;} }
+    if(!best||st.lumens<bestCost)break;
+    if(!buyLevel(st,best))break;
+  }
+}
+function rarityUpGreedy(st){ let did=true; while(did){did=false; for(const def of GEAR.pieces) if(canRarityUp(st,def.key)){doRarityUp(st,def.key);did=true;}} }
+
+function bestFarmArea(st){
+  const map=getCurrentMap(st);
+  const d=dps(st), hp=playerHpMax(st), def=playerDefesa(st), lvl=runLevel(st);
+  const bDmg=COMBAT.baseDmg+lvl*LEVEL.dmgPerLevel;
+  for(let s=st.unlockedSubarea;s>=1;s--){
+    const mobHp=bDmg*ENEMY.hitsToKill*ENEMY.areaHp[s-1];
+    const size=map.packSizes[s-1];
+    const tClear=(size*mobHp)/d;
+    const packDps=hp*ENEMY.dmgFrac*ENEMY.areaDmg[s-1];
+    const armored=(packDps*packDps)/(def+packDps);
+    const taken=armored*(tClear/2)-hp*0.01*(tClear/2);
+    if(taken<hp*0.8) return s;
+  }
+  return 1;
+}
+
+function runSim(){
+  const st = createInitialState();
+  st.player.hp = playerHpMax(st);
+  resetPack(st);
+
+  const M = { lvl2:null, conv1:null, despertar:null, sub9:null, wallSpawn:null, wallKill:null };
+  const areas = [];           // snapshot quando cada sub-área é liberada
+  let despSnap=null, firstWallSnap=null, firstWallHp=null;
+  let t=0, deaths=0, wallAttempts=0, prevDead=false, prevUnlocked=0;
+  const CAP_T = SIM.capHours*3600;
+  const MAX_TICKS = Math.min(CAP_T/DT, 5_000_000);
+
+  // snapshot da área inicial
+  const snap = (s) => ({ area:s, t, lvl:runLevel(st), dps:dps(st), hp:playerHpMax(st),
+    aps:currentAPS(st), crit:critChance(st), gear:avgGearLevel(st), conv:st.convergences,
+    mobHp:(COMBAT.baseDmg+runLevel(st)*LEVEL.dmgPerLevel)*ENEMY.hitsToKill*ENEMY.areaHp[s-1] });
+
+  let ticks=0;
+  while(ticks++<MAX_TICKS){
+    if(ticks%30===1){ const tgt=bestFarmArea(st); if(tgt!==st.subarea) enterSubarea(st,tgt); }
+    combatTick(st,DT); t+=DT;
+    if(ticks%10===0){ buyGearGreedy(st); rarityUpGreedy(st); }
+    if(canConverge(st)){ doConverge(st); if(M.conv1===null)M.conv1=t; }
+    if(!SIM.noDesp && canDespertar(st)){ doDespertar(st); if(M.despertar===null){ M.despertar=t; despSnap={lvl:runLevel(st),gear:avgGearLevel(st),kills:st.killsTotal,sub:st.unlockedSubarea}; } }
+
+    const lvl=runLevel(st);
+    if(M.lvl2===null&&lvl>=2)M.lvl2=t;
+    // registra snapshot a cada nova sub-área liberada
+    if(st.unlockedSubarea>prevUnlocked){ for(let s=prevUnlocked+1;s<=st.unlockedSubarea;s++) areas.push(snap(s)); prevUnlocked=st.unlockedSubarea; }
+    if(M.sub9===null&&st.unlockedSubarea>=9)M.sub9=t;
+
+    if(st.subarea===9&&bossActive(st)&&M.wallSpawn===null){
+      M.wallSpawn=t; wallAttempts++; firstWallHp=playerHpMax(st);
+      firstWallSnap={lvl,gear:avgGearLevel(st),aps:currentAPS(st),dps:dps(st),conv:st.convergences};
+    }
+    if(st.player.dead&&!prevDead){ deaths++; if(st.subarea===9)wallAttempts++; }
+    prevDead=st.player.dead;
+
+    if(st.bossDefeated[8]&&M.wallKill===null){ M.wallKill=t; break; }
+  }
+  return { st, M, areas, despSnap, firstWallSnap, firstWallHp, t, deaths, wallAttempts, timedOut: t>=CAP_T };
+}
+
+// ── Render ──
+function render(r){
+  const { st, M, areas, despSnap, firstWallSnap, firstWallHp, t, deaths } = r;
+  const cls = (v) => v ? 'ok' : 'bad';
+  const sum = `
+    <div class="sum">
+      <div><span>nível 2</span><b>${fmtT(M.lvl2)}</b></div>
+      <div><span>1ª Convergence (gate ${convGateLevel(0)})</span><b>${fmtT(M.conv1)}</b></div>
+      <div><span>Despertar T2</span><b>${fmtT(M.despertar)}</b></div>
+      <div><span>Sub 9 liberada</span><b>${fmtT(M.sub9)}</b></div>
+      <div><span>Wall (boss) surge</span><b>${fmtT(M.wallSpawn)}</b></div>
+      <div><span>Wall derrotada</span><b class="${cls(M.wallKill)}">${M.wallKill?fmtT(M.wallKill):'não limpou'}</b></div>
+      <div><span>mortes totais</span><b>${deaths}</b></div>
+      <div><span>tempo simulado</span><b>${fmtT(t)}</b></div>
+    </div>`;
+
+  const fim = `<b>Estado no fim:</b>  nível ${runLevel(st)} · conv ${st.convergences} · despertares ${st.despertares||0}
+gear médio ${avgGearLevel(st).toFixed(0)} · raridade mín ${GEAR_RARITY_LABELS[minRarity(st)]} (cap ${levelCapFor({rarity:minRarity(st),level:0},st)})
+APS ${currentAPS(st).toFixed(2)} · dps ${fmt(dps(st))} · crit ${(critChance(st)*100).toFixed(1)}% ×${critDamageMult(st).toFixed(2)} · HP ${fmt(playerHpMax(st))}`;
+
+  const wall = despSnap ? `\n<b>No Despertar:</b> Sub ${despSnap.sub} · nível ${despSnap.lvl} · gear ${despSnap.gear.toFixed(0)} · ${despSnap.kills} kills` : '';
+  const wall2 = firstWallSnap ? `\n<b>1º encontro c/ a Wall:</b> nível ${firstWallSnap.lvl} · gear ${firstWallSnap.gear.toFixed(0)} · conv ${firstWallSnap.conv} · APS ${firstWallSnap.aps.toFixed(2)} · dps ${fmt(firstWallSnap.dps)} · HP ${fmt(firstWallHp)}` : '';
+
+  let rows = areas.map(a => {
+    const htk = a.mobHp / damagePerHitAt(a);
+    return `<tr><td>${a.area}</td><td>${fmtT(a.t)}</td><td>${a.lvl}</td><td>${fmt(a.mobHp)}</td><td>${htk.toFixed(1)}</td><td>${fmt(a.dps)}</td><td>${fmt(a.hp)}</td><td>${a.aps.toFixed(2)}</td><td>${(a.crit*100).toFixed(0)}%</td><td>${a.gear.toFixed(0)}</td><td>${a.conv}</td></tr>`;
+  }).join('');
+  const table = `<table><thead><tr><th>Área</th><th>quando</th><th>nível</th><th>HP mob</th><th>golpes/mob</th><th>dps</th><th>HP máx</th><th>APS</th><th>crit</th><th>gear</th><th>conv</th></tr></thead><tbody>${rows}</tbody></table>`;
+
+  document.getElementById('result').innerHTML = sum + `<pre id="out">${fim}${wall}${wall2}</pre>` +
+    `<p class="hint">Snapshot do jogador no momento em que cada sub-área é liberada. <b>golpes/mob</b> &gt; 1 = mob aguenta vários golpes (você "sente" a Wall e precisa upar).</p>` + table;
+}
+// damagePerHit no momento do snapshot não é guardado; recalculamos pelo dps/aps/crit aproximado:
+// dps = dmgHit × aps × (1 + crit×(critMult-1)). Para golpes/mob basta dmgHit ≈ dps / (aps×fatorCrit).
+function damagePerHitAt(a){
+  const fatorCrit = 1 + a.crit*1; // aproxima (crit dmg ~×2 médio); golpes/mob é indicativo
+  return Math.max(1, a.dps / (a.aps*fatorCrit));
+}
+
+document.getElementById('run').addEventListener('click', () => {
+  const btn = document.getElementById('run');
+  btn.disabled = true; btn.textContent = '⏳ rodando…';
+  document.getElementById('result').classList.add('running');
+  setTimeout(() => {
+    try { applyInputs(); render(runSim()); }
+    catch(e){ document.getElementById('result').innerHTML = `<pre class="bad">Erro: ${e.message}\n${e.stack||''}</pre>`; }
+    finally { btn.disabled=false; btn.textContent='▶ Rodar simulação'; document.getElementById('result').classList.remove('running'); }
+  }, 30);
+});
+
+document.getElementById('reset').addEventListener('click', () => {
+  for (const {f,val} of DEFAULTS){
+    if (f.set) f.set(val); else if (f.kind==='arr'){ const arr=f.o[f.k]; for(let i=0;i<arr.length;i++)arr[i]=val[i]; } else f.o[f.k]=val;
+    f._input.value = f.kind==='arr' ? read(f).join(', ') : read(f);
+  }
+});
+</script>
+</body>
+</html>

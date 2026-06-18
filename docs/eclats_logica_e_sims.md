@@ -485,13 +485,29 @@ cascata de morte/recuo estabiliza no ponto sustentável **igual ao online**.
 
 ## 16. Simulações / Sims (`tools/sim/`)
 
+### 16.0 Simulador interativo (HTML) — `tools/sim/playground.html`
+Página que **edita todos os valores do Map 1** (e dos sistemas globais) em campos e roda o
+**combate real** importando `src/game/*` — mesma lógica do jogo, não uma cópia. Mostra os
+marcos (nível 2, 1ª Convergence, Despertar, Sub 9, Wall, limpeza), o estado final
+(nível/conv/gear/APS/crit/dps/HP) e uma **tabela por sub-área** (HP do mob, golpes/mob,
+dps, HP, gear, conv no momento em que cada área é liberada).
+```
+npm run dev                 # sobe o Vite
+# abra http://localhost:5173/tools/sim/playground.html
+```
+Os campos vêm pré-preenchidos de `constants.js`; "Restaurar padrão" volta tudo. Como as
+constantes são objetos mutáveis lidos em tempo de chamada, editar um campo + "Rodar" faz o
+motor usar o novo valor na hora. É o caminho recomendado para **testar valores** sem editar
+código.
+
+### 16.1 Sims de linha de comando
 33 simuladores `.mjs` (rodam com `node tools/sim/<arquivo>.mjs`). Dois tipos:
 - **Harness reais**: importam `src/game/*` e rodam o **combate real** → validam o *feel* no
   jogo, não num modelo abstrato.
 - **Modelos analíticos**: reimplementam a fórmula de um sistema de forma isolada para
   calibrar uma constante (orçamento de décadas, custo, pacing).
 
-### 16.1 Harness que rodam o jogo real
+#### Harness que rodam o jogo real
 | sim | o que faz |
 |-----|-----------|
 | `game_harness.mjs` | Roda o combate real com um "jogador sensato" (fica na sub-área mais funda, compra a peça mais barata, converge no gate). Validador-mestre da recalibração "VALORES NO MAPA". |
@@ -504,7 +520,7 @@ cascata de morte/recuo estabiliza no ponto sustentável **igual ao online**.
 | `gear_caps.mjs` | Relatório dos stats do Gear nos caps (Faded 500, Kindled 1400) com as funções reais. |
 | `sim.mjs` | Simulador de calibração geral (Camada 2): importa as fórmulas reais e mostra HP/dano/packDps por mapa/sub-área. |
 
-### 16.2 Calibração por sistema (modelos analíticos das "7 camadas")
+#### Calibração por sistema (modelos analíticos das "7 camadas")
 | sim | camada / alvo |
 |-----|---------------|
 | `budget.mjs` | Framework do **orçamento de poder**: quantas décadas o dano cresce e como dividir entre os sistemas (norte do balanceamento). |
@@ -518,7 +534,7 @@ cascata de morte/recuo estabiliza no ponto sustentável **igual ao online**.
 | `pacing.mjs` | Pacing end-to-end mapeado no modelo de colunas do Gaiadon (Primary × Bonus% × Multiplier × Mastery%). |
 | `cleave.mjs` | Efeito do **unlock de CLEAVE/AoE** (ADR 0002): kills/s quando o ataque atinge a onda inteira vs o base single-target. |
 
-### 16.3 Estudos do Map 1 (iterações de design)
+#### Estudos do Map 1 (iterações de design)
 Conjunto de explorações isoladas do pacing do Map 1, cada uma fixando uma variável
 (custo do gear, cap de nível, teto de HP do mob, gate por nível, Convergence):
 `map1.mjs`, `map1_b.mjs`, `map1_v2.mjs`, `map1_blank.mjs` (recalibração "em branco"),
