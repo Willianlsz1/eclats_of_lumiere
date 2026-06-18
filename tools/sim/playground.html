@@ -60,6 +60,9 @@
     <div class="toolbar">
       <button id="run">▶ Rodar simulação</button>
       <button id="reset" class="ghost">↺ Restaurar padrão</button>
+      <button id="export" class="ghost">⬇ Exportar preset</button>
+      <button id="import" class="ghost">⬆ Importar preset</button>
+      <input id="importFile" type="file" accept="application/json" hidden />
     </div>
     <div id="form"></div>
     <p class="hint">Dica: notação científica funciona (ex.: <code>1e5</code>). Arrays = lista
@@ -331,7 +334,44 @@ APS ${currentAPS(st).toFixed(2)} · dps ${fmt(dps(st))} · crit ${(critChance(st
   const table = `<table><thead><tr><th>Área</th><th>quando</th><th>nível</th><th>HP mob</th><th>golpes/mob</th><th>dps</th><th>HP máx</th><th>APS</th><th>crit</th><th>gear</th><th>conv</th></tr></thead><tbody>${rows}</tbody></table>`;
 
   document.getElementById('result').innerHTML = sum + `<pre id="out">${fim}${wall}${wall2}</pre>` +
-    `<p class="hint">Snapshot do jogador no momento em que cada sub-área é liberada. <b>golpes/mob</b> &gt; 1 = mob aguenta vários golpes (você "sente" a Wall e precisa upar).</p>` + table;
+    `<canvas id="chart" width="720" height="280" style="width:100%;max-width:720px;border:1px solid var(--line);border-radius:8px;background:#fff;margin-top:6px"></canvas>` +
+    `<p class="hint">Gráfico (escala log): <b style="color:#2f6fed">dps do player</b> vs <b style="color:#d23f3f">HP do mob</b> por área. Quando o HP do mob encosta/ultrapassa o dps você "trava" (Wall). Tabela: snapshot no momento em que cada sub-área é liberada — <b>golpes/mob</b> &gt; 1 = precisa upar.</p>` + table;
+  drawChart(areas);
+}
+
+// Gráfico em canvas (sem libs): 2 séries em escala log10 por área
+function drawChart(areas){
+  const cv = document.getElementById('chart'); if(!cv||!areas.length) return;
+  const ctx = cv.getContext('2d'); const W=cv.width, H=cv.height;
+  const padL=54, padR=14, padT=14, padB=28;
+  ctx.clearRect(0,0,W,H);
+  const xs = areas.map(a=>a.area);
+  const series = [
+    { key:'dps', color:'#2f6fed', label:'dps' },
+    { key:'mobHp', color:'#d23f3f', label:'HP mob' },
+  ];
+  let lo=Infinity, hi=-Infinity;
+  for(const a of areas) for(const s of series){ const v=Math.log10(Math.max(1,a[s.key])); lo=Math.min(lo,v); hi=Math.max(hi,v); }
+  if(!isFinite(lo)){lo=0;hi=1;} if(hi-lo<1)hi=lo+1;
+  const xMin=Math.min(...xs), xMax=Math.max(...xs);
+  const X = (x)=> padL + (xMax===xMin?0.5:(x-xMin)/(xMax-xMin))*(W-padL-padR);
+  const Y = (logv)=> H-padB - (logv-lo)/(hi-lo)*(H-padT-padB);
+  // grid + rótulos y (potências de 10)
+  ctx.strokeStyle='#eef2f8'; ctx.fillStyle='#5b6b80'; ctx.font='11px ui-monospace,monospace'; ctx.textAlign='right'; ctx.textBaseline='middle';
+  for(let p=Math.floor(lo); p<=Math.ceil(hi); p++){ const y=Y(p); ctx.beginPath(); ctx.moveTo(padL,y); ctx.lineTo(W-padR,y); ctx.stroke(); ctx.fillText('1e'+p, padL-6, y); }
+  // eixo x (áreas)
+  ctx.textAlign='center'; ctx.textBaseline='top';
+  for(const x of xs){ ctx.fillText('A'+x, X(x), H-padB+6); }
+  // linhas
+  for(const s of series){
+    ctx.strokeStyle=s.color; ctx.fillStyle=s.color; ctx.lineWidth=2; ctx.beginPath();
+    areas.forEach((a,i)=>{ const px=X(a.area), py=Y(Math.log10(Math.max(1,a[s.key]))); i?ctx.lineTo(px,py):ctx.moveTo(px,py); });
+    ctx.stroke();
+    areas.forEach(a=>{ const px=X(a.area), py=Y(Math.log10(Math.max(1,a[s.key]))); ctx.beginPath(); ctx.arc(px,py,3,0,7); ctx.fill(); });
+  }
+  // legenda
+  ctx.textAlign='left'; ctx.textBaseline='middle'; let lx=padL+6;
+  for(const s of series){ ctx.fillStyle=s.color; ctx.fillRect(lx,padT+2,12,4); ctx.fillText(s.label, lx+16, padT+4); lx+=90; }
 }
 // damagePerHit no momento do snapshot não é guardado; recalculamos pelo dps/aps/crit aproximado:
 // dps = dmgHit × aps × (1 + crit×(critMult-1)). Para golpes/mob basta dmgHit ≈ dps / (aps×fatorCrit).
@@ -356,6 +396,33 @@ document.getElementById('reset').addEventListener('click', () => {
     if (f.set) f.set(val); else if (f.kind==='arr'){ const arr=f.o[f.k]; for(let i=0;i<arr.length;i++)arr[i]=val[i]; } else f.o[f.k]=val;
     f._input.value = f.kind==='arr' ? read(f).join(', ') : read(f);
   }
+});
+
+// ── Presets: exporta/importa os valores dos campos (na ordem do form) ──
+const allFields = () => groups.flatMap(g => g.f);
+document.getElementById('export').addEventListener('click', () => {
+  const preset = { _meta:'eclats playground preset', values: allFields().map(f => f._input.value) };
+  const blob = new Blob([JSON.stringify(preset, null, 2)], { type:'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `eclats-preset-${new Date().toISOString().slice(0,10)}.json`;
+  a.click(); URL.revokeObjectURL(a.href);
+});
+document.getElementById('import').addEventListener('click', () => document.getElementById('importFile').click());
+document.getElementById('importFile').addEventListener('change', (e) => {
+  const file = e.target.files[0]; if(!file) return;
+  const r = new FileReader();
+  r.onload = () => {
+    try {
+      const p = JSON.parse(r.result);
+      const vals = Array.isArray(p) ? p : p.values;
+      if(!Array.isArray(vals)) throw new Error('formato inválido (esperado {values:[...]})');
+      allFields().forEach((f,i)=>{ if(vals[i]!==undefined) f._input.value = vals[i]; });
+      alert('Preset carregado. Clique em Rodar para aplicar.');
+    } catch(err){ alert('Falha ao importar: '+err.message); }
+    e.target.value='';
+  };
+  r.readAsText(file);
 });
 </script>
 </body>
