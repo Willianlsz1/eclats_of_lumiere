@@ -11,10 +11,8 @@ import { picture } from '../data/assets.js';
 import { GEAR, GEAR_RARITIES, GEAR_RARITY_LABELS, COMBAT } from '../data/constants.js';
 import { apsBonus } from '../game/stats.js';
 import {
-  primaryMult, secondaryMult, critOf, critDmgOf, activeSecondaries,
+  primaryMult, secondaryMult, critOf, critDmgOf, gildedOf, activeSecondaries,
   levelCost, atLevelCap, buyLevels,
-  gearDamageMult, gearHpMult, gearLumensMult, gearCritAdd, gearDefesaMult, gearApsMult,
-  gearDamageFlat, gearHpFlat, gearDefesaFlat, gearApsFlat,
 } from '../game/gear.js';
 
 const $ = (id) => document.getElementById(id);
@@ -24,7 +22,7 @@ const rarityName = (r) => GEAR_RARITIES[r];
 const SLOT_EN = { Arma: 'Weapon', Elmo: 'Helm', Manto: 'Cloak', Manoplas: 'Gauntlets', Amuleto: 'Amulet', Anel: 'Ring' };
 const SLOT_LAYOUT = { left: ['edge', 'vigil', 'veil'], right: ['grasp', 'reson', 'band'] };
 const AFFIX_LABELS = {
-  dmg: 'damage', hp: 'HP', defesa: 'defense', crit: 'crit', critDmg: 'crit damage',
+  dmg: 'damage', hp: 'HP', gilded: 'gilded chance', crit: 'crit', critDmg: 'crit damage',
   aps: 'attack speed', regen: 'regen', bossDmg: 'boss damage', lumens: 'Lumens', xp: 'XP',
   materiais: 'materials', erosao: 'erosion',
 };
@@ -72,41 +70,59 @@ function slotMarkup(def) {
 function affixEntries(def, piece, state) {
   const lvl = piece.level, rar = piece.rarity, rm = GEAR.rarityMult[rar];
   const out = [];
+  // Cada afixo vira 1+ linhas no estilo da referência: VALOR + label + "+x per N levels".
+  // bonus:true = camada multiplicativa/bônus (cor verde); false = base/flat/chance (branco).
   const add = (type, isSec) => {
     const w = isSec ? GEAR.secondaryExp : 1;
     const prim = !isSec;
     if (type === 'aps') {
-      // APS é saturante (não-linear) → mostra o GANHO REAL de velocidade (% mais rápido),
-      // não o "30%" cru que não multiplicava. Só no primário (Amuleto = fonte do APS).
-      if (!prim) return; // secundário de aps já está somado no total do Amuleto
+      // APS: mostra o GANHO REAL de velocidade (% mais rápido). Só no primário (Amuleto).
+      if (!prim) return;
       const pctFaster = state ? (apsBonus(state) / COMBAT.baseAPS) * 100 : 0;
-      out.push({ val: `+${pctFaster.toFixed(0)}%`, label: 'attack speed', per: '', primary: true });
+      out.push({ val: `+${pctFaster.toFixed(0)}%`, label: 'attack speed', per: '', primary: true, bonus: false });
       return;
     }
+    // Chances planas (crit / gilded) — valor base (branco)
     if (type === 'crit') {
       out.push({ val: `+${formatNumber(critOf(lvl, rar) * w * 100)}%`, label: 'crit rate',
-        per: perN(GEAR.critPerLevel * rm * w * 100, '%'), primary: prim });
+        per: perN(GEAR.critPerLevel * rm * w * 100, '%'), primary: prim, bonus: false });
+      return;
+    }
+    if (type === 'gilded') {
+      out.push({ val: `+${formatNumber(gildedOf(lvl, rar) * w * 100)}%`, label: 'gilded chance',
+        per: perN(GEAR.gildedPerLevel * rm * w * 100, '%'), primary: prim, bonus: false });
       return;
     }
     if (type === 'critDmg') {
       out.push({ val: `+${formatNumber(critDmgOf(lvl, rar) * w * 100)}%`, label: 'crit dmg',
-        per: perN(GEAR.critDmgPerLevel * rm * w * 100, '%'), primary: prim });
+        per: perN(GEAR.critDmgPerLevel * rm * w * 100, '%'), primary: prim, bonus: true });
+      return;
+    }
+    // FARM (Lumens/XP/Materiais): % linear (afixPctRate). Primário branco · secundário verde.
+    if (type === 'lumens' || type === 'xp' || type === 'materiais') {
+      out.push({ val: `+${formatNumber(lvl * GEAR.affixPctRate * rm * w * 100)}%`, label: AFFIX_LABELS[type],
+        per: perN(GEAR.affixPctRate * rm * w * 100, '%'), primary: prim, bonus: isSec });
       return;
     }
     const label = AFFIX_LABELS[type];
-    // 1) Primary (flat) — se a peça tiver flat nesse tipo
+    // 1) FLAT (base, branco) — se a peça tiver flat nesse tipo
     if ((GEAR.flatPerLevel[type] || 0) > 0) {
       out.push({ val: `+${formatNumber(affixFlat(type, lvl, rar, isSec))}`, label,
-        per: perN(GEAR.flatPerLevel[type] * rm * w), primary: prim });
+        per: perN(GEAR.flatPerLevel[type] * rm * w), primary: prim, bonus: false });
     }
     if (isSec) {
-      // secundário: contribuição combinada como % (NUNCA ×) — afixo do tier.
-      // "bonus" deixa claro que é MULTIPLICADOR, não valor flat.
-      out.push({ val: `+${formatNumber((secondaryMult(lvl, rar) - 1) * 100)}%`, label: `${label} bonus`, per: '', primary: false });
+      // SECUNDÁRIO: bônus % combinado (verde)
+      out.push({ val: `+${formatNumber((secondaryMult(lvl, rar) - 1) * 100)}%`, label: `${label} bonus`, per: '', primary: false, bonus: true });
     } else {
-      // primário: 2 afixos = FLAT (acima, valor base) + % (aqui, multiplicador).
+      // 2) BÔNUS % (verde)
       out.push({ val: `+${formatNumber(lvl * GEAR.bonusRate * rm * 100)}%`, label: `${label} bonus`,
-        per: perN(GEAR.bonusRate * rm * 100, '%'), primary: true });
+        per: perN(GEAR.bonusRate * rm * 100, '%'), primary: true, bonus: true });
+      // 3) MULTIPLIER × (verde) — só INCOMUM+ (rar≥1) e nos tipos multiplicativos consumidos
+      if (rar >= 1 && (type === 'dmg' || type === 'hp')) {
+        const m = 1 + lvl * GEAR.multRate * rm;
+        out.push({ val: `×${formatNumber(m)}`, label: `${label} multiplier`,
+          per: perN(GEAR.multRate * rm * 100, '%'), primary: true, bonus: true });
+      }
     }
   };
   add(def.primary, false);
@@ -172,10 +188,10 @@ export function renderGear(state) {
   // ativos) com seu valor. Mais detalhado que o agregado por stat.
   const bd = $('gr-breakdown');
   if (bd) {
-    // só os bônus liberados (sem nome da peça nem raridade) — 1 linha por afixo
+    // estilo da referência: VALOR + label + "+x per N levels" (verde = camada bônus/multiplier)
     bd.innerHTML = GEAR.pieces.map((def) =>
       affixEntries(def, state.gear[def.key], state).map((e) =>
-        `<li><b>${e.val}</b> <span>${e.label}</span></li>`).join('')
+        `<li class="${e.bonus ? 'bonus' : ''}"><b>${e.val}</b> <span>${e.label}</span><i>${e.per || ''}</i></li>`).join('')
     ).join('');
   }
 
@@ -202,7 +218,7 @@ export function renderGear(state) {
           ${affixEntries(def, piece, state).map((e) => e.locked
             ? `<div class="gr-aff locked"><span class="gr-aff-v">🔒</span> <span class="gr-aff-l">${e.label}</span>`
               + `<i class="gr-aff-per">${e.unlock}</i></div>`
-            : `<div class="gr-aff ${e.primary ? 'primary' : ''}">`
+            : `<div class="gr-aff ${e.primary ? 'primary' : ''} ${e.bonus ? 'bonus' : ''}">`
               + `<span class="gr-aff-v">${e.val}</span> <span class="gr-aff-l">${e.label}</span>`
               + `<i class="gr-aff-per">${e.per}</i></div>`).join('')}
         </div>`;

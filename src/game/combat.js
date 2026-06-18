@@ -14,18 +14,44 @@
 // - Boss (CP-D): após o kill threshold (oculto), a próxima onda é o Guardião
 //   (sozinho); derrotá-lo abre o gate da próxima subárea e vira loop recorrente.
 
-import { COMBAT, NUMBER_CAP, FATE } from '../data/constants.js';
+import { COMBAT, NUMBER_CAP, FATE, GILDED } from '../data/constants.js';
 import { spawnPack, spawnBoss, spawnMob, getCurrentMap, subareaLevelRange } from './enemies.js';
 import { damagePerHit, currentAPS, playerHpMax, critChance, critDamageMult, playerDefesa, postArmorDR, enemyDefesa, runLevel } from './stats.js';
 import { awardKill } from './economy.js';
 import { eclatsDripPerSec } from './ascension.js';
 import { effectiveDifficulty } from './difficulty.js';
-import { gearBossDmgMult, gearRegenMult } from './gear.js';
+import { gearBossDmgMult, gearRegenMult, gearGildedChance } from './gear.js';
 import { memoireSurvivalMult, memoireBossDmgMult, memoireEclatsAllMult, memoireDiffRewardMult } from './memoires.js';
 import { passiveMobBonus } from './passives.js';
 
 // Regen efetivo (§4): COMBAT.regenPerSec × afixo Regen do gear × #11 de la Résistance
 const regenFactor = (state) => gearRegenMult(state) * memoireSurvivalMult(state);
+
+// Tier de Gilded ativo no mapa = o MAIOR tier cujo unlockMap ≤ id do mapa (ou null).
+function activeGildedTier(map) {
+  let best = null;
+  for (const t of GILDED.tiers) if (t.unlockMap <= map.id) best = t;
+  return best;
+}
+// GILDED (18/jun): cada mob NÃO-boss da onda rola a chance do afixo do Manto p/ virar "mais
+// forte". Fica mais TANQUE (×hp) e dá mais Gold/XP (economy.js). O XP usa baseHpMax (o HP
+// ANTES do inflar) → o ganho de XP segue o xpMult do tier, não o ×hp.
+function applyGilded(state, pack, map) {
+  const chance = gearGildedChance(state);
+  const tier = activeGildedTier(map);
+  if (chance <= 0 || !tier) return;
+  for (const m of pack) {
+    if (m.isBoss || m.gilded) continue;
+    if (Math.random() < chance) {
+      m.gilded = tier.name;
+      m.baseHpMax = m.hpMax;                 // XP usa o HP base (não o inflado)
+      m.hpMax *= tier.hpMult; m.hp = m.hpMax;
+      m.dmg *= tier.dmgMult;
+      m.lumensMult = tier.lumensMult;
+      m.xpMult = tier.xpMult;
+    }
+  }
+}
 
 // Monta a onda da subárea. Se já bateu o threshold, o Guardião entra JUNTO,
 // substituindo 1 mob do pack (§4); na Sub 1 (pack de 1) ele vem sozinho.
@@ -47,6 +73,7 @@ function makeWave(state) {
   if (d.hpMult !== 1) {
     for (const m of pack) { m.hpMax *= d.hpMult; m.hp = m.hpMax; m.dmg *= d.hpMult; }
   }
+  applyGilded(state, pack, map); // GILDED por último (baseHpMax já reflete a dificuldade)
   return pack;
 }
 

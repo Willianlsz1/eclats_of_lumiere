@@ -5,7 +5,7 @@
 // secundário = primário^0.30 (30% das décadas). Cap de nível da raridade topo sobe
 // +capPerAsc por Ascension (motor sem-teto). Persiste sempre (não reseta).
 
-import { GEAR, GEAR_RARITIES, CRAFT, NUMBER_CAP, MAPS } from '../data/constants.js';
+import { GEAR, GEAR_RARITIES, CRAFT, NUMBER_CAP, MAPS, GILDED } from '../data/constants.js';
 
 const maxRarity = GEAR_RARITIES.length - 1;
 
@@ -34,6 +34,8 @@ export const secondaryMult = (level, rarity) => primaryMult(level, rarity) ** GE
 
 // crit chance (afixo plano): nível × critPerLevel × rarityMult
 export const critOf = (level, rarity) => level * GEAR.critPerLevel * GEAR.rarityMult[rarity];
+// Gilded chance (afixo plano do Manto): nível × gildedPerLevel × rarityMult (teto global no agregado)
+export const gildedOf = (level, rarity) => level * GEAR.gildedPerLevel * GEAR.rarityMult[rarity];
 // crit damage (afixo plano, bônus sobre a base): nível × critDmgPerLevel × rarityMult
 export const critDmgOf = (level, rarity) => level * GEAR.critDmgPerLevel * GEAR.rarityMult[rarity];
 
@@ -110,6 +112,20 @@ export const gearXpMult     = (s) => farmMultBy(s, 'xp');     // Farm: linear (s
 // Justificativa: log transforma o crescimento do afixo em bônus ADITIVO limitado; 0.5 lança ≈ ×2 no endgame
 // (linear bruto ×70 → log10=1.85 → ×1.9), preservando o pacing de ~27 min/tier (drop base 1% intocado).
 export const gearMaterialDropMult = (s) => 1 + 0.5 * Math.log10(Math.max(1, farmMultBy(s, 'materiais')));
+
+// Gilded chance: soma plana dos afixos 'gilded' (primário Manto + secundários a 30%),
+// limitada ao teto GLOBAL (GILDED.chanceCap = 30%).
+export function gearGildedChance(state) {
+  let a = 0;
+  for (const def of GEAR.pieces) {
+    const p = state.gear[def.key];
+    if (def.primary === 'gilded') a += gildedOf(p.level, p.rarity);
+    for (const sec of activeSecondaries(def, p.rarity)) {
+      if (sec === 'gilded') a += gildedOf(p.level, p.rarity) * GEAR.secondaryExp;
+    }
+  }
+  return Math.min(GILDED.chanceCap, a);
+}
 
 // Crit chance: soma plana (primário Grasp + secundário Resonance a 30%)
 export function gearCritAdd(state) {

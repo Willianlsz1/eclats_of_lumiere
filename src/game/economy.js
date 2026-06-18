@@ -71,9 +71,12 @@ export function awardKill(state, mob) {
   // XP = HP do mob × xpRatio (acompanha SEU poder via mobHp = dano×3, sobe LISO com o nível;
   // SEM areaReward/convMult em cima — esses amplificadores causavam a bola-de-neve).
   const rew = mob.rewardMult || 1;
-  const lumBase = ECONOMY.lumBase * rew;
+  // GILDED (18/jun): mob mais forte dá mais Gold (lumensMult) e mais XP (xpMult). O XP usa
+  // baseHpMax (o HP ANTES de inflar) → o ganho segue o xpMult do tier, não o ×hp tanque.
+  const lumBase = ECONOMY.lumBase * rew * (mob.lumensMult || 1);
   state.lumens = Math.min(NUMBER_CAP, state.lumens + lumBase * cm * bossMult * gearLumensMult(state) * eco * memoireLumensMult(state) * despertarLumensMult(state));
-  const xp = mob.hpMax * ECONOMY.xpRatio * gearXpMult(state) * memoireXpMult(state) * despertarXpMult(state);
+  const xpHp = mob.baseHpMax ?? mob.hpMax;
+  const xp = xpHp * (mob.xpMult || 1) * ECONOMY.xpRatio * gearXpMult(state) * memoireXpMult(state) * despertarXpMult(state);
   state.xpTotal = Math.min(NUMBER_CAP, state.xpTotal + xp); // vida (level display)
   state.xpRun = Math.min(NUMBER_CAP, state.xpRun + xp);     // run (parede de Convergence)
   // §7: Vestiges nunca resetam; boss paga ×10

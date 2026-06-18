@@ -89,6 +89,31 @@
 | **Crit rate no fim** | **30,4%** ✅ |
 | Contrafactual `NODESP=1` | **93 mortes** na Wall (≈ impossível sem Despertar) ✅ |
 
+## 8. DEFESA removida → afixo GILDED (18/jun, decisão Willian) ✅ 🔧
+A **Defesa saiu do jogo**. O Manto (Veil of Cinders) agora rola **Gilded chance** — % de um mob
+da onda virar **Gilded** (mais forte/rico). Reaproveita a estrutura de afixo "chance plana"
+(como o crit). Sem mexer na fórmula de combate: sem afixo de defesa, `playerDefesa()` → 0
+(mitigação some sozinha).
+
+| Parâmetro | Valor | Constante |
+|---|---|---|
+| Chance/nível do Manto | `gildedPerLevel = 0.00018` × rarityMult | Manto ~186 Kindled ≈ **5%** (fim Map 1) |
+| Teto GLOBAL da chance | **30%** | `GILDED.chanceCap` |
+| Gilded T1 — HP | **×3,3** (mais tanque) | `GILDED.tiers[0].hpMult` |
+| Gilded T1 — Gold | **×2,5** | `lumensMult` |
+| Gilded T1 — XP | **×2,2** (usa o HP base, não o ×3,3) | `xpMult` |
+| Gilded T1 — dano | **×1** (não bate mais forte) | `dmgMult` |
+| Tier 2 (Gilded Eidolon) | ⏳ libera no Map 2 (placeholder) | `tiers[1]` |
+
+🔧 Wiring: `gear.js` (`gildedOf`, `gearGildedChance` com teto), `combat.js` (`applyGilded` rola por
+mob na onda), `economy.js` (Gold ×lumensMult, XP usa `baseHpMax` × xpMult). UI: Gear/Forge/Player
+trocam "Defense" por "Gilded chance"; combate marca o mob Gilded (✦ + nome dourado).
+
+## 9. Exibição dos stats do Gear reorganizada (18/jun, ref. card do Willian) ✅
+A lista de afixos (tela Gear + tooltip) virou o formato da referência: **VALOR + label +
+"+x per N levels"**, com **cor**: base/flat/chance = branco · **bônus% / MULTIPLIER × / secundário
+= verde**. O afixo **MULTIPLIER ×** do Incomum agora aparece como linha própria (antes era invisível).
+
 ## Fora do escopo desta sessão (decisão Willian)
 Ascension, mecânicas/números dos Maps 2–5, e raridade **Raro+**. A Wall usa `ENEMY.bossHpMult = 220`
 (× HP do mob) p/ exigir o burst do Despertar. `SCHEMA_VERSION` 7 → **8** (descarta saves v7).

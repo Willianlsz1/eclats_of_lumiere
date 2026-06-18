@@ -12,7 +12,7 @@ import { formatNumber, formatMult } from '../core/format.js';
 import { picture } from '../data/assets.js';
 import {
   runLevel, dps, playerHpMax, currentAPS, critChance, critChanceRaw, critDamageMult,
-  convMult, convLumensMult, damagePerHit, playerDefesa, veilFactor,
+  convMult, convLumensMult, damagePerHit,
 } from '../game/stats.js';
 import { gearDamageMult, gearHpMult, gearCritAdd, gearCritDmgAdd, gearApsMult, gearLumensMult, gearXpMult } from '../game/gear.js';
 import { passiveDmgMult, passiveHpMult, passiveCritAdd, passiveApsMult, passiveEcoMult } from '../game/passives.js';
@@ -126,15 +126,6 @@ const STATS = {
       M('Mémoires', memoireHpMult(s), true),
     ],
   },
-  defense: {
-    label: 'Defense (Veil)',
-    value: (s) => formatNumber(playerDefesa(s)),
-    note: 'Reduces the damage you take. Granted by the Veil affix on your Gear.',
-    breakdown: (s) => [
-      { label: 'HP Max', disp: formatNumber(playerHpMax(s)), kind: 'base' },
-      M('Veil mitigation', veilFactor(s), true),
-    ],
-  },
   lumensMult: {
     label: 'Lumens / kill',
     value: (s) => gainPct(convLumensMult(s) * despertarLumensMult(s) * gearLumensMult(s) * passiveEcoMult(s) * memoireLumensMult(s)),
@@ -182,7 +173,7 @@ const STATS = {
 };
 
 const STAT_GROUPS = [
-  { title: 'Combat', ids: ['dmg', 'dps', 'aps', 'critRate', 'critDmg', 'hpMax', 'defense'] },
+  { title: 'Combat', ids: ['dmg', 'dps', 'aps', 'critRate', 'critDmg', 'hpMax'] },
   { title: 'Economy', ids: ['lumensMult', 'xpMult'] },
   { title: 'Progression', ids: ['level', 'convergence'] },
 ];

@@ -2,14 +2,14 @@
 // Usa as funções REAIS de src/game/gear.js. Uso: node tools/sim/gear_caps.mjs
 import { GEAR, GEAR_RARITY_LABELS } from '../../src/data/constants.js';
 import {
-  primaryMult, secondaryMult, critOf, critDmgOf, activeSecondaries,
-  gearDamageMult, gearHpMult, gearDefesaMult, gearApsFlat, gearDamageFlat, gearHpFlat,
+  primaryMult, secondaryMult, critOf, critDmgOf, gildedOf, activeSecondaries,
+  gearDamageMult, gearHpMult, gearGildedChance, gearApsFlat, gearDamageFlat, gearHpFlat,
   gearCritAdd, gearCritDmgAdd, gearLumensMult, gearXpMult,
 } from '../../src/game/gear.js';
 
 const pe = (x) => `${x >= 0 ? '+' : ''}${(x * 100).toFixed(x < 0.01 ? 3 : 1)}%`;
 const fnum = (n) => n >= 1e9 ? (n / 1e9).toFixed(2) + 'bi' : n >= 1e6 ? (n / 1e6).toFixed(2) + 'M' : n >= 1e3 ? (n / 1e3).toFixed(1) + 'k' : (Math.round(n * 1000) / 1000).toString();
-const TYPE_PT = { dmg: 'Dano', hp: 'HP', defesa: 'Defesa', aps: 'Atk Speed', crit: 'Crit Rate', critDmg: 'Crit Dmg', bossDmg: 'Dano em Boss', regen: 'Regen', lumens: 'Gold', xp: 'XP', materiais: 'Materiais', erosao: 'Erosão' };
+const TYPE_PT = { dmg: 'Dano', hp: 'HP', gilded: 'Gilded chance', aps: 'Atk Speed', crit: 'Crit Rate', critDmg: 'Crit Dmg', bossDmg: 'Dano em Boss', regen: 'Regen', lumens: 'Gold', xp: 'XP', materiais: 'Materiais', erosao: 'Erosão' };
 
 // Afixos de UMA peça num dado nível/raridade (espelha a agregação do gear.js).
 function pieceAffixes(def, level, rarity) {
@@ -18,12 +18,14 @@ function pieceAffixes(def, level, rarity) {
   const hasFlat = (GEAR.flatPerLevel[def.primary] || 0) > 0;
   // PRIMÁRIO: flat (se houver) + bônus% + (multiplier× se rarity≥1)
   if (hasFlat) out.push(`${TYPE_PT[def.primary]} flat ${fnum(level * GEAR.flatPerLevel[def.primary] * rm)}`);
-  if (['dmg', 'hp', 'defesa', 'aps'].includes(def.primary)) {
+  if (['dmg', 'hp', 'aps'].includes(def.primary)) {
     const bonus = 1 + level * GEAR.bonusRate * rm;
     out.push(`${TYPE_PT[def.primary]} ${pe(bonus - 1)} (bônus%)`);
-    if (rarity >= 1) { const mult = 1 + level * GEAR.multRate * rm; out.push(`${TYPE_PT[def.primary]} ${pe(mult - 1)} (MULTIPLIER ×)`); }
+    if (rarity >= 1 && (def.primary === 'dmg' || def.primary === 'hp')) { const mult = 1 + level * GEAR.multRate * rm; out.push(`${TYPE_PT[def.primary]} ${pe(mult - 1)} (MULTIPLIER ×)`); }
   } else if (def.primary === 'crit') {
     out.push(`${TYPE_PT.crit} ${pe(critOf(level, rarity))}`);
+  } else if (def.primary === 'gilded') {
+    out.push(`${TYPE_PT.gilded} ${pe(gildedOf(level, rarity))}`);
   } else if (['lumens', 'xp', 'materiais'].includes(def.primary)) {
     out.push(`${TYPE_PT[def.primary]} ${pe(level * GEAR.affixPctRate * rm)}`);
   }
@@ -49,7 +51,7 @@ function report(rarity, level) {
   console.log(`  ── AGREGADO do set (todas as 6 peças no cap) ──`);
   console.log(`      Dano:  flat +${fnum(gearDamageFlat(state))}   ×${gearDamageMult(state).toFixed(2)} (mult)`);
   console.log(`      HP:    flat +${fnum(gearHpFlat(state))}   ×${gearHpMult(state).toFixed(2)} (mult)`);
-  console.log(`      Defesa: ×${gearDefesaMult(state).toFixed(2)}`);
+  console.log(`      Gilded chance: ${(gearGildedChance(state) * 100).toFixed(1)}% (teto global 30%)`);
   console.log(`      Atk Speed: +${gearApsFlat(state).toFixed(3)} (flat, antes do cap)`);
   console.log(`      Crit Rate: ${pe(gearCritAdd(state))}   ·   Crit Dmg: +${gearCritDmgAdd(state).toFixed(2)}×`);
   console.log(`      Gold: ×${gearLumensMult(state).toFixed(2)}   ·   XP: ×${gearXpMult(state).toFixed(2)}`);

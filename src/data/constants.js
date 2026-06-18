@@ -212,12 +212,13 @@ export const GEAR_RARITY_LABELS = ['Faded', 'Kindled', 'Luminous', 'Radiant', 'C
 export const GEAR = {
   // 6 peças canônicas (§10.5.5). Cada peça: PRIMÁRIO inerente + SECUNDÁRIOS que a raridade
   // destrava em ordem (secondary[i] ativo quando rarity ≥ i+1). Determinístico.
-  // Pool de afixos: dmg · hp · defesa · crit · critDmg · aps · regen · bossDmg · lumens · xp · materiais
-  //                 (+ erosao = future, só reservado — penetração de defesa de inimigos, sem consumidor).
+  // Pool de afixos: dmg · hp · gilded · crit · critDmg · aps · regen · bossDmg · lumens · xp · materiais
+  //   (✅ 18/jun: DEFESA removida do jogo — decisão Willian. O Manto agora rola GILDED = chance de
+  //    aparecer um mob mais forte/rico, ver bloco GILDED. erosao = future, só reservado.)
   pieces: [
     { key: 'edge',  name: 'The Waning Edge',      slot: 'Arma',     primary: 'dmg',    secondary: ['critDmg', 'bossDmg', 'erosao'] },
-    { key: 'vigil', name: 'The Silent Vigil',     slot: 'Elmo',     primary: 'hp',     secondary: ['defesa', 'regen'] },
-    { key: 'veil',  name: 'Veil of Cinders',      slot: 'Manto',    primary: 'defesa', secondary: ['hp', 'regen', 'erosao'] },
+    { key: 'vigil', name: 'The Silent Vigil',     slot: 'Elmo',     primary: 'hp',     secondary: ['regen', 'hp'] },
+    { key: 'veil',  name: 'Veil of Cinders',      slot: 'Manto',    primary: 'gilded', secondary: ['hp', 'regen', 'erosao'] },
     { key: 'grasp', name: 'Grasp of the Unnamed', slot: 'Manoplas', primary: 'crit',   secondary: ['critDmg', 'aps', 'dmg'] },
     { key: 'reson', name: 'The Last Resonance',   slot: 'Amuleto',  primary: 'aps',    secondary: ['crit', 'regen', 'dmg'] },
     { key: 'band',  name: 'Band of Dusk',         slot: 'Anel',     primary: 'lumens', secondary: ['xp', 'materiais'] },
@@ -235,7 +236,7 @@ export const GEAR = {
   // de fim de Map 1: APS 2,5 e crit rate 30% (com 1 Despertar: +0,5 APS e +5% crit).
   // INCOMUM (Kindled+): destrava 1 afixo MULTIPLIER × (camada multiplicativa — ver gear.js;
   // só ativo em rarity ≥ 1). É o "salto" da raridade, não um "+10%".
-  flatPerLevel: { dmg: 2500, hp: 2000, defesa: 666, aps: 0.00304, regen: 0.0005, bossDmg: 0, lumens: 0, xp: 0, crit: 0, critDmg: 0, materiais: 0 },
+  flatPerLevel: { dmg: 2500, hp: 2000, aps: 0.00304, regen: 0.0005, bossDmg: 0, lumens: 0, xp: 0, crit: 0, critDmg: 0, materiais: 0 },
   bonusRate: 0.02,           // afixo % : 1 + nível × bonusRate × rarityMult (2%/nv no Faded)
   multRate:  0.0003,         // afixo MULTIPLIER × (só rarity ≥ 1 = Incomum+): 1 + nível × multRate × rarityMult
   affixPctRate: 0.04,        // FARM (lumens/xp/materiais): % linear/nível (Anel 4% Lumens/nv)
@@ -245,6 +246,8 @@ export const GEAR = {
                              // critPerLevel/apsFlat = 0.0007/0.00304 ≈ 0.230 = 0.25/1.1 → quando o APS
                              // chega a 2,5 (gear = +1,1), o Grasp dá ~25% e +5% do Despertar fecha 30%.
   critDmgPerLevel: 0.0667,   // afixo critDmg (secundário a 0.30 → ~+2%/nv efetivo)
+  gildedPerLevel: 0.00018,   // afixo GILDED (chance, afixo do Manto): nível × × rarityMult, teto GILDED.chanceCap.
+                             // Manto realista no fim do Map 1 (~186 Kindled) ≈ 5%; cap GLOBAL 30%.
   // ✅ recalibração "em branco": custo EXPONENCIAL por peça (sim) — barato cedo, dobra a cada
   // 10 níveis (costRamp) → cria teto-SUAVE (~280) bem abaixo do cap duro (400). custo(L) =
   // base × costRamp^L × costMult[raridade], clampado a NUMBER_CAP (M2+ recalibra à parte).
@@ -264,6 +267,20 @@ export const CRAFT = {
 };
 // tier do material que o mapa dropa (índice 0..3 = T1..T4); Map 5 = T4 (future T5)
 export const mapMaterialTier = (map) => Math.min(map - 1, 3);
+
+// ✅ "VALORES NO MAPA" (18/jun, decisão Willian): GILDED — variante de mob "mais forte" que
+// substitui a DEFESA (removida). A chance vem do afixo do Manto (gear); teto GLOBAL de 30%
+// (no Map 1 chega a ~5% no fim). Um Gilded é mais TANQUE (×hp) e dá mais Gold/XP — NÃO bate
+// mais forte (dmgMult 1). Tiers: T1 no Map 1; T2+ liberam em mapas futuros (placeholder).
+// Nome canônico "Gilded" (o douramento do Dreaming Wood; eco do boss The Gilded Hollow).
+export const GILDED = {
+  chanceCap: 0.30, // teto GLOBAL da chance de Gilded (qualquer tier)
+  // unlockMap = mapa que libera o tier; o spawn usa o MAIOR tier com unlockMap ≤ mapa atual.
+  tiers: [
+    { name: 'Gilded',         hpMult: 3.3, lumensMult: 2.5, xpMult: 2.2, dmgMult: 1, unlockMap: 1 },
+    { name: 'Gilded Eidolon', hpMult: 6.0, lumensMult: 5.0, xpMult: 4.0, dmgMult: 1, unlockMap: 2 }, // ⏳ placeholder Map 2
+  ],
+};
 
 // §8 — DIFICULDADES (Camada 7, Passo 5). hpMult aplica a HP E dano dos mobs;
 // rewardMult a materiais/Éclats. O SISTEMA abre na A2 (minAscension); o gate dos
