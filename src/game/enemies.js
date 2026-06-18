@@ -22,8 +22,12 @@ const baselineDmg = (lvl) => COMBAT.baseDmg + (lvl || 1) * LEVEL.dmgPerLevel;
 const baselineHp  = (lvl) => COMBAT.playerBaseHp + (lvl || 1) * LEVEL.hpPerLevel;
 
 const mobLevelOf = (ctx, sub) => Math.max(1, Math.round((ctx.level || 1) * (1 + ENEMY.levelPerArea * ((sub || 1) - 1))));
-// HP = baseline do nível → seus multiplicadores (gear/conv/despertar) o EXCEDEM → mata mais rápido.
-const mobHpOf    = (ctx, sub) => Math.max(1, baselineDmg(ctx.level) * ENEMY.hitsToKill * areaHp(sub));
+// ✅ MURALHA (18/jun): HP do mob é FIXO por área (não escala com o player) — a parede que seu dano
+// tem que furar. Geométrico ×hpWallRatio por área. (O dano do mob segue relativo — mobDmgOf.)
+export const mobWallHp = (sub) => (ENEMY.hpWall && ENEMY.hpWall[(sub || 1) - 1] != null)
+  ? ENEMY.hpWall[(sub || 1) - 1]
+  : ENEMY.hpWallBase * ENEMY.hpWallRatio ** ((sub || 1) - 1);
+const mobHpOf    = (ctx, sub) => Math.max(1, mobWallHp(sub));
 // DANO = % do seu HP REAL (atual) → perigo persiste (mobs sempre podem matar). A defesa real é
 // matar rápido (ofensa). Onda inteira = HP_real × dmgFrac × areaDmg; por mob = /pack.
 const packBaseOf = (map, sub) => Math.max(1, (map.packSizes[(sub || 1) - 1] || 1));

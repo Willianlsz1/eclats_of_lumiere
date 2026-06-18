@@ -43,7 +43,8 @@ export const LEVEL = {
   // ✅ RECALIBRAÇÃO "VALORES NO MAPA" (18/jun): per-level escalado ao novo dano/HP base
   // (baseDmg 50k → +7.500/nv mantém a mesma fração ~15%/nv; baseHp 100k → +500/nv ~0,5%/nv).
   // O nível segue motor de stat base; XP da run reseta na Convergence. level=(xpRun/div)^exp.
-  curveDiv: 25000, curveExp: 0.42, // ⏳ div ×50 p/ compensar o mobHp ×50 (X=mobHp×ratio) e restaurar o pace
+  curveDiv: 500, curveExp: 0.42, // ✅ EXPERIMENTO MURALHA: div volta a 500 (HP fixo = XP menor; o ×50
+                                 // era p/ o mob relativo, que inflava o XP). Pace "LV 30 em minutos".
   dmgPerLevel: 7500, // +dano flat por nível (≈15% do base/nv, como antes)
   hpPerLevel: 500,   // +HP flat por nível (≈0,5% do base/nv, como antes)
   goldPerLevel: 0,   // sem bônus de Lumens por nível
@@ -66,6 +67,15 @@ export const ENEMY = {
   dmgFrac:    0.009,                                           // dano da ONDA = HP_baseline × dmgFrac × areaDmg /s
   areaDmg:    [1, 1.4, 1.9, 2.6, 3.4, 4.4, 5.6, 7.0, 9.0],     // profundidade = MUITO mais perigo (Wall mata)
   areaReward: [1, 1.6, 2.6, 4.2, 6.8, 11, 18, 29, 47],         // Lumens crescem com a profundidade
+  // ✅ EXPERIMENTO "MURALHA" (18/jun): vida do mob é FIXA por área (NÃO escala com o player) —
+  // estilo Gaiadon. É a parede que o seu dano (gear/level/convergence) tem que furar. Cresce
+  // geométrico ×hpWallRatio por área. (O dano do mob continua relativo = % do seu HP, abaixo.)
+  hpWallBase: 100000,   // (fallback) vida FIXA do mob da área 1
+  hpWallRatio: 3.0,     // (fallback) ×3 por área
+  // ✅ curva de HP AUTORADA por área (a muralha): casada com a curva de dano do player no ponto
+  // de unlock → cada área entra como uma parede de ~4-6 golpes que você fura até 1 golpe. Índice
+  // = área − 1. (Substitui o base×ratio quando presente.) ⏳ a re-iterar conforme o dano muda.
+  hpWall: [300e3, 2.8e6, 11e6, 36e6, 78e6, 148e6, 226e6, 350e6, 490e6],
   // ✅ "VALORES NO MAPA" (18/jun): Wall (área 9) = mob × 100 de HP. Com Despertar = clímax tenso
   // (~20 mortes, ~12h). SEM Despertar = grind ~3× mais longo (~37h) — Despertar fortemente necessário.
   // (Ajustado p/ a base de custo 800, que deixa o gear ~174 no fim, mais fraco que antes.)
