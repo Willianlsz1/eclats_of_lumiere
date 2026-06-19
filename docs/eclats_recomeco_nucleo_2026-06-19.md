@@ -28,7 +28,8 @@ vez**.
 - **Auto-combate, idle-first, single-target** (cada ataque atinge 1 mob; cleave é unlock
   futuro). Cadência pelo **APS** (ataques por segundo).
 - **HP do mob = (seu HP) × (raridade) × (×área)** — raridade **comum 1.3**, **raro 1.8**.
-  O HP do mob **segue o seu HP, nunca o seu Dano**.
+  O **×área da Área 1 = 1.0** (a fórmula colapsa pra ×raridade). O HP do mob **segue o seu
+  HP, nunca o seu Dano**.
 - **Consequência central (a chave do jogo):** como o HP do mob acompanha seu HP mas não seu
   Dano, **só se progride quando o Dano cresce mais rápido que o HP**. Comprar HP serve pra
   **sobreviver** ao dano do mob (que também escala); comprar Dano é o que **fura**. O
@@ -88,6 +89,14 @@ A menor fatia que já é um jogo completo e balanceável. **Área 1, lv 1 → 60
 Ascension · Hollow · áreas 2+ · mobs raros/champion · passivas · mémoires · daily quests.
 
 **Critério de aprovação:** o loop fecha do lv 1 ao 60 com curva sentida boa no simulador.
+
+**Notas pro plano do v0:**
+- O "~10%" do Nível (§3.5) é **alvo de jogo longo** (share do poder final), não uma regra do
+  v0. No v0 — sem Convergence/Awaken/Ascension — o Nível é só uma **base pequena por nível**;
+  não force a curva do v0 a respeitar os 10%.
+- **Números são por simulador:** o plano do v0 pode escolher **sementes provisórias** pra
+  **dano do mob**, **regen** e **APS inicial** (e custo dos upgrades) e afinar no simulador —
+  a ausência delas no design não é bloqueio.
 
 ## 5. Roadmap incremental (cada passo travado antes do próximo)
 - **v0** — Núcleo puro (acima).
