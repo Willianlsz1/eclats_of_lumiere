@@ -35,8 +35,9 @@
 <body>
 <header>
   <h1>Éclats — Sandbox de Balanceamento (modelo novo, definido na entrevista)</h1>
-  <p>Dano = <b>base(Nível)</b> × <b>mult(Gear)</b> × <b>1,3<sup>conv</sup></b> × <b>3<sup>despertar</sup></b>. Mobs com HP absoluto/área,
-     ouro &amp; XP ancorados ao HP, Convergence por Nível do player (reseta Nível+ouro, Gear permanece).
+  <p>Dano = <b>base(Nível)</b> × <b>mult(Gear)</b> × <b>1,3<sup>conv</sup></b> × <b>8<sup>despertar</sup></b>. Mobs com HP absoluto/área;
+     ouro &amp; XP ancorados ao HP; Convergence por Nível do player (reseta Nível+ouro, dá +30% ouro, <b>Gear nunca reseta</b>);
+     Despertar dá +700% dano / +80% ouro / +40% XP.
      O Gear é calculado nos <b>2 modelos</b> (<span class="poly">polinomial</span> vs <span class="exp">exponencial</span>),
      ambos chegando ao mesmo <b>×mult no cap</b> — muda só o formato. <b>Não toca em src/.</b></p>
 </header>
@@ -67,7 +68,7 @@ const P = {
   // Combate / base por Nível
   aps: 1.0,           // ataques/s
   danoBase: 75,       // dano base no Nível 0 (derivado: HP área1 ÷ TTK alvo ÷ APS)
-  levelBonus: 0.02,   // base(Nível) = danoBase × (1 + Nível × levelBonus)
+  levelBonus: 0.03,   // base(Nível) = danoBase × (1 + Nível × levelBonus)
   // Mobs absolutos + ouro + XP (tudo ancorado ao HP)
   numAreas: 9,
   hpBase: 100,        // HP mínimo da área 1
@@ -78,18 +79,21 @@ const P = {
   xpPorHp: 0.15,      // XP/kill   = HP × isto   → XP/s   = 0,15 × dps
   // Nível / XP
   xpBase: 60,         // XP p/ subir do Nível 1→2
-  xpGrowth: 1.03,     // XP do próximo nível × isto a cada nível
+  xpGrowth: 1.05,     // XP do próximo nível × isto a cada nível
   // Gear (multiplicador 1 → gearEnd no cap). Mesmo endpoint nos 2 modelos.
   cap: 500,
   gearEnd: 100,       // mult do gear maximizado (×100)
   polyPow: 2,         // curvatura do modelo POLINOMIAL (1=linear, 2=quadrático…)
   custoBase: 20,
-  rampaCusto: 1.04,
-  // Prestígio multiplicativo tunado
+  rampaCusto: 1.05,
+  // Prestígio multiplicativo tunado (Convergence = por Nível do player; Gear nunca reseta)
   convMult: 1.30,        // ×dano por Convergence (permanente)
+  convGold: 1.30,        // ×ouro por Convergence (+30%/conv)
   convGate: 100,         // NÍVEL do player p/ convergir
   convGateGrowth: 1.22,  // o gate sobe a cada conv
-  despMult: 3.0,         // ×dano do Despertar (T2)
+  despDmg: 8.0,          // Despertar: ×dano (+700%) por tier
+  despGold: 1.8,         // Despertar: ×ouro (+80%) por tier
+  despXp: 1.4,           // Despertar: ×XP (+40%) por tier
   despArea: 7,           // área que libera o Despertar
   // Ritmo
   ttkAlvo: 2.0,          // TTK alvo (avanço de área por poder)
@@ -104,7 +108,7 @@ const gMult = (model,L)=>{ const x=(Math.min(L,P.cap)-1)/(P.cap-1); return model
 const mobHpAvg = a => P.hpBase*Math.pow(P.rampaHP,a-1)*(1+P.fatorCap)/2;
 const custo = L => P.custoBase*Math.pow(P.rampaCusto,L);
 const xpNext = L => P.xpBase*Math.pow(P.xpGrowth,L-1);
-const danoTotal = (model,lv,gear,conv,desp)=> baseLv(lv)*gMult(model,gear)*Math.pow(P.convMult,conv)*Math.pow(P.despMult,desp);
+const danoTotal = (model,lv,gear,conv,desp)=> baseLv(lv)*gMult(model,gear)*Math.pow(P.convMult,conv)*Math.pow(P.despDmg,desp);
 
 // ── Simulação de progressão (por modelo de gear) ──
 function simula(model){
@@ -114,7 +118,8 @@ function simula(model){
   while(t<CAP && guard++<6e6){
     const d = danoTotal(model,level,gear,conv,desp)*P.aps;
     if(areaT[area]==null) areaT[area]={t,ttk:mobHpAvg(area)/d};
-    gold += P.ouroPorHp*d*dt; xp += P.xpPorHp*d*dt; t+=dt;
+    gold += P.ouroPorHp*d*Math.pow(P.convGold,conv)*Math.pow(P.despGold,desp)*dt;
+    xp   += P.xpPorHp*d*Math.pow(P.despXp,desp)*dt; t+=dt;
     let g=0; while(g++<1e5 && xp>=xpNext(level)){ xp-=xpNext(level); level++; }
     g=0; while(g++<1e5 && gear<P.cap){ const c=custo(gear); if(gold<c)break; gold-=c; gear++; }
     if(level>=cg){ conv++; maxConv=conv; if(m.conv1==null)m.conv1=t; level=1; xp=0; gold=0; cg=Math.round(cg*P.convGateGrowth); }
@@ -132,7 +137,7 @@ const groups=[
   {t:'Mobs absolutos + Ouro + XP', open:true, f:[['hpBase','hpBase'],['rampaHP (×HP/área)','rampaHP',0.1],['fatorCap (variação)','fatorCap',0.1],['bossHpMult','bossHpMult'],['ouroPorHp','ouroPorHp',0.05],['xpPorHp','xpPorHp',0.05]]},
   {t:'Nível / XP', f:[['xpBase (1→2)','xpBase'],['xpGrowth','xpGrowth',0.01]]},
   {t:'Gear (mesmo endpoint nos 2 modelos)', open:true, f:[['cap','cap'],['gearEnd (×mult no cap)','gearEnd'],['polyPow (curvatura POLY)','polyPow',0.1],['custoBase','custoBase'],['rampaCusto','rampaCusto',0.01]]},
-  {t:'Prestígio (tunado)', open:true, f:[['convMult (×/conv)','convMult',0.05],['convGate (NÍVEL player)','convGate'],['convGateGrowth','convGateGrowth',0.02],['despMult (×/tier)','despMult',0.5],['despArea','despArea',1]]},
+  {t:'Prestígio (tunado)', open:true, f:[['convMult dano (×/conv)','convMult',0.05],['convGold ouro (×/conv)','convGold',0.05],['convGate (NÍVEL player)','convGate'],['convGateGrowth','convGateGrowth',0.02],['despDmg dano (×/tier)','despDmg',0.5],['despGold ouro (×/tier)','despGold',0.1],['despXp XP (×/tier)','despXp',0.1],['despArea','despArea',1]]},
   {t:'Ritmo', f:[['numAreas','numAreas',1],['ttkAlvo (s)','ttkAlvo',0.5],['ttkMuro (s)','ttkMuro',0.5]]},
 ];
 const form=document.getElementById('form'); const inputs={};
@@ -176,7 +181,7 @@ function render(){
     <p class="hint">Chegada por área (POLY): ${[1,3,5,7,9].map(a=>`A${a} ${fmtT(rp.areaT[a]?.t)}`).join(' · ')}</p>`;
 
   document.getElementById('result').innerHTML = curva + pod + prog +
-    `<div class="note"><b>Propriedade do modelo ancorado:</b> renda/s = ${P.ouroPorHp}×dps e XP/s = ${P.xpPorHp}×dps — o HP do mob se cancela, então <b>ouro e nível escalam com o seu dano, não com o HP do mob</b>. O HP só importa pro <b>muro</b> (TTK de avanço/boss).</div>`;
+    `<div class="note"><b>Propriedade do modelo ancorado:</b> renda/s = ${P.ouroPorHp}×dps×bônus e XP/s = ${P.xpPorHp}×dps×bônus — o HP do mob se cancela, então <b>ouro e nível escalam com o seu dano, não com o HP do mob</b>. O HP só importa pro <b>muro</b> (TTK de avanço/boss). Convergence dá +${Math.round((P.convGold-1)*100)}% ouro/conv; Despertar dá +${Math.round((P.despDmg-1)*100)}% dano, +${Math.round((P.despGold-1)*100)}% ouro, +${Math.round((P.despXp-1)*100)}% XP.</div>`;
   drawCurve();
 }
 function drawCurve(){
