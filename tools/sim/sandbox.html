@@ -10,7 +10,7 @@
   body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 system-ui,Segoe UI,Roboto,sans-serif}
   header{background:linear-gradient(180deg,#fff,#eef4ff);border-bottom:1px solid var(--line);padding:14px 20px}
   header h1{margin:0;font-size:18px} header p{margin:4px 0 0;color:var(--muted);font-size:12px}
-  .wrap{display:grid;grid-template-columns:minmax(340px,420px) 1fr;gap:16px;padding:16px;align-items:start}
+  .wrap{display:grid;grid-template-columns:minmax(340px,430px) 1fr;gap:16px;padding:16px;align-items:start}
   @media(max-width:980px){.wrap{grid-template-columns:1fr}}
   .panel{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
   .panel h2{margin:0 0 10px;font-size:14px;text-transform:uppercase;letter-spacing:.04em;color:var(--blue-d)}
@@ -34,10 +34,11 @@
 </head>
 <body>
 <header>
-  <h1>Éclats — Sandbox de Balanceamento (modelo novo proposto)</h1>
-  <p>Pacote em teste: <b>mobs absolutos por área</b> + <b>ouro ancorado ao HP</b> + <b>prestígio multiplicativo tunado</b> +
-     <b>onda-limpa</b>. O Gear é calculado nos <b>2 modelos lado a lado</b> (<span class="poly">polinomial</span> vs
-     <span class="exp">exponencial composto</span>) pra você decidir qual faz mais sentido. <b>Não toca em src/</b> — é só estudo.</p>
+  <h1>Éclats — Sandbox de Balanceamento (modelo novo, definido na entrevista)</h1>
+  <p>Dano = <b>base(Nível)</b> × <b>mult(Gear)</b> × <b>1,3<sup>conv</sup></b> × <b>3<sup>despertar</sup></b>. Mobs com HP absoluto/área,
+     ouro &amp; XP ancorados ao HP, Convergence por Nível do player (reseta Nível+ouro, Gear permanece).
+     O Gear é calculado nos <b>2 modelos</b> (<span class="poly">polinomial</span> vs <span class="exp">exponencial</span>),
+     ambos chegando ao mesmo <b>×mult no cap</b> — muda só o formato. <b>Não toca em src/.</b></p>
 </header>
 
 <div class="wrap">
@@ -61,162 +62,132 @@
 </div>
 
 <script type="module">
-// ════════ MODELO AUTOCONTIDO (não importa src/) — protótipo do pacote novo ════════
+// ════════ MODELO AUTOCONTIDO (não importa src/) — pacote definido na entrevista ════════
 const P = {
-  // Combate
-  danoBase: 5,        // dano flat antes do gear (base do herói)
-  aps: 1.5,           // ataques/s (single-target)
-  // Mobs absolutos + ouro ancorado
+  // Combate / base por Nível
+  aps: 1.0,           // ataques/s
+  danoBase: 75,       // dano base no Nível 0 (derivado: HP área1 ÷ TTK alvo ÷ APS)
+  levelBonus: 0.02,   // base(Nível) = danoBase × (1 + Nível × levelBonus)
+  // Mobs absolutos + ouro + XP (tudo ancorado ao HP)
   numAreas: 9,
-  hpBase: 10,         // HP mínimo da área 1
-  rampaHP: 2.6,       // HP×ramp por área (cresce a cada área)
-  fatorCap: 2.0,      // HP máx = HP mín × fator (variação por mob; usamos a média p/ pacing)
+  hpBase: 100,        // HP mínimo da área 1
+  rampaHP: 2.6,       // HP × ramp por área
+  fatorCap: 2.0,      // HP máx = mín × fator (usamos a média p/ pacing)
   bossHpMult: 100,    // boss (área 9) = mob × isto
-  ouroPorHp: 0.25,    // ouro = HP do mob × isto  (income/s = DPS × ouroPorHp)
-  // Gear (cap único; tier Comum no Map 1). flat = dano flat/nível; pct = a taxa.
-  //   EXP : dano = (danoBase + L×flat) × (1+pct)^L
-  //   POLY: dano = (danoBase + L×flat) × (1 + L×pct)
-  cap: 750,
-  flat: 5,
-  pct: 0.015,
-  // Custo do gear (geométrico): custo(L) = custoBase × rampaCusto^L
-  custoBase: 10,
-  rampaCusto: 1.045,
-  // Prestígio multiplicativo TUNADO
-  convMult: 1.30,        // ×dano por Convergence
-  convGate: 100,         // nível de gear p/ convergir
+  ouroPorHp: 0.25,    // ouro/kill = HP × isto   → renda/s = 0,25 × dps
+  xpPorHp: 0.15,      // XP/kill   = HP × isto   → XP/s   = 0,15 × dps
+  // Nível / XP
+  xpBase: 60,         // XP p/ subir do Nível 1→2
+  xpGrowth: 1.03,     // XP do próximo nível × isto a cada nível
+  // Gear (multiplicador 1 → gearEnd no cap). Mesmo endpoint nos 2 modelos.
+  cap: 500,
+  gearEnd: 100,       // mult do gear maximizado (×100)
+  polyPow: 2,         // curvatura do modelo POLINOMIAL (1=linear, 2=quadrático…)
+  custoBase: 20,
+  rampaCusto: 1.04,
+  // Prestígio multiplicativo tunado
+  convMult: 1.30,        // ×dano por Convergence (permanente)
+  convGate: 100,         // NÍVEL do player p/ convergir
   convGateGrowth: 1.22,  // o gate sobe a cada conv
-  headstartFrac: 0.5,    // ao convergir, gear volta p/ frac × nível atual
-  despMult: 3.0,         // ×dano por tier de Despertar
-  despArea: 7,           // área que libera o Despertar (T2)
-  // alvos de ritmo (faixa de TTK)
-  ttkAlvo: 2.0, ttkMuro: 18.0,
+  despMult: 3.0,         // ×dano do Despertar (T2)
+  despArea: 7,           // área que libera o Despertar
+  // Ritmo
+  ttkAlvo: 2.0,          // TTK alvo (avanço de área por poder)
+  ttkMuro: 18.0,         // TTK do muro / clear do boss
 };
 
-// ── 4 tiers só p/ a tabela comparativa de curva (Map 1 usa Comum) ──
-const TIERS = [
-  { nome:'Comum',    flat:5,   pct:0.015 },
-  { nome:'Raro',     flat:10,  pct:0.030 },
-  { nome:'Épico',    flat:25,  pct:0.050 },
-  { nome:'Lendário', flat:100, pct:0.080 },
-];
-
 const fmt = (n)=> !isFinite(n)?'∞': n>=1e15?n.toExponential(2): n>=1e12?(n/1e12).toFixed(2)+'T': n>=1e9?(n/1e9).toFixed(2)+'bi': n>=1e6?(n/1e6).toFixed(2)+'M': n>=1e3?(n/1e3).toFixed(1)+'k': (Math.round(n)).toString();
-const fmtT=(s)=> s==null?'—': s<90?`${s.toFixed(0)}s`: s<5400?`${(s/60).toFixed(1)}min`: s<172800?`${(s/3600).toFixed(1)}h`: `${(s/86400).toFixed(2)}d`;
+const fmtT=(s)=> s==null?'—': s<90?`${s.toFixed(0)}s`: s<5400?`${(s/60).toFixed(0)}min`: s<172800?`${(s/3600).toFixed(1)}h`: `${(s/86400).toFixed(2)}d`;
 
-// dano por hit do gear (modelo)
-function perHit(model, L, flat, pct){
-  const lvl=Math.min(L,P.cap), base=P.danoBase+lvl*flat;
-  return model==='exp' ? base*Math.pow(1+pct,lvl) : base*(1+lvl*pct);
-}
-const dps=(model,L,conv,desp)=> perHit(model,L,P.flat,P.pct)*P.aps*Math.pow(P.convMult,conv)*Math.pow(P.despMult,desp);
-const mobHpAvg=(area)=> P.hpBase*Math.pow(P.rampaHP,area-1)*(1+P.fatorCap)/2;
-const custo=(L)=> P.custoBase*Math.pow(P.rampaCusto,L);
+const baseLv = lv => P.danoBase*(1+lv*P.levelBonus);
+const gMult = (model,L)=>{ const x=(Math.min(L,P.cap)-1)/(P.cap-1); return model==='exp'?Math.pow(P.gearEnd,x):1+(P.gearEnd-1)*Math.pow(x,P.polyPow); };
+const mobHpAvg = a => P.hpBase*Math.pow(P.rampaHP,a-1)*(1+P.fatorCap)/2;
+const custo = L => P.custoBase*Math.pow(P.rampaCusto,L);
+const xpNext = L => P.xpBase*Math.pow(P.xpGrowth,L-1);
+const danoTotal = (model,lv,gear,conv,desp)=> baseLv(lv)*gMult(model,gear)*Math.pow(P.convMult,conv)*Math.pow(P.despMult,desp);
 
-// ── Simulação de progressão (por modelo) ──
+// ── Simulação de progressão (por modelo de gear) ──
 function simula(model){
-  let t=0, gold=0, gear=1, conv=0, desp=0, areaUnlocked=1, convGate=P.convGate, deaths=0;
-  const dt=2, CAP=400*3600; const marcos={conv1:null,desp:null,area9:null,limpo:null};
-  const ttkArea={};
-  let guard=0;
-  while(t<CAP && guard++<1e7){
-    const farm=areaUnlocked;
-    const d=dps(model,gear,conv,desp);
-    // renda: income/s = DPS × ouroPorHp (HP se cancela com ouro∝HP)
-    gold += d*P.ouroPorHp*dt; t+=dt;
-    // compra gear gulosa
-    let g2=0; while(g2++<100000 && gear<P.cap){ const c=custo(gear); if(gold<c)break; gold-=c; gear++; }
-    // convergence
-    if(gear>=convGate){ conv++; if(marcos.conv1==null)marcos.conv1=t; gear=Math.max(1,Math.floor(P.headstartFrac*gear)); convGate=Math.round(convGate*P.convGateGrowth); }
-    // despertar (1 vez, ao liberar a área alvo)
-    if(desp<1 && areaUnlocked>=P.despArea){ desp=1; if(marcos.desp==null)marcos.desp=t; }
-    // registra TTK quando alcança cada área (antes de avançar)
-    if(ttkArea[farm]==null) ttkArea[farm]=mobHpAvg(farm)/d;
-    // avanço por PODER: empurra enquanto mata a próxima área dentro do alvo de TTK
-    while(areaUnlocked<P.numAreas && d>=mobHpAvg(areaUnlocked+1)/P.ttkAlvo) areaUnlocked++;
-    if(areaUnlocked>=P.numAreas && marcos.area9==null)marcos.area9=t;
-    // limpa o Map 1: na área 9, derruba o boss em ≤ ttkMuro
-    if(areaUnlocked>=P.numAreas){
-      const bossHp=mobHpAvg(P.numAreas)*P.bossHpMult;
-      if(bossHp/d<=P.ttkMuro){ marcos.limpo=t; ttkArea['boss']=bossHp/d; break; }
-    }
+  let t=0,gold=0,xp=0,level=1,gear=1,conv=0,desp=0,area=1,cg=P.convGate;
+  const dt=1,CAP=14*86400; const m={conv1:null,desp:null,area9:null,limpo:null};
+  const areaT={}; let guard=0,dpsBoss=null,maxConv=0;
+  while(t<CAP && guard++<6e6){
+    const d = danoTotal(model,level,gear,conv,desp)*P.aps;
+    if(areaT[area]==null) areaT[area]={t,ttk:mobHpAvg(area)/d};
+    gold += P.ouroPorHp*d*dt; xp += P.xpPorHp*d*dt; t+=dt;
+    let g=0; while(g++<1e5 && xp>=xpNext(level)){ xp-=xpNext(level); level++; }
+    g=0; while(g++<1e5 && gear<P.cap){ const c=custo(gear); if(gold<c)break; gold-=c; gear++; }
+    if(level>=cg){ conv++; maxConv=conv; if(m.conv1==null)m.conv1=t; level=1; xp=0; gold=0; cg=Math.round(cg*P.convGateGrowth); }
+    if(desp<1 && area>=P.despArea){ desp=1; if(m.desp==null)m.desp=t; }
+    while(area<P.numAreas && d>=mobHpAvg(area+1)/P.ttkAlvo) area++;
+    if(area>=P.numAreas && m.area9==null)m.area9=t;
+    if(area>=P.numAreas){ const bh=mobHpAvg(P.numAreas)*P.bossHpMult; if(bh/d<=P.ttkMuro){ m.limpo=t; dpsBoss=d; break; } }
   }
-  return { t, gear, conv, desp, marcos, ttkArea, finalDps:dps(model,gear,conv,desp) };
+  return { t, level, gear, conv:maxConv, desp, m, areaT, dpsBoss, area, finalDps:danoTotal(model,level,gear,conv,desp)*P.aps };
 }
 
 // ════════ FORM ════════
 const groups=[
-  {t:'Combate', open:true, f:[['danoBase','danoBase'],['aps','aps',0.1]]},
-  {t:'Mobs absolutos + Ouro', open:true, f:[['hpBase','hpBase'],['rampaHP (×HP/área)','rampaHP',0.1],['fatorCap (variação)','fatorCap',0.1],['bossHpMult','bossHpMult'],['ouroPorHp','ouroPorHp',0.05]]},
-  {t:'Gear (cap + taxas)', open:true, f:[['cap','cap'],['flat (dano/nível)','flat'],['pct (taxa)','pct',0.005],['custoBase','custoBase'],['rampaCusto','rampaCusto',0.01]]},
-  {t:'Prestígio (tunado)', open:true, f:[['convMult (×/conv)','convMult',0.05],['convGate (nível gear)','convGate'],['convGateGrowth','convGateGrowth',0.05],['headstartFrac','headstartFrac',0.05],['despMult (×/tier)','despMult',0.5],['despArea','despArea',1]]},
-  {t:'Alvos de ritmo', f:[['ttkAlvo (s)','ttkAlvo',0.5],['ttkMuro (s)','ttkMuro',0.5]]},
+  {t:'Combate / base por Nível', open:true, f:[['aps','aps',0.1],['danoBase','danoBase'],['levelBonus (base/nível)','levelBonus',0.005]]},
+  {t:'Mobs absolutos + Ouro + XP', open:true, f:[['hpBase','hpBase'],['rampaHP (×HP/área)','rampaHP',0.1],['fatorCap (variação)','fatorCap',0.1],['bossHpMult','bossHpMult'],['ouroPorHp','ouroPorHp',0.05],['xpPorHp','xpPorHp',0.05]]},
+  {t:'Nível / XP', f:[['xpBase (1→2)','xpBase'],['xpGrowth','xpGrowth',0.01]]},
+  {t:'Gear (mesmo endpoint nos 2 modelos)', open:true, f:[['cap','cap'],['gearEnd (×mult no cap)','gearEnd'],['polyPow (curvatura POLY)','polyPow',0.1],['custoBase','custoBase'],['rampaCusto','rampaCusto',0.01]]},
+  {t:'Prestígio (tunado)', open:true, f:[['convMult (×/conv)','convMult',0.05],['convGate (NÍVEL player)','convGate'],['convGateGrowth','convGateGrowth',0.02],['despMult (×/tier)','despMult',0.5],['despArea','despArea',1]]},
+  {t:'Ritmo', f:[['numAreas','numAreas',1],['ttkAlvo (s)','ttkAlvo',0.5],['ttkMuro (s)','ttkMuro',0.5]]},
 ];
-const form=document.getElementById('form');
-const inputs={};
+const form=document.getElementById('form'); const inputs={};
 for(const g of groups){
   const d=document.createElement('details'); if(g.open)d.open=true;
   d.innerHTML=`<summary>${g.t}</summary>`; const grid=document.createElement('div'); grid.className='grid';
-  for(const [label,key,opt] of g.f){
-    const isArr=opt==='arr';
-    const w=document.createElement('div'); w.className='fld'+(isArr?' full':'');
-    const val=isArr?P[key].join(', '):P[key];
-    w.innerHTML=`<label>${label}</label>`; const inp=document.createElement('input'); inp.value=val; inp.dataset.key=key; inp.dataset.arr=isArr?1:0;
+  for(const [label,key] of g.f){
+    const w=document.createElement('div'); w.className='fld';
+    w.innerHTML=`<label>${label}</label>`; const inp=document.createElement('input'); inp.value=P[key]; inp.dataset.key=key;
     inputs[key]=inp; w.appendChild(inp); grid.appendChild(w);
   }
   d.appendChild(grid); form.appendChild(d);
 }
-function applyForm(){
-  for(const k in inputs){ const inp=inputs[k];
-    if(inp.dataset.arr==='1'){ const a=String(inp.value).split(',').map(s=>Number(s.trim())).filter(x=>!isNaN(x)); P[k]=a; }
-    else { const v=Number(inp.value); if(!isNaN(v))P[k]=v; }
-  }
-}
+function applyForm(){ for(const k in inputs){ const v=Number(inputs[k].value); if(!isNaN(v))P[k]=v; } }
 const DEF=JSON.parse(JSON.stringify(P));
 
 // ════════ RENDER ════════
 function render(){
   const rp=simula('poly'), re=simula('exp');
-  // (A) Curva de dano do gear por tier (L = 100 / cap/2 / cap) — sem prestígio
-  const Ls=[100, Math.round(P.cap/2), P.cap];
-  let curva=`<h3>A) Curva de dano do Gear (sem prestígio) — os 2 modelos</h3>
-    <table><thead><tr><th>Tier</th>${Ls.map(l=>`<th>POLY L${l}</th><th>EXP L${l}</th>`).join('')}</tr></thead><tbody>`;
-  for(const tr of TIERS){
-    curva+=`<tr><td>${tr.nome}</td>`+Ls.map(l=>`<td class="poly">${fmt((P.danoBase+l*tr.flat)*(1+l*tr.pct))}</td><td class="exp">${fmt((P.danoBase+l*tr.flat)*Math.pow(1+tr.pct,l))}</td>`).join('')+`</tr>`;
-  }
-  curva+=`</tbody></table><canvas id="cv1" width="760" height="260"></canvas>
-    <p class="hint">Curva do tier <b>Comum</b> (taxa ${P.pct}) ao longo do nível, <span class="poly">POLY</span> vs <span class="exp">EXP</span>, escala log.</p>`;
+  // (A) Curva do multiplicador de gear (1 → gearEnd) — os 2 modelos
+  const Ls=[Math.round(P.cap*0.25),Math.round(P.cap*0.5),Math.round(P.cap*0.75),P.cap];
+  let curva=`<h3>A) Multiplicador do Gear (1 → ×${P.gearEnd} no cap) — os 2 modelos</h3>
+    <table><thead><tr><th>Nível gear</th>${Ls.map(l=>`<th>L${l}</th>`).join('')}</tr></thead><tbody>
+    <tr><td class="poly">POLINOMIAL</td>${Ls.map(l=>`<td class="poly">×${gMult('poly',l).toFixed(1)}</td>`).join('')}</tr>
+    <tr><td class="exp">EXPONENCIAL</td>${Ls.map(l=>`<td class="exp">×${gMult('exp',l).toFixed(1)}</td>`).join('')}</tr>
+    </tbody></table><canvas id="cv1" width="760" height="240"></canvas>
+    <p class="hint">Mesmo ponto final (×${P.gearEnd}); muda o <b>formato</b>: <span class="poly">POLY</span> sobe cedo, <span class="exp">EXP</span> fica baixo até perto do cap.</p>`;
 
-  // (B) Poder (dps) necessário por área — alvo vs muro (independe do modelo de gear)
-  let ttk=`<h3>B) Poder (dps) necessário por área — alvo ${P.ttkAlvo}s → muro ${P.ttkMuro}s</h3>
-    <table><thead><tr><th>Área</th><th>HP mob (méd)</th><th>dps p/ alvo ${P.ttkAlvo}s</th><th>dps p/ muro ${P.ttkMuro}s</th></tr></thead><tbody>`;
-  for(let a=1;a<=P.numAreas;a++){
-    const hp=mobHpAvg(a);
-    ttk+=`<tr><td>${a}</td><td>${fmt(hp)}</td><td>${fmt(hp/P.ttkAlvo)}</td><td>${fmt(hp/P.ttkMuro)}</td></tr>`;
-  }
-  { const bh=mobHpAvg(P.numAreas)*P.bossHpMult; ttk+=`<tr><td>Boss A${P.numAreas}</td><td>${fmt(bh)}</td><td>${fmt(bh/P.ttkAlvo)}</td><td>${fmt(bh/P.ttkMuro)}</td></tr>`; }
-  ttk+=`</tbody></table><p class="hint">dps p/ matar o mob médio da área no tempo alvo/muro. Compare com o "dps fim" da tabela C.</p>`;
+  // (B) Poder (dps) necessário por área
+  let pod=`<h3>B) Poder (dps) necessário por área — alvo ${P.ttkAlvo}s → muro ${P.ttkMuro}s</h3>
+    <table><thead><tr><th>Área</th><th>HP mob (méd)</th><th>dps p/ alvo</th><th>dps p/ muro</th></tr></thead><tbody>`;
+  for(let a=1;a<=P.numAreas;a++){ const hp=mobHpAvg(a); pod+=`<tr><td>${a}</td><td>${fmt(hp)}</td><td>${fmt(hp/P.ttkAlvo)}</td><td>${fmt(hp/P.ttkMuro)}</td></tr>`; }
+  { const bh=mobHpAvg(P.numAreas)*P.bossHpMult; pod+=`<tr><td>Boss A${P.numAreas}</td><td>${fmt(bh)}</td><td>${fmt(bh/P.ttkAlvo)}</td><td>${fmt(bh/P.ttkMuro)}</td></tr>`; }
+  pod+=`</tbody></table>`;
 
-  // (C) Tempo de progressão Map 1, os 2 modelos
-  const row=(r)=>`<td>${fmtT(r.marcos.conv1)}</td><td>${fmtT(r.marcos.desp)}</td><td>${fmtT(r.marcos.area9)}</td><td>${r.marcos.limpo?fmtT(r.marcos.limpo):'<span class="bad">não limpou</span>'}</td><td>${r.conv}</td><td>${r.gear}</td><td>${fmt(r.finalDps)}</td><td>${r.ttkArea.boss?r.ttkArea.boss.toFixed(1)+'s':'—'}</td>`;
-  const prog=`<h3>C) Tempo de progressão do Map 1 (sim com prestígio tunado)</h3>
-    <table><thead><tr><th>Modelo</th><th>1ª Conv</th><th>Despertar</th><th>Área 9</th><th>Map limpo</th><th>convs</th><th>gear fim</th><th>dps fim</th><th>TTK boss</th></tr></thead>
-    <tbody><tr><td class="poly">POLINOMIAL</td>${row(rp)}</tr><tr><td class="exp">EXPONENCIAL</td>${row(re)}</tr></tbody></table>`;
+  // (C) Progressão Map 1 — os 2 modelos
+  const row=(r)=>`<td>${fmtT(r.m.conv1)}</td><td>${fmtT(r.m.desp)}</td><td>${fmtT(r.m.area9)}</td><td>${r.m.limpo?fmtT(r.m.limpo):'<span class="bad">'+'>'+fmtT(14*86400)+'</span>'}</td><td>${r.conv}</td><td>${r.level}</td><td>${r.gear}</td><td>${fmt(r.dpsBoss||r.finalDps)}</td>`;
+  const prog=`<h3>C) Progressão do Map 1 (sim completa)</h3>
+    <table><thead><tr><th>Modelo</th><th>1ª Conv</th><th>Despertar</th><th>Área 9</th><th>Map limpo</th><th>convs</th><th>nível fim</th><th>gear fim</th><th>dps boss</th></tr></thead>
+    <tbody><tr><td class="poly">POLINOMIAL</td>${row(rp)}</tr><tr><td class="exp">EXPONENCIAL</td>${row(re)}</tr></tbody></table>
+    <p class="hint">Chegada por área (POLY): ${[1,3,5,7,9].map(a=>`A${a} ${fmtT(rp.areaT[a]?.t)}`).join(' · ')}</p>`;
 
-  document.getElementById('result').innerHTML = curva + ttk + prog +
-    `<div class="note">Renda/s = <b>DPS × ouroPorHp</b> (o HP do mob se cancela porque o ouro é ∝ HP) — propriedade-chave do ouro ancorado: <b>seu income escala com o seu dano, não com o HP do mob</b>.</div>`;
+  document.getElementById('result').innerHTML = curva + pod + prog +
+    `<div class="note"><b>Propriedade do modelo ancorado:</b> renda/s = ${P.ouroPorHp}×dps e XP/s = ${P.xpPorHp}×dps — o HP do mob se cancela, então <b>ouro e nível escalam com o seu dano, não com o HP do mob</b>. O HP só importa pro <b>muro</b> (TTK de avanço/boss).</div>`;
   drawCurve();
 }
 function drawCurve(){
   const cv=document.getElementById('cv1'); if(!cv)return; const ctx=cv.getContext('2d'),W=cv.width,H=cv.height;
-  const padL=56,padR=14,padT=14,padB=26; ctx.clearRect(0,0,W,H);
+  const padL=50,padR=14,padT=14,padB=24; ctx.clearRect(0,0,W,H);
   const N=60, xs=[...Array(N)].map((_,i)=>Math.round(1+i*(P.cap-1)/(N-1)));
-  const sp=xs.map(l=>perHit('poly',l,P.flat,P.pct)), se=xs.map(l=>perHit('exp',l,P.flat,P.pct));
-  let lo=Infinity,hi=-Infinity; for(const v of [...sp,...se]){const g=Math.log10(Math.max(1,v));lo=Math.min(lo,g);hi=Math.max(hi,g);}
-  if(hi-lo<1)hi=lo+1;
+  const sp=xs.map(l=>gMult('poly',l)), se=xs.map(l=>gMult('exp',l));
+  let lo=0,hi=Math.log10(Math.max(P.gearEnd,10));
   const X=l=>padL+(l-1)/(P.cap-1)*(W-padL-padR), Y=g=>H-padB-(g-lo)/(hi-lo)*(H-padT-padB);
   ctx.strokeStyle='#eef2f8'; ctx.fillStyle='#5b6b80'; ctx.font='11px ui-monospace'; ctx.textAlign='right'; ctx.textBaseline='middle';
-  for(let p=Math.floor(lo);p<=Math.ceil(hi);p++){const y=Y(p);ctx.beginPath();ctx.moveTo(padL,y);ctx.lineTo(W-padR,y);ctx.stroke();ctx.fillText('1e'+p,padL-6,y);}
+  for(let p=0;p<=Math.ceil(hi);p++){const y=Y(p);ctx.beginPath();ctx.moveTo(padL,y);ctx.lineTo(W-padR,y);ctx.stroke();ctx.fillText('×1e'+p,padL-6,y);}
   ctx.textAlign='center';ctx.textBaseline='top'; for(const l of [1,Math.round(P.cap/2),P.cap]){ctx.fillText('L'+l,X(l),H-padB+5);}
   const line=(arr,color)=>{ctx.strokeStyle=color;ctx.lineWidth=2;ctx.beginPath();arr.forEach((v,i)=>{const x=X(xs[i]),y=Y(Math.log10(Math.max(1,v)));i?ctx.lineTo(x,y):ctx.moveTo(x,y);});ctx.stroke();};
   line(sp,'#0f9d58'); line(se,'#7b3ff2');
@@ -224,10 +195,10 @@ function drawCurve(){
 }
 
 document.getElementById('run').addEventListener('click',()=>{ try{applyForm();render();}catch(e){document.getElementById('result').innerHTML=`<pre class="bad">Erro: ${e.message}</pre>`;} });
-document.getElementById('reset').addEventListener('click',()=>{ Object.assign(P,JSON.parse(JSON.stringify(DEF))); for(const k in inputs){const inp=inputs[k];inp.value=inp.dataset.arr==='1'?P[k].join(', '):P[k];} });
+document.getElementById('reset').addEventListener('click',()=>{ Object.assign(P,JSON.parse(JSON.stringify(DEF))); for(const k in inputs)inputs[k].value=P[k]; render(); });
 document.getElementById('export').addEventListener('click',()=>{ applyForm(); const b=new Blob([JSON.stringify(P,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download='eclats-sandbox-preset.json'; a.click(); URL.revokeObjectURL(a.href); });
 document.getElementById('import').addEventListener('click',()=>document.getElementById('importFile').click());
-document.getElementById('importFile').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{Object.assign(P,JSON.parse(r.result));for(const k in inputs){const inp=inputs[k];if(P[k]!=null)inp.value=inp.dataset.arr==='1'?P[k].join(', '):P[k];}alert('Preset carregado. Clique em Calcular.');}catch(err){alert('Falha: '+err.message);}e.target.value='';};r.readAsText(f);});
+document.getElementById('importFile').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{Object.assign(P,JSON.parse(r.result));for(const k in inputs)if(P[k]!=null)inputs[k].value=P[k];render();}catch(err){alert('Falha: '+err.message);}e.target.value='';};r.readAsText(f);});
 
 render();
 </script>
