@@ -28,11 +28,11 @@ function nodeRow(state, id) {
   const cost = nodeCost(state, id);
   const can = canBuyNode(state, id);
   const btn = capped
-    ? '<span class="pv-max">MAX</span>'
-    : `<button type="button" class="pv-buy" data-id="${id}" ${can ? '' : 'disabled'}>${formatNumber(cost)} pts</button>`;
-  return `<div class="pv-node">
-    <div class="pv-node-top"><b>${LABEL[id]}</b><span class="pv-rank">${rank}/${cap}</span></div>
-    <div class="pv-node-eff">${effectStr(id, rank)} ${LABEL[id]}</div>
+    ? '<span class="pas-max">MAX</span>'
+    : `<button type="button" class="pas-buy" data-id="${id}" ${can ? '' : 'disabled'}>${formatNumber(cost)} pts</button>`;
+  return `<div class="pas-node">
+    <div class="pas-node-top"><b>${LABEL[id]}</b><span class="pas-rank">${rank}/${cap}</span></div>
+    <div class="pas-node-eff">${effectStr(id, rank)} ${LABEL[id]}</div>
     ${btn}
   </div>`;
 }
@@ -41,17 +41,17 @@ export function buildPassivesView(root, state) {
   root.classList.remove('placeholder');
   root.classList.add('passivesx');
   root.innerHTML = `
-    <div class="pv-wrap">
-      <div class="pv-head">
+    <div class="pas-wrap">
+      <div class="pas-head">
         <h3>Passives</h3>
-        <div class="pv-points">Convergence Points: <b id="pv-points">0</b></div>
+        <div class="pas-points">Convergence Points: <b id="pas-points">0</b></div>
       </div>
-      <div class="pv-locked" id="pv-locked" hidden>Converge once to unlock the passive tree.</div>
-      <div class="pv-cols" id="pv-cols"></div>
+      <div class="pas-locked" id="pas-locked" hidden>Converge once to unlock the passive tree.</div>
+      <div class="pas-cols" id="pas-cols"></div>
     </div>`;
 
-  root.querySelector('#pv-cols').addEventListener('click', (e) => {
-    const b = e.target.closest('.pv-buy'); if (!b) return;
+  root.querySelector('#pas-cols').addEventListener('click', (e) => {
+    const b = e.target.closest('.pas-buy'); if (!b) return;
     buyNode(state, b.dataset.id); renderPassives(state);
   });
 
@@ -59,19 +59,19 @@ export function buildPassivesView(root, state) {
 }
 
 export function renderPassives(state) {
-  const pts = document.getElementById('pv-points');
+  const pts = document.getElementById('pas-points');
   if (pts) pts.textContent = formatNumber(state.convPoints);
 
   const unlocked = passivesUnlocked(state);
-  const lockEl = document.getElementById('pv-locked');
+  const lockEl = document.getElementById('pas-locked');
   if (lockEl) lockEl.hidden = unlocked;
 
-  const cols = document.getElementById('pv-cols');
+  const cols = document.getElementById('pas-cols');
   if (cols) {
     cols.style.opacity = unlocked ? '1' : '.4';
     cols.innerHTML = Object.keys(RAMOS).map((ramo) => {
       const ids = NODE_IDS.filter((id) => NODES[id].ramo === ramo);
-      return `<section class="pv-col">
+      return `<section class="pas-col">
         <h4>${RAMOS[ramo]}</h4>
         ${ids.map((id) => nodeRow(state, id)).join('')}
       </section>`;

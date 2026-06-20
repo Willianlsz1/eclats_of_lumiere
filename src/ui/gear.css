@@ -184,7 +184,7 @@
 .gr-mults .gr-max.active { color: #9be08a; border-color: #9be08a; background: color-mix(in srgb, #9be08a 16%, #0a1024); }
 
 /* ───── CP-4b: inventário + equipamento (modelo de afixos) ───── */
-.gearx { padding: 24px; overflow: auto; }
+.gearx { position: absolute; inset: 0; padding: 28px; overflow: auto; background: rgba(6,10,22,.86); }
 .gx-wrap { display: grid; grid-template-columns: 360px 1fr; gap: 24px; align-items: start; height: 100%; }
 .gx-col h3 { margin: 0 0 12px; color: var(--gold); font-size: 18px; }
 .gx-slots { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }

@@ -2,24 +2,24 @@
    Tudo prefixado fg- e ancorado em .forge. Palco: 1920×1080 (view = inset:0). */
 
 /* ───── CP-5b: forja redesenhada (modelo de afixos) — ancorada em .forgex ───── */
-.forgex { padding: 24px; overflow: auto; }
-.forgex .fg-wrap { display: grid; grid-template-columns: 300px 1fr; gap: 24px; align-items: start; }
+.forgex { position: absolute; inset: 0; padding: 28px; overflow: auto; background: rgba(6,10,22,.86); }
+.forgex .frg-wrap { display: grid; grid-template-columns: 300px 1fr; gap: 24px; align-items: start; }
 .forgex h3 { margin: 0 0 12px; color: var(--gold); font-size: 18px; }
 .forgex h4 { margin: 18px 0 8px; color: #b9c4e6; font-size: 14px; }
-.fg-mats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.fg-mat { display: flex; justify-content: space-between; padding: 8px 10px; border: 1px solid rgba(255,255,255,.12); border-radius: 8px; background: rgba(10,16,36,.5); }
-.fg-mat b { color: #cfe0ff; }
-.fg-refine { display: flex; flex-wrap: wrap; gap: 8px; }
-.fg-pick { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
-.fg-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.frg-mats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.frg-mat { display: flex; justify-content: space-between; padding: 8px 10px; border: 1px solid rgba(255,255,255,.12); border-radius: 8px; background: rgba(10,16,36,.5); }
+.frg-mat b { color: #cfe0ff; }
+.frg-refine { display: flex; flex-wrap: wrap; gap: 8px; }
+.frg-pick { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+.frg-row { display: flex; flex-wrap: wrap; gap: 8px; }
 .forgex button { font: inherit; font-size: 14px; padding: 8px 14px; border-radius: 8px; cursor: pointer;
   border: 1px solid rgba(255,255,255,.18); background: rgba(255,255,255,.06); color: inherit; }
 .forgex button.active { border-color: var(--gold); color: var(--gold); background: color-mix(in srgb, var(--gold) 16%, #0a1024); }
 .forgex button:disabled { opacity: .4; cursor: default; }
-.fg-cost { margin: 6px 0 12px; font-size: 15px; color: #b9c4e6; }
-.fg-cost b { color: #ffd98a; }
-.fg-do { border-color: rgba(155,224,138,.5) !important; color: #9be08a !important; font-weight: 700; padding: 10px 22px !important; }
-.fg-note { font-size: 13px; opacity: .6; margin-top: 10px; }
+.frg-cost { margin: 6px 0 12px; font-size: 15px; color: #b9c4e6; }
+.frg-cost b { color: #ffd98a; }
+.frg-do { border-color: rgba(155,224,138,.5) !important; color: #9be08a !important; font-weight: 700; padding: 10px 22px !important; }
+.frg-note { font-size: 13px; opacity: .6; margin-top: 10px; }
 
 .forge {
   --fg-panel: rgba(8,12,24,.86);
