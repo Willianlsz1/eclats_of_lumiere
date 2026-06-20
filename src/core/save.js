@@ -20,8 +20,11 @@ export function load() {
   }
 }
 
+let resetting = false;
+
 // Grava o estado atual.
 export function save() {
+  if (resetting) return; // não re-salva durante um reset (senão o beforeunload reverte)
   try {
     const snap = toSnapshot();
     snap.savedAt = Date.now();
@@ -41,6 +44,8 @@ export function setupAutosave(intervalMs = 10000) {
 
 // Apaga o save e recomeça do zero.
 export function resetSave() {
+  resetting = true;
+  if (timer) clearInterval(timer);
   localStorage.removeItem(KEY);
   location.reload();
 }

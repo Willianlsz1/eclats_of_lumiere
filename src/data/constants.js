@@ -55,8 +55,13 @@ const PACK = [2, 3, 4, 5, 6, 8, 10, 12, 14];
 export const MAPS = [
   {
     id: 1, name: 'The Dreaming Wood', continent: 'worldmap.continent1', bg: 'backgrounds.map1',
-    lvlLo: 1, lvlHi: 1000, hpLo: 5000, hpHi: 5e8, dmgLo: 100, dmgHi: 1e7,
-    subareaCount: 9, packSizes: PACK, bossKillThreshold: 100,
+    lvlLo: 1, lvlHi: 1200, hpLo: 5000, hpHi: 5e8, dmgLo: 100, dmgHi: 1e7,
+    subareaCount: 9, bossKillThreshold: 3000,
+    // ✅ REDESIGN Mapa 1 (2026-06-20): 9 áreas. gate por NÍVEL, fator de força e
+    // pack por área (índice = área − 1). Ver docs/eclats_mapa1_design_v1.md.
+    gates:      [1, 30, 90, 180, 320, 500, 720, 960, 1200],
+    areaFactor: [1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9],
+    packSizes:  [1, 1, 2, 2, 3, 3, 3, 4, 4],
     enemyNames: ['Candlewisp Shade', 'Mothlight Herald', 'Dreamhorn Warden', 'Hollowroot Crawler', 'Glowmere Drifter'],
     enemyArts: ['enemies.map1.candlewisp_shade', 'enemies.map1.mothlight_herald', 'enemies.map1.dreamhorn_warden', 'enemies.map1.hollowroot_crawler', 'enemies.map1.glowmere_drifter'],
     guardianArt: 'enemies.map1.dreamhorn_warden',
