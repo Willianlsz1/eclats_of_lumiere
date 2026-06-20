@@ -19,6 +19,9 @@ export const COMBAT = {
   deathRespawnSeconds: 3, // morte: respawn com HP cheio, sem perdas
   waveClearDelay: 0.3,    // beat entre ondas: cobre o voo do projétil (PROJ_BASE_MS 200ms + frame)
                           // p/ a morte do ÚLTIMO mob chegar ANTES da próxima onda surgir.
+  // ── Mecânicas do protótipo Tapper (integradas 2026-06-20) ──
+  tapDmgMult: 1,          // tap/segurar ativo: cada toque = 1 ataque extra × este fator (com crit próprio)
+  bossTimeLimit: 30,      // boss tem este tempo (s); se estourar, some e você volta a farmar o pack (mesma subárea)
 };
 
 // §12 — Lumens · §6 — XP — ✅ REDESIGN Mapa 1: reward atrelado ao HP do mob.

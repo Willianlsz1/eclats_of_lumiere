@@ -87,6 +87,8 @@ export function createInitialState() {
     // Onda ativa de inimigos (runtime, não persistido).
     enemies: [],
     wave: 1, // número da onda atual na subárea (runtime)
+    bossTimer: 0, // segundos restantes p/ matar o boss ativo (runtime; mecânica Tapper)
+    bossFails: 0, // falhas seguidas no boss da subárea (runtime; feedback de HUD)
 
     // Fila de efeitos visuais (runtime) — hits para os números flutuantes
     fx: [],

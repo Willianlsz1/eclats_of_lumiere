@@ -10,7 +10,7 @@
 import { formatNumber } from '../core/format.js';
 import { picture, bg } from '../data/assets.js';
 import { runLevel, playerHpMax, currentAPS, levelProgress, levelXpInfo } from '../game/stats.js';
-import { changeSubarea, subareaUnlockLevel } from '../game/combat.js';
+import { changeSubarea, subareaUnlockLevel, tapAttack } from '../game/combat.js';
 import { getCurrentMap, subareaLevelRange } from '../game/enemies.js';
 import { currentRank } from '../game/ascension.js';
 
@@ -135,6 +135,9 @@ export function buildCombatView(root, state) {
 
     <div class="cb-arena" id="cb-arena"><!-- enemy cards (JS) --></div>
 
+    <!-- camada de toque (mecânica Tapper): segurar para somar ataques manuais -->
+    <div class="cb-taplayer" id="cb-taplayer" title="Segure para atacar"></div>
+
     <!-- Box de drops do mapa (T1) — bg = arte do material; mostra o que DROPOU -->
     <div class="cb-drops" id="cb-drops">
       <div class="cb-drop-info">
@@ -169,6 +172,22 @@ export function buildCombatView(root, state) {
   // Setas de navegação entre sub-áreas (gate do boss respeitado em changeSubarea)
   $('cb-prev').addEventListener('click', () => changeSubarea(state, -1));
   $('cb-next').addEventListener('click', () => changeSubarea(state, +1));
+
+  // Tap ativo: tocar/segurar a arena soma ataques manuais por cima do automático.
+  const TAP_HOLD_MS = 120; // ~8 toques/s enquanto segura
+  const tapLayer = $('cb-taplayer');
+  let tapHold = null;
+  const doTap = () => tapAttack(state);
+  const startTap = (e) => {
+    e.preventDefault();
+    tapLayer.setPointerCapture?.(e.pointerId);
+    doTap();
+    if (tapHold === null) tapHold = setInterval(doTap, TAP_HOLD_MS);
+  };
+  const stopTap = () => { if (tapHold !== null) { clearInterval(tapHold); tapHold = null; } };
+  tapLayer.addEventListener('pointerdown', startTap);
+  tapLayer.addEventListener('pointerup', stopTap);
+  tapLayer.addEventListener('pointercancel', stopTap);
 
   // Fundo da sub-área atual (atualizado também no render, em troca de área/mapa)
   $('cb-backdrop').style.backgroundImage = subareaBg(state);
@@ -237,7 +256,9 @@ export function renderCombat(state) {
   let pct, label;
   if (bossOut) {
     pct = 100;
-    label = `⚔ ${map.bossName} · ${alive} in the wave`;
+    const secs = Math.max(0, Math.ceil(state.bossTimer || 0));
+    label = `⚔ ${map.bossName} · ${secs}s`
+      + (state.bossFails ? ` · falhas ${state.bossFails}` : '');
   } else if (isFinalArea) {
     pct = Math.min(100, (state.killsInSubarea / map.bossKillThreshold) * 100);
     label = `Wave ${state.wave} · ${alive} alive · ${Math.floor(pct)}% to ${map.bossName}`;

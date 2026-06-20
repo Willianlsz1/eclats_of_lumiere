@@ -25,10 +25,16 @@ export function resetPack(state) {
   state.wave = 1;
   state.waveClearT = 0;
   state.enemies = makeWave(state);
+  armBossTimer(state);
 }
 
 export function bossActive(state) {
   return state.enemies.some((m) => m.isBoss && m.hp > 0);
+}
+
+// Mecânica Tapper: arma o cronômetro quando há boss em cena; zera quando não há.
+export function armBossTimer(state) {
+  state.bossTimer = bossActive(state) ? COMBAT.bossTimeLimit : 0;
 }
 
 // ───── Tick de combate ─────
@@ -56,7 +62,7 @@ export function combatTick(state, dt) {
     let guard = 0;
     while (player.attackTimer >= interval && guard < 200) {
       player.attackTimer -= interval;
-      playerAttack(state, hpMax);
+      playerAttack(state);
       guard += 1;
     }
   }
@@ -68,9 +74,23 @@ export function combatTick(state, dt) {
       state.waveClearT = 0;
       state.wave += 1;
       state.enemies = makeWave(state);
+      armBossTimer(state);
     }
   } else {
     state.waveClearT = 0;
+  }
+
+  // Timer do boss (mecânica Tapper): se estourar sem matá-lo, o boss some e você
+  // volta a farmar o pack da MESMA subárea (re-bate o threshold). Nunca vai pra trás.
+  if (bossActive(state)) {
+    state.bossTimer -= dt;
+    if (state.bossTimer <= 0) {
+      state.bossFails = (state.bossFails || 0) + 1;
+      state.killsInSubarea = 0;
+      state.wave = 1;
+      state.enemies = makeWave(state);
+      armBossTimer(state);
+    }
   }
 
   // Dano dos mobs VIVOS → mitigado pela Defesa (veilFactor; stub gear = 0).
@@ -91,12 +111,13 @@ export function combatTick(state, dt) {
 }
 
 // Um ataque: atinge o 1º mob vivo (single-target). Máx 1 kill por ataque.
-function playerAttack(state) {
+// dmgMult: 1 no ataque automático; COMBAT.tapDmgMult no tap ativo.
+function playerAttack(state, dmgMult = 1) {
   const target = state.enemies.find((m) => m.hp > 0);
   if (!target) return;
   const isCrit = Math.random() < critChance(state);
   const bossMult = target.isBoss ? gearBossDmgMult(state) * passiveBossDmgMult(state) : 1;
-  const hit = damagePerHit(state) * (isCrit ? critDamageMult(state) : 1) * bossMult;
+  const hit = damagePerHit(state) * dmgMult * (isCrit ? critDamageMult(state) : 1) * bossMult;
   target.hp -= hit;
   if (state.fx.length < 50) state.fx.push({ mobId: target.id, amount: hit, isCrit });
   if (target.hp <= 0) {
@@ -107,8 +128,17 @@ function playerAttack(state) {
   }
 }
 
+// Tap ativo (mecânica Tapper): um ataque manual extra no alvo atual, com crit próprio.
+// Acionado pela UI (toque/segurar) por cima do combate automático.
+export function tapAttack(state) {
+  if (state.player.dead) return;
+  if (!state.enemies.some((m) => m.hp > 0)) return;
+  playerAttack(state, COMBAT.tapDmgMult);
+}
+
 function onBossKill(state) {
   state.killsInSubarea = 0;
+  state.bossFails = 0; // venceu o boss: zera as falhas
   if (Array.isArray(state.bossDefeated)) state.bossDefeated[state.subarea - 1] = true;
 }
 
