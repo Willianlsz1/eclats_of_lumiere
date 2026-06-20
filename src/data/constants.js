@@ -216,6 +216,19 @@ export const CRAFT = {
 // tier do material que o mapa dropa (índice 0..3 = T1..T4); Map 5 = T4 (future T5)
 export const mapMaterialTier = (map) => Math.min(map - 1, 3);
 
+// ✅ REDESIGN Mapa 1 (CP-5): upgrade de gear (Lumens) + material (melhorar/forjar/refino).
+// Índice = raridade/tier (0 Common .. 4 Legendary). Ver docs/eclats_mapa1_design_v1.md.
+export const UPGRADE = {
+  capLevel:    [20, 40, 60, 80, 100],            // cap de nível por raridade
+  capMult:     [1.4, 2.3, 3.2, 4.1, 5.0],        // multiplicador dos afixos no cap
+  lumCostBase: 50,                               // custo linear de nível: base × (nível+1) × mult
+  lumCostMult: [1, 2, 4, 8, 16],                 // por raridade
+  rarityUpMat: [20, 40, 80, 160, 0],             // material (tier = raridade atual) p/ subir r→r+1
+  refineRatio: 15,                               // 15:1 entre tiers (só pra cima)
+  forgeMat:    [10, 30, 90, 270, 810],           // material (do tier) p/ forjar peça de raridade=tier
+  forgeLum:    [500, 2000, 8000, 30000, 100000], // + Lumens, por tier
+};
+
 // §8 — DIFICULDADES (Camada 7, Passo 5). hpMult aplica a HP E dano dos mobs;
 // rewardMult a materiais/Éclats. O SISTEMA abre na A2 (minAscension); o gate dos
 // modos é por PODER (você morre se fraco) + bloqueio de OVERFLOW (≤ 1e100).

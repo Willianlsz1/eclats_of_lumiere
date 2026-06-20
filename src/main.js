@@ -8,7 +8,7 @@ import { load, setupAutosave, resetSave } from './core/save.js';
 import { startLoop } from './core/loop.js';
 import { combatTick, resetPack, updateUnlockByLevel } from './game/combat.js';
 import { playerHpMax, runLevel, damagePerHit, currentAPS, levelXpInfo } from './game/stats.js';
-import { rollItem, equipItem, gearDamageMult, gearHpMult } from './game/gear.js';
+import { rollItem, equipItem, gearDamageMult, gearHpMult, upgradeItem, rarityUpItem, forgeItem, refineMat } from './game/gear.js';
 import { setupUI, renderUI } from './ui/ui.js';
 
 // Carrega o save (se houver) e reconstrói o runtime.
@@ -48,4 +48,10 @@ window.eclatsDebug = () => ({
 window.eclatsDrop = (rarity = 2, slot = 'edge') => { state.inventory.push(rollItem(state, slot, rarity, state.subarea)); return state.inventory.length; };
 window.eclatsInv = () => state.inventory.map((it) => ({ id: it.id, slot: it.slot, rar: it.rarity, affixes: it.affixes.map((a) => `${a.type}=${(a.value * 100).toFixed(1)}%`) }));
 window.eclatsEquip = (id) => equipItem(state, id);
-window.eclatsGear = () => ({ dmgMult: +gearDamageMult(state).toFixed(3), hpMult: +gearHpMult(state).toFixed(3), equipped: Object.fromEntries(Object.entries(state.equipped).map(([k, v]) => [k, v ? `r${v.rarity}` : null])) });
+window.eclatsGear = () => ({ dmgMult: +gearDamageMult(state).toFixed(3), hpMult: +gearHpMult(state).toFixed(3), equipped: Object.fromEntries(Object.entries(state.equipped).map(([k, v]) => [k, v ? `r${v.rarity}L${v.level}` : null])) });
+// CP-5: upgrade/material
+window.eclatsUpgrade = (id) => upgradeItem(state, id);
+window.eclatsRarityUp = (id) => rarityUpItem(state, id);
+window.eclatsForge = (slot = 'edge', tier = 0) => forgeItem(state, slot, tier);
+window.eclatsRefine = (t = 0) => refineMat(state, t);
+window.eclatsMat = (a = [100, 100, 100, 0]) => { state.materiais = a; state.lumens += 1e6; return state.materiais; };

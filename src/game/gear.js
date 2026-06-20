@@ -4,7 +4,7 @@
 // por Lumens (nível → +% afixos) e Material (subir raridade/forjar) = CP-5.
 // Multiplicadores de gear lidos do EQUIPADO (state.equipped) por tipo de afixo.
 
-import { GEAR } from '../data/constants.js';
+import { GEAR, UPGRADE } from '../data/constants.js';
 
 const rnd = (lo, hi) => lo + Math.random() * (hi - lo);
 
@@ -67,7 +67,7 @@ export function rollItem(state, slot, rarity, area) {
     affixes.push({ type, value: rollAffixValue(type, area, true), secondary: true });
   }
   state.itemSeq = (state.itemSeq || 0) + 1;
-  return { id: state.itemSeq, slot, rarity, level: 0, affixes };
+  return { id: state.itemSeq, slot, rarity, level: 0, area, affixes };
 }
 
 // ───── Drop por kill ─────
@@ -114,13 +114,84 @@ export function discardItem(state, itemId) {
   return true;
 }
 
-// ───── Multiplicadores lidos do EQUIPADO (por tipo de afixo) ─────
+// ───── Upgrade por Lumens (nível → +% em todos os afixos) — CP-5 ─────
+export const growthOf = (rarity) => (UPGRADE.capMult[rarity] - 1) / UPGRADE.capLevel[rarity];
+export const levelMult = (item) => 1 + (item.level || 0) * growthOf(item.rarity); // ×nos afixos
+export const capLevelOf = (item) => UPGRADE.capLevel[item.rarity];
+export const atCap = (item) => (item.level || 0) >= capLevelOf(item);
+export const itemLevelCost = (item) => UPGRADE.lumCostBase * ((item.level || 0) + 1) * UPGRADE.lumCostMult[item.rarity];
+
+// Acha uma peça por id no inventário ou equipada.
+function findItem(state, id) {
+  const inv = state.inventory.find((it) => it.id === id);
+  if (inv) return inv;
+  for (const slot of SLOTS) { const it = state.equipped[slot]; if (it && it.id === id) return it; }
+  return null;
+}
+
+export function upgradeItem(state, id) {
+  const it = findItem(state, id);
+  if (!it || atCap(it)) return false;
+  const cost = itemLevelCost(it);
+  if (state.lumens < cost) return false;
+  state.lumens -= cost;
+  it.level = (it.level || 0) + 1;
+  return true;
+}
+
+// ───── Material: melhorar (subir raridade) / forjar / refino — CP-5 ─────
+export const rarityUpMatCost = (item) => (item.rarity < MAX_RARITY ? UPGRADE.rarityUpMat[item.rarity] : Infinity);
+export function canRarityUpItem(state, id) {
+  const it = findItem(state, id);
+  return !!it && it.rarity < MAX_RARITY && state.materiais[it.rarity] >= rarityUpMatCost(it);
+}
+export function rarityUpItem(state, id) {
+  const it = findItem(state, id);
+  if (!canRarityUpItem(state, id)) return false;
+  state.materiais[it.rarity] -= rarityUpMatCost(it);
+  // adiciona 1 secundário novo (do pool, ainda não presente), rolado na área da peça
+  const have = new Set(it.affixes.map((a) => a.type));
+  const choices = SLOT_POOL[it.slot].sec.filter((t) => !have.has(t));
+  if (choices.length) {
+    const type = choices[Math.floor(Math.random() * choices.length)];
+    it.affixes.push({ type, value: rollAffixValue(type, it.area || 1, true), secondary: true });
+  }
+  it.rarity += 1; // sobe a raridade → sobe o cap de nível também
+  return true;
+}
+
+export const forgeCost = (tier) => ({ mat: UPGRADE.forgeMat[tier], lum: UPGRADE.forgeLum[tier] });
+export function canForge(state, slot, tier) {
+  const c = forgeCost(tier);
+  return tier >= 0 && tier <= MAX_RARITY && state.materiais[tier] >= c.mat && state.lumens >= c.lum
+    && state.inventory.length < INV_CAP;
+}
+export function forgeItem(state, slot, tier) {
+  if (!canForge(state, slot, tier)) return false;
+  const c = forgeCost(tier);
+  state.materiais[tier] -= c.mat;
+  state.lumens -= c.lum;
+  state.inventory.push(rollItem(state, slot, tier, state.subarea));
+  return true;
+}
+
+export const canRefineMat = (state, fromTier) =>
+  fromTier >= 0 && fromTier < state.materiais.length - 1 && state.materiais[fromTier] >= UPGRADE.refineRatio;
+export function refineMat(state, fromTier) {
+  if (!canRefineMat(state, fromTier)) return false;
+  state.materiais[fromTier] -= UPGRADE.refineRatio;
+  state.materiais[fromTier + 1] += 1;
+  return true;
+}
+
+// ───── Multiplicadores lidos do EQUIPADO (afixos × nível da peça) ─────
 function sumAffix(state, type) {
   let s = 0;
   for (const slot of SLOTS) {
     const it = state.equipped && state.equipped[slot];
     if (!it) continue;
-    for (const a of it.affixes) if (a.type === type) s += a.value;
+    const lm = levelMult(it);
+    for (const a of it.affixes) if (a.type === type) s += a.value * lm;
   }
   return s;
 }
