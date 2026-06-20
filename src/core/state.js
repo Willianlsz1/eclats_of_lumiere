@@ -56,6 +56,12 @@ export function createInitialState() {
     },
     materiais: [0, 0, 0, 0], // §13B (Passo 4): T1-T4. materiais[r] paga a raridade r→r+1.
 
+    // Gear redesign (CP-4): inventário de peças dropadas + 1 equipada por slot.
+    // item = { id, slot, rarity, level, affixes:[{type,value,secondary}] }.
+    inventory: [],
+    equipped: { edge: null, grasp: null, reson: null, vigil: null, veil: null, band: null },
+    itemSeq: 0, // contador de ids de peça (persiste p/ ids estáveis)
+
     // §8 (Passo 5): dificuldade selecionada (índice em DIFFICULTIES) + automações dos Fate Keepers
     difficulty: 0,
     auto: { stats: false, converge: false, progress: false }, // toggl_es (default off; desbloqueiam por Ascension)
@@ -97,8 +103,10 @@ export const state = createInitialState();
 const PERSIST = [
   'lumens', 'xpTotal', 'xpRun', 'vestiges', 'eclats', 'ascensions', 'despertares',
   'nitzotzot', 'convergences', 'convPoints', 'bestSubareaRun', 'difficulty', 'ecoMap',
-  'map', 'maxMap', 'subarea', 'unlockedSubarea', 'killsInSubarea', 'killsTotal',
+  'map', 'maxMap', 'subarea', 'unlockedSubarea', 'killsInSubarea', 'killsTotal', 'itemSeq',
 ];
+
+const EQUIP_SLOTS = ['edge', 'grasp', 'reson', 'vigil', 'veil', 'band'];
 
 // Aplica um snapshot persistido por cima do estado inicial.
 export function applySnapshot(snap) {
@@ -116,6 +124,8 @@ export function applySnapshot(snap) {
     const g = snap.gear[key];
     if (g) state.gear[key] = { level: g.level ?? 0, rarity: g.rarity ?? 0 };
   }
+  if (Array.isArray(snap.inventory)) state.inventory = snap.inventory;
+  if (snap.equipped) for (const slot of EQUIP_SLOTS) state.equipped[slot] = snap.equipped[slot] ?? null;
   state.bossDefeated = normBossDefeated(snap.bossDefeated, state.map);
   state.mapProgress = snap.mapProgress ?? {};
 }
@@ -130,6 +140,8 @@ export function toSnapshot() {
   out.auto = { ...state.auto };
   out.passives = JSON.parse(JSON.stringify(state.passives));
   out.gear = JSON.parse(JSON.stringify(state.gear));
+  out.inventory = JSON.parse(JSON.stringify(state.inventory));
+  out.equipped = JSON.parse(JSON.stringify(state.equipped));
   out.bossDefeated = [...state.bossDefeated];
   out.mapProgress = JSON.parse(JSON.stringify(state.mapProgress));
   return out;

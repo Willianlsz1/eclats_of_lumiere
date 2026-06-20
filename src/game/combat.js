@@ -9,6 +9,7 @@ import {
   runLevel, playerHpMax, currentAPS, damagePerHit, critChance, critDamageMult, veilFactor,
 } from './stats.js';
 import { awardKill } from './economy.js';
+import { rollDrop, gearRegenBonus, gearBossDmgMult } from './gear.js';
 
 // Monta a onda da área: boss sozinho se bateu o threshold; senão o pack.
 function makeWave(state) {
@@ -75,8 +76,8 @@ export function combatTick(state, dt) {
   const packDps = state.enemies.reduce((s, m) => s + (m.hp > 0 ? m.dmg : 0), 0);
   if (packDps > 0) player.hp -= packDps * (1 - veilFactor(state)) * dt;
 
-  // Regen contínuo (1% HP máx/s).
-  player.hp = Math.min(hpMax, player.hp + hpMax * COMBAT.regenPerSec * dt);
+  // Regen contínuo (1% HP máx/s + afixo Regen do gear).
+  player.hp = Math.min(hpMax, player.hp + hpMax * (COMBAT.regenPerSec + gearRegenBonus(state)) * dt);
 
   // Morte: respawna na mesma área; o boss some (precisa farmar o threshold de novo).
   if (player.hp <= 0) {
@@ -93,11 +94,13 @@ function playerAttack(state) {
   const target = state.enemies.find((m) => m.hp > 0);
   if (!target) return;
   const isCrit = Math.random() < critChance(state);
-  const hit = damagePerHit(state) * (isCrit ? critDamageMult(state) : 1);
+  const bossMult = target.isBoss ? gearBossDmgMult(state) : 1;
+  const hit = damagePerHit(state) * (isCrit ? critDamageMult(state) : 1) * bossMult;
   target.hp -= hit;
   if (state.fx.length < 50) state.fx.push({ mobId: target.id, amount: hit, isCrit });
   if (target.hp <= 0) {
     awardKill(state, target);
+    rollDrop(state, target); // CP-4: chance de drop por kill
     if (target.isBoss) onBossKill(state);
     else state.killsInSubarea += 1;
   }

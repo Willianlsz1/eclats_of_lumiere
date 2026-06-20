@@ -8,6 +8,7 @@ import { load, setupAutosave, resetSave } from './core/save.js';
 import { startLoop } from './core/loop.js';
 import { combatTick, resetPack, updateUnlockByLevel } from './game/combat.js';
 import { playerHpMax, runLevel, damagePerHit, currentAPS, levelXpInfo } from './game/stats.js';
+import { rollItem, equipItem, gearDamageMult, gearHpMult } from './game/gear.js';
 import { setupUI, renderUI } from './ui/ui.js';
 
 // Carrega o save (se houver) e reconstrói o runtime.
@@ -41,4 +42,10 @@ window.eclatsDebug = () => ({
   aps: +currentAPS(state).toFixed(2), xpToNext: Math.round(levelXpInfo(state).remaining),
   lumens: Math.round(state.lumens), kills: state.killsTotal,
   killsInArea: state.killsInSubarea, enemies: state.enemies.length, dead: state.player.dead,
+  invCount: state.inventory.length,
 });
+// Hooks de teste do gear (CP-4a; UI vem no CP-4b):
+window.eclatsDrop = (rarity = 2, slot = 'edge') => { state.inventory.push(rollItem(state, slot, rarity, state.subarea)); return state.inventory.length; };
+window.eclatsInv = () => state.inventory.map((it) => ({ id: it.id, slot: it.slot, rar: it.rarity, affixes: it.affixes.map((a) => `${a.type}=${(a.value * 100).toFixed(1)}%`) }));
+window.eclatsEquip = (id) => equipItem(state, id);
+window.eclatsGear = () => ({ dmgMult: +gearDamageMult(state).toFixed(3), hpMult: +gearHpMult(state).toFixed(3), equipped: Object.fromEntries(Object.entries(state.equipped).map(([k, v]) => [k, v ? `r${v.rarity}` : null])) });
