@@ -182,3 +182,37 @@
   background: color-mix(in srgb, var(--gold) 18%, #0a1024); }
 .gr-mults .gr-max { color: #9be08a; border-color: rgba(155,224,138,.45); }
 .gr-mults .gr-max.active { color: #9be08a; border-color: #9be08a; background: color-mix(in srgb, #9be08a 16%, #0a1024); }
+
+/* ───── CP-4b: inventário + equipamento (modelo de afixos) ───── */
+.gearx { padding: 24px; overflow: auto; }
+.gx-wrap { display: grid; grid-template-columns: 360px 1fr; gap: 24px; align-items: start; height: 100%; }
+.gx-col h3 { margin: 0 0 12px; color: var(--gold); font-size: 18px; }
+.gx-slots { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.gx-bonus { margin-top: 16px; padding: 12px 14px; border: 1px solid rgba(255,255,255,.12); border-radius: 10px; background: rgba(10,16,36,.5); }
+.gx-bonus h4 { margin: 0 0 8px; color: #b9c4e6; font-size: 14px; }
+.gx-brow { display: flex; justify-content: space-between; font-size: 14px; padding: 2px 0; }
+.gx-brow b { color: #cfe0ff; }
+.gx-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; align-content: start; }
+
+.inv-card { border: 1px solid rgba(255,255,255,.14); border-left-width: 4px; border-radius: 10px; padding: 10px 12px; background: rgba(12,18,40,.6); }
+.inv-card.empty { opacity: .55; }
+.inv-card-h { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+.inv-card-h b { font-size: 15px; }
+.inv-rar { font-size: 12px; opacity: .8; }
+.inv-affs { list-style: none; margin: 0; padding: 0; font-size: 13px; }
+.inv-affs .pri { color: #ffe6a6; }
+.inv-affs .sec { color: #b9c4e6; }
+.inv-empty { font-size: 13px; opacity: .6; margin: 4px 0 0; }
+.inv-btns { display: flex; gap: 6px; margin-top: 8px; }
+.inv-btns button { flex: 1; font: inherit; font-size: 13px; padding: 5px 0; border-radius: 7px; cursor: pointer; border: 1px solid rgba(255,255,255,.18); background: rgba(255,255,255,.06); color: inherit; }
+.inv-equip { border-color: rgba(155,224,138,.5) !important; color: #9be08a !important; }
+.inv-discard { color: #e08a8a !important; }
+
+.inv-card.r-0 { border-left-color: #9aa3b8; }
+.inv-card.r-1 { border-left-color: #6fcf6f; }
+.inv-card.r-2 { border-left-color: #5aa8ff; }
+.inv-card.r-3 { border-left-color: #c07af0; }
+.inv-card.r-4 { border-left-color: #f0a23a; }
+.inv-card.r-0 .inv-rar { color: #9aa3b8; }
+.inv-card.r-1 .inv-rar { color: #6fcf6f; }
+.inv-card.r-2 .inv-rar { color: #5aa8ff; }

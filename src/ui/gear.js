@@ -1,222 +1,102 @@
-// Tela de Gear / Equipment — REDESIGN paper-doll (alvo: tela de referência).
-// Moldura do modal (vitrine dourada) + Armeiro ao centro com os 6 slots das
-// peças de Éclat ao redor (3 esq + 3 dir). Cada slot tem Level Up INLINE
-// (badge LVL + custo + ação). Multiplicador GLOBAL no rodapé. Stats à esquerda.
-// Subir raridade NÃO fica aqui — vai pra Forja (só upgrade de nível aqui).
-//
+// Tela de Gear / Equipment — CP-4b (redesign Mapa 1): inventário + equipamento por afixos.
+// Coluna esquerda = 6 slots equipados + bônus totais. Direita = inventário (equipar/descartar).
 // Contrato: buildGearView(root, state) monta o DOM; renderGear(state) atualiza.
 
-import { formatNumber } from '../core/format.js';
-import { picture } from '../data/assets.js';
-import { GEAR, GEAR_RARITIES, GEAR_RARITY_LABELS, COMBAT } from '../data/constants.js';
-import { apsBonus } from '../game/stats.js';
 import {
-  primaryMult, secondaryMult, critOf, critDmgOf, activeSecondaries,
-  levelCost, atLevelCap, buyLevels,
-  gearDamageMult, gearHpMult, gearLumensMult, gearCritAdd, gearDefesaMult, gearApsMult,
-  gearDamageFlat, gearHpFlat, gearDefesaFlat, gearApsFlat,
+  SLOTS, RARITY_NAMES, equipItem, discardItem,
+  gearDamageMult, gearHpMult, gearDefesaMult, gearLumensMult, gearXpMult,
+  gearCritAdd, gearCritDmgAdd, gearApsFlat, gearBossDmgMult,
 } from '../game/gear.js';
 
-const $ = (id) => document.getElementById(id);
-const pieceDef = (key) => GEAR.pieces.find((p) => p.key === key);
-const rarityName = (r) => GEAR_RARITIES[r];
-
-const SLOT_EN = { Arma: 'Weapon', Elmo: 'Helm', Manto: 'Cloak', Manoplas: 'Gauntlets', Amuleto: 'Amulet', Anel: 'Ring' };
-const SLOT_LAYOUT = { left: ['edge', 'vigil', 'veil'], right: ['grasp', 'reson', 'band'] };
-const AFFIX_LABELS = {
-  dmg: 'damage', hp: 'HP', defesa: 'defense', crit: 'crit', critDmg: 'crit damage',
-  aps: 'attack speed', regen: 'regen', bossDmg: 'boss damage', lumens: 'Lumens', xp: 'XP',
-  materiais: 'materials', erosao: 'erosion',
+const SLOT_NAME = { edge: 'Weapon', grasp: 'Gauntlets', reson: 'Amulet', vigil: 'Helm', veil: 'Cloak', band: 'Ring' };
+const AFFIX_LABEL = {
+  dmg: 'Damage', hp: 'HP', critChance: 'Crit Chance', critDamage: 'Crit Damage',
+  atkSpeed: 'Atk Speed', bossDmg: 'Boss Damage', defesa: 'Defense', regen: 'Regen',
+  lumens: 'Lumens', xp: 'XP', materiais: 'Materials',
 };
-// flat do afixo (CP-4): nível × flatPerLevel × rarityMult × (secundário? secondaryExp)
-function affixFlat(type, level, rarity, isSec) {
-  const per = GEAR.flatPerLevel[type] || 0;
-  return level * per * GEAR.rarityMult[rarity] * (isSec ? GEAR.secondaryExp : 1);
-}
-// gain de um multiplicador em +% (sem ".0" sobrando), NUNCA "×1"
-const affGain = (m) => `+${String(formatNumber((m - 1) * 100)).replace(/\.0$/, '')}%`;
 
-// descritor "per N levels" (estilo Gaiadon): escolhe N pra o número ficar legível
-function perN(ratePerLevel, suffix = '', prefix = '+') {
-  for (const n of [1, 5, 25, 100, 1000, 10000, 100000]) {
-    if (ratePerLevel * n >= 0.1) {
-      const val = String(formatNumber(ratePerLevel * n)).replace(/\.0$/, '');
-      return `${prefix}${val}${suffix} per ${n === 1 ? 'level' : `${formatNumber(n)} levels`}`;
-    }
-  }
-  return `${prefix}${formatNumber(ratePerLevel * 1e6)}${suffix} per 1M levels`;
+function fmtAffix(a) {
+  const L = AFFIX_LABEL[a.type] || a.type;
+  if (a.type === 'atkSpeed') return `+${a.value.toFixed(2)}/s ${L}`;
+  if (a.type === 'regen') return `+${(a.value * 100).toFixed(2)}%/s ${L}`;
+  return `+${(a.value * 100).toFixed(1)}% ${L}`;
 }
 
-// Multiplicador GLOBAL de level-up (aplica a qualquer slot)
-const MULTS = [1, 10, 100, 1000, 100000];
-let mult = 100;
-
-function slotMarkup(def) {
-  return `
-    <div class="gr-slot" data-key="${def.key}">
-      <span class="gr-slot-box">
-        <span class="gr-slot-lvl" id="gr-lvl-${def.key}"></span>
-        <span class="gr-slot-art" id="gr-art-${def.key}"></span>
-        <i class="gr-slot-frame"></i>
-        <div class="gr-tip" id="gr-tip-${def.key}"></div>
-      </span>
-      <span class="gr-slot-actions">
-        <button type="button" class="gr-slot-up" id="gr-up-${def.key}">Level up</button>
-        <span class="gr-slot-cost" id="gr-cost-${def.key}"></span>
-      </span>
+function itemCard(it, { equipped = false } = {}) {
+  const affs = it.affixes.map((a) => `<li class="${a.secondary ? 'sec' : 'pri'}">${fmtAffix(a)}</li>`).join('');
+  const btns = equipped ? '' : `
+    <div class="inv-btns">
+      <button type="button" class="inv-equip" data-id="${it.id}">Equip</button>
+      <button type="button" class="inv-discard" data-id="${it.id}">Discard</button>
     </div>`;
+  return `<div class="inv-card r-${it.rarity}">
+    <div class="inv-card-h"><b>${SLOT_NAME[it.slot]}</b><span class="inv-rar">${RARITY_NAMES[it.rarity]}</span></div>
+    <ul class="inv-affs">${affs}</ul>${btns}
+  </div>`;
 }
-
-// Afixos exibíveis: cada um vira { val, label, per (descritor por nível), primary }.
-// Afixos de stat (dano/HP/APS/defesa/regen) viram 2 linhas: FLAT (base) e % (multiplicador).
-function affixEntries(def, piece, state) {
-  const lvl = piece.level, rar = piece.rarity, rm = GEAR.rarityMult[rar];
-  const out = [];
-  const add = (type, isSec) => {
-    const w = isSec ? GEAR.secondaryExp : 1;
-    const prim = !isSec;
-    if (type === 'aps') {
-      // APS é saturante (não-linear) → mostra o GANHO REAL de velocidade (% mais rápido),
-      // não o "30%" cru que não multiplicava. Só no primário (Amuleto = fonte do APS).
-      if (!prim) return; // secundário de aps já está somado no total do Amuleto
-      const pctFaster = state ? (apsBonus(state) / COMBAT.baseAPS) * 100 : 0;
-      out.push({ val: `+${pctFaster.toFixed(0)}%`, label: 'attack speed', per: '', primary: true });
-      return;
-    }
-    if (type === 'crit') {
-      out.push({ val: `+${formatNumber(critOf(lvl, rar) * w * 100)}%`, label: 'crit rate',
-        per: perN(GEAR.critPerLevel * rm * w * 100, '%'), primary: prim });
-      return;
-    }
-    if (type === 'critDmg') {
-      out.push({ val: `+${formatNumber(critDmgOf(lvl, rar) * w * 100)}%`, label: 'crit dmg',
-        per: perN(GEAR.critDmgPerLevel * rm * w * 100, '%'), primary: prim });
-      return;
-    }
-    const label = AFFIX_LABELS[type];
-    // 1) Primary (flat) — se a peça tiver flat nesse tipo
-    if ((GEAR.flatPerLevel[type] || 0) > 0) {
-      out.push({ val: `+${formatNumber(affixFlat(type, lvl, rar, isSec))}`, label,
-        per: perN(GEAR.flatPerLevel[type] * rm * w), primary: prim });
-    }
-    if (isSec) {
-      // secundário: contribuição combinada como % (NUNCA ×) — afixo do tier.
-      // "bonus" deixa claro que é MULTIPLICADOR, não valor flat.
-      out.push({ val: `+${formatNumber((secondaryMult(lvl, rar) - 1) * 100)}%`, label: `${label} bonus`, per: '', primary: false });
-    } else {
-      // primário: 2 afixos = FLAT (acima, valor base) + % (aqui, multiplicador).
-      out.push({ val: `+${formatNumber(lvl * GEAR.bonusRate * rm * 100)}%`, label: `${label} bonus`,
-        per: perN(GEAR.bonusRate * rm * 100, '%'), primary: true });
-    }
-  };
-  add(def.primary, false);
-  // Mostra SÓ os afixos já LIBERADOS (ativos pela raridade); os bloqueados aparecem
-  // conforme a raridade sobe (sem listar os travados).
-  for (const sec of activeSecondaries(def, rar)) add(sec, true);
-  return out;
-}
-const multLabel = (m) => (m >= 100000 ? '×100K' : `×${m}`);
 
 export function buildGearView(root, state) {
   root.classList.remove('placeholder');
-  root.classList.add('gear');
+  root.classList.add('gearx');
   root.innerHTML = `
-    <div class="gr-screen"></div>
+    <div class="gx-wrap">
+      <section class="gx-col gx-equipped">
+        <h3>Equipped</h3>
+        <div class="gx-slots" id="gx-equipped"></div>
+        <div class="gx-bonus" id="gx-bonus"></div>
+      </section>
+      <section class="gx-col gx-inv">
+        <h3>Inventory (<span id="gx-invn">0</span>)</h3>
+        <div class="gx-list" id="gx-inv"></div>
+      </section>
+    </div>`;
 
-    <aside class="gr-summary">
-      <h3>Equipment Bonuses</h3>
-      <div class="gr-breakdown" id="gr-breakdown"></div>
-      <p class="gr-note">Raise rarity at The Forge.</p>
-    </aside>
-
-    <div class="gr-slots-col side-left">${SLOT_LAYOUT.left.map((k) => slotMarkup(pieceDef(k))).join('')}</div>
-    <div class="gr-slots-col side-right">${SLOT_LAYOUT.right.map((k) => slotMarkup(pieceDef(k))).join('')}</div>
-
-    <!-- Identidade do Armeiro, fixada aos pés (mesmo estilo do nameplate do Maël) -->
-    <div class="gr-npc-id">
-      <div class="gr-npc-text">
-        <div class="gr-npc-name">Lucius</div><!-- TODO(canon): ratificar nome no lore bible -->
-        <div class="gr-npc-title">Armorer of the Ordre</div>
-      </div>
-    </div>
-
-    <div class="gr-multbar">
-      <span class="gr-multbar-l">Equipment level</span>
-      <div class="gr-mults" id="gr-mults">
-        ${MULTS.map((m) => `<button type="button" data-m="${m}">${multLabel(m)}</button>`).join('')}
-        <button type="button" data-m="max" class="gr-max">LEVEL MAX</button>
-      </div>
-    </div>
-  `;
-
-  // o botão Level up de cada slot upa a peça com o multiplicador global
-  root.querySelectorAll('.gr-slot').forEach((el) =>
-    el.querySelector('.gr-slot-up').addEventListener('click', () => {
-      buyLevels(state, el.dataset.key, mult === 'max' ? 1e9 : mult);
-      renderGear(state);
-    }));
-
-  // barra de multiplicador (global)
-  root.querySelectorAll('.gr-mults button').forEach((b) => {
-    b.classList.toggle('active', String(mult) === b.dataset.m);
-    b.addEventListener('click', () => {
-      mult = b.dataset.m === 'max' ? 'max' : Number(b.dataset.m);
-      root.querySelectorAll('.gr-mults button').forEach((x) => x.classList.toggle('active', x === b));
-      renderGear(state);
-    });
+  // Delegação dos botões do inventário (equipar / descartar).
+  root.querySelector('#gx-inv').addEventListener('click', (e) => {
+    const eq = e.target.closest('.inv-equip');
+    const dc = e.target.closest('.inv-discard');
+    if (eq) { equipItem(state, Number(eq.dataset.id)); renderGear(state); }
+    else if (dc) { discardItem(state, Number(dc.dataset.id)); renderGear(state); }
   });
+
+  renderGear(state);
 }
 
 export function renderGear(state) {
-  // Breakdown POR PEÇA: lista cada afixo LIBERADO (primário flat+% + secundários
-  // ativos) com seu valor. Mais detalhado que o agregado por stat.
-  const bd = $('gr-breakdown');
-  if (bd) {
-    // só os bônus liberados (sem nome da peça nem raridade) — 1 linha por afixo
-    bd.innerHTML = GEAR.pieces.map((def) =>
-      affixEntries(def, state.gear[def.key], state).map((e) =>
-        `<li><b>${e.val}</b> <span>${e.label}</span></li>`).join('')
-    ).join('');
+  const eqEl = document.getElementById('gx-equipped');
+  if (eqEl) {
+    eqEl.innerHTML = SLOTS.map((slot) => {
+      const it = state.equipped[slot];
+      return it
+        ? itemCard(it, { equipped: true })
+        : `<div class="inv-card empty"><div class="inv-card-h"><b>${SLOT_NAME[slot]}</b><span class="inv-rar">—</span></div><p class="inv-empty">empty</p></div>`;
+    }).join('');
   }
 
-  for (const def of GEAR.pieces) {
-    const slot = document.querySelector(`.gr-slot[data-key="${def.key}"]`);
-    if (!slot) continue;
-    const piece = state.gear[def.key];
-    const rar = rarityName(piece.rarity);
-    const capped = atLevelCap(piece, state);
-    slot.className = `gr-slot tier-${rar}${capped ? ' capped' : ''}`;
+  const invEl = document.getElementById('gx-inv');
+  if (invEl) {
+    const inv = [...state.inventory].sort((a, b) => b.rarity - a.rarity || a.slot.localeCompare(b.slot));
+    invEl.innerHTML = inv.length
+      ? inv.map((it) => itemCard(it)).join('')
+      : '<p class="inv-empty">No items yet — kill mobs to find gear.</p>';
+  }
 
-    const art = $(`gr-art-${def.key}`);
-    if (art && art.dataset.rar !== rar) {
-      art.dataset.rar = rar;
-      art.innerHTML = picture(`gear.${def.key}_${rar}`, { alt: def.name });
-    }
-    $(`gr-lvl-${def.key}`).textContent = `LVL ${formatNumber(piece.level)}`;
-    const tip = $(`gr-tip-${def.key}`);
-    if (tip) {
-      tip.innerHTML = `
-        <h4 class="gr-tip-name r-${rar}">${def.name}</h4>
-        <div class="gr-tip-sub">${GEAR_RARITY_LABELS[piece.rarity]} ${SLOT_EN[def.slot]} · Lv ${formatNumber(piece.level)}</div>
-        <div class="gr-tip-affixes">
-          ${affixEntries(def, piece, state).map((e) => e.locked
-            ? `<div class="gr-aff locked"><span class="gr-aff-v">🔒</span> <span class="gr-aff-l">${e.label}</span>`
-              + `<i class="gr-aff-per">${e.unlock}</i></div>`
-            : `<div class="gr-aff ${e.primary ? 'primary' : ''}">`
-              + `<span class="gr-aff-v">${e.val}</span> <span class="gr-aff-l">${e.label}</span>`
-              + `<i class="gr-aff-per">${e.per}</i></div>`).join('')}
-        </div>`;
-    }
-    const cost = levelCost(piece);
-    const afford = state.lumens >= cost;
-    const upBtn = $(`gr-up-${def.key}`);
-    upBtn.textContent = capped ? 'Max' : 'Level up';
-    upBtn.disabled = capped || !afford;
-    const costEl = $(`gr-cost-${def.key}`);
-    costEl.innerHTML = capped
-      ? `<span class="gr-cost-max">${GEAR_RARITY_LABELS[piece.rarity]} max</span>`
-      : `<img class="gr-cost-ic" src="eclats/offline/icons/lumens.png" alt=""><span>${formatNumber(cost)}</span>`;
-    slot.classList.toggle('afford', afford && !capped);
-    slot.classList.toggle('capped', capped);
+  const n = document.getElementById('gx-invn');
+  if (n) n.textContent = state.inventory.length;
+
+  const bonus = document.getElementById('gx-bonus');
+  if (bonus) {
+    const rows = [
+      ['Damage', `×${gearDamageMult(state).toFixed(2)}`],
+      ['HP', `×${gearHpMult(state).toFixed(2)}`],
+      ['Crit Chance', `+${(gearCritAdd(state) * 100).toFixed(1)}%`],
+      ['Crit Damage', `+${(gearCritDmgAdd(state) * 100).toFixed(0)}%`],
+      ['Atk Speed', `+${gearApsFlat(state).toFixed(2)}/s`],
+      ['Defense', `+${((gearDefesaMult(state) - 1) * 100).toFixed(1)}%`],
+      ['Lumens', `×${gearLumensMult(state).toFixed(2)}`],
+      ['XP', `×${gearXpMult(state).toFixed(2)}`],
+      ['Boss Dmg', `+${((gearBossDmgMult(state) - 1) * 100).toFixed(0)}%`],
+    ];
+    bonus.innerHTML = '<h4>Total bonuses</h4>' + rows.map(([k, v]) => `<div class="gx-brow"><span>${k}</span><b>${v}</b></div>`).join('');
   }
 }
