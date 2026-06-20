@@ -10,6 +10,7 @@ import { combatTick, resetPack, updateUnlockByLevel } from './game/combat.js';
 import { playerHpMax, runLevel, damagePerHit, currentAPS, levelXpInfo } from './game/stats.js';
 import { rollItem, equipItem, gearDamageMult, gearHpMult, upgradeItem, rarityUpItem, forgeItem, refineMat } from './game/gear.js';
 import { canConverge, doConverge, convGateLevel } from './game/convergence.js';
+import { buyNode, nodeCost, nodeRank, NODE_IDS } from './game/passives.js';
 import { setupUI, renderUI } from './ui/ui.js';
 
 // Carrega o save (se houver) e reconstrói o runtime.
@@ -48,6 +49,10 @@ window.eclatsDebug = () => ({
   gate: convGateLevel(state.convergences), canConverge: canConverge(state),
 });
 window.eclatsConverge = () => doConverge(state);
+// CP-7: passivas
+window.eclatsPoints = (n = 5000) => { state.convPoints += n; return state.convPoints; };
+window.eclatsBuy = (id, n = 1) => { let k = 0; for (let i = 0; i < n; i++) if (buyNode(state, id)) k++; return { bought: k, rank: nodeRank(state, id), nextCost: nodeCost(state, id), convPoints: state.convPoints }; };
+window.eclatsPassives = () => Object.fromEntries(NODE_IDS.map((id) => [id, nodeRank(state, id)]));
 // Hooks de teste do gear (CP-4a; UI vem no CP-4b):
 window.eclatsDrop = (rarity = 2, slot = 'edge') => { state.inventory.push(rollItem(state, slot, rarity, state.subarea)); return state.inventory.length; };
 window.eclatsInv = () => state.inventory.map((it) => ({ id: it.id, slot: it.slot, rar: it.rarity, affixes: it.affixes.map((a) => `${a.type}=${(a.value * 100).toFixed(1)}%`) }));

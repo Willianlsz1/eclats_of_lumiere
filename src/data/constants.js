@@ -395,5 +395,5 @@ export const TICK_SECONDS = 0.1;     // tick fixo de 100ms
 export const MAX_CATCHUP_TICKS = 50; // teto de catch-up por frame (ausências longas: offline §15 no reload)
 export const AUTOSAVE_MS = 10_000;
 export const SAVE_KEY = 'eclats_save_v1';
-export const SCHEMA_VERSION = 6; // v6 (14/jun): modelo Map 1 — gear 2 afixos + cap 1000 + custo/conv novos (descarta saves antigos incompatíveis)
+export const SCHEMA_VERSION = 7; // v7 (redesign Mapa 1, CP-4/7): inventario+equipped, passivas por nó, Convergence/upgrade novos (descarta saves antigos)
 export const NUMBER_CAP = 1e100;     // teto do jogo base — cabe no float nativo

@@ -8,7 +8,7 @@ import {
   gearDamageMult, gearHpMult, gearDefesaMult, gearCritAdd, gearCritDmgAdd,
   gearApsFlat, gearDamageFlat, gearHpFlat,
 } from './gear.js';
-import { passiveDmgMult, passiveHpMult, passiveCritAdd, passiveApsMult } from './passives.js';
+import { passiveDmgMult, passiveHpMult, passiveCritAdd, passiveApsMult, passiveCritDmgMult, passiveDefesaAdd } from './passives.js';
 
 // ───── Nível (motor de stat base) ─────
 // O nível vem do XP da RUN (xpRun). level = (xpRun / curveDiv)^curveExp. Reseta na Convergence.
@@ -58,7 +58,7 @@ export function critChance(state) {
   return Math.min(1, critChanceRaw(state));
 }
 export function critDamageMult(state) {
-  return CRIT.baseDamageMult + gearCritDmgAdd(state);
+  return (CRIT.baseDamageMult + gearCritDmgAdd(state)) * passiveCritDmgMult(state);
 }
 
 // ───── Dano e HP (base FLAT: nível + flat do gear) × multiplicadores ─────
@@ -78,8 +78,8 @@ export function dps(state) {
 
 // ───── Defesa / mitigação ─────
 export function veilFactor(state) {
-  const fromVeil = Math.max(0, gearDefesaMult(state) - 1);
-  return Math.min(DEFENSE.veilCap, fromVeil);
+  const fromVeil = Math.max(0, gearDefesaMult(state) - 1) + passiveDefesaAdd(state);
+  return Math.min(0.75, fromVeil); // teto de mitigação 75% (design CP-7)
 }
 export function playerDefesa(state) {
   return playerHpMax(state) * veilFactor(state);

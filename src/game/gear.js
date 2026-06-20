@@ -5,6 +5,7 @@
 // Multiplicadores de gear lidos do EQUIPADO (state.equipped) por tipo de afixo.
 
 import { GEAR, UPGRADE } from '../data/constants.js';
+import { passiveMaterialMult } from './passives.js';
 
 const rnd = (lo, hi) => lo + Math.random() * (hi - lo);
 
@@ -110,7 +111,7 @@ export function discardItem(state, itemId) {
   if (idx < 0) return false;
   const item = state.inventory.splice(idx, 1)[0];
   const tier = Math.min(item.rarity, state.materiais.length - 1);
-  state.materiais[tier] += DISCARD_MAT[item.rarity] || 1;
+  state.materiais[tier] += (DISCARD_MAT[item.rarity] || 1) * passiveMaterialMult(state);
   return true;
 }
 

@@ -36,12 +36,12 @@ export function createInitialState() {
     // Gold Stats (§5) — resetam na Convergence (CP-E)
     stats: { str: 0, vit: 0, agi: 0, lck: 0, frt: 0, wis: 0 },
 
-    // Passivas (§7) — 3 árvores × 15 níveis (0 = bloqueada). PERSISTE sempre;
-    // desbloqueia na 1ª Convergence. Índice = ordem canônica do GDD.
+    // Passivas (CP-7): rank por nó (0 = não comprado). Compradas com Pontos de
+    // Convergence; persistem sempre. 12 nós menores (ver src/game/passives.js).
     passives: {
-      eclat:    new Array(15).fill(0),
-      vestige:  new Array(15).fill(0),
-      fracture: new Array(15).fill(0),
+      dmg: 0, critChance: 0, critDamage: 0, atkSpeed: 0, bossDmg: 0,
+      hp: 0, defesa: 0, regen: 0,
+      lumens: 0, xp: 0, materiais: 0, faro: 0,
     },
 
     // Gear (§13) — 6 peças fixas, cada uma com nível + raridade. PERSISTE sempre
@@ -116,9 +116,8 @@ export function applySnapshot(snap) {
   if (Array.isArray(snap.materiais)) for (let i = 0; i < state.materiais.length; i++) state.materiais[i] = snap.materiais[i] ?? 0;
   if (snap.stats) Object.assign(state.stats, snap.stats);
   if (snap.auto) state.auto = { stats: !!snap.auto.stats, converge: !!snap.auto.converge, progress: !!snap.auto.progress };
-  if (snap.passives) for (const tree of Object.keys(state.passives)) {
-    const arr = snap.passives[tree];
-    if (Array.isArray(arr)) for (let i = 0; i < state.passives[tree].length; i++) state.passives[tree][i] = arr[i] ?? 0;
+  if (snap.passives) for (const id of Object.keys(state.passives)) {
+    if (typeof snap.passives[id] === 'number') state.passives[id] = snap.passives[id];
   }
   if (snap.gear) for (const key of Object.keys(state.gear)) {
     const g = snap.gear[key];

@@ -4,15 +4,14 @@
 
 import { ECONOMY } from '../data/constants.js';
 import { gearLumensMult, gearXpMult } from './gear.js';
-import { passiveEcoMult } from './passives.js';
+import { passiveLumensMult, passiveXpMult } from './passives.js';
 import { convMult, playerHpMax } from './stats.js';
 import { getCurrentMap, areaFactor } from './enemies.js';
 
 export function awardKill(state, mob) {
   const cm = convMult(state);
-  const eco = passiveEcoMult(state);
-  state.lumens += mob.hpMax * ECONOMY.lumRatio * cm * gearLumensMult(state) * eco;
-  const xp = mob.hpMax * ECONOMY.xpRatio * cm * gearXpMult(state) * eco;
+  state.lumens += mob.hpMax * ECONOMY.lumRatio * cm * gearLumensMult(state) * passiveLumensMult(state);
+  const xp = mob.hpMax * ECONOMY.xpRatio * cm * gearXpMult(state) * passiveXpMult(state);
   state.xpTotal += xp;
   state.xpRun += xp;
   state.killsTotal += 1;
@@ -27,8 +26,7 @@ export function perKillEstimate(state, subarea) {
   const f = areaFactor(map, subarea);
   const avgHp = playerHpMax(state) * f * 1.6; // roll médio (1.3..1.9)
   const cm = convMult(state);
-  const eco = passiveEcoMult(state);
-  const lumens = avgHp * ECONOMY.lumRatio * cm * gearLumensMult(state) * eco;
-  const xp = avgHp * ECONOMY.xpRatio * cm * gearXpMult(state) * eco;
+  const lumens = avgHp * ECONOMY.lumRatio * cm * gearLumensMult(state) * passiveLumensMult(state);
+  const xp = avgHp * ECONOMY.xpRatio * cm * gearXpMult(state) * passiveXpMult(state);
   return { lumens, xp, vestiges: 0, tier: 0, matChance: 0, matPerDrop: 0 };
 }

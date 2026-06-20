@@ -5,6 +5,7 @@
 
 import { MAPS, ENEMY_REL, COMBAT } from '../data/constants.js';
 import { playerHpMax, runLevel } from './stats.js';
+import { passiveEliteBonus } from './passives.js';
 
 let nextId = 1;
 const rnd = (lo, hi) => lo + Math.random() * (hi - lo);
@@ -63,7 +64,7 @@ export function spawnBoss(state, map, subarea) {
 
 // Chance de o mob ser elite (base + bônus de Faro; passiva ainda stub → 0).
 function rollElite(state) {
-  const chance = ENEMY_REL.eliteChance + (state.eliteBonus || 0);
+  const chance = ENEMY_REL.eliteChance + passiveEliteBonus(state);
   return Math.random() < chance;
 }
 
