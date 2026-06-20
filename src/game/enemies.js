@@ -1,93 +1,76 @@
-// Malha geométrica — GDD §3.
-// Bounds de level por subárea: lvl_lo × r^s, com r = (lvl_hi/lvl_lo)^(1/5).
-// HP e dano interpolados geometricamente no log do level.
+// Inimigos — CP-3 (redesign Mapa 1): força RELATIVA ao player.
+//   HP do mob = HP_player × fatorÁrea × rand(1.3–1.9)
+//   Dano/s    = HP_player × 0.03 × fatorÁrea  (por mob)
+// Elite: chance baixa (+ Faro), +HP/+dano. Boss: invocado pelo combat ao bater o threshold.
 
-import { MAPS, COMBAT } from '../data/constants.js';
+import { MAPS, ENEMY_REL, COMBAT } from '../data/constants.js';
+import { playerHpMax, runLevel } from './stats.js';
 
-let nextEnemyId = 1;
+let nextId = 1;
+const rnd = (lo, hi) => lo + Math.random() * (hi - lo);
 
-// Razão geométrica entre subáreas do mapa
-function subareaRatio(map) {
-  return (map.lvlHi / map.lvlLo) ** (1 / map.subareaCount);
-}
-
-// Range de level [lo, hi] da subárea (1-indexada)
-export function subareaLevelRange(map, subarea) {
-  const r = subareaRatio(map);
-  return {
-    lo: map.lvlLo * r ** (subarea - 1),
-    hi: map.lvlLo * r ** subarea,
-  };
-}
-
-// Interpolação geométrica no log do level: valor(L) = lo × (hi/lo)^t
-// t = (log L − log lvl_lo) / (log lvl_hi − log lvl_lo)
-function interp(map, level, lo, hi) {
-  const t = (Math.log(level) - Math.log(map.lvlLo)) / (Math.log(map.lvlHi) - Math.log(map.lvlLo));
-  return lo * (hi / lo) ** t;
-}
-
-export function hpForLevel(map, level) {
-  return interp(map, level, map.hpLo, map.hpHi);
-}
-
-export function dmgForLevel(map, level) {
-  return interp(map, level, map.dmgLo, map.dmgHi);
-}
-
-// Level sorteado uniformemente no espaço log do range da subárea (malha geométrica)
-function rollLevel(map, subarea) {
-  const { lo, hi } = subareaLevelRange(map, subarea);
-  const level = lo * (hi / lo) ** Math.random();
-  return Math.max(1, Math.round(level));
-}
-
-export function spawnMob(map, subarea) {
-  const level = rollLevel(map, subarea);
-  const hpMax = hpForLevel(map, level);
-  const id = nextEnemyId++;
-  const k = id % map.enemyNames.length; // trio do mapa
-  return {
-    id,
-    name: map.enemyNames[k],
-    art: map.enemyArts[k],
-    frame: 'frames.enemy_universal', // moldura comum dos inimigos (§8d) — espinhos prateados
-    level,
-    hpMax,
-    hp: hpMax,
-    dmg: dmgForLevel(map, level), // dano por segundo causado ao jogador
-  };
-}
-
-// Boss da subárea (GDD §3/§4): level máximo da subárea, HP ×15, dano ×3.
-// Sub 5 = boss final do mapa (arte/nome canônicos); subs 1-4 = Guardião (placeholder).
-export function spawnBoss(map, subarea) {
-  const level = Math.round(subareaLevelRange(map, subarea).hi);
-  const hpMax = hpForLevel(map, level) * COMBAT.bossHpMult;
-  const isFinal = subarea === map.subareaCount;
-  return {
-    id: nextEnemyId++,
-    name: isFinal ? map.bossName : `Guardian — Sub-area ${subarea}`,
-    art: isFinal ? map.bossArt : map.guardianArt,
-    // boss final = moldura própria do mapa (§8d); guardião = moldura comum
-    frame: isFinal ? `frames.boss_m${map.id}` : 'frames.enemy_universal',
-    isBoss: true,
-    isFinalBoss: isFinal,
-    level,
-    hpMax,
-    hp: hpMax,
-    dmg: dmgForLevel(map, level) * COMBAT.bossDmgMult,
-  };
-}
-
-// Pack completo da subárea atual (tamanhos do GDD §4)
-export function spawnPack(map, subarea) {
-  const size = map.packSizes[subarea - 1];
-  return Array.from({ length: size }, () => spawnMob(map, subarea));
-}
-
-// Mapa atual conforme state.map (1-indexado). Aceita state ou nada (default Map 1).
+// Mapa atual (1-indexado). Aceita state ou nada (default Map 1).
 export function getCurrentMap(state) {
   const id = state && state.map ? state.map : 1;
   return MAPS[id - 1] || MAPS[0];
+}
+
+// Fator de força da área (1.1 → 1.9). Índice = área − 1.
+export const areaFactor = (map, subarea) => (map.areaFactor && map.areaFactor[subarea - 1]) || 1;
+
+// Faixa de nível p/ exibição (gate da área .. gate da próxima).
+export function subareaLevelRange(map, subarea) {
+  const g = map.gates || [];
+  return { lo: g[subarea - 1] ?? 1, hi: g[subarea] ?? map.lvlHi };
+}
+
+// Nome/arte do trio do mapa (por id).
+function flavor(map, id) {
+  const k = id % map.enemyNames.length;
+  return { name: map.enemyNames[k], art: map.enemyArts[k] };
+}
+
+// Mob comum (ou elite) — força relativa ao player atual.
+export function spawnMob(state, map, subarea, { elite = false } = {}) {
+  const hpP = playerHpMax(state);
+  const f = areaFactor(map, subarea);
+  const hpMax = hpP * f * rnd(ENEMY_REL.hpFactorMin, ENEMY_REL.hpFactorMax) * (elite ? ENEMY_REL.eliteHpMult : 1);
+  const dmg = hpP * ENEMY_REL.dmgFrac * f * (elite ? ENEMY_REL.eliteDmgMult : 1);
+  const id = nextId++;
+  const { name, art } = flavor(map, id);
+  return {
+    id,
+    name: elite ? `Elite ${name}` : name,
+    art,
+    frame: 'frames.enemy_universal',
+    level: runLevel(state),
+    hpMax, hp: hpMax, dmg,
+    isElite: elite,
+  };
+}
+
+// Boss — HP/dano multiplicados (COMBAT.bossHpMult/bossDmgMult).
+export function spawnBoss(state, map, subarea) {
+  const m = spawnMob(state, map, subarea);
+  m.hpMax *= COMBAT.bossHpMult; m.hp = m.hpMax;
+  m.dmg *= COMBAT.bossDmgMult;
+  m.isBoss = true;
+  m.name = map.bossName || 'Guardian';
+  m.art = map.bossArt || m.art;
+  m.frame = `frames.boss_m${map.id}`;
+  return m;
+}
+
+// Chance de o mob ser elite (base + bônus de Faro; passiva ainda stub → 0).
+function rollElite(state) {
+  const chance = ENEMY_REL.eliteChance + (state.eliteBonus || 0);
+  return Math.random() < chance;
+}
+
+// Pack da área (tamanho por packSizes; cada mob rola elite independente).
+export function spawnPack(state, map, subarea) {
+  const size = (map.packSizes && map.packSizes[subarea - 1]) || 1;
+  const pack = [];
+  for (let i = 0; i < size; i++) pack.push(spawnMob(state, map, subarea, { elite: rollElite(state) }));
+  return pack;
 }

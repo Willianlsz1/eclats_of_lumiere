@@ -1,27 +1,28 @@
-// Loop de simulação — tick FIXO (100ms) + render por frame (CP-1).
-// Acumula o tempo real e roda passos fixos; teto de catch-up evita travar
-// após uma aba ficar em 2º plano por muito tempo.
+// Loop de simulação — tick FIXO (100ms) via setInterval.
+// setInterval CONTINUA rodando com a aba em 2º plano (o navegador só afrouxa o
+// intervalo p/ ~1s); o acumulador de tempo real recupera os passos perdidos
+// (catch-up) sem drift. Para ausências longas o offline catch-up (CP-8) assume —
+// por isso o teto MAX_CATCHUP.
 
 const TICK_MS = 100;          // passo de simulação fixo
 const DT = TICK_MS / 1000;    // dt em segundos
-const MAX_CATCHUP = 50;       // máx. de passos por frame (ausências longas)
+const MAX_CATCHUP = 100;      // máx. de passos por disparo (~10s) — além disso, offline (CP-8)
 
 export function startLoop(onTick) {
   let last = performance.now();
-  let acc = 0;
 
-  function frame(now) {
-    acc += now - last;
-    last = now;
+  function step() {
+    const now = performance.now();
+    let elapsed = now - last;
     let steps = 0;
-    while (acc >= TICK_MS && steps < MAX_CATCHUP) {
+    while (elapsed >= TICK_MS && steps < MAX_CATCHUP) {
       onTick(DT);
-      acc -= TICK_MS;
+      elapsed -= TICK_MS;
+      last += TICK_MS;   // carrega o resto (<TICK_MS) p/ o próximo disparo, sem drift
       steps += 1;
     }
-    if (steps >= MAX_CATCHUP) acc = 0; // descarta o excedente (evita espiral)
-    requestAnimationFrame(frame);
+    if (steps >= MAX_CATCHUP) last = now; // descarta o excedente (evita espiral)
   }
 
-  requestAnimationFrame(frame);
+  setInterval(step, TICK_MS);
 }

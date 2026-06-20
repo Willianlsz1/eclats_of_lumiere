@@ -21,13 +21,20 @@ export const COMBAT = {
                           // p/ a morte do ÚLTIMO mob chegar ANTES da próxima onda surgir.
 };
 
-// §12 — Lumens · §6 — XP
+// §12 — Lumens · §6 — XP — ✅ REDESIGN Mapa 1: reward atrelado ao HP do mob.
 export const ECONOMY = {
-  goldRatio: 0.10,  // lumens_por_kill = mob_hp × 0.10 (× convMult; sem frt — CP-3)
-  xpRatio: 0.08,    // xp_por_kill     = mob_hp × 0.08 (× convMult; sem wis — CP-3)
-  // ✅ Map 1 (14/jun): PISO fixo de lumens/kill. Pesa cedo (mob vale pouco) e some tarde
-  // (mob vale milhares) → 1º nível comprável em ~1min (era ~9min). Acelera o early (ok, Willian).
-  lumensFloor: 30000,  // rescale ×500 (acompanha o mob_hp ×500; pacing idêntico)
+  lumRatio: 0.25,  // Lumens por kill = HP_mob × 0.25 (× convMult × gear × passiva)
+  xpRatio: 0.10,   // XP por kill     = HP_mob × 0.10 (× convMult × gear × passiva)
+};
+
+// ✅ REDESIGN Mapa 1: inimigos RELATIVOS ao player (ver docs/eclats_mapa1_design_v1.md).
+//   HP do mob  = HP_player × fatorÁrea × rand(hpFactorMin..Max)
+//   Dano/s     = HP_player × dmgFrac × fatorÁrea  (por mob)
+//   Elite      = chance baixa (sobe por Faro), +HP/+dano (e +reward via HP maior)
+export const ENEMY_REL = {
+  hpFactorMin: 1.3, hpFactorMax: 1.9,
+  dmgFrac: 0.03,
+  eliteChance: 0.01, eliteHpMult: 2.5, eliteDmgMult: 1.5,
 };
 
 // CP-3 (redesign) — NÍVEL = motor de stat base (substitui os Gold Stats).

@@ -39,4 +39,6 @@ window.eclatsDebug = () => ({
   level: runLevel(state), subarea: state.subarea, unlocked: state.unlockedSubarea,
   hp: Math.round(playerHpMax(state)), dmg: Math.round(damagePerHit(state)),
   aps: +currentAPS(state).toFixed(2), xpToNext: Math.round(levelXpInfo(state).remaining),
+  lumens: Math.round(state.lumens), kills: state.killsTotal,
+  killsInArea: state.killsInSubarea, enemies: state.enemies.length, dead: state.player.dead,
 });
