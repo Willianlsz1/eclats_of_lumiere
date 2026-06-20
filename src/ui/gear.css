@@ -42,10 +42,8 @@
 .gr-breakdown li { display: flex; align-items: baseline; gap: 8px;
   background: var(--panel-2); border: var(--border-soft); border-radius: var(--radius-sm);
   padding: 8px 12px; font-size: var(--fs-sm); font-variant-numeric: tabular-nums; }
-.gr-breakdown li b { color: var(--ink); font-weight: 700; }      /* base/flat = branco (ref.) */
+.gr-breakdown li b { color: var(--gold); font-weight: 700; }
 .gr-breakdown li span { color: var(--ink); }
-.gr-breakdown li i { margin-left: auto; font-style: normal; font-size: 12px; color: var(--faint); }
-.gr-breakdown li.bonus b { color: #6fdc8c; }                     /* camada bônus/multiplier = verde */
 
 /* ---------- centro: Armeiro (pés ancorados na base = plataforma) ---------- */
 /* ---------- slots (colunas flanqueando o Armeiro da arte) — frame dourado uniforme ---------- */
@@ -131,7 +129,6 @@
 .gr-aff-l { color: var(--ink); }
 .gr-aff-per { margin-left: auto; font-style: normal; font-size: 14px; color: var(--faint); }
 .gr-aff.primary .gr-aff-v { color: var(--gold); }
-.gr-aff.bonus .gr-aff-v { color: #6fdc8c; }   /* camada bônus/multiplier = verde (ref.) */
 /* afixo bloqueado: dimmed, mostra a raridade que destrava à direita */
 .gr-aff.locked { opacity: .5; }
 .gr-aff.locked .gr-aff-l { color: var(--dim); }

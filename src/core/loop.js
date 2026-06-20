@@ -1,26 +1,27 @@
-// Game loop: tick fixo de 100ms com acumulador.
-// O setInterval dispara perto de 100ms, mas o tempo real manda: o acumulador
-// converte o tempo decorrido em N ticks fixos, mantendo a simulação determinística.
+// Loop de simulação — tick FIXO (100ms) + render por frame (CP-1).
+// Acumula o tempo real e roda passos fixos; teto de catch-up evita travar
+// após uma aba ficar em 2º plano por muito tempo.
 
-import { TICK_SECONDS, MAX_CATCHUP_TICKS } from '../data/constants.js';
+const TICK_MS = 100;          // passo de simulação fixo
+const DT = TICK_MS / 1000;    // dt em segundos
+const MAX_CATCHUP = 50;       // máx. de passos por frame (ausências longas)
 
-export function startLoop(tickFn) {
+export function startLoop(onTick) {
   let last = performance.now();
-  let accumulator = 0;
+  let acc = 0;
 
-  setInterval(() => {
-    const now = performance.now();
-    accumulator += (now - last) / 1000;
+  function frame(now) {
+    acc += now - last;
     last = now;
-
-    let ticks = 0;
-    while (accumulator >= TICK_SECONDS && ticks < MAX_CATCHUP_TICKS) {
-      tickFn(TICK_SECONDS);
-      accumulator -= TICK_SECONDS;
-      ticks++;
+    let steps = 0;
+    while (acc >= TICK_MS && steps < MAX_CATCHUP) {
+      onTick(DT);
+      acc -= TICK_MS;
+      steps += 1;
     }
-    // Aba em background por muito tempo: descarta o excedente.
-    // Ausências longas são cobertas pelo progresso offline (§15) no reload.
-    if (ticks >= MAX_CATCHUP_TICKS) accumulator = 0;
-  }, TICK_SECONDS * 1000);
+    if (steps >= MAX_CATCHUP) acc = 0; // descarta o excedente (evita espiral)
+    requestAnimationFrame(frame);
+  }
+
+  requestAnimationFrame(frame);
 }

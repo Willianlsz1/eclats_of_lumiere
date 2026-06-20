@@ -12,12 +12,12 @@ import { formatNumber, formatMult } from '../core/format.js';
 import { picture } from '../data/assets.js';
 import {
   runLevel, dps, playerHpMax, currentAPS, critChance, critChanceRaw, critDamageMult,
-  convMult, convLumensMult, damagePerHit,
+  convMult, damagePerHit, playerDefesa, veilFactor,
 } from '../game/stats.js';
 import { gearDamageMult, gearHpMult, gearCritAdd, gearCritDmgAdd, gearApsMult, gearLumensMult, gearXpMult } from '../game/gear.js';
 import { passiveDmgMult, passiveHpMult, passiveCritAdd, passiveApsMult, passiveEcoMult } from '../game/passives.js';
 import { memoireDmgMult, memoireHpMult, memoireCritDmgMult, memoireLumensMult, memoireXpMult } from '../game/memoires.js';
-import { ascMult, despertarMult, currentRank, despertarCritRateAdd, despertarCritDmgAdd, despertarLumensMult, despertarXpMult } from '../game/ascension.js';
+import { ascMult, despertarMult, currentRank } from '../game/ascension.js';
 import { canConverge, doConverge, convGateLevel, convergeProgress } from '../game/convergence.js';
 import { renderConvergence } from './convergence.js';
 import { COMBAT, CRIT, LEVEL } from '../data/constants.js';
@@ -42,7 +42,7 @@ const ADDP = (label, frac) => ({ label, disp: `+${formatNumber(frac * 100)}%`, k
 // base FLAT de dano/HP do nível (CP-3): baseDmg + nível×perLevel
 const baseDamage = (s) => COMBAT.baseDmg + runLevel(s) * LEVEL.dmgPerLevel;
 const baseHp = (s) => COMBAT.playerBaseHp + runLevel(s) * LEVEL.hpPerLevel;
-const CONV_BONUS_PER = 0.20; // espelha CONVERGENCE.bonusPerConv (dano/HP, só display)
+const CONV_BONUS_PER = 0.15; // espelha CONVERGENCE.bonusPerConv (só display)
 
 // ───── catálogo de stats da ficha (modelo CP-3) ─────
 const STATS = {
@@ -93,7 +93,6 @@ const STATS = {
     breakdown: (s) => [
       { label: 'Base', disp: pct(CRIT.baseChance), kind: 'base' },
       ADDP('Gear (Grasp)', gearCritAdd(s)),
-      ADDP('Despertar', despertarCritRateAdd(s)),
       ADDP('Passives', passiveCritAdd(s)),
     ],
   },
@@ -107,7 +106,6 @@ const STATS = {
         { label: 'Base', disp: formatMult(CRIT.baseDamageMult), kind: 'base' },
         ADDP('Crit overflow', overflow * CRIT.overflowFactor),
         ADDP('Gear', gearCritDmgAdd(s)),
-        ADDP('Despertar', despertarCritDmgAdd(s)),
         M('Mémoire de la Forme', memoireCritDmgMult(s), true),
       ];
     },
@@ -126,14 +124,22 @@ const STATS = {
       M('Mémoires', memoireHpMult(s), true),
     ],
   },
+  defense: {
+    label: 'Defense (Veil)',
+    value: (s) => formatNumber(playerDefesa(s)),
+    note: 'Reduces the damage you take. Granted by the Veil affix on your Gear.',
+    breakdown: (s) => [
+      { label: 'HP Max', disp: formatNumber(playerHpMax(s)), kind: 'base' },
+      M('Veil mitigation', veilFactor(s), true),
+    ],
+  },
   lumensMult: {
     label: 'Lumens / kill',
-    value: (s) => gainPct(convLumensMult(s) * despertarLumensMult(s) * gearLumensMult(s) * passiveEcoMult(s) * memoireLumensMult(s)),
-    note: 'Multiplier on the Lumens (Gold) you earn from each kill.',
+    value: (s) => gainPct(convMult(s) * gearLumensMult(s) * passiveEcoMult(s) * memoireLumensMult(s)),
+    note: 'Multiplier on the Lumens you earn from each kill.',
     breakdown: (s) => [
       { label: 'Base', disp: formatMult(1), kind: 'base' },
-      M('Convergence', convLumensMult(s)),   // Gold: +0,5%/conv (canal próprio)
-      M('Despertar', despertarLumensMult(s)),
+      M('Convergence', convMult(s)),
       M('Gear', gearLumensMult(s), true),
       M('Passives', passiveEcoMult(s), true),
       M('Mémoires', memoireLumensMult(s), true),
@@ -141,11 +147,11 @@ const STATS = {
   },
   xpMult: {
     label: 'XP / kill',
-    value: (s) => gainPct(despertarXpMult(s) * gearXpMult(s) * passiveEcoMult(s) * memoireXpMult(s)),
-    note: 'Multiplier on the XP you earn from each kill. (Convergence does not boost XP.)',
+    value: (s) => gainPct(convMult(s) * gearXpMult(s) * passiveEcoMult(s) * memoireXpMult(s)),
+    note: 'Multiplier on the XP you earn from each kill.',
     breakdown: (s) => [
       { label: 'Base', disp: formatMult(1), kind: 'base' },
-      M('Despertar', despertarXpMult(s)),
+      M('Convergence', convMult(s)),
       M('Gear', gearXpMult(s), true),
       M('Passives', passiveEcoMult(s), true),
       M('Mémoires', memoireXpMult(s), true),
@@ -164,7 +170,7 @@ const STATS = {
   convergence: {
     label: 'Convergence',
     value: (s) => gainPct(convMult(s)),
-    note: 'A permanent boost to Damage & HP (+20% each per Convergence) and Gold (+0.5%). XP is unaffected.',
+    note: 'A permanent boost to Damage, HP, XP and Lumens. +15% per Convergence.',
     breakdown: (s) => [
       { label: 'Base', disp: formatMult(1), kind: 'base' },
       ADDP(`Convergences (${formatNumber(s.convergences)})`, CONV_BONUS_PER * s.convergences),
@@ -173,7 +179,7 @@ const STATS = {
 };
 
 const STAT_GROUPS = [
-  { title: 'Combat', ids: ['dmg', 'dps', 'aps', 'critRate', 'critDmg', 'hpMax'] },
+  { title: 'Combat', ids: ['dmg', 'dps', 'aps', 'critRate', 'critDmg', 'hpMax', 'defense'] },
   { title: 'Economy', ids: ['lumensMult', 'xpMult'] },
   { title: 'Progression', ids: ['level', 'convergence'] },
 ];
@@ -277,7 +283,7 @@ function convKeeps(state) {
 }
 
 // Monta os dados reais do overlay de Convergence a partir do state.
-export function convData(state) {
+function convData(state) {
   const lvl = runLevel(state);
   const gate = convGateLevel(state.convergences);
   return {
@@ -287,8 +293,8 @@ export function convData(state) {
     progressPct: Math.floor(convergeProgress(state) * 100),
     able: canConverge(state),
     gate: formatNumber(gate),
-    grant: '+20%',
-    grantTags: ['Damage', 'HP', '+0.5% Gold'],
+    grant: '+15%',
+    grantTags: ['Damage', 'HP', 'XP', 'Lumens'],
     // RESETA ao convergir: LVL (nível da run) + Lumens. MANTÉM: gear.
     returns: ['LVL', 'Lumens'],
     keeps: convKeeps(state),

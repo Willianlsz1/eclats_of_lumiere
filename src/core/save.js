@@ -1,53 +1,46 @@
-// Persistência em localStorage com versão de schema.
-// Autosave a cada 10s e no beforeunload.
+// Persistência em localStorage — schema versionado + autosave (CP-1).
 
-import { SAVE_KEY, SCHEMA_VERSION, AUTOSAVE_MS } from '../data/constants.js';
-import { toSnapshot, applySnapshot } from './state.js';
+import { SCHEMA_VERSION } from '../data/constants.js';
+import { applySnapshot, toSnapshot } from './state.js';
 
+const KEY = 'eclats_save';
+
+// Carrega e aplica o save (se houver). Devolve o snapshot bruto (ou null).
+export function load() {
+  try {
+    const raw = localStorage.getItem(KEY);
+    if (!raw) return null;
+    const snap = JSON.parse(raw);
+    // saves de schema incompatível são ignorados (recomeça limpo) — migração é CP próprio
+    if (snap.schemaVersion !== SCHEMA_VERSION) return null;
+    applySnapshot(snap);
+    return snap;
+  } catch {
+    return null;
+  }
+}
+
+// Grava o estado atual.
 export function save() {
   try {
-    // savedAt marca o momento do save — base do progresso offline (§15)
-    localStorage.setItem(SAVE_KEY, JSON.stringify({ ...toSnapshot(), savedAt: Date.now() }));
-  } catch (e) {
-    // localStorage cheio ou indisponível — não derruba o jogo
-    console.warn('Falha ao salvar:', e);
+    const snap = toSnapshot();
+    snap.savedAt = Date.now();
+    localStorage.setItem(KEY, JSON.stringify(snap));
+  } catch {
+    /* localStorage cheio/indisponível — ignora silenciosamente */
   }
 }
 
-// Retorna o snapshot carregado (já aplicado ao estado) ou null.
-export function load() {
-  let raw;
-  try {
-    raw = localStorage.getItem(SAVE_KEY);
-  } catch {
-    return null;
-  }
-  if (!raw) return null;
-  let snapshot;
-  try {
-    snapshot = JSON.parse(raw);
-  } catch {
-    console.warn('Save corrompido — começando do zero.');
-    return null;
-  }
-  if (snapshot.schemaVersion !== SCHEMA_VERSION) {
-    // Migrações entram aqui quando o schema evoluir; por ora, descarta.
-    console.warn(`Schema ${snapshot.schemaVersion} ≠ ${SCHEMA_VERSION} — save descartado.`);
-    return null;
-  }
-  applySnapshot(snapshot);
-  return snapshot;
-}
-
-export function setupAutosave() {
-  setInterval(save, AUTOSAVE_MS);
+let timer = null;
+// Liga o autosave periódico + salva ao fechar a aba.
+export function setupAutosave(intervalMs = 10000) {
+  if (timer) clearInterval(timer);
+  timer = setInterval(save, intervalMs);
   window.addEventListener('beforeunload', save);
 }
 
-// Apaga o save e recomeça do zero. Remove o listener de beforeunload pra o
-// autosave NÃO regravar o estado antigo antes do reload.
+// Apaga o save e recomeça do zero.
 export function resetSave() {
-  try { localStorage.removeItem(SAVE_KEY); } catch { /* indisponível */ }
-  window.removeEventListener('beforeunload', save);
-  window.location.reload();
+  localStorage.removeItem(KEY);
+  location.reload();
 }

@@ -1,8 +1,8 @@
 // Aba AWAKENING da tela Seeker — a "mudança de classe" (estilo Grand Chase).
 // Formato Gear/Forge: cena full-bleed (câmara de despertar) + resumo (esq) +
 // palco central com o CARD do tier + trilha dos 5 tiers (dir).
-// Gate REAL (recalibração 17-18/jun): Profundidade (liberar a Sub 7) + Kills (total) +
-// Nível (da run) + Materiais do Tier 1 (consumidos no ato). Botão "Awaken" → doDespertar.
+// Gate de 3 camadas (§8 redesign): Prova (Guardião Sub3) + Oferenda (Nitzotzot) +
+// Tributo (Vestiges). Botão "Awaken" → doDespertar + cerimônia (splash).
 //
 // Contrato: buildAwakenPane(root, state) monta uma vez; renderAwakenPane(state) por tick.
 
@@ -14,7 +14,7 @@ import {
   despertarTier, despertarMult, despertarReq,
   despertarProvaMet, canDespertar, doDespertar,
 } from '../game/ascension.js';
-import { damagePerHit, playerHpMax, runLevel } from '../game/stats.js';
+import { damagePerHit, playerHpMax } from '../game/stats.js';
 
 const $ = (id) => document.getElementById(id);
 const ROMAN = ['I', 'II', 'III', 'IV', 'V'];
@@ -68,10 +68,10 @@ export function buildAwakenPane(root, state) {
       <dl class="awk-totals">
         <div><dt>Damage</dt><dd id="awk-t-dmg">×1</dd></div>
         <div><dt>Vitality</dt><dd id="awk-t-hp">×1</dd></div>
-        <div><dt>Materials · T1</dt><dd id="awk-t-mat">0</dd></div>
+        <div><dt>Nitzotzot</dt><dd id="awk-t-nitz">0</dd></div>
       </dl>
-      <p class="awk-note">Awakening is the Seeker's change of class — reaching the depths
-        and spending Tier-1 Materials to converge to a new threshold. Its power is
+      <p class="awk-note">Awakening is the Seeker's change of class — gathering the
+        scattered light (Nitzotzot) to converge to a new threshold. Its power is
         permanent: it survives every reset, Ascension included.</p>
     </aside>
 
@@ -128,7 +128,7 @@ export function renderAwakenPane(state) {
   const power = `×${formatNumber(despertarMult(state))}`;
   $('awk-t-dmg').textContent = power;
   $('awk-t-hp').textContent = power;
-  $('awk-t-mat').textContent = formatNumber(Math.floor(state.materiais?.[0] || 0));
+  $('awk-t-nitz').textContent = formatNumber(Math.floor(state.nitzotzot || 0));
 
   // Trilha (direita) — estado por tier + seleção
   SEEKER_RANKS.forEach((rank, t) => {
@@ -173,30 +173,21 @@ function footSkeleton(t, st) {
 function updateNextFoot(state) {
   const req = despertarReq(state);
   const prova = despertarProvaMet(state);
-  const sub = state.unlockedSubarea || 1;
-  const kills = Math.floor(state.killsTotal || 0);
-  const lvl = runLevel(state);
-  const mats = Math.floor(state.materiais?.[0] || 0);
+  const haveN = Math.floor(state.nitzotzot || 0), needN = req.nitzotz;
+  const haveV = Math.floor(state.vestiges || 0), needV = req.vestiges;
   const dmgB = damagePerHit(state), hpB = playerHpMax(state), m = DESPERTAR.mult;
   const gains = $('awk-gains');
   if (gains) {
-    const p = (v) => `+${formatNumber(v * 100)}%`;
     gains.innerHTML = `
       <div><span>Damage</span><b>${formatNumber(dmgB)} <i>→</i> ${formatNumber(dmgB * m)}</b></div>
-      <div><span>HP Max</span><b>${formatNumber(hpB)} <i>→</i> ${formatNumber(hpB * m)}</b></div>
-      <div><span>Crit Rate</span><b>${p(DESPERTAR.critRateAdd)}</b></div>
-      <div><span>Crit Damage</span><b>${p(DESPERTAR.critDmgAdd)}</b></div>
-      <div><span>Attack Speed</span><b>+${DESPERTAR.apsAdd.toFixed(3)}</b></div>
-      <div><span>Gold</span><b>${p(DESPERTAR.lumensBonus)}</b></div>
-      <div><span>XP</span><b>${p(DESPERTAR.xpBonus)}</b></div>`;
+      <div><span>HP Max</span><b>${formatNumber(hpB)} <i>→</i> ${formatNumber(hpB * m)}</b></div>`;
   }
   const gates = $('awk-gates');
   if (gates) {
     gates.innerHTML =
-      gateRow(`Depth · Reach Sub-area ${req.subarea}`, prova, prova ? 'Done' : `Sub ${formatNumber(sub)} / ${req.subarea}`, (sub / req.subarea) * 100)
-      + gateRow('Kills', kills >= req.kills, `${formatNumber(kills)} / ${formatNumber(req.kills)}`, (kills / req.kills) * 100)
-      + gateRow('Level', lvl >= req.level, `${formatNumber(lvl)} / ${formatNumber(req.level)}`, (lvl / req.level) * 100)
-      + gateRow(`Materials · Tier I (spent)`, mats >= req.t1, `${formatNumber(mats)} / ${formatNumber(req.t1)}`, (mats / req.t1) * 100);
+      gateRow('Trial · Guardian of Sub-area 3', prova, prova ? 'Done' : 'Pending', prova ? 100 : 0)
+      + gateRow('Offering · Nitzotzot', haveN >= needN, `${formatNumber(haveN)} / ${formatNumber(needN)}`, (haveN / needN) * 100)
+      + gateRow('Tribute · Vestiges', haveV >= needV, `${formatNumber(haveV)} / ${formatNumber(needV)}`, (haveV / needV) * 100);
   }
   const btn = $('awk-do');
   if (btn) btn.disabled = !canDespertar(state);

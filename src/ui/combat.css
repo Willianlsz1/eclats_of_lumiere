@@ -121,10 +121,6 @@
   text-transform: uppercase; white-space: nowrap;
   text-shadow: 0 1px 2px #000, 0 2px 8px #000;
 }
-/* Gilded — variante mais forte/rica: nome dourado + brilho no sprite */
-.cb-enemy.gilded .ecard-name { color: #f0d9a0; text-shadow: 0 0 10px rgba(217,164,65,.7), 0 1px 2px #000; }
-.cb-enemy.gilded .ecard-lvl { color: #d9a441; }
-.cb-enemy.gilded .emob-art-img { filter: drop-shadow(0 0 12px rgba(217,164,65,.55)); }
 .ecard-lvl {
   font-size: 16px; font-weight: 700; color: #dce8ff;
   letter-spacing: .14em; text-transform: uppercase;

@@ -1,93 +1,89 @@
-// Inimigos — ✅ RELATIVOS AO PLAYER (recalibração 2026-06-17, decisão Willian:
-// "números grandes, mobs te seguem"). HP/dano/nível derivam do PODER ATUAL do player,
-// passado como `ctx = { dmg, hp, level }` pelo combate ao gerar a onda. Coerente por
-// construção e imune ao reset da Convergence (mobs reescalam junto). Ver ENEMY em constants.
-// As funções da malha geométrica (subareaLevelRange/hpForLevel) ficam por compat (unlock + UI).
+// Malha geométrica — GDD §3.
+// Bounds de level por subárea: lvl_lo × r^s, com r = (lvl_hi/lvl_lo)^(1/5).
+// HP e dano interpolados geometricamente no log do level.
 
-import { MAPS, ENEMY, COMBAT, LEVEL } from '../data/constants.js';
+import { MAPS, COMBAT } from '../data/constants.js';
 
 let nextEnemyId = 1;
 
-// ── Fatores por sub-área (1-indexada → índice n−1), com clamp seguro ──
-const aIdx = (sub, n) => Math.max(0, Math.min((sub || 1) - 1, n - 1));
-const areaHp  = (sub) => ENEMY.areaHp[aIdx(sub, ENEMY.areaHp.length)];
-const areaDmg = (sub) => ENEMY.areaDmg[aIdx(sub, ENEMY.areaDmg.length)];
-export const areaReward = (sub) => ENEMY.areaReward[aIdx(sub, ENEMY.areaReward.length)];
-
-// ── Escala pelo BASELINE DO NÍVEL (não pelo dano/HP já multiplicado) ──
-// HP/dano do mob seguem só o que o NÍVEL dá (base + nível×perLevel). Assim os
-// MULTIPLICADORES do player (gear/convergence/despertar) EXCEDEM o baseline → você mata
-// em MENOS golpes e sobrevive MAIS conforme investe. Poder importa; e o mob fica no seu nível.
-const baselineDmg = (lvl) => COMBAT.baseDmg + (lvl || 1) * LEVEL.dmgPerLevel;
-const baselineHp  = (lvl) => COMBAT.playerBaseHp + (lvl || 1) * LEVEL.hpPerLevel;
-
-const mobLevelOf = (ctx, sub) => Math.max(1, Math.round((ctx.level || 1) * (1 + ENEMY.levelPerArea * ((sub || 1) - 1))));
-// HP = baseline do nível → seus multiplicadores (gear/conv/despertar) o EXCEDEM → mata mais rápido.
-const mobHpOf    = (ctx, sub) => Math.max(1, baselineDmg(ctx.level) * ENEMY.hitsToKill * areaHp(sub));
-// DANO = % do seu HP REAL (atual) → perigo persiste (mobs sempre podem matar). A defesa real é
-// matar rápido (ofensa). Onda inteira = HP_real × dmgFrac × areaDmg; por mob = /pack.
-const packBaseOf = (map, sub) => Math.max(1, (map.packSizes[(sub || 1) - 1] || 1));
-const mobDmgOf   = (ctx, map, sub) => Math.max(0, (ctx.hp || 1) * ENEMY.dmgFrac * areaDmg(sub) / packBaseOf(map, sub));
-
-// ── Malha geométrica (LEGADO): bounds de level por sub-área — usada só pelo gate de
-//    unlock por nível e por estimativas de UI. Não dita mais HP/dano dos mobs. ──
+// Razão geométrica entre subáreas do mapa
 function subareaRatio(map) {
   return (map.lvlHi / map.lvlLo) ** (1 / map.subareaCount);
 }
+
+// Range de level [lo, hi] da subárea (1-indexada)
 export function subareaLevelRange(map, subarea) {
   const r = subareaRatio(map);
-  return { lo: map.lvlLo * r ** (subarea - 1), hi: map.lvlLo * r ** subarea };
+  return {
+    lo: map.lvlLo * r ** (subarea - 1),
+    hi: map.lvlLo * r ** subarea,
+  };
 }
+
+// Interpolação geométrica no log do level: valor(L) = lo × (hi/lo)^t
+// t = (log L − log lvl_lo) / (log lvl_hi − log lvl_lo)
 function interp(map, level, lo, hi) {
   const t = (Math.log(level) - Math.log(map.lvlLo)) / (Math.log(map.lvlHi) - Math.log(map.lvlLo));
   return lo * (hi / lo) ** t;
 }
-export function hpForLevel(map, level) { return interp(map, level, map.hpLo, map.hpHi); }
-export function dmgForLevel(map, level) { return interp(map, level, map.dmgLo, map.dmgHi); }
 
-// ── Spawns (player-relativo): recebem ctx = { dmg, hp, level } ──
-const CTX0 = { dmg: 1, hp: 1, level: 1 };
+export function hpForLevel(map, level) {
+  return interp(map, level, map.hpLo, map.hpHi);
+}
 
-export function spawnMob(map, subarea, ctx = CTX0) {
+export function dmgForLevel(map, level) {
+  return interp(map, level, map.dmgLo, map.dmgHi);
+}
+
+// Level sorteado uniformemente no espaço log do range da subárea (malha geométrica)
+function rollLevel(map, subarea) {
+  const { lo, hi } = subareaLevelRange(map, subarea);
+  const level = lo * (hi / lo) ** Math.random();
+  return Math.max(1, Math.round(level));
+}
+
+export function spawnMob(map, subarea) {
+  const level = rollLevel(map, subarea);
+  const hpMax = hpForLevel(map, level);
   const id = nextEnemyId++;
   const k = id % map.enemyNames.length; // trio do mapa
-  const hpMax = mobHpOf(ctx, subarea);
   return {
     id,
     name: map.enemyNames[k],
     art: map.enemyArts[k],
-    frame: 'frames.enemy_universal',
-    level: mobLevelOf(ctx, subarea),
+    frame: 'frames.enemy_universal', // moldura comum dos inimigos (§8d) — espinhos prateados
+    level,
     hpMax,
     hp: hpMax,
-    dmg: mobDmgOf(ctx, map, subarea),  // dano/s ao jogador (onda inteira ~ HP × dmgFrac × areaDmg)
-    rewardMult: areaReward(subarea),   // XP/Lumens crescem com a profundidade (economia)
+    dmg: dmgForLevel(map, level), // dano por segundo causado ao jogador
   };
 }
 
-// Boss da sub-área: mob × bossHpMult (HP) e × bossDmgMult (dano). Só a ÚLTIMA = boss final.
-export function spawnBoss(map, subarea, ctx = CTX0) {
+// Boss da subárea (GDD §3/§4): level máximo da subárea, HP ×15, dano ×3.
+// Sub 5 = boss final do mapa (arte/nome canônicos); subs 1-4 = Guardião (placeholder).
+export function spawnBoss(map, subarea) {
+  const level = Math.round(subareaLevelRange(map, subarea).hi);
+  const hpMax = hpForLevel(map, level) * COMBAT.bossHpMult;
   const isFinal = subarea === map.subareaCount;
-  const hpMax = mobHpOf(ctx, subarea) * ENEMY.bossHpMult;
   return {
     id: nextEnemyId++,
     name: isFinal ? map.bossName : `Guardian — Sub-area ${subarea}`,
     art: isFinal ? map.bossArt : map.guardianArt,
+    // boss final = moldura própria do mapa (§8d); guardião = moldura comum
     frame: isFinal ? `frames.boss_m${map.id}` : 'frames.enemy_universal',
     isBoss: true,
     isFinalBoss: isFinal,
-    level: mobLevelOf(ctx, subarea),
+    level,
     hpMax,
     hp: hpMax,
-    dmg: mobDmgOf(ctx, map, subarea) * ENEMY.bossDmgMult,  // boss ≈ bossDmgMult mobs
-    rewardMult: areaReward(subarea),
+    dmg: dmgForLevel(map, level) * COMBAT.bossDmgMult,
   };
 }
 
-// Pack completo da sub-área atual (tamanhos do GDD §4)
-export function spawnPack(map, subarea, ctx = CTX0) {
+// Pack completo da subárea atual (tamanhos do GDD §4)
+export function spawnPack(map, subarea) {
   const size = map.packSizes[subarea - 1];
-  return Array.from({ length: size }, () => spawnMob(map, subarea, ctx));
+  return Array.from({ length: size }, () => spawnMob(map, subarea));
 }
 
 // Mapa atual conforme state.map (1-indexado). Aceita state ou nada (default Map 1).

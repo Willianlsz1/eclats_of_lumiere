@@ -326,16 +326,16 @@ function buildEnemyCard(mob, i, total, bossOut) {
   const size = mob.isBoss ? ' boss' : total <= 3 ? ' big' : total <= 6 ? '' : total <= 8 ? ' mid' : total <= 12 ? ' dense' : ' swarm';
   const artId = mob.art || ENEMY_ART_FALLBACK; // arte vem do mapa (enemies.js)
   const card = document.createElement('article');
-  card.className = `cb-enemy emob${size}${mob.gilded ? ' gilded' : ''}`;
+  card.className = `cb-enemy emob${size}`;
   card.dataset.mobId = mob.id;
   card.style.left = `${pos.x}%`;
   card.style.top = `${pos.y}%`;
   // SEM card: sprite de corpo inteiro (recorte transparente) · nome+LV acima ·
-  // ATK/HP + barra abaixo · floats de dano sobre o sprite. Gilded = prefixo ✦ + nome dourado.
+  // ATK/HP + barra abaixo · floats de dano sobre o sprite.
   card.innerHTML = `
     <div class="emob-label">
-      <div class="ecard-name">${mob.isBoss ? '👑 ' : mob.gilded ? '✦ ' : ''}${mob.gilded ? `${mob.gilded} ` : ''}${mob.name}</div>
-      <div class="ecard-lvl">LVL ${formatNumber(mob.level)}${mob.isBoss ? ' · BOSS' : mob.gilded ? ' · GILDED' : ''}</div>
+      <div class="ecard-name">${mob.isBoss ? '👑 ' : ''}${mob.name}</div>
+      <div class="ecard-lvl">LVL ${formatNumber(mob.level)}${mob.isBoss ? ' · BOSS' : ''}</div>
     </div>
     <div class="emob-art">
       ${picture(artId, { className: 'emob-art-img', alt: mob.name })}

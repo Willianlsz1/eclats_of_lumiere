@@ -18,8 +18,8 @@ const PLACEHOLDER = {
   progressPct: 0,
   able: false,                 // já pode convergir?
   gate: 40,
-  grant: '+20%',
-  grantTags: ['Damage', 'HP', '+0.5% Gold'],
+  grant: '+15%',
+  grantTags: ['Damage', 'HP', 'XP', 'Lumens'],
   tribute: '0',                // Lumens pagos como tributo ao convergir
   returns: ['Your Level (run XP)'],
   keeps: ['Gear rarity', 'Map position', 'Lumens &amp; Vestiges', 'Passives &amp; Mémoires'],
