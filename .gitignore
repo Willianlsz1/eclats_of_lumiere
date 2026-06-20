@@ -1,9 +1,0 @@
-node_modules/
-dist/
-.DS_Store
-*.local
-
-# ferramentas locais de dev (preview) e referencias de mockup — nao versionar
-.claude/
-_mockups_ref/
-__pycache__/
