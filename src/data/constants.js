@@ -152,9 +152,11 @@ export const DEFENSE = {
 // permanente (dano/HP/XP/Lumens). Reseta o nível da run (xpRun) + o nível do Gear.
 // ⏳ VALORES PLACEHOLDER — Willian vai calibrar por teste (15% fixo? variável?).
 export const CONVERGENCE = {
-  bonusPerConv: 0.15,    // convMult = 1 + 0.15 × convergences (ADITIVO) — acelerador, não motor
-  gateLevelBase: 40,     // 1ª Convergence: atingir nível 40
-  gateLevelGrowth: 1.25, // ✅ Map 1: o alvo de nível sobe ×1.25 a cada Convergence (~12 converges/M1)
+  // ✅ REDESIGN Mapa 1 (CP-6): Convergence dá SÓ Pontos (= nível ao convergir),
+  // gastos em passivas (CP-7). SEM +15% automático (bonusPerConv = 0 → convMult = 1).
+  bonusPerConv: 0,       // sem bônus automático — todo poder vem das passivas
+  gateLevelBase: 50,     // 1ª Convergence: atingir nível 50 (~30 min)
+  gateLevelGrowth: 1.5,  // o gate sobe ×1.5 a cada Convergence → ~8 no Mapa 1
 };
 
 // §7 — Vestiges (renda; gasto em Passivas/Ascension é pós-MVP)

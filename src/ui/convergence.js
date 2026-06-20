@@ -58,7 +58,7 @@ export function renderConvergence(host, data) {
 
       <div class="cv-gain-strip">
         <div class="cv-g points">
-          <div class="cv-l">Permanent bonus</div>
+          <div class="cv-l">Convergence Points</div>
           <div class="cv-v">${d.bonus}</div>
         </div>
       </div>
@@ -73,7 +73,7 @@ export function renderConvergence(host, data) {
 
       <div class="cv-effect">
         <div class="cv-effect-head">
-          <span class="cv-effect-l">Each Convergence grants</span>
+          <span class="cv-effect-l">This Convergence grants</span>
           <b class="cv-effect-v">${d.grant}</b>
         </div>
         <div class="cv-effect-chips">${d.grantTags.map((t) => `<span class="cv-chip">${t}</span>`).join('')}</div>

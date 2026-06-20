@@ -9,6 +9,7 @@ import { startLoop } from './core/loop.js';
 import { combatTick, resetPack, updateUnlockByLevel } from './game/combat.js';
 import { playerHpMax, runLevel, damagePerHit, currentAPS, levelXpInfo } from './game/stats.js';
 import { rollItem, equipItem, gearDamageMult, gearHpMult, upgradeItem, rarityUpItem, forgeItem, refineMat } from './game/gear.js';
+import { canConverge, doConverge, convGateLevel } from './game/convergence.js';
 import { setupUI, renderUI } from './ui/ui.js';
 
 // Carrega o save (se houver) e reconstrói o runtime.
@@ -43,7 +44,10 @@ window.eclatsDebug = () => ({
   lumens: Math.round(state.lumens), kills: state.killsTotal,
   killsInArea: state.killsInSubarea, enemies: state.enemies.length, dead: state.player.dead,
   invCount: state.inventory.length,
+  convergences: state.convergences, convPoints: state.convPoints,
+  gate: convGateLevel(state.convergences), canConverge: canConverge(state),
 });
+window.eclatsConverge = () => doConverge(state);
 // Hooks de teste do gear (CP-4a; UI vem no CP-4b):
 window.eclatsDrop = (rarity = 2, slot = 'edge') => { state.inventory.push(rollItem(state, slot, rarity, state.subarea)); return state.inventory.length; };
 window.eclatsInv = () => state.inventory.map((it) => ({ id: it.id, slot: it.slot, rar: it.rarity, affixes: it.affixes.map((a) => `${a.type}=${(a.value * 100).toFixed(1)}%`) }));

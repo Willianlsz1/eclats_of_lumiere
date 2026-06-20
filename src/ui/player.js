@@ -288,15 +288,15 @@ function convData(state) {
   const gate = convGateLevel(state.convergences);
   return {
     convergences: formatNumber(state.convergences),
-    bonus: gainPct(convMult(state)),
+    bonus: `${formatNumber(state.convPoints)} pts`,         // Pontos acumulados
     gateLabel: `Level ${formatNumber(lvl)} / ${formatNumber(gate)}`,
     progressPct: Math.floor(convergeProgress(state) * 100),
     able: canConverge(state),
     gate: formatNumber(gate),
-    grant: '+15%',
-    grantTags: ['Damage', 'HP', 'XP', 'Lumens'],
-    // RESETA ao convergir: LVL (nível da run) + Lumens. MANTÉM: gear.
-    returns: ['LVL', 'Lumens'],
+    grant: `+${formatNumber(lvl)} pts`,                     // Pontos = nível ao convergir
+    grantTags: ['Passive points'],
+    // RESETA ao convergir: LVL (nível da run) + Lumens + acesso às áreas fundas.
+    returns: ['LVL', 'Lumens', 'Deep-area access'],
     keeps: convKeeps(state),
     lore: 'To keep the world, you let it go. Each new threshold lets the Seed disperse the light it gathered — and remember the pattern stronger.',
     note: 'Auto-Convergence available after Ascension I — the Rhythm will carry this rite for you.',
