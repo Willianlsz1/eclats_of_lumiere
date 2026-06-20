@@ -1,0 +1,145 @@
+/* ============================================================
+   Éclats v0 — cena de combate (recomeço). Pele azul-navy/dourado via tokens.
+   Tudo escopado sob .view.combat.
+   ============================================================ */
+
+.view.combat { overflow: hidden; }
+
+/* fundo nítido da área (a tela de combate NÃO usa o blur do menu) */
+.view.combat .cb-backdrop {
+  position: absolute; inset: 0; z-index: 0;
+  background-size: cover; background-position: center;
+}
+.view.combat .cb-vignette {
+  position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background:
+    radial-gradient(120% 90% at 50% 38%, transparent 45%, rgba(5,7,15,.72) 100%),
+    linear-gradient(180deg, rgba(5,7,15,.35), rgba(5,7,15,.15) 40%, rgba(5,7,15,.55));
+}
+
+/* ---------------- SEEKER (esquerda) ---------------- */
+.view.combat .cb-seeker {
+  position: absolute; z-index: 4; left: 80px; bottom: 150px;
+  display: flex; align-items: flex-end; gap: 22px;
+}
+.view.combat .cb-art { width: 260px; filter: drop-shadow(0 18px 30px rgba(0,0,0,.6)); }
+.view.combat .cb-art picture, .view.combat .cb-art img { width: 100%; height: auto; display: block; }
+.view.combat .cb-info { width: 320px; padding-bottom: 16px; }
+.view.combat .cb-name {
+  font-family: var(--font-display); font-size: var(--fs-lg); font-weight: 600;
+  color: var(--ink); margin-bottom: 10px; letter-spacing: .02em;
+}
+.view.combat .cb-name span { color: var(--eclat); }
+
+.view.combat .cb-bar {
+  position: relative; height: 26px; border-radius: 8px; overflow: hidden;
+  background: rgba(8,12,22,.7); border: var(--border-soft); margin-bottom: 8px;
+}
+.view.combat .cb-bar i {
+  position: absolute; inset: 0; right: auto; display: block; border-radius: 8px;
+  transition: width .12s linear;
+}
+.view.combat .cb-bar.hp i { background: linear-gradient(90deg, #b53a4a, #e8556a); }
+.view.combat .cb-bar.xp i { background: linear-gradient(90deg, #4a78c8, var(--eclat)); }
+.view.combat .cb-bar span {
+  position: absolute; inset: 0; display: grid; place-items: center;
+  font-size: 14px; font-weight: 700; color: #fff; text-shadow: 0 1px 3px #000a;
+  font-variant-numeric: tabular-nums;
+}
+.view.combat .cb-stats {
+  display: flex; gap: 18px; margin-top: 4px;
+  font-weight: 700; color: var(--gold); font-variant-numeric: tabular-nums;
+}
+.view.combat .cb-stats span { display: inline-flex; align-items: center; gap: 6px; }
+
+/* ---------------- MOB (centro) ---------------- */
+.view.combat .cb-arena {
+  position: absolute; z-index: 3; left: 56%; top: 50%; transform: translate(-50%, -50%);
+  width: 460px; display: grid; place-items: center;
+}
+.view.combat .cb-enemy { position: relative; width: 100%; display: grid; place-items: center; animation: mob-in .25s ease; }
+@keyframes mob-in { from { opacity: 0; transform: scale(.9); } to { opacity: 1; transform: scale(1); } }
+.view.combat .emob-label {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 10px;
+}
+.view.combat .emob-name { font-family: var(--font-display); font-size: var(--fs-lg); color: var(--ink); }
+.view.combat .emob-lvl {
+  font-size: 14px; font-weight: 700; color: var(--gold);
+  padding: 2px 10px; border: 1px solid var(--line); border-radius: 99px; background: rgba(8,12,22,.6);
+}
+.view.combat .emob-art { width: 320px; filter: drop-shadow(0 22px 34px rgba(0,0,0,.6)); }
+.view.combat .emob-art picture, .view.combat .emob-art img { width: 100%; height: auto; display: block; }
+.view.combat .emob-bar {
+  margin-top: 14px; width: 280px; height: 18px; border-radius: 8px; overflow: hidden;
+  background: rgba(8,12,22,.75); border: var(--border-soft);
+}
+.view.combat .emob-bar i {
+  display: block; height: 100%; width: 100%;
+  background: linear-gradient(90deg, #b53a4a, #e8556a); transition: width .1s linear;
+}
+.view.combat .emob-floats { position: absolute; inset: 0; pointer-events: none; }
+
+.view.combat .float-dmg {
+  position: absolute; top: 36%; font-weight: 800; font-size: 26px; color: #ffd9d9;
+  text-shadow: 0 2px 5px #000; animation: float-up .75s ease-out forwards;
+}
+.view.combat .float-gold {
+  position: absolute; left: 56%; top: 64%; color: var(--gold);
+  font-weight: 800; font-size: 22px; text-shadow: 0 1px 4px #000;
+  animation: float-up .75s ease-out forwards;
+}
+@keyframes float-up {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(-46px); }
+}
+
+/* ---------------- PAINEL DE UPGRADES (direita) ---------------- */
+.view.combat .upgrade-panel {
+  position: absolute; z-index: 6; right: 56px; top: 140px;
+  width: 300px; display: flex; flex-direction: column; gap: 12px;
+  padding: 20px; border: var(--border); border-radius: var(--radius);
+  background: color-mix(in srgb, var(--panel) 88%, transparent); backdrop-filter: blur(8px);
+  box-shadow: var(--shadow-panel);
+}
+.view.combat .upg-title {
+  margin: 0 0 4px; font-family: var(--font-display); font-weight: 700;
+  font-size: var(--fs-lg); color: var(--eclat); letter-spacing: .04em;
+}
+.view.combat .upg-btn {
+  display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  padding: 14px 16px; border: var(--border); border-radius: var(--radius-sm);
+  background: var(--panel-2); color: var(--ink); cursor: pointer; font: inherit;
+  opacity: .55; transition: border-color .15s ease, background .15s ease, opacity .15s ease, transform .1s ease;
+}
+.view.combat .upg-btn.affordable { opacity: 1; border-color: var(--gold); }
+.view.combat .upg-btn.affordable:hover { background: var(--panel); transform: translateY(-1px); }
+.view.combat .upg-btn.affordable:active { transform: translateY(0); }
+.view.combat .upg-main { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
+.view.combat .upg-main b { font-size: var(--fs-md); }
+.view.combat .upg-main small { color: var(--dim); font-size: 13px; }
+.view.combat .upg-cost {
+  color: var(--gold); font-weight: 800; font-variant-numeric: tabular-nums; font-size: var(--fs-md);
+}
+
+/* ---------------- PROGRESSO DA ÁREA (rodapé) ---------------- */
+.view.combat .cb-progress {
+  position: absolute; z-index: 5; left: 50%; bottom: 40px; transform: translateX(-50%);
+  width: 540px; text-align: center;
+}
+.view.combat .cb-progress-label {
+  font-family: var(--font-display); font-size: var(--fs-md); color: var(--dim);
+  letter-spacing: .14em; text-transform: uppercase; margin-bottom: 8px;
+}
+.view.combat .cb-progress-bar {
+  position: relative; height: 22px; border-radius: 99px; overflow: hidden;
+  background: rgba(8,12,22,.7); border: var(--border);
+}
+.view.combat .cb-progress-bar i {
+  position: absolute; inset: 0; right: auto; display: block;
+  background: linear-gradient(90deg, #4a78c8, var(--eclat)); transition: width .2s ease;
+}
+.view.combat .cb-progress-bar span {
+  position: absolute; inset: 0; display: grid; place-items: center;
+  font-size: 13px; font-weight: 700; color: #fff; text-shadow: 0 1px 3px #000;
+  letter-spacing: .06em;
+}

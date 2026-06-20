@@ -6,10 +6,14 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "sim": "node tools/sim/v0.mjs"
   },
   "devDependencies": {
-    "vite": "^8.0.16"
+    "vite": "^8.0.16",
+    "vitest": "^2.1.9"
   },
   "dependencies": {
     "break_infinity.js": "^2.2.0"
