@@ -14,7 +14,7 @@ import { GEAR, GEAR_RARITIES, GEAR_RARITY_LABELS, CRAFT } from '../data/constant
 import {
   canRefino, doRefino, canRarityUp, doRarityUp,
   levelCapFor, atLevelCap, rarityUpTier,
-  primaryMult, secondaryMult, critOf, critDmgOf,
+  primaryMult, secondaryMult, critOf, critDmgOf, gildedOf,
 } from '../game/gear.js';
 
 // Arte: cena full-bleed + materiais (PNG-only, fora do manifesto auto-gerado).
@@ -35,7 +35,7 @@ const matColor = (tier) => RAR_COLOR[tier + 1]; // material tier 0..3 = Kindled.
 const MAXR = GEAR_RARITIES.length - 1;          // 4 (Converged)
 
 const AFFIX_LABELS = {
-  dmg: 'Damage', hp: 'HP', defesa: 'Defense', crit: 'Crit', critDmg: 'Crit dmg',
+  dmg: 'Damage', hp: 'HP', gilded: 'Gilded chance', crit: 'Crit', critDmg: 'Crit dmg',
   aps: 'Attack speed', regen: 'Regen', bossDmg: 'Boss dmg', lumens: 'Lumens',
   xp: 'XP', materiais: 'Materials', erosao: 'Erosion',
 };
@@ -65,6 +65,7 @@ let lastSig = '';
 function affixVal(type, level, rarity, isSec) {
   const w = isSec ? 0.30 : 1;
   if (type === 'crit') return `+${(critOf(level, rarity) * w * 100).toFixed(2)}%`;
+  if (type === 'gilded') return `+${(gildedOf(level, rarity) * w * 100).toFixed(2)}%`;
   if (type === 'critDmg') return `+${(critDmgOf(level, rarity) * w * 100).toFixed(0)}%`;
   const m = isSec ? secondaryMult(level, rarity) : primaryMult(level, rarity);
   return `×${formatNumber(m)}`;

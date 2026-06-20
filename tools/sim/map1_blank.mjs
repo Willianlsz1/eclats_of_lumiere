@@ -1,0 +1,204 @@
+// MAP 1 — pacing da RECALIBRAÇÃO "EM BRANCO" (sessão 2026-06-17 c/ Willian).
+// Valores definidos por design 1-a-1 (ver docs/eclats_balance_blank_2026-06-17.md).
+// Modela: combate single-target, gate de sub-área por NÍVEL, compra gulosa de Gear,
+// Convergence (reseta nível da run + nível do Gear; +15% dano/vida e +3% Lumens, frequente),
+// e Despertar na sub-área 7 (×2 dano/vida, +5% crit, crit dmg ×2→×4, +0.3 APS).
+// Uso: node tools/sim/map1_blank.mjs
+
+// ── Combate base ──
+const BASE = 1000;        // baseDmg
+const DMG_LVL = 150;      // +dano por nível do Seeker
+const HP_LVL = 150;       // +vida por nível do Seeker
+const BASE_HP = 30000;    // playerBaseHp
+const APS0 = 0.9;         // baseAPS (≈ Gaiadon 0.904)
+const APSCAP = 10;        // teto GLOBAL de APS (decisão Willian); Map 1 chega a ~3
+// ── Economia ──
+const GOLD = 0.10;        // lumens/kill = mobHp × GOLD
+let   XP_RATIO = 0.08;    // xp/kill = mobHp × XP_RATIO  (livre — ajustável)
+// ── Gear: 6 peças, 2 afixos cada (flat + bônus%), 2 CAMADAS (Flat + Bonus%).
+//    1 nível por peça escala os 2 afixos. Assumo as 6 no MESMO nível L (compra
+//    equilibrada): subir L→L+1 custa 6× o custo de 1 peça. Camada Multiplier ×
+//    fica pro Hollow/raridades (decisão Willian: "versão 2 camadas" agora).
+const GEAR_COST0 = 2000;          // custo do 1º nível (1 peça)
+const GEAR_RAMP = 2 ** (1 / 10);  // dobra a cada 10 níveis (~1.0718)
+const PIECES = 6;
+const GEAR_CAP = 400; // cap de nível do Faded (decisão Willian; jogador alcança ~278)
+// afixos por nível (agregados das 6 peças):
+const G_DMG_FLAT = 50;            // Weapon: +50 dano flat/nv
+const G_DMG_PCT = 0.01 + 0.01;    // Weapon 1% + Amuleto 1% = dano%/nv
+const G_HP_FLAT = 300 + 300;      // Elmo 300 + Manto 300 = HP flat/nv
+const G_HP_PCT = 0.01;            // Elmo: HP%/nv
+const G_CRIT = 0.001;             // Luvas: +0.1% crit chance/nv
+const G_CDMG_PCT = 0.02;          // Manto: +2% crit damage/nv (base 0%)
+let   G_APS = 0.0016;             // Amuleto: atk speed/nv (calibrado p/ APS ~1,5 no fim)
+const G_GOLD_PCT = 0.02 + 0.02;   // Luvas 2% + Anel 2% = gold%/nv
+const G_XP_PCT = 0.01;            // Anel: +1% XP/nv
+// ── Malha do Map 1 ──
+// Wall ≈ 32,5 bi (número orgânico, não-redondo): hpHi × 15. 1º mob 2.000 (2 hits).
+const N = 9, hpLo = 2000, hpHi = 2169085656, BOSSMULT = 15; // Wall = 32.536.284.840
+const mobHpOf = (s) => hpLo * (hpHi / hpLo) ** ((s - 1) / (N - 1));
+const bossHp = () => mobHpOf(N) * BOSSMULT;
+// DANO dos mobs = CURVA PRÓPRIA (desacoplada da vida — senão o dano dispara 16M× e o HP só ~150×).
+// dmgLo early baixo (passeio seguro) → dmgHi calibrado p/ a Wall ser tensa-mas-vencível (perigo "C").
+let DMG_LO = 80, DMG_HI = 7e5;
+const BOSSDMG = 3;
+const dmgOf = (s) => DMG_LO * (DMG_HI / DMG_LO) ** ((s - 1) / (N - 1));
+// ── Convergence ──
+const CONV_DMG = 0.15, CONV_LUM = 0.03; // por convergência (aditivo; XP = 0, vem do Gear)
+let HEADSTART_FRAC = 0.5; // head-start: Convergence reseta p/ FRAC × nível atual (não nível 1)
+// ── Despertar (sub-área 7) ──
+const AWAKEN_SUB = 7, AWAKEN_MULT = 2, AWAKEN_APS = 0.3, AWAKEN_CRIT = 0.05, AWAKEN_CDMG = 2.0; // crit dmg base 0% +200%
+
+const fmtT = (s) => s == null ? '  —  ' : s < 90 ? `${s.toFixed(0)}s` : s < 5400 ? `${(s / 60).toFixed(1)}min` : s < 86400 * 2 ? `${(s / 3600).toFixed(1)}h` : `${(s / 86400).toFixed(2)}d`;
+const REGEN_S = 0.01, REGEN_KILL = 0.00; // só 1%/s (regen-por-kill removido → vira passiva futura)
+const PACK_OF = (s) => s <= 7 ? 2 : 3;    // 2 mobs até sub7, 3 nas sub8/9
+
+// Luta UMA onda cheia, tick a tick. Só HP (sem defesa). Retorna {vive, minFrac, t}.
+// snap = {maxHp, hit, aps, cc, cm} ; mob = {hp, dmg} ; boss = {hp, dmg}|null
+function fightWave(snap, pack, mob, boss) {
+  const eff = snap.hit * (1 + snap.cc * (snap.cm - 1)); // golpe esperado (com crit médio)
+  let hp = snap.maxHp, trash = pack, bossHp = boss ? boss.hp : 0, atkCD = 0, t = 0, minFrac = 1;
+  const dt = 0.02;
+  while (t < 600) {
+    const incoming = trash * mob.dmg + (bossHp > 0 ? boss.dmg : 0);
+    hp -= incoming * dt;
+    hp = Math.min(snap.maxHp, hp + snap.maxHp * REGEN_S * dt);
+    if (hp <= 0) return { vive: false, minFrac: 0, t };
+    minFrac = Math.min(minFrac, hp / snap.maxHp);
+    atkCD -= dt;
+    while (atkCD <= 0 && (trash > 0 || bossHp > 0)) {
+      atkCD += 1 / snap.aps;
+      if (trash > 0) { trash--; hp = Math.min(snap.maxHp, hp + snap.maxHp * REGEN_KILL); } // 1 kill/ataque
+      else { bossHp -= eff; if (bossHp <= 0) hp = Math.min(snap.maxHp, hp + snap.maxHp * REGEN_KILL); }
+    }
+    if (trash <= 0 && bossHp <= 0) return { vive: true, minFrac, t };
+    t += dt;
+  }
+  return { vive: true, minFrac, t };
+}
+
+function pace(curveDiv, curveExp, gates, convGrowth, convBase = gates[1]) {
+  // estado persistente (sobrevive à Convergence)
+  let conv = 0, unlocked = 1, t = 0, awakened = false, convGate = convBase;
+  const events = [];
+  // estado da run (reseta na Convergence — exceto o Gear)
+  let xpRun = 0, level = 1, gearLvl = 0, lumens = 0;
+  let convCount = 0;
+  const M = { lvl2: null, sub2: null, conv1: null, awaken: null, wall: null };
+
+  const convDmg = () => 1 + CONV_DMG * conv;
+  const convLum = () => 1 + CONV_LUM * conv;
+  const awMult = () => awakened ? AWAKEN_MULT : 1;
+  const aps = () => Math.min(APSCAP, APS0 + gearLvl * G_APS + (awakened ? AWAKEN_APS : 0));
+  const critChance = () => Math.min(1, gearLvl * G_CRIT + (awakened ? AWAKEN_CRIT : 0));
+  const critMult = () => 1 + gearLvl * G_CDMG_PCT + (awakened ? AWAKEN_CDMG : 0); // base 0% bônus
+  const dmgHit = () => (BASE + level * DMG_LVL + gearLvl * G_DMG_FLAT) * (1 + gearLvl * G_DMG_PCT) * convDmg() * awMult();
+  const dps = () => dmgHit() * aps() * (1 + critChance() * (critMult() - 1));
+  const maxHp = () => (BASE_HP + level * HP_LVL + gearLvl * G_HP_FLAT) * (1 + gearLvl * G_HP_PCT) * convDmg() * awMult();
+  const goldMult = () => (1 + gearLvl * G_GOLD_PCT) * convLum();
+  const xpMult = () => 1 + gearLvl * G_XP_PCT;
+  const stepCost = () => PIECES * GEAR_COST0 * GEAR_RAMP ** gearLvl; // subir as 6 de L→L+1
+  // pior momento (menor HP) por área, p/ a checagem de sobrevivência
+  const worst = {}; const snap = () => ({ maxHp: maxHp(), hit: dmgHit(), aps: aps(), cc: critChance(), cm: critMult(), level, gearLvl, conv });
+
+  let guard = 0;
+  while (guard++ < 5e7) {
+    const mobHp = mobHpOf(unlocked);
+    const d = dps();
+    const tpk = Math.max(1 / aps(), mobHp / d);
+    t += tpk;
+    // registra o pior momento (menor maxHp) na área atual
+    const mh = maxHp();
+    if (!worst[unlocked] || mh < worst[unlocked].maxHp) worst[unlocked] = snap();
+    lumens += mobHp * GOLD * goldMult();
+    xpRun += mobHp * XP_RATIO * xpMult();
+    level = Math.max(1, Math.floor((xpRun / curveDiv) ** curveExp));
+    if (M.lvl2 === null && level >= 2) M.lvl2 = t;
+    while (unlocked < N && level >= gates[unlocked]) {
+      unlocked++;
+      if (unlocked === 2 && M.sub2 === null) M.sub2 = t;
+      if (unlocked === AWAKEN_SUB) { awakened = true; if (M.awaken === null) M.awaken = t; }
+      if (unlocked === N) worst[N] = snap(); // captura o estado na ENTRADA da Wall
+    }
+    // compra gulosa de Gear (as 6 peças juntas; PERSISTE pela Convergence)
+    let b = 0; while (gearLvl < GEAR_CAP && lumens >= stepCost() && b++ < 5000) { lumens -= stepCost(); gearLvl++; }
+    // Convergence: reseta SÓ o nível da run (Gear persiste)
+    if (level >= convGate && unlocked >= 2) {
+      conv++; convCount++; events.push({ area: unlocked, lvl: level });
+      if (M.conv1 === null) M.conv1 = t;
+      convGate = Math.max(convGate * convGrowth, level + 1);
+      level = Math.max(1, Math.floor(HEADSTART_FRAC * level)); // head-start (não reseta pro 1)
+      xpRun = curveDiv * level ** (1 / curveExp); lumens = 0;
+    }
+    if (unlocked === N && d >= bossHp() / 30) { M.wall = t; worst.wallClear = snap(); break; }
+    if (t > 86400 * 10) break;
+  }
+  return { t, conv: convCount, unlocked, awakened, gearLvl, M, events, worst };
+}
+
+// ── calibração: varrer curveDiv / curveExp / gates ──
+// gates[0]=sub1(=1), depois níveis de unlock crescentes.
+const gates = [1, 30, 70, 130, 220, 350, 520, 740, 1000];
+const XP1 = hpLo * XP_RATIO; // xp do 1º mob
+// curveDiv fixado p/ level-2 acontecer em ~3 kills (≈8s): xpRun(lvl2)=3×XP1
+const fitDiv = (curveExp) => (3 * XP1) / (2 ** (1 / curveExp));
+console.log('gates de unlock (sub1..sub9):', gates.join(' '));
+console.log('curveExp | curveDiv | t→lvl2 | t→sub2(1ª conv) | t→despertar | tempo Map1 | nº conv | gearLvl fim');
+// ✅ ESCOLHIDO (Willian, 2026-06-17): curveExp=0.455 / curveDiv≈262 → Map 1 ~1,3 dias
+// (com Gear persistente, packs 2×7+3+3, boss junto na sub9, sem cap de nível de mob).
+// Convergence: gatilho 1º = LV 40 (decisão Willian); cresce ×1,3 a cada conv.
+const CONV_BASE = 40, CONV_GROWTH = 1.3;
+// ✅ ESCOLHIDO (Willian): com Gear completo (6 peças, 2 afixos flat+%, 2 camadas),
+// curveExp=0.41 / curveDiv≈221 → Map 1 ~1,2 dias. Gear termina ~nível 184.
+// ✅ ESCOLHIDO: Wall 32,5bi · aceitar ~24 conv · apsCap 3 · gear cap 400.
+G_APS = 0.0065; // amuleto: APS chega a ~3 no fim do Map 1 (gear ~280)
+// ✅ ESCOLHIDO: head-start 0.5 → re-fit curveExp 0,38 p/ ~30h (1,3 dia perfeito)
+const curveExp = 0.38, curveDiv = Math.round(fitDiv(curveExp));
+{
+  const r = pace(curveDiv, curveExp, gates, CONV_GROWTH, CONV_BASE);
+  const m = r.M;
+  const endAps = Math.min(APSCAP, APS0 + r.gearLvl * G_APS + 0.3);
+  console.log(`${String(curveExp).padStart(8)} | ${String(curveDiv).padStart(8)} | ${fmtT(m.lvl2).padStart(6)} | ${fmtT(m.sub2 ?? m.conv1).padStart(15)} | ${fmtT(m.awaken).padStart(11)} | ${fmtT(r.t).padStart(10)} | ${String(r.conv).padStart(6)} | ${String(r.gearLvl).padStart(8)} | APSfim ${endAps.toFixed(2)}`);
+}
+
+const fmt = (n) => n >= 1e9 ? (n / 1e9).toFixed(2) + 'bi' : n >= 1e6 ? (n / 1e6).toFixed(2) + 'M' : Math.round(n).toLocaleString('pt-BR');
+
+// ── CALIBRAR dmgHi: a Wall (poder pleno) tem que ser TENSA-mas-vencível (perigo "C") ──
+// A linha-chave é "Wall@clear": estado no momento em que o jogador CONSEGUE vencer a Wall.
+console.log('\n=== calibração do dano (Wall poder pleno) — varrer dmgHi ===');
+console.log('dmgHi   | HP no clear | boss dmg/s | vive a Wall? | HP mín. na luta');
+for (const dh of [3e5, 5e5, 7e5, 9e5, 1.2e6]) {
+  DMG_HI = dh;
+  const r = pace(curveDiv, curveExp, gates, CONV_GROWTH, CONV_BASE);
+  const w = r.worst.wallClear;
+  const boss = { hp: bossHp(), dmg: dmgOf(N) * BOSSDMG };
+  const res = fightWave(w, PACK_OF(N), { hp: mobHpOf(N), dmg: dmgOf(N) }, boss);
+  console.log(`${dh.toExponential(0).padStart(7)} | ${fmt(w.maxHp).padStart(11)} | ${fmt(boss.dmg).padStart(10)} | ${(res.vive ? ' SIM ' : '☠ MORRE').padStart(12)} | ${(res.vive ? (res.minFrac * 100).toFixed(0) + '%' : '0%').padStart(15)}`);
+}
+DMG_HI = 1.2e6; // ✅ travado: Wall tensa-mas-vencível (~30% no poder pleno)
+
+// ── SOBREVIVÊNCIA por área — pior momento (nível 1 pós-Convergence) ──
+console.log('\n=== sobrevivência (só HP) — pior momento por área (perigo "C") ===');
+console.log('área | HP pior momento | dano onda/s | vive? | HP mín | nota');
+{
+  const r = pace(curveDiv, curveExp, gates, CONV_GROWTH, CONV_BASE);
+  for (let s = 1; s <= N; s++) {
+    const w = r.worst[s]; if (!w) continue;
+    const mob = { hp: mobHpOf(s), dmg: dmgOf(s) };
+    const boss = s === N ? { hp: bossHp(), dmg: dmgOf(N) * BOSSDMG } : null;
+    const pack = PACK_OF(s);
+    const res = fightWave(w, pack, mob, boss);
+    const wave = pack * mob.dmg + (boss ? boss.dmg : 0);
+    const nota = s === N ? `Wall` : `lvl ${w.level}, gear ${w.gearLvl}, conv ${w.conv}`;
+    console.log(`${String(s).padStart(4)} | ${fmt(w.maxHp).padStart(15)} | ${fmt(wave).padStart(11)} | ${(res.vive ? ' SIM ' : '☠ MORRE').padStart(7)} | ${(res.vive ? (res.minFrac * 100).toFixed(0) + '%' : '0%').padStart(6)} | ${nota}`);
+  }
+}
+
+// ── Estudo do GATILHO da Convergence (Willian vai escolher) ──
+console.log('\n=== gatilho da Convergence (1º LV) → quantas conv e em que áreas ===');
+console.log('gatilho | nº conv | áreas onde dispara (a cada conv) | tempo Map1');
+for (const convBase of [30, 50, 80, 120, 180, 250]) {
+  const r = pace(curveDiv, curveExp, gates, 1.3, convBase);
+  const areas = r.events.map(e => e.area).join(',');
+  console.log(`${String(convBase).padStart(7)} | ${String(r.conv).padStart(7)} | ${areas.padEnd(32)} | ${fmtT(r.t)}`);
+}

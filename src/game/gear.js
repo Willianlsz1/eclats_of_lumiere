@@ -5,9 +5,16 @@
 // secundário = primário^0.30 (30% das décadas). Cap de nível da raridade topo sobe
 // +capPerAsc por Ascension (motor sem-teto). Persiste sempre (não reseta).
 
-import { GEAR, GEAR_RARITIES, CRAFT } from '../data/constants.js';
+import { GEAR, GEAR_RARITIES, CRAFT, NUMBER_CAP, MAPS, GILDED } from '../data/constants.js';
 
 const maxRarity = GEAR_RARITIES.length - 1;
+
+// Cap de raridade do MAPA atual (✅ 18/jun: Map 1 = Incomum/Kindled, índice 1). Sem o campo
+// `gearRarityCap` no mapa → sem cap (maxRarity). Trava o rarity-up na raridade do mapa.
+export function mapRarityCap(state) {
+  const map = MAPS[((state && state.map) || 1) - 1] || MAPS[0];
+  return map.gearRarityCap != null ? map.gearRarityCap : maxRarity;
+}
 
 // ───── Modelo de valor de um afixo ─────
 
@@ -17,7 +24,9 @@ const maxRarity = GEAR_RARITIES.length - 1;
 export function primaryMult(level, rarity) {
   const rm = GEAR.rarityMult[rarity];
   const bonus = 1 + level * GEAR.bonusRate * rm;
-  const mult = 1 + level * GEAR.multRate * rm;
+  // ✅ 18/jun: afixo MULTIPLIER × (camada multiplicativa) só destrava no INCOMUM (rarity ≥ 1).
+  // No COMUM (Faded) a peça tem só flat + % (mult = 1).
+  const mult = rarity >= 1 ? 1 + level * GEAR.multRate * rm : 1;
   return bonus * mult;
 }
 // afixo SECUNDÁRIO multiplicativo = primário^0.30 (30% das décadas — gear.mjs corrigido)
@@ -25,6 +34,8 @@ export const secondaryMult = (level, rarity) => primaryMult(level, rarity) ** GE
 
 // crit chance (afixo plano): nível × critPerLevel × rarityMult
 export const critOf = (level, rarity) => level * GEAR.critPerLevel * GEAR.rarityMult[rarity];
+// Gilded chance (afixo plano do Manto): nível × gildedPerLevel × rarityMult (teto global no agregado)
+export const gildedOf = (level, rarity) => level * GEAR.gildedPerLevel * GEAR.rarityMult[rarity];
 // crit damage (afixo plano, bônus sobre a base): nível × critDmgPerLevel × rarityMult
 export const critDmgOf = (level, rarity) => level * GEAR.critDmgPerLevel * GEAR.rarityMult[rarity];
 
@@ -102,6 +113,20 @@ export const gearXpMult     = (s) => farmMultBy(s, 'xp');     // Farm: linear (s
 // (linear bruto ×70 → log10=1.85 → ×1.9), preservando o pacing de ~27 min/tier (drop base 1% intocado).
 export const gearMaterialDropMult = (s) => 1 + 0.5 * Math.log10(Math.max(1, farmMultBy(s, 'materiais')));
 
+// Gilded chance: soma plana dos afixos 'gilded' (primário Manto + secundários a 30%),
+// limitada ao teto GLOBAL (GILDED.chanceCap = 30%).
+export function gearGildedChance(state) {
+  let a = 0;
+  for (const def of GEAR.pieces) {
+    const p = state.gear[def.key];
+    if (def.primary === 'gilded') a += gildedOf(p.level, p.rarity);
+    for (const sec of activeSecondaries(def, p.rarity)) {
+      if (sec === 'gilded') a += gildedOf(p.level, p.rarity) * GEAR.secondaryExp;
+    }
+  }
+  return Math.min(GILDED.chanceCap, a);
+}
+
 // Crit chance: soma plana (primário Grasp + secundário Resonance a 30%)
 export function gearCritAdd(state) {
   let a = 0;
@@ -130,17 +155,20 @@ export function gearCritDmgAdd(state) {
 
 // ───── Custos e gates ─────
 
-// Cap de nível da peça: a raridade TOPO (Converged) ganha +capPerAsc por Ascension (sem-teto §13)
+// Cap de nível da peça = cap DURO da raridade (Comum 500 · Incomum 1400). A raridade TOPO
+// (Converged) ganha +capPerAsc por Ascension (sem-teto §13). NÃO é atrelado à Convergence.
 export function levelCapFor(piece, state) {
   const base = GEAR.levelCap[piece.rarity];
   return piece.rarity === maxRarity ? base + (state.ascensions || 0) * GEAR.capPerAsc : base;
 }
 export const atLevelCap = (piece, state) => piece.level >= levelCapFor(piece, state);
 
-// CP-4: custo de 1 nível LINEAR (suporta milhões de níveis; expo estouraria).
-// cost(L) = base × (L+1) × costMult[raridade]
+// ✅ recalibração "em branco": custo de 1 nível EXPONENCIAL (sim) — dobra a cada 10 níveis.
+// cost(L) = base × costRamp^L × costMult[raridade]. Cria teto-SUAVE (~280) abaixo do cap
+// duro (400). Clampado a NUMBER_CAP (caps altos de M2+ serão recalibrados num CP próprio).
 export function levelCost(piece) {
-  return GEAR.levelCostBase * (piece.level + 1) * GEAR.costMult[piece.rarity];
+  const c = GEAR.levelCostBase * GEAR.costRamp ** piece.level * GEAR.costMult[piece.rarity];
+  return Math.min(NUMBER_CAP, c);
 }
 
 // Tier de material que paga a raridade atual→próxima (= índice da raridade atual: T1 paga 0→1)
@@ -163,6 +191,7 @@ function minSetRarity(state) {
 export function canRarityUp(state, key) {
   const p = state.gear[key];
   return p.rarity < maxRarity
+    && p.rarity < mapRarityCap(state)               // ✅ 18/jun: trava no cap de raridade do mapa (Map 1 = Incomum)
     && minSetRarity(state) >= p.rarity              // a peça está no piso do set
     && state.materiais[rarityUpTier(p)] >= CRAFT.rarityUpMaterial;
 }
@@ -179,25 +208,20 @@ export function buyLevel(state, key) {
   return true;
 }
 
-// Bulk-buy FECHADO (CP-4): compra o máximo de níveis que o orçamento permite — custo
-// linear → soma quadrática → resolve k em O(1). Suporta milhões de níveis. n grande = MAX.
+// Bulk-buy: compra o máximo de níveis que o orçamento permite. Com custo EXPONENCIAL o
+// teto duro é baixo (≤ 400 no Faded; ≤ 5000 nas raridades altas) → loop simples e seguro
+// (sem closed-form). O custo cresce rápido, então poucas iterações por chamada na prática.
 export function buyLevels(state, key, n) {
   const p = state.gear[key];
-  const cap = levelCapFor(p, state);
-  const room = cap - p.level;
-  if (room <= 0) return 0;
-  const K = GEAR.levelCostBase * GEAR.costMult[p.rarity]; // cost(L) = K × (L+1)
-  const c = p.level;
-  // máx k pelo orçamento: K/2 × [(c+k)(c+k+1) − c(c+1)] ≤ lumens → quadrática em (c+k)
-  const disc = Math.sqrt(1 + 4 * (c * (c + 1) + 2 * state.lumens / K));
-  let k = Math.min(n, room, Math.max(0, Math.floor((disc - 1) / 2) - c));
-  if (k <= 0) return buyLevel(state, key) ? 1 : 0; // cobre arredondamento (tenta 1)
-  let cost = (K / 2) * ((c + k) * (c + k + 1) - c * (c + 1));
-  while (cost > state.lumens && k > 0) { k -= 1; cost = (K / 2) * ((c + k) * (c + k + 1) - c * (c + 1)); }
-  if (k <= 0) return 0;
-  state.lumens -= cost;
-  p.level += k;
-  return k;
+  let bought = 0;
+  while (bought < n && !atLevelCap(p, state)) {
+    const cost = levelCost(p);
+    if (state.lumens < cost) break;
+    state.lumens -= cost;
+    p.level += 1;
+    bought += 1;
+  }
+  return bought;
 }
 
 export function doRarityUp(state, key) {

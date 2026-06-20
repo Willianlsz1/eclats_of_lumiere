@@ -14,37 +14,66 @@
 // - Boss (CP-D): após o kill threshold (oculto), a próxima onda é o Guardião
 //   (sozinho); derrotá-lo abre o gate da próxima subárea e vira loop recorrente.
 
-import { COMBAT, NUMBER_CAP, FATE } from '../data/constants.js';
+import { COMBAT, NUMBER_CAP, FATE, GILDED } from '../data/constants.js';
 import { spawnPack, spawnBoss, spawnMob, getCurrentMap, subareaLevelRange } from './enemies.js';
 import { damagePerHit, currentAPS, playerHpMax, critChance, critDamageMult, playerDefesa, postArmorDR, enemyDefesa, runLevel } from './stats.js';
 import { awardKill } from './economy.js';
 import { eclatsDripPerSec } from './ascension.js';
 import { effectiveDifficulty } from './difficulty.js';
-import { gearBossDmgMult, gearRegenMult } from './gear.js';
+import { gearBossDmgMult, gearRegenMult, gearGildedChance } from './gear.js';
 import { memoireSurvivalMult, memoireBossDmgMult, memoireEclatsAllMult, memoireDiffRewardMult } from './memoires.js';
 import { passiveMobBonus } from './passives.js';
 
 // Regen efetivo (§4): COMBAT.regenPerSec × afixo Regen do gear × #11 de la Résistance
 const regenFactor = (state) => gearRegenMult(state) * memoireSurvivalMult(state);
 
+// Tier de Gilded ativo no mapa = o MAIOR tier cujo unlockMap ≤ id do mapa (ou null).
+function activeGildedTier(map) {
+  let best = null;
+  for (const t of GILDED.tiers) if (t.unlockMap <= map.id) best = t;
+  return best;
+}
+// GILDED (18/jun): cada mob NÃO-boss da onda rola a chance do afixo do Manto p/ virar "mais
+// forte". Fica mais TANQUE (×hp) e dá mais Gold/XP (economy.js). O XP usa baseHpMax (o HP
+// ANTES do inflar) → o ganho de XP segue o xpMult do tier, não o ×hp.
+function applyGilded(state, pack, map) {
+  const chance = gearGildedChance(state);
+  const tier = activeGildedTier(map);
+  if (chance <= 0 || !tier) return;
+  for (const m of pack) {
+    if (m.isBoss || m.gilded) continue;
+    if (Math.random() < chance) {
+      m.gilded = tier.name;
+      m.baseHpMax = m.hpMax;                 // XP usa o HP base (não o inflado)
+      m.hpMax *= tier.hpMult; m.hp = m.hpMax;
+      m.dmg *= tier.dmgMult;
+      m.lumensMult = tier.lumensMult;
+      m.xpMult = tier.xpMult;
+    }
+  }
+}
+
 // Monta a onda da subárea. Se já bateu o threshold, o Guardião entra JUNTO,
 // substituindo 1 mob do pack (§4); na Sub 1 (pack de 1) ele vem sozinho.
 function makeWave(state) {
   const map = getCurrentMap(state);
-  const pack = spawnPack(map, state.subarea);
+  // Contexto do player (poder atual): inimigos derivam disso → sempre ~no seu nível/poder.
+  const ctx = { dmg: damagePerHit(state), hp: playerHpMax(state), level: runLevel(state) };
+  const pack = spawnPack(map, state.subarea, ctx);
   // +cap de mobs: Fate Keeper A4 + passiva Void Awareness (rumo ao teto ~24)
   const extra = (state.ascensions >= 4 ? FATE.a4MobBonus : 0) + passiveMobBonus(state);
-  for (let i = 0; i < extra; i++) pack.push(spawnMob(map, state.subarea));
+  for (let i = 0; i < extra; i++) pack.push(spawnMob(map, state.subarea, ctx));
   // Redesign 14/jun: SEM Guardião nas sub-áreas 1..N-1; só a ÚLTIMA tem boss
   // (o boss final do mapa). O threshold de kills ainda é o muro que invoca o boss.
   if (state.subarea === map.subareaCount && state.killsInSubarea >= map.bossKillThreshold) {
-    pack[0] = spawnBoss(map, state.subarea);
+    pack[0] = spawnBoss(map, state.subarea, ctx);
   }
   // Dificuldade (§8): ×HP e ×dano nos mobs da onda
   const d = effectiveDifficulty(state);
   if (d.hpMult !== 1) {
     for (const m of pack) { m.hpMax *= d.hpMult; m.hp = m.hpMax; m.dmg *= d.hpMult; }
   }
+  applyGilded(state, pack, map); // GILDED por último (baseHpMax já reflete a dificuldade)
   return pack;
 }
 
@@ -65,10 +94,12 @@ export function bossActive(state) {
 }
 
 // Redesign 14/jun: a progressão entre sub-áreas é GATE POR NÍVEL (sem Guardião).
-// A sub-área n (n≥2) libera quando o nível do jogador alcança o início da sua
-// faixa de level (= subareaLevelRange(map, n).lo). Sub-área 1 sempre aberta.
+// ✅ 17/jun (estilo Gaiadon): se o mapa define unlockLevels (bandas largas, DESACOPLADAS
+// da faixa de nível dos mobs), usa-as; senão cai no início da faixa geométrica (Maps 2-5).
+// Sub-área 1 sempre aberta.
 export function subareaUnlockLevel(map, n) {
   if (n <= 1) return 0;
+  if (map.unlockLevels && map.unlockLevels[n - 1] != null) return map.unlockLevels[n - 1];
   return Math.max(1, Math.round(subareaLevelRange(map, n).lo));
 }
 

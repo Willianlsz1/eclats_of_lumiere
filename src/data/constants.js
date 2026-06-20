@@ -3,48 +3,80 @@
 
 // §4 — Constantes-âncora do núcleo de combate
 export const COMBAT = {
-  baseDmg: 3500,          // rescale ×500 (14/jun): números iniciais em centenas/milhares (não 0.2/7)
-  baseAPS: 0.90,          // intervalo de ataque ~1.11s (ajuste pedido pelo Willian: 0.40 → 0.90)
-  apsCap: 5,              // teto de 5 kills/s (18k/h) — ajuste pedido pelo Willian (confortável; 15 rápido, 2 lento).
-  agiApsCap: 3.75,        // sub-cap do AGI: AGI sozinho leva o APS até ~3.4 (0.90 × 3.75)
-  // APS do gear (afixo do Amuleto): curva DIRETA e front-loaded. ganho = max × p/(p+half),
-  // p = força do afixo (~nível×0.02). Cresce rápido cedo e satura: +0.45 → APS ~1.35 no teto;
-  // ~1.30 no fim do M1 (gear ~686). Substitui o log "resonance" (que matava os 30%).
+  // ✅ RECALIBRAÇÃO "VALORES NO MAPA" (2026-06-18, decisão Willian). Stats iniciais do
+  // player redefinidos; o resto (Convergence/Despertar/Gear) acompanha. Ver o doc novo
+  // docs/eclats_balance_mapa_2026-06-18.md. Substitui a recalibração "em branco" 17/jun.
+  baseDmg: 50000,         // dano base do Seeker (decisão Willian: 50.000)
+  baseAPS: 0.90,          // atk speed inicial 0,9 (intervalo ~1,11s)
+  apsCap: 10,             // teto GLOBAL de APS (decisão Willian); Map 1 termina em ~2,5
+  // APS cresce LINEAR com o afixo do Amuleto (gearApsFlat) + Despertar (+0,5/tier).
+  // Mantemos as 2 chaves abaixo só por compat de imports (não usadas).
   apsBonusMax: 0.45,
   apsHalf: 1.7,
-  playerBaseHp: 25000,    // rescale ×500
+  playerBaseHp: 100000,   // HP base inicial (decisão Willian: 100k)
   regenPerSec: 0.01,      // 1% do HP máx por segundo
-  regenOnKill: 0.02,      // 2% do HP máx por kill
-  bossHpMult: 15,         // usado no CP-D
-  bossDmgMult: 3,         // usado no CP-D
+  regenOnKill: 0,         // regen-por-kill REMOVIDO (vira passiva futura — decisão Willian)
+  bossHpMult: 15,         // Wall = mob da Sub 9 (nível 1000) × 15 = ~32,5 bi
+  bossDmgMult: 3,         // dano do boss ×3 (sim BOSSDMG)
   deathRespawnSeconds: 3, // morte: respawn com HP cheio, sem perdas
   waveClearDelay: 0.3,    // beat entre ondas: cobre o voo do projétil (PROJ_BASE_MS 200ms + frame)
                           // p/ a morte do ÚLTIMO mob chegar ANTES da próxima onda surgir.
 };
 
 // §12 — Lumens · §6 — XP
+// ✅ recalibração 2026-06-17 (mobs relativos ao player): a recompensa é DESACOPLADA do HP do
+// mob (que agora = seu dano → criava feedback explosivo no nível). XP/Lumens por kill =
+// BASE FIXA × areaReward[área] × convMult × gear/mémoires. Assim o nível paceia pela
+// PROFUNDIDADE + taxa de kill, não pelo seu dano. (goldRatio/xpRatio viram legado.)
 export const ECONOMY = {
-  goldRatio: 0.10,  // lumens_por_kill = mob_hp × 0.10 (× convMult; sem frt — CP-3)
-  xpRatio: 0.08,    // xp_por_kill     = mob_hp × 0.08 (× convMult; sem wis — CP-3)
-  // ✅ Map 1 (14/jun): PISO fixo de lumens/kill. Pesa cedo (mob vale pouco) e some tarde
-  // (mob vale milhares) → 1º nível comprável em ~1min (era ~9min). Acelera o early (ok, Willian).
-  lumensFloor: 30000,  // rescale ×500 (acompanha o mob_hp ×500; pacing idêntico)
+  lumBase: 4000,    // Lumens base por kill (× areaReward × convMult × gear …) → compra de gear
+  xpRatio: 0.10,    // XP por kill = HP do mob × xpRatio (HP = seu dano × 3 → sobe LISO com nível)
+  goldRatio: 0.10,  // legado
+  xpBase: 90,       // legado
+  lumensFloor: 0,
 };
 
 // CP-3 (redesign) — NÍVEL = motor de stat base (substitui os Gold Stats).
 // O nível vem do XP da RUN (xpRun): level = (xpRun / div)^exp. Reseta na Convergence.
 // Cada nível dá stat FLAT. ⏳ VALORES PLACEHOLDER — Willian vai calibrar por teste.
 export const LEVEL = {
-  curveDiv: 11000, curveExp: 0.4, // calibrado p/ ~8h no Map 1 (gate por nível; sim map1_pace.mjs)
-  dmgPerLevel: 5000,  // +dano flat por nível (rescale ×500)
-  hpPerLevel: 2500,   // +HP flat por nível (rescale ×500)
-  goldPerLevel: 1500, // +Lumens base por kill por nível (rescale ×500)
+  // ✅ RECALIBRAÇÃO "VALORES NO MAPA" (18/jun): per-level escalado ao novo dano/HP base
+  // (baseDmg 50k → +7.500/nv mantém a mesma fração ~15%/nv; baseHp 100k → +500/nv ~0,5%/nv).
+  // O nível segue motor de stat base; XP da run reseta na Convergence. level=(xpRun/div)^exp.
+  curveDiv: 25000, curveExp: 0.42, // ⏳ div ×50 p/ compensar o mobHp ×50 (X=mobHp×ratio) e restaurar o pace
+  dmgPerLevel: 7500, // +dano flat por nível (≈15% do base/nv, como antes)
+  hpPerLevel: 500,   // +HP flat por nível (≈0,5% do base/nv, como antes)
+  goldPerLevel: 0,   // sem bônus de Lumens por nível
+};
+
+// ✅ INIMIGOS RELATIVOS AO PLAYER (recalibração 2026-06-17, decisão Willian: "números
+// grandes, mobs te seguem"). HP/dano/nível dos mobs derivam do PODER ATUAL do player —
+// não mais da malha estática. Coerente por construção (e imune ao reset da Convergence):
+//   mob.level   = nível do player × (fator leve por área)
+//   mob.hpMax   = dano_por_hit do player × hitsToKill × areaHp[área]   → ~3 golpes p/ matar
+//   mob.dmg/s   = HP_máx do player × dmgFrac × areaDmg[área]           → ameaça real (~30%+)
+//   recompensa  = HP do mob × ratio × areaReward[área]                 → fundo = mais ganho
+// Boss (Wall) = mob × bossHpMult (HP) e × bossDmgMult (dano). Índices = sub-área − 1.
+export const ENEMY = {
+  // ✅ RECALIBRAÇÃO "VALORES NO MAPA" (18/jun): TTK inicial ~2,2s (2 golpes ÷ APS 0,9) e CRESCE
+  // com a profundidade (áreas 2/3+ com mobs "bem mais fortes" — decisão Willian). O TTK CAI
+  // conforme o player investe (gear/Convergence/Despertar furam o baseline → menos golpes).
+  hitsToKill: 2,
+  areaHp:     [1, 1.4, 2.0, 2.7, 3.5, 4.5, 5.8, 7.4, 9.5],     // deeper = mobs bem mais fortes (TTK sobe)
+  dmgFrac:    0.009,                                           // dano da ONDA = HP_baseline × dmgFrac × areaDmg /s
+  areaDmg:    [1, 1.4, 1.9, 2.6, 3.4, 4.4, 5.6, 7.0, 9.0],     // profundidade = MUITO mais perigo (Wall mata)
+  areaReward: [1, 1.6, 2.6, 4.2, 6.8, 11, 18, 29, 47],         // Lumens crescem com a profundidade
+  // ✅ "VALORES NO MAPA" (18/jun): Wall (área 9) = mob × 100 de HP. Com Despertar = clímax tenso
+  // (~20 mortes, ~12h). SEM Despertar = grind ~3× mais longo (~37h) — Despertar fortemente necessário.
+  // (Ajustado p/ a base de custo 800, que deixa o gear ~174 no fim, mais fraco que antes.)
+  bossHpMult: 100,
+  bossDmgMult: 5,                                              // boss causa 5× o dano-onda de um mob
+  levelPerArea: 0.03,                                          // mob.level = playerLevel × (1 + 0.03×(área−1))
 };
 
 // §3 — Malha geométrica dos 5 mapas (✅ levels/HP/threshold canônicos).
-// ✅ CALIBRADO 2026-06-11 (Camada 2): dano dos mobs = RAZÃO CONSTANTE 0.02 × HP em
-// TODOS os mapas (dmgLo=hpLo×0.02, dmgHi=hpHi×0.02). Validado no simulador
-// (tools/sim/survival.mjs): a Defesa decide vida/morte na entrada de cada mapa.
+// ⚠️ HP/dano dos mobs agora vêm de ENEMY (relativo ao player); os campos hp*/dmg* abaixo
+// viram LEGADO (mantidos p/ compat de imports e do nível geométrico de unlock).
 // packSizes: densidade de mobs por sub-área (índice = sub-área − 1).
 // CP-2 (redesign): nº de sub-áreas CRESCENTE por mapa — Map1=5 · Map2=6 · Map3=7 ·
 // Map4=Map5=8 (era 5 fixo). PACK tem 8 entradas; cada mapa usa as primeiras N.
@@ -54,8 +86,17 @@ const PACK = [2, 3, 4, 5, 6, 8, 10, 12, 14];
 export const MAPS = [
   {
     id: 1, name: 'The Dreaming Wood', continent: 'worldmap.continent1', bg: 'backgrounds.map1',
-    lvlLo: 1, lvlHi: 1000, hpLo: 5000, hpHi: 5e8, dmgLo: 100, dmgHi: 1e7,
-    subareaCount: 9, packSizes: PACK, bossKillThreshold: 100,
+    // ✅ RECALIBRAÇÃO "EM BRANCO": mob 2.000 (2 hits) → Sub 9 nível 1000 = 2,169 bi;
+    // Wall (boss ×15) = ~32,5 bi. Dano dos mobs = curva PRÓPRIA (80 → 700k), Wall "perigo C".
+    lvlLo: 1, lvlHi: 1000, hpLo: 2000, hpHi: 2169085656, dmgLo: 80, dmgHi: 7e5,
+    // ✅ "VALORES NO MAPA" (18/jun): 2 mobs por área, EXCETO a área 9 (Wall) com 3 (decisão Willian).
+    subareaCount: 9, packSizes: [2, 2, 2, 2, 2, 2, 2, 2, 3], bossKillThreshold: 100,
+    // ✅ Map 1 sobe o gear só até INCOMUM (Kindled, índice 1) — raro+ é pós-Map 1 (decisão Willian).
+    gearRarityCap: 1,
+    // ✅ GATE DE NÍVEL re-calibrado e VALIDADO no harness (18/jun): bandas espalhadas pela
+    // jornada real de níveis (cresce via Convergence). Sub 7 (nível 540) = Despertar de fato
+    // ANTES da Wall; Sub 9 (nível 950) = Wall. unlockLevels[n-1] = nível p/ liberar a Sub n.
+    unlockLevels: [1, 25, 60, 130, 240, 380, 540, 720, 950],
     enemyNames: ['Candlewisp Shade', 'Mothlight Herald', 'Dreamhorn Warden', 'Hollowroot Crawler', 'Glowmere Drifter'],
     enemyArts: ['enemies.map1.candlewisp_shade', 'enemies.map1.mothlight_herald', 'enemies.map1.dreamhorn_warden', 'enemies.map1.hollowroot_crawler', 'enemies.map1.glowmere_drifter'],
     guardianArt: 'enemies.map1.dreamhorn_warden',
@@ -120,7 +161,10 @@ export const GOLD_STATS = {
 // lck sem milestones. Recalibrar quando o GDD fechar os valores.
 export const CRIT = {
   baseChance: 0,
-  baseDamageMult: 2,
+  // ✅ "VALORES NO MAPA" (18/jun, decisão Willian): crit damage inicial = 0 → um crit NÃO
+  // multiplica (×1) até você ganhar crit damage (Despertar +400%/tier, afixo do Manto, transbordo).
+  // critDamageMult = 1 + Σ(crit dmg). (Antes a base era ×2.)
+  baseDamageMult: 1,
   overflowFactor: 1,
 };
 
@@ -139,9 +183,17 @@ export const DEFENSE = {
 // permanente (dano/HP/XP/Lumens). Reseta o nível da run (xpRun) + o nível do Gear.
 // ⏳ VALORES PLACEHOLDER — Willian vai calibrar por teste (15% fixo? variável?).
 export const CONVERGENCE = {
-  bonusPerConv: 0.15,    // convMult = 1 + 0.15 × convergences (ADITIVO) — acelerador, não motor
-  gateLevelBase: 40,     // 1ª Convergence: atingir nível 40
-  gateLevelGrowth: 1.25, // ✅ Map 1: o alvo de nível sobe ×1.25 a cada Convergence (~12 converges/M1)
+  // ✅ "VALORES NO MAPA" (18/jun, decisão Willian): bônus ADITIVO de +20% em dano/HP base e
+  // +0,5% em Gold por Convergence. XP fica 0% (vem do Gear). Reseta o nível/Gold da run,
+  // NÃO reseta a posição no mapa. Cada Convergence exige um nível maior.
+  bonusPerConv: 0.20,        // dano/HP: convMult = 1 + 0.20 × convergences (ADITIVO)
+  goldBonusPerConv: 0.005,   // Gold (Lumens): convLumensMult = 1 + 0.005 × convergences (canal próprio)
+  gateLevelBase: 40,     // 1ª Convergence: atingir nível 40 (⏳ re-calibrado no harness)
+  gateLevelGrowth: 1.3,  // cada Convergence exige um nível maior (×1.3)
+  // ✅ HEAD-START (2026-06-17, ref. Gaiadon "Starting Ascension"): ao convergir, o nível da
+  // run NÃO volta pro 1 — reseta p/ headstartFrac × nível atingido. Conserta o death-loop
+  // das áreas fundas e corta a tediosidade de re-upar do zero. Validado no sim.
+  headstartFrac: 0.5,
 };
 
 // §7 — Vestiges (renda; gasto em Passivas/Ascension é pós-MVP)
@@ -160,34 +212,56 @@ export const GEAR_RARITY_LABELS = ['Faded', 'Kindled', 'Luminous', 'Radiant', 'C
 export const GEAR = {
   // 6 peças canônicas (§10.5.5). Cada peça: PRIMÁRIO inerente + SECUNDÁRIOS que a raridade
   // destrava em ordem (secondary[i] ativo quando rarity ≥ i+1). Determinístico.
-  // Pool de afixos: dmg · hp · defesa · crit · critDmg · aps · regen · bossDmg · lumens · xp · materiais
-  //                 (+ erosao = future, só reservado — penetração de defesa de inimigos, sem consumidor).
+  // Pool de afixos: dmg · hp · gilded · crit · critDmg · aps · regen · bossDmg · lumens · xp · materiais
+  //   (✅ 18/jun: DEFESA removida do jogo — decisão Willian. O Manto agora rola GILDED = chance de
+  //    aparecer um mob mais forte/rico, ver bloco GILDED. erosao = future, só reservado.)
   pieces: [
     { key: 'edge',  name: 'The Waning Edge',      slot: 'Arma',     primary: 'dmg',    secondary: ['critDmg', 'bossDmg', 'erosao'] },
-    { key: 'vigil', name: 'The Silent Vigil',     slot: 'Elmo',     primary: 'hp',     secondary: ['defesa', 'regen'] },
-    { key: 'veil',  name: 'Veil of Cinders',      slot: 'Manto',    primary: 'defesa', secondary: ['hp', 'regen', 'erosao'] },
+    { key: 'vigil', name: 'The Silent Vigil',     slot: 'Elmo',     primary: 'hp',     secondary: ['regen', 'hp'] },
+    { key: 'veil',  name: 'Veil of Cinders',      slot: 'Manto',    primary: 'gilded', secondary: ['hp', 'regen', 'erosao'] },
     { key: 'grasp', name: 'Grasp of the Unnamed', slot: 'Manoplas', primary: 'crit',   secondary: ['critDmg', 'aps', 'dmg'] },
     { key: 'reson', name: 'The Last Resonance',   slot: 'Amuleto',  primary: 'aps',    secondary: ['crit', 'regen', 'dmg'] },
     { key: 'band',  name: 'Band of Dusk',         slot: 'Anel',     primary: 'lumens', secondary: ['xp', 'materiais'] },
   ],
   // por raridade (índice 0..4): força do afixo e CUSTO sobem
   rarityMult: [1, 1.5, 2.25, 3.5, 5],
-  // CAP de nível por raridade (✅ Map 1: Faded = 1000). M2+ = placeholder (a discutir).
-  levelCap:   [750, 2000, 3000, 4000, 5000],
-  // CUSTO por tier. Faded = ×1 (→ 1400×(L+1), ✅ Map 1). M2+ = placeholder seguro (a discutir).
+  // ✅ "VALORES NO MAPA" (18/jun): CAP de nível — comum (Faded) 500 · incomum (Kindled) 1400
+  // (decisão Willian). M2+ = placeholder.
+  levelCap:   [500, 1400, 3000, 4000, 5000],
+  // CUSTO por tier. Faded = ×1; Kindled = ×10. M2+ = placeholder seguro.
   costMult:   [1, 10, 100, 1000, 10000],
-  // ── MODELO MAP 1 (calibrado 14/jun): 2 AFIXOS por peça — flat + % ──
-  // Primary (flat, por tipo) — soma à base. Bonus% (%) — multiplica. (×Multiplier removido.)
-  flatPerLevel: { dmg: 30000, hp: 12500, defesa: 7500, aps: 0, regen: 0.0005, bossDmg: 0, lumens: 0, xp: 0, crit: 0, critDmg: 0, materiais: 0 },
-  bonusRate: 0.02,           // afixo % : 1 + nível × bonusRate × rarityMult (2%/nv no Faded). ✅ Map 1
-  multRate:  0,              // ×Multiplier REMOVIDO (decisão Willian 14/jun — era cópia do Gaiadon)
-  affixPctRate: 0.01,        // FARM (lumens/xp/materiais): % linear/nível. (fix do NaN — faltava no constants)
+  // ── MODELO MAP 1 (✅ "VALORES NO MAPA" 18/jun) ──
+  // COMUM (Faded): 2 AFIXOS por peça — 1 flat + 1 % (bonusRate). Flats escalados ao novo
+  // dano/HP base (dmg 50k → +2.500/nv; hp 100k → +2.000/nv). APS/crit calibrados p/ os ALVOS
+  // de fim de Map 1: APS 2,5 e crit rate 30% (com 1 Despertar: +0,5 APS e +5% crit).
+  // INCOMUM (Kindled+): destrava 1 afixo MULTIPLIER × (camada multiplicativa — ver gear.js;
+  // só ativo em rarity ≥ 1). É o "salto" da raridade, não um "+10%".
+  // rates calibrados ao FIM income-limited do Map 1 (gear ~260, custo geométrico padrão do gênero).
+  flatPerLevel: { dmg: 2500, hp: 2000, aps: 0.00326, regen: 0.0005, bossDmg: 0, lumens: 0, xp: 0, crit: 0, critDmg: 0, materiais: 0 },
+  bonusRate: 0.02,           // afixo % : 1 + nível × bonusRate × rarityMult (2%/nv no Faded)
+  multRate:  0.0003,         // afixo MULTIPLIER × (só rarity ≥ 1 = Incomum+): 1 + nível × multRate × rarityMult
+  affixPctRate: 0.04,        // FARM (lumens/xp/materiais): % linear/nível (Anel 4% Lumens/nv)
   secondaryExp: 0.30,        // afixo SECUNDÁRIO = primário^0.30 (e flat/camadas × secondaryExp)
   capPerAsc: 0,
-  critPerLevel: 3e-4,        // afixo crit (chance): GRADUAL, ~15% no fim do M1 (Grasp ~490 Faded)
-  critDmgPerLevel: 1e-3,     // afixo critDmg (bônus plano sobre ×2): escala até o cap 1000 do gear
-  // custo de nível LINEAR: base × (nível+1) × costMult[raridade]. Calibrado p/ ~8h Map 1 (sim map1_pace.mjs).
-  levelCostBase: 420000,
+  critPerLevel: 0.00075,   // afixo crit (chance) — RAZÃO calibrada p/ crit ACOMPANHAR o APS
+                             // (critPerLevel/apsFlat ≈ 0.230 = 0.25/1.1). Re-ancorado ao MAX do Incomum
+                             // (gear 1400 no fim): APS 2,5 → Grasp ~25% + 5% do Despertar = 30%.
+  critDmgPerLevel: 0.0667,   // afixo critDmg (secundário a 0.30 → ~+2%/nv efetivo)
+  gildedPerLevel: 0.00018, // afixo GILDED (chance, afixo do Manto): nível × × rarityMult, teto GILDED.chanceCap.
+                             // Manto MAXADO no fim do Map 1 (1400 Kindled) ≈ 5%; cap GLOBAL 30%.
+  // ✅ recalibração "em branco": custo EXPONENCIAL por peça (sim) — barato cedo, dobra a cada
+  // 10 níveis (costRamp) → cria teto-SUAVE (~280) bem abaixo do cap duro (400). custo(L) =
+  // base × costRamp^L × costMult[raridade], clampado a NUMBER_CAP (M2+ recalibra à parte).
+  // ✅ "CUSTO CONTROLADO DENTRO DO TIER" (18/jun, decisão Willian, ref. img): o custo NÃO estoura
+  // dentro de um mesmo tier — só a TROCA de tier sobe (costMult ×10). Ramp bem gentil (dobra a
+  // cada ~90 níveis) → no topo do Comum (500) ~9,5K/nv e no topo do Incomum (1400) ~98M/nv
+  // (leg​ível, sem 1e17). Quem limita a progressão é a renda (Lumens) + o cap duro + materiais.
+  // ✅ "CUSTO ESTILO GÊNERO" (18/jun, decisão Willian + pesquisa): GEOMÉTRICO padrão (Clicker
+  // Heroes/Cookie Clicker): base PEQUENA e ESCALA. Comum (base ×1) começa baratíssimo (~50) e o
+  // custo dobra a cada ~10 níveis; o Incomum é a MESMA curva ×10 (base maior). Números grandes
+  // (1eX) são esperados (e ok): o gear para income-limited (~260 no Map 1), longe do cap.
+  levelCostBase: 800,        // base do Comum (decisão Willian: 800 → early menos instantâneo)
+  costRamp: 1.07,            // +7%/nível (≈ dobra a cada ~10): a "escala" do custo
   // (Subir raridade = gate duplo: nível no cap + MATERIAIS do tier — ver CRAFT, Passo 4.)
 };
 
@@ -202,6 +276,20 @@ export const CRAFT = {
 };
 // tier do material que o mapa dropa (índice 0..3 = T1..T4); Map 5 = T4 (future T5)
 export const mapMaterialTier = (map) => Math.min(map - 1, 3);
+
+// ✅ "VALORES NO MAPA" (18/jun, decisão Willian): GILDED — variante de mob "mais forte" que
+// substitui a DEFESA (removida). A chance vem do afixo do Manto (gear); teto GLOBAL de 30%
+// (no Map 1 chega a ~5% no fim). Um Gilded é mais TANQUE (×hp) e dá mais Gold/XP — NÃO bate
+// mais forte (dmgMult 1). Tiers: T1 no Map 1; T2+ liberam em mapas futuros (placeholder).
+// Nome canônico "Gilded" (o douramento do Dreaming Wood; eco do boss The Gilded Hollow).
+export const GILDED = {
+  chanceCap: 0.30, // teto GLOBAL da chance de Gilded (qualquer tier)
+  // unlockMap = mapa que libera o tier; o spawn usa o MAIOR tier com unlockMap ≤ mapa atual.
+  tiers: [
+    { name: 'Gilded',         hpMult: 3.3, lumensMult: 2.5, xpMult: 2.2, dmgMult: 1, unlockMap: 1 },
+    { name: 'Gilded Eidolon', hpMult: 6.0, lumensMult: 5.0, xpMult: 4.0, dmgMult: 1, unlockMap: 2 }, // ⏳ placeholder Map 2
+  ],
+};
 
 // §8 — DIFICULDADES (Camada 7, Passo 5). hpMult aplica a HP E dano dos mobs;
 // rewardMult a materiais/Éclats. O SISTEMA abre na A2 (minAscension); o gate dos
@@ -305,20 +393,32 @@ export const SEEKER_RANKS = [
   { name: 'L’Éveillé',  tier: 'IV' },
   { name: 'Lumière',    tier: 'V' },
 ];
-// ×poder permanente por tier de Despertar (dano E HP). ⏳ PROVISÓRIO — calibração na Escala.
-export const DESPERTAR = { mult: 5 };
+// ✅ DESPERTAR (recalibração "em branco" 2026-06-17) — pacote de efeitos por tier, igual ao
+// "awaken" do sim + economia. Ato do jogador, alcançável ANTES da Wall (Sub 7).
+export const DESPERTAR = {
+  // ✅ "VALORES NO MAPA" (18/jun, decisão Willian): pacote por tier. Map 1 libera 1 Despertar
+  // (na área 7). É a "chave" pré-Wall: liga o crit e multiplica o poder.
+  mult: 2,            // ×2 dano E vida por tier (multiplicativo)
+  critRateAdd: 0.05,  // +5% crit rate por tier
+  critDmgAdd: 4.0,    // +400% crit damage por tier (somado ao gear; base de crit dmg = 0)
+  apsAdd: 0.5,        // +0,500 de atk speed por tier (somado ao base/gear, antes do apsCap)
+  lumensBonus: 1.0,   // +100% Gold (Lumens) por tier
+  xpBonus: 0.40,      // +40% XP por tier
+};
 
-// §8 redesign (13/jun) — gate do Despertar em 3 camadas: Prova (Guardião Sub3) +
-// Oferenda (Nitzotzot) + Tributo (Vestiges). ⏳ NÚMEROS = LISTA DE CALIBRAÇÃO.
-// Drop do Nitzotz: só nas Sub-áreas 3+; chunk garantido em boss (Guardião).
+// ✅ GATE do Despertar (recalibração "em branco" 2026-06-17, decisão Willian): profundidade
+// (Sub 7+) + KILLS (total) + NÍVEL (da run) + MATERIAIS do T1 (consumidos no ato). Substitui
+// o gate Prova-Sub3/Nitzotzot/Vestiges (a Prova-Sub3 era inalcançável após o redesign 14/jun).
+// Drop do Nitzotz mantido (vestigial por ora; pode virar moeda de outra coisa).
 export const NITZOTZ = { dropChance: 0.02, bossChunk: 5 };
 // Requisito por TIER ALVO (índice = despertares+1 = 1..4 → T2..T5). [0] não usado (T1 = início).
+// subarea = profundidade mín. liberada · kills = total de kills · level = nível da run · t1 = materiais[0].
 export const DESPERTAR_REQ = [
   null,
-  { nitzotz: 20,  vestiges: 75_000 },    // → T2 Illuminate  (~15% Asc Map1)
-  { nitzotz: 40,  vestiges: 285_000 },   // → T3 Éclairé     (~15% Asc Map2)
-  { nitzotz: 80,  vestiges: 600_000 },   // → T4 L'Éveillé   (~15% Asc Map3)
-  { nitzotz: 160, vestiges: 1_200_000 }, // → T5 Lumière     (~15% Asc Map4)
+  { subarea: 7, kills: 6000,   level: 480,    t1: 40 },   // → T2 (Map 1): cai na Sub 7 (decisão Willian)
+  { subarea: 5, kills: 30_000, level: 5_000,  t1: 120 },  // → T3 (Map 2) ⏳ placeholder
+  { subarea: 6, kills: 1e5,    level: 1e5,    t1: 300 },  // → T4 (Map 3) ⏳ placeholder
+  { subarea: 7, kills: 3e5,    level: 1e6,    t1: 600 },  // → T5 (Map 4) ⏳ placeholder
 ];
 
 // §10/§11 — ÉCLATS + MÉMOIRES (✅ motor canônico do GDD). 15 relíquias, 3 por era,
@@ -367,5 +467,5 @@ export const TICK_SECONDS = 0.1;     // tick fixo de 100ms
 export const MAX_CATCHUP_TICKS = 50; // teto de catch-up por frame (ausências longas: offline §15 no reload)
 export const AUTOSAVE_MS = 10_000;
 export const SAVE_KEY = 'eclats_save_v1';
-export const SCHEMA_VERSION = 6; // v6 (14/jun): modelo Map 1 — gear 2 afixos + cap 1000 + custo/conv novos (descarta saves antigos incompatíveis)
+export const SCHEMA_VERSION = 8; // v8 (18/jun): recalibração "VALORES NO MAPA" — baseDmg 50k/HP 100k, Conv +20%/+0,5% Gold, Despertar (+400% crit dmg, +0,5 APS, +100% Gold, +40% XP), gear cap 500/1400, Incomum c/ Multiplier, packs 2/área-9=3. Descarta saves v7.
 export const NUMBER_CAP = 1e100;     // teto do jogo base — cabe no float nativo
