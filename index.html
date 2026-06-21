@@ -17,9 +17,16 @@
 
   <!-- ===== HUD: TOPO CENTRO — recurso + banner de área ===== -->
   <div class="hud hud-topcenter">
-    <span class="res-pill res-pill--gold"><span class="res-pill__icon">✦</span> <b id="res-lumens">0</b></span>
     <div class="banner banner--area">
       <span class="banner__text" id="res-area">Área 1 · The Dreaming Wood</span>
+    </div>
+  </div>
+
+  <!-- ===== HUD: TOPO DIREITA — Lumens ===== -->
+  <div class="hud hud-topright">
+    <div class="lumens-hud">
+      <img class="lumens-hud__icon" src="assets/ui/lumens.png" alt="Lumens" onerror="this.remove()" />
+      <b class="lumens-hud__value" id="res-lumens">0</b>
     </div>
   </div>
 
@@ -107,31 +114,24 @@
     <div class="modal modal--gear">
       <button class="modal-close" title="Close" onclick="document.getElementById('modal-gear').hidden=true">✕</button>
       <div class="modal__title">EQUIPMENT</div>
-      <div class="gear-layout">
-        <!-- painel de stats -->
-        <aside class="gear-stats-panel">
-          <h3 class="sub-title">Stats</h3>
-          <ul class="stats" id="gear-stats"></ul>
-        </aside>
-        <!-- tabuleiro: 3 slots · NPC · 3 slots -->
-        <div class="gear-board">
-          <div class="gear-col" id="gear-left"></div>
-          <div class="gear-npc">
-            <span class="art-ph">🧙</span>
-            <img class="art-img" src="assets/npc/gear_npc.png" alt="" onerror="this.remove()" />
-          </div>
-          <div class="gear-col" id="gear-right"></div>
-        </div>
-        <!-- rodapé: multiplicador de level-up -->
-        <div class="gear-footer">
-          <span class="gear-mult__label">Level amount:</span>
-          <div class="gear-mult" id="gear-mult">
-            <button data-mult="1" class="is-active">x1</button>
-            <button data-mult="10">x10</button>
-            <button data-mult="max">Max</button>
-          </div>
+      <!-- painel de stats (flutua sobre a cena, topo-esquerda) -->
+      <aside class="gear-stats-panel">
+        <h3 class="sub-title">Stats</h3>
+        <ul class="stats" id="gear-stats"></ul>
+      </aside>
+      <!-- 6 slots posicionados em arco em volta da Aurélie (via classes pos-*) -->
+      <div class="gear-slots" id="gear-slots"></div>
+      <!-- multiplicador (flutua, baixo-direita) -->
+      <div class="gear-footer">
+        <span class="gear-mult__label">Level amount:</span>
+        <div class="gear-mult" id="gear-mult">
+          <button data-mult="1" class="is-active">x1</button>
+          <button data-mult="10">x10</button>
+          <button data-mult="max">Max</button>
         </div>
       </div>
+      <!-- tooltip de item (preenchido/posicionado via ui.js no hover) -->
+      <div id="gear-tooltip" hidden></div>
     </div>
   </div>
 

@@ -343,7 +343,7 @@ body.game { overflow: hidden; height: 100vh; }
 .hud { position: fixed; z-index: 10; }
 .hud-topleft { top: 14px; left: 14px; display: flex; align-items: flex-start; gap: 10px; }
 .hud-topcenter { top: 14px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 8px; }
-.hud-topright { top: 14px; right: 14px; width: 280px; }
+.hud-topright { top: 14px; right: 14px; }
 .hud-bottomleft { bottom: 14px; left: 14px; width: 360px; max-width: 40vw; }
 .hud-bottomcenter { bottom: 14px; left: 50%; transform: translateX(-50%); }
 .hud-bottomright { bottom: 14px; right: 14px; }
@@ -460,6 +460,24 @@ body.game { overflow: hidden; height: 100vh; }
 .res-pill__icon { font-size: 16px; }
 .res-pill--gold { border-color: var(--gold); }
 .res-pill--gold .res-pill__icon { color: var(--gold); }
+
+/* ---- banner de Lumens (arte: soquete à esquerda + número no meio) ---- */
+.lumens-hud {
+  position: relative; height: 48px; aspect-ratio: 1490 / 248;
+  background: url("assets/ui/lumens_banner.png") no-repeat center / 100% 100%;
+  display: flex; align-items: center;
+}
+.lumens-hud__icon {
+  position: absolute; left: 0.5%; top: 50%; transform: translateY(-50%);
+  height: 86%; width: auto; pointer-events: none;
+  filter: drop-shadow(0 0 6px rgba(232, 181, 74, 0.55));
+}
+/* valor centralizado no meio do banner (um pouco à direita do soquete) */
+.lumens-hud__value {
+  position: absolute; left: 57%; top: 50%; transform: translate(-50%, -50%);
+  font-size: 18px; font-weight: 700; color: var(--text); text-align: center;
+  letter-spacing: 0.5px; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
+}
 
 /* banner ornamentado (arte) — texto centralizado no painel escuro */
 .banner {
@@ -583,6 +601,10 @@ body.game { overflow: hidden; height: 100vh; }
 .modal--gear {
   width: min(1500px, 96vw); height: 92vh; position: relative;
   display: flex; flex-direction: column; overflow: hidden;
+  /* cena da armaria (Aurélie já vem na arte) + scrim leve p/ legibilidade */
+  background:
+    linear-gradient(rgba(8, 10, 22, 0.18), rgba(8, 10, 22, 0.40)),
+    url("assets/ui/gear_bg.png") center / cover no-repeat;
 }
 .modal-close {
   position: absolute; top: 14px; right: 14px;
@@ -593,68 +615,94 @@ body.game { overflow: hidden; height: 100vh; }
 }
 .modal-close:hover { border-color: var(--bad); }
 
-.gear-layout {
-  flex: 1; min-height: 0;
-  display: grid; gap: 16px;
-  grid-template-columns: 260px 1fr;
-  grid-template-rows: 1fr auto;
-  grid-template-areas: "stats board" "stats footer";
+/* painel de stats — flutua sobre a cena (topo-esquerda) */
+.gear-stats-panel {
+  position: absolute; top: 56px; left: 16px; width: 218px; max-height: calc(100% - 110px);
+  overflow-y: auto; z-index: 20;
+  background: rgba(8, 10, 22, 0.62); border: 1px solid var(--card-border);
+  border-radius: 10px; padding: 10px 12px;
 }
-.gear-stats-panel { grid-area: stats; min-height: 0; overflow-y: auto; }
-.gear-board { grid-area: board; min-height: 0; }
-.gear-footer { grid-area: footer; }
-@media (max-width: 780px) {
-  .gear-layout { grid-template-columns: 1fr; grid-template-rows: auto auto auto; grid-template-areas: "board" "stats" "footer"; }
-}
-
-/* tabuleiro: 3 slots · NPC · 3 slots — preenche a altura toda */
-.gear-board {
-  display: grid; grid-template-columns: 1fr auto 1fr; gap: 18px; align-items: stretch;
-}
-.gear-col { display: flex; flex-direction: column; justify-content: space-between; gap: 14px; }
-
-.gear-npc {
-  position: relative; align-self: stretch;
-  width: clamp(220px, 24vw, 380px);
-  display: flex; align-items: center; justify-content: center;
-}
-.gear-npc .art-ph { font-size: 120px; opacity: 0.35; }
-.gear-npc .art-img {
-  max-width: 100%; max-height: 100%; object-fit: contain;
-  filter: drop-shadow(0 12px 26px rgba(0, 0, 0, 0.55));
+/* rodapé do multiplicador — flutua (baixo-direita) */
+.gear-footer {
+  position: absolute; right: 18px; bottom: 16px; z-index: 20;
+  display: flex; align-items: center; gap: 10px;
 }
 
-/* card de slot */
+/* layer dos slots (arco em volta da Aurélie) */
+.gear-slots { position: absolute; inset: 0; pointer-events: none; z-index: 15; }
+/* posições em arco (centro de cada slot, via translate) */
+.pos-weapon { left: 35%; top: 18%; }
+.pos-helmet { left: 30%; top: 47%; }
+.pos-armor  { left: 30%; top: 78%; }
+.pos-gloves { left: 67%; top: 17%; }
+.pos-boots  { left: 68%; top: 48%; }
+.pos-cloak  { left: 72%; top: 78%; }
+
+/* slot — SEM moldura: só LVL · box do ícone (cor da raridade) · ação */
+/* posicionado em arco (absolute) sobre a cena */
 .gear-slot {
-  display: grid; grid-template-columns: 68px 1fr auto; gap: 12px; align-items: center;
-  background: rgba(10, 16, 32, 0.7); border: 1px solid var(--card-border);
-  border-left: 3px solid var(--rar, var(--card-border));
-  border-radius: 10px; padding: 12px 14px;
+  position: absolute; transform: translate(-50%, -50%); pointer-events: auto;
+  display: flex; flex-direction: column; gap: 6px; width: 150px; cursor: default;
 }
+.gear-slot:hover .gear-slot__icon {
+  border-color: color-mix(in srgb, var(--rar, transparent) 70%, var(--cyan)); filter: brightness(1.08);
+}
+
+/* LVL no topo (solto sobre o fundo, com sombra p/ legibilidade) */
+.gear-slot__lvl {
+  font-size: 12px; font-weight: 700; letter-spacing: 0.5px; color: var(--text); text-align: center;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
+}
+
+/* box do ícone — quadrada, com a COR DA RARIDADE (única "moldura" que existe) */
 .gear-slot__icon {
-  width: 68px; height: 68px; border-radius: 10px; font-size: 34px;
-  background: rgba(2, 4, 10, 0.6); border: 1px solid var(--card-border);
-  display: flex; align-items: center; justify-content: center;
+  position: relative; width: 100%; aspect-ratio: 1 / 1; border-radius: 10px; font-size: 48px;
+  background: color-mix(in srgb, var(--rar, transparent) 16%, rgba(2, 4, 10, 0.62));
+  border: 2px solid color-mix(in srgb, var(--rar, transparent) 60%, var(--card-border));
+  display: flex; align-items: center; justify-content: center; overflow: hidden;
+  transition: border-color 0.12s, filter 0.12s;
 }
-.gear-slot__info { min-width: 0; }
-.gear-slot__top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
-.gear-slot__name { font-weight: 600; font-size: 15px; }
-.gear-slot__lvl { font-size: 13px; color: var(--muted); white-space: nowrap; }
-.gear-slot__affixes { display: flex; flex-direction: column; gap: 4px; margin-top: 6px; }
-.gear-affix { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
-.gear-affix__main { font-size: 13px; color: var(--teal); font-weight: 600; }
-.gear-affix__perlv { font-size: 11px; color: var(--muted); }
+.gear-slot__icon .ico-img { position: absolute; inset: 7%; width: 86%; height: 86%; object-fit: contain;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5)); }
+.gear-slot__icon .ico-ph:has(~ .ico-img) { display: none; }
+
+/* ação embaixo: MAX, ou custo + Level up */
+.gear-slot__action { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+.gear-slot__cost { font-size: 12px; color: var(--gold); font-weight: 600; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85); }
+.gear-max { font-size: 13px; font-weight: 700; color: var(--gold); padding: 4px 0; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85); }
 
 .gear-levelup {
-  border: 1px solid var(--card-border); background: rgba(46, 124, 196, 0.18);
-  color: var(--text); border-radius: 8px; padding: 8px 14px; min-width: 76px;
-  font-size: 13px; line-height: 1.2; cursor: pointer; text-align: center;
+  width: 100%;
+  border: 1px solid var(--card-border); background: rgba(46, 124, 196, 0.2);
+  color: var(--text); border-radius: 8px; padding: 6px 10px;
+  font-size: 12px; line-height: 1.2; cursor: pointer; text-align: center;
   transition: border-color 0.1s, filter 0.1s, transform 0.08s;
 }
-.gear-levelup small { color: var(--gold); }
 .gear-levelup:hover { border-color: var(--cyan); filter: brightness(1.1); }
 .gear-levelup:active { transform: scale(0.96); }
-.gear-levelup.is-max { opacity: 0.5; cursor: default; color: var(--gold); }
+.gear-levelup.is-max { opacity: 0.55; cursor: default; color: var(--gold); }
+
+/* tooltip de item (stats detalhados, no hover) */
+#gear-tooltip {
+  position: absolute; z-index: 60; width: 300px; pointer-events: none;
+  background: linear-gradient(160deg, rgba(14, 24, 38, 0.97), rgba(8, 12, 20, 0.97));
+  border: 2px solid color-mix(in srgb, var(--gold) 75%, transparent);
+  border-radius: 6px; padding: 16px 18px;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.6);
+}
+/* segunda linha dourada interna (look Belle Époque) */
+#gear-tooltip::before {
+  content: ""; position: absolute; inset: 4px; pointer-events: none;
+  border: 1px solid color-mix(in srgb, var(--gold) 38%, transparent); border-radius: 4px;
+}
+#gear-tooltip[hidden] { display: none; }
+.tip-name { font-weight: 700; font-size: 19px; }
+.tip-sub { font-size: 14px; opacity: 0.9; margin-top: 2px; }
+.tip-lvl { font-size: 14px; color: var(--muted); font-style: italic; margin: 9px 0; }
+.tip-affixes { display: flex; flex-direction: column; gap: 8px; }
+.tip-affix { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.tip-affix__main { font-size: 15px; color: var(--teal); font-weight: 600; }
+.tip-perlv { font-size: 13px; color: var(--muted); }
 
 /* rodapé: multiplicador de level-up */
 .gear-footer { display: flex; align-items: center; gap: 10px; justify-content: flex-end; padding-top: 4px; }

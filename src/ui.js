@@ -16,7 +16,7 @@ G.ui = {
       "enemy-art", "enemy-name", "enemy-level", "enemy-atk",
       "enemy-hp-fill", "enemy-hp-label", "floaters",
       "hero-card-level", "hero-hp-fill", "hero-hp-label", "log",
-      "gear-stats", "gear-left", "gear-right", "gear-mult",
+      "gear-stats", "gear-slots", "gear-mult", "gear-tooltip",
     ];
     for (const id of ids) this.el[id] = document.getElementById(id);
   },
@@ -149,54 +149,85 @@ G.ui = {
   },
 
   // ---- tela de Equipment: 6 peças fixas em torno do NPC ----
+  // o card foca no ÍCONE (grande); os stats vão pro tooltip no hover.
   renderGear() {
-    if (!this.el["gear-left"] || !this.el["gear-right"]) return;
+    if (!this.el["gear-slots"]) return;
     const slotCard = (slot) => {
       const item = G.state.data.equipped[slot.id];
       if (!item) return "";
       const lvl = item.level || 1;
-      const cap = G.gear.cap(item);
       const maxed = G.gear.isMaxed(item);
-      // cada afixo: valor atual em destaque + "+X per level" apagado (estilo referência)
-      const affixes = item.affixes
-        .map((a) => {
-          const v = G.gear.affixValue(item, a);
-          const pctSign = a.pct ? "%" : "";
-          const kind = a.layer === "pct" ? "Bonus" : "Primary";
-          const perLv = a.perLevel
-            ? `<span class="gear-affix__perlv">+${this.fmtStat(a.perLevel, a.pct)}${pctSign} per level</span>`
-            : "";
-          return `<div class="gear-affix">
-            <span class="gear-affix__main">+${this.fmtStat(v, a.pct)}${pctSign} ${a.label} ${kind}</span>
-            ${perLv}
-          </div>`;
-        })
-        .join("");
       const icon = slot.icon || "❔";
-      const btn = maxed
-        ? `<button class="gear-levelup is-max" disabled>MAX</button>`
-        : `<button class="gear-levelup" data-levelup="${slot.id}">Level up<br><small>✦ ${G.util.fmt(G.gear.cost(item))}</small></button>`;
-      return `<div class="gear-slot" style="--rar:${item.color}">
-        <div class="gear-slot__icon"><span class="ico-ph">${icon}</span></div>
-        <div class="gear-slot__info">
-          <div class="gear-slot__top">
-            <span class="gear-slot__name" style="color:${item.color}">${item.name}</span>
-            <span class="gear-slot__lvl">Lv. ${lvl}/${cap}</span>
-          </div>
-          <div class="gear-slot__affixes">${affixes}</div>
+      const action = maxed
+        ? `<span class="gear-max">MAX</span>`
+        : `<span class="gear-slot__cost">✦ ${G.util.fmt(G.gear.cost(item))}</span>
+           <button class="gear-levelup" data-levelup="${slot.id}">Level up</button>`;
+      return `<div class="gear-slot pos-${slot.id}" data-tip="${slot.id}" style="--rar:${item.color}">
+        <span class="gear-slot__lvl">LVL ${lvl}</span>
+        <div class="gear-slot__icon">
+          <span class="ico-ph">${icon}</span>
+          <img class="ico-img" src="assets/gear/${slot.id}.png" alt="" onerror="this.remove()" />
         </div>
-        ${btn}
+        <div class="gear-slot__action">${action}</div>
       </div>`;
     };
-    const slots = G.data.slots;
-    this.el["gear-left"].innerHTML = slots.slice(0, 3).map(slotCard).join("");
-    this.el["gear-right"].innerHTML = slots.slice(3, 6).map(slotCard).join("");
-    const wire = (node) =>
-      node.querySelectorAll("[data-levelup]").forEach((b) => {
-        b.addEventListener("click", () => this.doGearLevelUp(b.dataset.levelup));
-      });
-    wire(this.el["gear-left"]);
-    wire(this.el["gear-right"]);
+    const node = this.el["gear-slots"];
+    node.innerHTML = G.data.slots.map(slotCard).join("");
+    node.querySelectorAll("[data-levelup]").forEach((b) => {
+      b.addEventListener("click", () => this.doGearLevelUp(b.dataset.levelup));
+    });
+    node.querySelectorAll(".gear-slot[data-tip]").forEach((s) => {
+      s.addEventListener("mouseenter", () => this.showGearTip(s));
+      s.addEventListener("mousemove", () => this.showGearTip(s));
+      s.addEventListener("mouseleave", () => this.hideGearTip());
+    });
+  },
+
+  // ---- tooltip de item (stats detalhados) ----
+  gearTipHtml(item) {
+    const lvl = item.level || 1;
+    const cap = G.gear.cap(item);
+    const affixes = item.affixes
+      .map((a) => {
+        const v = G.gear.affixValue(item, a);
+        const sign = a.pct ? "%" : "";
+        const kind = a.layer === "pct" ? "Bonus" : "Primary";
+        const perLv = a.perLevel
+          ? `<span class="tip-perlv">+${this.fmtStat(a.perLevel)}${sign} per level</span>`
+          : "";
+        return `<div class="tip-affix"><span class="tip-affix__main">+${this.fmtStat(v)}${sign} ${a.label} ${kind}</span>${perLv}</div>`;
+      })
+      .join("");
+    return `<div class="tip-name" style="color:${item.color}">${item.name}</div>
+      <div class="tip-sub" style="color:${item.color}">${item.rarityName} ${item.slotLabel}</div>
+      <div class="tip-lvl">Level ${lvl} / ${cap}</div>
+      <div class="tip-affixes">${affixes}</div>`;
+  },
+
+  showGearTip(slot) {
+    const tip = this.el["gear-tooltip"];
+    if (!tip) return;
+    const item = G.state.data.equipped[slot.dataset.tip];
+    if (!item) return;
+    tip.innerHTML = this.gearTipHtml(item);
+    tip.hidden = false;
+    const modal = slot.closest(".modal--gear");
+    const mr = modal.getBoundingClientRect();
+    const sr = slot.getBoundingClientRect();
+    const tr = tip.getBoundingClientRect();
+    const isLeft = sr.left + sr.width / 2 < mr.left + mr.width / 2;
+    // tooltip aparece pro lado de DENTRO (em direção ao centro/NPC)
+    let left = isLeft ? sr.right - mr.left + 12 : sr.left - mr.left - tr.width - 12;
+    let top = sr.top - mr.top;
+    left = G.util.clamp(left, 8, mr.width - tr.width - 8);
+    top = G.util.clamp(top, 8, mr.height - tr.height - 8);
+    tip.style.left = left + "px";
+    tip.style.top = top + "px";
+  },
+
+  hideGearTip() {
+    const tip = this.el["gear-tooltip"];
+    if (tip) tip.hidden = true;
   },
 
   doGearLevelUp(slotId) {
