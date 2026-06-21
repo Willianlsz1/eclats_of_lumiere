@@ -16,7 +16,7 @@ G.ui = {
       "enemy-art", "enemy-name", "enemy-level", "enemy-atk",
       "enemy-hp-fill", "enemy-hp-label", "floaters",
       "hero-card-level", "hero-hp-fill", "hero-hp-label", "log",
-      "gear-stats", "gear-slots", "gear-mult", "gear-tooltip",
+      "gear-stats", "gear-slots", "gear-mult", "gear-tooltip", "wmap-nodes",
     ];
     for (const id of ids) this.el[id] = document.getElementById(id);
   },
@@ -91,8 +91,46 @@ G.ui = {
     this.renderHero();
     this.renderStats();
     this.renderGear();
+    this.renderWorldMap();
     this.renderUpgrade();
     this.renderHeroHp();
+  },
+
+  // ---- World Map: nós das áreas sobre a ilustração do mapa ----
+  renderWorldMap() {
+    const wrap = this.el["wmap-nodes"];
+    if (!wrap) return;
+    const d = G.state.data;
+    const maxU = Math.min(d.maxAreaUnlocked || 0, G.data.areas.length - 1);
+    wrap.innerHTML = G.data.areas
+      .map((a, i) => {
+        const locked = i > maxU;
+        const cur = i === d.areaIndex;
+        const cls = `wmap-node wn-${i + 1}${locked ? " is-locked" : ""}${cur ? " is-current" : ""}`;
+        return `<button class="${cls}" data-area="${i}" title="${a.name}"${locked ? " disabled" : ""}>
+          <img src="assets/ui/node_${i + 1}.png" alt="" onerror="this.remove()" />
+          <span class="wmap-node__num">${i + 1}</span>
+        </button>`;
+      })
+      .join("");
+    wrap.querySelectorAll("[data-area]").forEach((b) => {
+      b.addEventListener("click", () => this.travelTo(+b.dataset.area));
+    });
+  },
+
+  // viaja pra uma área específica (se desbloqueada) e fecha o mapa
+  travelTo(i) {
+    const d = G.state.data;
+    const maxU = Math.min(d.maxAreaUnlocked || 0, G.data.areas.length - 1);
+    if (i < 0 || i > maxU || i === d.areaIndex) {
+      const m = document.getElementById("modal-worldmap"); if (m) m.hidden = true;
+      return;
+    }
+    d.areaIndex = i;
+    G.combat.enemy = null;
+    G.combat.respawnTimer = G.data.balance.respawnDelay;
+    this.onAreaChange();
+    const m = document.getElementById("modal-worldmap"); if (m) m.hidden = true;
   },
 
   // o jogador navega entre as sub-áreas DESBLOQUEADAS (setas do banner)

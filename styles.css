@@ -607,6 +607,43 @@ body.game { overflow: hidden; height: 100vh; }
 .modal__actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 18px; }
 
 /* =============================================================
+   Tela WORLD MAP — mapa + nós das áreas (sem borda no CSS)
+   ============================================================= */
+.modal--worldmap { width: min(1180px, 96vw); padding: 16px; }
+.wmap { position: relative; width: 100%; aspect-ratio: 1672 / 941; border-radius: 10px; overflow: hidden; }
+.wmap__bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.wmap__nodes { position: absolute; inset: 0; }
+.wmap-node {
+  position: absolute; transform: translate(-50%, -50%);
+  width: 7%; aspect-ratio: 1; padding: 0; border: none; background: none; cursor: pointer;
+  border-radius: 50%; transition: transform 0.1s, filter 0.1s;
+}
+.wmap-node img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 2px 7px rgba(0, 0, 0, 0.7)); }
+.wmap-node:hover:not(.is-locked) { transform: translate(-50%, -50%) scale(1.14); z-index: 3; }
+.wmap-node.is-current { z-index: 2; }
+.wmap-node.is-current img { filter: drop-shadow(0 0 10px var(--gold)) drop-shadow(0 0 4px var(--gold)); }
+.wmap-node.is-locked { cursor: not-allowed; }
+.wmap-node.is-locked img { filter: grayscale(0.9) brightness(0.45); }
+.wmap-node.is-locked::after {
+  content: "🔒"; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 18px;
+}
+.wmap-node__num {
+  position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%);
+  font-size: 12px; font-weight: 700; color: var(--text);
+  background: rgba(8, 10, 22, 0.92); border: 1px solid var(--card-border); border-radius: 6px; padding: 0 6px;
+}
+/* posições dos nós ao longo do caminho (ajuste fino aqui) */
+.wn-1 { left: 52%; top: 11%; }
+.wn-2 { left: 64%; top: 20%; }
+.wn-3 { left: 45%; top: 28%; }
+.wn-4 { left: 38%; top: 40%; }
+.wn-5 { left: 28%; top: 50%; }
+.wn-6 { left: 53%; top: 54%; }
+.wn-7 { left: 67%; top: 62%; }
+.wn-8 { left: 40%; top: 72%; }
+.wn-9 { left: 51%; top: 88%; }
+
+/* =============================================================
    Tela EQUIPMENT — 6 peças fixas em torno do NPC central
    ============================================================= */
 .modal--gear {

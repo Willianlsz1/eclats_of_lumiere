@@ -82,6 +82,9 @@
   <div class="hud hud-topleft">
     <div class="toolbar">
       <button class="icon-btn icon-btn--active" id="btn-pause" title="Pausar" onclick="G.ui.togglePause(this)">⏸</button>
+      <button class="icon-btn" title="World Map" onclick="G.ui.openModal('modal-worldmap')">
+        <span class="ico-ph">🌐</span><img class="ico-img" src="assets/ui/icon_world.png" alt="" onerror="this.remove()" />
+      </button>
       <button class="icon-btn" title="Personagem" onclick="G.ui.openModal('modal-char')">
         <span class="ico-ph">🧙</span><img class="ico-img" src="assets/ui/icon_player.png" alt="" onerror="this.remove()" />
       </button>
@@ -146,6 +149,18 @@
         equipe gear melhor e reforce a arma na Forja para avançar a profundidade da área.
       </div>
       <div class="modal__actions"><button class="btn attack-btn" style="width:auto" onclick="document.getElementById('modal-help').hidden=true">Okay</button></div>
+    </div>
+  </div>
+
+  <!-- ===== MODAL: WORLD MAP (Mapa 1 + nós das áreas) ===== -->
+  <div class="modal-overlay" id="modal-worldmap" hidden onclick="if(event.target===this)this.hidden=true">
+    <div class="modal modal--worldmap">
+      <button class="modal-close" title="Close" onclick="document.getElementById('modal-worldmap').hidden=true">✕</button>
+      <div class="modal__title">WORLD MAP · The Dreaming Wood</div>
+      <div class="wmap" id="wmap">
+        <img class="wmap__bg" src="assets/ui/map1.png" alt="" />
+        <div class="wmap__nodes" id="wmap-nodes"></div>
+      </div>
     </div>
   </div>
 
