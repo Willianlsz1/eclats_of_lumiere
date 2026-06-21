@@ -44,8 +44,8 @@ G.combat = {
     // área SEM boss: ao atingir o teto, libera a próxima automaticamente
     if (atCap && !area.boss) this.unlockNext();
 
-    // curva exponencial derivada do Gaiadon
-    const hp = b.mobHpBase * Math.pow(b.mobHpGrowth, level - 1);
+    // HP em estágios (piecewise); ATK em crescimento único
+    const hp = G.data.mobHpAt(level);
     const atk = b.mobAtkBase * Math.pow(b.mobAtkGrowth, level - 1);
 
     let def, maxHp, dmg, lumens, xp;
@@ -171,6 +171,11 @@ G.combat = {
     // loot DESLIGADO por enquanto (gear agora é 6 peças fixas que sobem de
     // nível com ouro). O sistema de drop/inventário fica reservado p/ futuro.
 
+    // Awakening Essence: dropa na Área 7+ (índice 6+) — alimenta o Awaken
+    if (G.state.data.areaIndex >= 6 && G.util.chance(G.data.balance.awakenDropChance)) {
+      G.state.data.awakenEssence = (G.state.data.awakenEssence || 0) + 1;
+    }
+
     // boss derrotado => LIBERA a próxima sub-área (o jogador decide quando avançar)
     if (e.isBoss) this.markBossCleared();
 
@@ -215,6 +220,7 @@ G.combat = {
     while (G.state.data.xp >= G.state.xpToNext()) {
       G.state.data.xp -= G.state.xpToNext();
       G.state.data.level += 1;
+      if (G.state.data.level > (G.state.data.highestLevel || 0)) G.state.data.highestLevel = G.state.data.level;
       G.state.data.hp = G.state.maxHp(); // cura ao subir de nível
       if (G.ui && G.ui.log) G.ui.log(`★ Subiu para o nível ${G.state.data.level}!`, "level");
     }

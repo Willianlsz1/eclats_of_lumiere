@@ -21,6 +21,11 @@ G.state = {
       areaIndex: 0,          // sub-área atual do Mapa 1 (0 = The Dreaming Wood)
       maxAreaUnlocked: 0,    // maior sub-área liberada (boss anterior derrotado)
       mapOneCleared: false,  // Mapa 1 concluído (boss final derrotado ao menos 1x)
+      convergencePoints: 0,  // moeda de prestige (gasta nas passivas — ver convergence.js)
+      convergences: 0,       // quantas vezes renasceu
+      highestLevel: 1,       // recorde de nível (não reseta na Convergence)
+      awakenEssence: 0,      // material do Awaken (dropa na Área 7+)
+      awakensUnlocked: [],   // ids dos Awakens desbloqueados (permanentes)
       equipped: G.gear.freshSet(), // 6 peças FIXAS (Nv.1, Comum) — ver gear.js
       lastSeen: Date.now(),  // p/ progresso offline
     };
@@ -40,8 +45,10 @@ G.state = {
     // Crescimento linear com o nível de personagem. Como a vida do mob é
     // EXPONENCIAL no nível do mob, o gap entre os dois é preenchido por gear
     // (a "treadmill de loot" do gênero).
-    layer("atk").flat += 10 + (d.level - 1) * 4;
-    layer("hp").flat += 40 + (d.level - 1) * 10;
+    // Base alta (1000) e ganho por nível PEQUENO: o nível serve de relógio das
+    // áreas; o PODER vem do gear (loot-driven). Mapa 1 vai do nível 1 ao 5000.
+    layer("atk").flat += 1000 + (d.level - 1) * 2;
+    layer("hp").flat += 1000 + (d.level - 1) * 2;
     // Forja: cada reforço dá +4% de ATK (camada de bônus, sempre relevante).
     layer("atk").pct += d.weaponUpgrades * 4;
     layer("crit").flat += 5;
@@ -63,6 +70,9 @@ G.state = {
         layer(af.stat)[af.layer || "flat"] += G.gear.affixValue(item, af);
       }
     }
+
+    // ---- camada Awaken (3ª fonte de poder; permanente) ----
+    if (G.awaken) G.awaken.applyTo(layer);
 
     const fin = (k) => {
       const x = layer(k);
@@ -92,9 +102,12 @@ G.state = {
     return G.util.clamp(1.0 / aps, 0.1, 5);
   },
 
-  // XP necessária para o próximo nível
+  // XP necessária para o próximo nível.
+  // LINEAR (14 × nível): com 5000 níveis no Mapa 1, a antiga curva ^1.5 faria o
+  // mapa levar ~800h. Linear mantém ~1,4 kills por nível (xpToNext/baseXp) e o
+  // mapa fecha em ~6h ativas.
   xpToNext() {
-    return Math.floor(50 * Math.pow(this.data.level, 1.5));
+    return Math.ceil(14 * this.data.level);
   },
 
   // ------------- SAVE / LOAD -------------

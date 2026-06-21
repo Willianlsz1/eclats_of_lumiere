@@ -38,14 +38,14 @@ G.data = {
     weapon: {
       name: "Worn Blade",
       affixes: [
-        { id: "atk", label: "Attack", stat: "atk", layer: "flat", base: 50, perLevel: 10 },
+        { id: "atk", label: "Attack", stat: "atk", layer: "flat", base: 0, perLevel: 20 },
         { id: "atkp", label: "Attack", stat: "atk", layer: "pct", base: 0, perLevel: 1 },
       ],
     },
     helmet: {
       name: "Worn Helm",
       affixes: [
-        { id: "hp", label: "HP", stat: "hp", layer: "flat", base: 50, perLevel: 20 },
+        { id: "hp", label: "HP", stat: "hp", layer: "flat", base: 0, perLevel: 20 },
         { id: "critDmg", label: "Crit Damage", stat: "critDmg", layer: "flat", base: 0, perLevel: 1 },
       ],
     },
@@ -59,7 +59,7 @@ G.data = {
     gloves: {
       name: "Worn Gloves",
       affixes: [
-        { id: "atkspd", label: "Attack Speed", stat: "atkSpeed", layer: "flat", base: 0.01, perLevel: 0.01 },
+        { id: "atkspd", label: "Attack Speed", stat: "atkSpeed", layer: "flat", base: 0, perLevel: 0.01 },
         { id: "crit", label: "Crit Rate", stat: "crit", layer: "flat", base: 0.05, perLevel: 0.025 },
       ],
     },
@@ -74,7 +74,7 @@ G.data = {
       name: "Worn Cloak",
       affixes: [
         { id: "crit", label: "Crit Rate", stat: "crit", layer: "flat", base: 0.05, perLevel: 0.025 },
-        { id: "atkp", label: "Attack", stat: "atk", layer: "pct", base: 5, perLevel: 1 },
+        { id: "atkp", label: "Attack", stat: "atk", layer: "pct", base: 0, perLevel: 1 },
       ],
     },
   },
@@ -84,11 +84,11 @@ G.data = {
   // cap = teto de nível do gear por raridade (AJUSTE SEUS CAPS AQUI)
   // name em inglês (UI do jogo).
   rarities: [
-    { id: "common", name: "Common", color: "#9aa7bd", affixes: 1, weight: 60, mult: 1.0, cap: 10 },
-    { id: "magic", name: "Magic", color: "#5ee0d2", affixes: 2, weight: 28, mult: 1.4, cap: 20 },
-    { id: "rare", name: "Rare", color: "#9d7bff", affixes: 3, weight: 9, mult: 1.9, cap: 30 },
-    { id: "epic", name: "Epic", color: "#ff9a4d", affixes: 4, weight: 2.5, mult: 2.6, cap: 40 },
-    { id: "legendary", name: "Legendary", color: "#e8b54a", affixes: 5, weight: 0.5, mult: 3.6, cap: 50 },
+    { id: "common", name: "Common", color: "#9aa7bd", affixes: 1, weight: 60, mult: 1.0, cap: 500 },
+    { id: "magic", name: "Magic", color: "#5ee0d2", affixes: 2, weight: 28, mult: 1.4, cap: 600 },
+    { id: "rare", name: "Rare", color: "#9d7bff", affixes: 3, weight: 9, mult: 1.9, cap: 700 },
+    { id: "epic", name: "Epic", color: "#ff9a4d", affixes: 4, weight: 2.5, mult: 2.6, cap: 800 },
+    { id: "legendary", name: "Legendary", color: "#e8b54a", affixes: 5, weight: 0.5, mult: 3.6, cap: 1000 },
   ],
 
   // ---- Afixos possíveis num item ----
@@ -127,8 +127,9 @@ G.data = {
     {
       id: 1,
       name: "The Dreaming Wood",
+      blurb: "Where the Seeker first wakes. Soft auroras drip through ancient boughs, and here the light still dreams.",
       img: "assets/areas/dreaming_wood.png",
-      levelRange: [1, 10],
+      levelRange: [1, 40],
       enemies: [
         { name: "Candlewisp Shade", sprite: "🔥", img: "assets/enemies/candlewisp_shade.png" },
         { name: "Mothlight Herald", sprite: "🦋", img: "assets/enemies/mothlight_herald.png" },
@@ -141,8 +142,9 @@ G.data = {
       // Área 2 — The Lantern Mire: brejo afogado, Fragmented que se perderam na luz.
       id: 2,
       name: "The Lantern Mire",
+      blurb: "A drowned bog of guttering lanterns, where Fragmented souls lost themselves chasing the light.",
       img: "assets/areas/lantern_mire.png",
-      levelRange: [11, 20],
+      levelRange: [41, 120],
       enemies: [
         { name: "Mirelight Drifter", sprite: "🏮", img: "assets/enemies/mirelight_drifter.png" }, // novo
         { name: "Candlewisp Shade", sprite: "🔥", img: "assets/enemies/candlewisp_shade.png" },   // reaproveitado (Área 1)
@@ -154,8 +156,9 @@ G.data = {
       // Área 3 — The Whispering Hollows: árvores ocas que cantam a luz presa.
       id: 3,
       name: "The Whispering Hollows",
+      blurb: "Hollow trees that sing the trapped light, their murmurs curling endlessly through the dark.",
       img: "assets/areas/whispering_hollows.png",
-      levelRange: [21, 30],
+      levelRange: [121, 250],
       enemies: [
         { name: "Husklight Murmur", sprite: "🌳", img: "assets/enemies/husklight_murmur.png" },  // novo
         { name: "Dreamhorn Warden", sprite: "🦌", img: "assets/enemies/dreamhorn_warden.png" },  // reaproveitado (Área 1)
@@ -167,8 +170,9 @@ G.data = {
       // Área 4 — The Moonlit Canopy: a copa alta, perto da aurora.
       id: 4,
       name: "The Moonlit Canopy",
+      blurb: "The high canopy, nearest the aurora, where moths and wardens drift through a pale, restless glow.",
       img: "assets/areas/moonlit_canopy.png",
-      levelRange: [31, 40],
+      levelRange: [251, 430],
       enemies: [
         { name: "Boughlight Creeper", sprite: "🍃", img: "assets/enemies/boughlight_creeper.png" }, // novo
         { name: "Mothlight Herald", sprite: "🦋", img: "assets/enemies/mothlight_herald.png" },      // reaproveitado (Área 1)
@@ -180,8 +184,9 @@ G.data = {
       // Área 5 — The Sunken Grove: bosque inundado e espelhado, reflexos da Névoa.
       id: 5,
       name: "The Sunken Grove",
+      blurb: "A flooded, mirrored grove — every still pool reflects the creeping Mist back at the Seeker.",
       img: "assets/areas/sunken_grove.png",
-      levelRange: [41, 50],
+      levelRange: [431, 660],
       enemies: [
         { name: "Glasswater Wraith", sprite: "💧", img: "assets/enemies/glasswater_wraith.png" }, // novo
         { name: "Mirelight Drifter", sprite: "🏮", img: "assets/enemies/mirelight_drifter.png" }, // reaproveitado (Área 2)
@@ -193,8 +198,9 @@ G.data = {
       // Área 6 — The Gilded Thicket: matagal de espinhos onde a corrupção dourada sobe.
       id: 6,
       name: "The Gilded Thicket",
+      blurb: "A bramble of thorns where the golden corruption climbs — beautiful, and entirely wrong.",
       img: "assets/areas/gilded_thicket.png",
-      levelRange: [51, 60],
+      levelRange: [661, 940],
       enemies: [
         { name: "Thornlight Stalker", sprite: "🌵", img: "assets/enemies/thornlight_stalker.png" }, // novo
         { name: "Candlewisp Shade", sprite: "🔥", img: "assets/enemies/candlewisp_shade.png" },     // reaproveitado (Área 1)
@@ -206,8 +212,9 @@ G.data = {
       // Área 7 — The Hollow Cathedral: catedral-árvore onde os Fragmented adoram a luz.
       id: 7,
       name: "The Hollow Cathedral",
+      blurb: "A cathedral grown of living wood, where the Fragmented kneel and worship the captured light.",
       img: "assets/areas/hollow_cathedral.png",
-      levelRange: [61, 70],
+      levelRange: [941, 1260],
       enemies: [
         { name: "Hollowed Acolyte", sprite: "⛪", img: "assets/enemies/hollowed_acolyte.png" },   // novo
         { name: "Husklight Murmur", sprite: "🌳", img: "assets/enemies/husklight_murmur.png" },    // reaproveitado (Área 3)
@@ -219,8 +226,9 @@ G.data = {
       // Área 8 — The Weeping Roots: as raízes fundas, a floresta sangrando luz.
       id: 8,
       name: "The Weeping Roots",
+      blurb: "The deep roots, where the forest bleeds light and mourns everything it has lost.",
       img: "assets/areas/weeping_roots.png",
-      levelRange: [71, 80],
+      levelRange: [1261, 1610],
       enemies: [
         { name: "Rootbound Weeper", sprite: "🌱", img: "assets/enemies/rootbound_weeper.png" },   // novo
         { name: "Thornlight Stalker", sprite: "🌵", img: "assets/enemies/thornlight_stalker.png" }, // reaproveitado (Área 6)
@@ -232,8 +240,9 @@ G.data = {
       // Área 9 — The Hollow Sanctum: o coração da floresta, clímax do Mapa 1.
       id: 9,
       name: "The Hollow Sanctum",
+      blurb: "The heart of the wood — the climax of the Dreaming, where the Gilded Hollow waits in the hush.",
       img: "assets/areas/hollow_sanctum.png",
-      levelRange: [81, 90],
+      levelRange: [1611, 2000],
       enemies: [
         { name: "Rootbound Weeper", sprite: "🌱", img: "assets/enemies/rootbound_weeper.png" },   // reaproveitado (Á8)
         { name: "Hollowed Acolyte", sprite: "⛪", img: "assets/enemies/hollowed_acolyte.png" },     // reaproveitado (Á7)
@@ -242,6 +251,21 @@ G.data = {
       boss: { name: "The Gilded Hollow", sprite: "👁", img: "assets/enemies/gilded_hollow.png" },
     },
   ],
+
+  // HP do mob num nível — crescimento em ESTÁGIOS (piecewise), contínuo.
+  // Aplica o growth de cada estágio da fronteira anterior até min(nível, teto).
+  mobHpAt(level) {
+    const b = this.balance;
+    let hp = b.mobHpBase, prev = 1;
+    for (const st of b.mobHpStages) {
+      if (level <= prev) break;
+      const top = Math.min(level, st.upTo);
+      hp *= Math.pow(st.growth, top - prev);
+      prev = top;
+      if (level <= st.upTo) break;
+    }
+    return hp;
+  },
 
   // área atual (em função do progresso salvo)
   currentArea() {
@@ -255,23 +279,55 @@ G.data = {
   // bem mais devagar (~+4,5%/nível). O nível do mob é um eixo de progressão
   // SEPARADO do seu nível de personagem (sobe a cada kill, recua ao morrer).
   balance: {
-    mobHpBase: 20,        // vida do mob no nível 1 (TTK ~2s com ATK base 10)
-    mobHpGrowth: 1.064,   // +6,4% de vida por nível do mob (Gaiadon)
-    mobAtkBase: 4,        // ATK do mob no nível 1
-    mobAtkGrowth: 1.045,  // +4,5% de ATK por nível do mob
+    // Curva balanceada p/ o Mapa 1 (validada por simulação, jun/2026):
+    // Escala 1000/1000 (ATK/HP inicial), nível 1 → 5000 ao longo das 9 áreas.
+    // TTK do mob ~2s do início ao fim (você reinveste a renda em gear pra
+    // manter o ritmo); cada BOSS é o pico/parede (~7-9s), vencível se o gear
+    // da faixa está em dia. Não reinvestir → o mob acompanha seu nível e o TTK
+    // sobe. Mapa 1 inteiro ≈ 6h de jogo ativo.
+    mobHpBase: 2050,      // vida do mob no nível 1 (TTK ~2s com o ATK base 1000)
+    // HP do mob em ESTÁGIOS (growth por faixa de nível) — ver G.data.mobHpAt().
+    // Cada estágio aplica seu growth da fronteira anterior até o seu teto, de
+    // forma CONTÍNUA (o HP no fim de um estágio = início do próximo). Resolve o
+    // "HP achatado": growth maior no early (sobe rápido e visível), estabiliza
+    // no mid, e fica agressivo no end (God Mode). Alvos validados:
+    //   ~985k no Lv1000 · ~395M no Lv4000 · ~58B no Lv5000.
+    mobHpStages: [
+      { upTo: 1000, growth: 1.0062 }, // Early (1–1000): HP sobe rápido logo cedo
+      { upTo: 4000, growth: 1.002 },  // Mid (1001–4000): estabiliza
+      { upTo: 5000, growth: 1.005 },  // End (4001–5000): agressivo (desafios finais)
+    ],
+    mobAtkBase: 45,       // ATK do mob no nível 1
+    mobAtkGrowth: 1.00085,// +0,085% de ATK por nível
     healOnKillFrac: 0.10, // cura 10% do HP máx a cada kill (fôlego)
     retreatOnDeath: 3,    // ao morrer, recua N níveis de mob (autocorrige)
     bossHpMult: 4,        // boss tem 4× a vida normal
     bossDmgMult: 1.5,     // e bate 50% mais forte
     bossRewardMult: 6,    // multiplicador de XP do boss
     goldRatio: 0.25,      // gold-base por kill = goldRatio × vida do mob (âncora ao HP)
-    baseXp: 8,            // xp por kill = baseXp × nível do mob
+    baseXp: 10,           // xp por kill = baseXp × nível do mob
     dropChance: 0.35,     // chance de drop por kill
     respawnDelay: 1.0,    // segundos de espera entre matar um mob e o próximo aparecer
-    // ---- level-up de gear (custo LINEAR, estilo Gaiadon) ----
-    // o ganho por nível agora é POR AFIXO (campo perLevel em gearBase),
-    // não uma % global.
-    gearCostBase: 12,     // custo = gearCostBase × nível + gearCostFlat
-    gearCostFlat: 8,
+    // ---- level-up de gear: custo GEOMÉTRICO ----
+    // A renda (Lumens) cresce EXPONENCIAL (ancorada ao HP do mob), então o
+    // custo do gear também precisa crescer geométrico, senão reinvestir
+    // trivializa o jogo. Assim, manter o TTK na banda exige reinvestir de
+    // verdade. Ganho por nível = POR AFIXO (campo perLevel em gearBase).
+    //   custo = gearCostBase × gearCostGrowth^(nível-1)
+    gearCostBase: 1100,
+    gearCostGrowth: 1.05,
+    awakenDropChance: 0.02, // chance de Awakening Essence por kill (Área 7+)
   },
+
+  // ---- AWAKEN: 3ª fonte de poder (Gear × Awaken × Convergence) ----
+  // Desbloqueia na Área 7+. Cada Awaken é um PACOTE de bônus aplicado
+  // globalmente (camada própria em stats() — ver awaken.js). Requisitos:
+  // nível + Awakening Essence (dropa na Área 7+) + Lumens. Os bônus são
+  // PERMANENTES (sobrevivem à Convergence). Valores = placeholder (passada final).
+  awakenMaterialName: "Awakening Essence",
+  // MAPA 1 = só 1 Awaken (na Área 7). Os próximos awakenings entram no Mapa 2.
+  awakens: [
+    { id: 1, name: "First Light", areaIndex: 6, level: 1000, essence: 40, lumens: 500000,
+      bonus: { atkMult: 2, hpMult: 2, critDmg: 500, crit: 3, lumensBonus: 300, xpBonus: 100 } },
+  ],
 };

@@ -16,7 +16,11 @@ G.ui = {
       "enemy-art", "enemy-name", "enemy-level", "enemy-atk",
       "enemy-hp-fill", "enemy-hp-label", "floaters",
       "hero-card-level", "hero-hp-fill", "hero-hp-label", "log",
-      "gear-stats", "gear-slots", "gear-mult", "gear-tooltip", "wmap-nodes",
+      "gear-stats", "gear-slots", "gear-mult", "gear-tooltip", "wmap-nodes", "wmap-trail", "wmap-area-name",
+      "wmap-area-range", "wmap-info", "wmap-info-name", "wmap-info-range", "wmap-info-lore",
+      "wmap-info-mobs", "wmap-info-boss", "wmap-info-boss-wrap", "wmap-info-travel", "wmap-info-close",
+      "conv-points", "conv-count", "conv-highest", "conv-pending", "btn-converge",
+      "awaken-essence", "awaken-list",
     ];
     for (const id of ids) this.el[id] = document.getElementById(id);
   },
@@ -35,6 +39,30 @@ G.ui = {
         );
       });
     }
+    // painel de info da área no World Map
+    if (this.el["wmap-info-close"])
+      this.el["wmap-info-close"].addEventListener("click", () => { this.el["wmap-info"].hidden = true; });
+    if (this.el["wmap-info-travel"])
+      this.el["wmap-info-travel"].addEventListener("click", () => {
+        if (this._infoArea != null) this.travelTo(this._infoArea);
+      });
+    // Convergence (prestige): confirma e renasce
+    if (this.el["btn-converge"])
+      this.el["btn-converge"].addEventListener("click", () => {
+        if (!G.convergence.canConverge()) return;
+        const pts = G.convergence.pending();
+        if (confirm(`Converge now for ${G.util.fmt(pts)} Convergence Points? Your level resets to 1.`)) {
+          G.convergence.converge();
+          this.renderConvergence();
+        }
+      });
+    // Awaken: desbloquear (clique delegado nos botões da lista)
+    if (this.el["awaken-list"])
+      this.el["awaken-list"].addEventListener("click", (e) => {
+        const btn = e.target.closest("[data-awaken]");
+        if (!btn) return;
+        if (G.awaken.unlock(+btn.dataset.awaken)) this.renderAwaken();
+      });
     // abas do log (cosmético por enquanto)
     const tabs = document.getElementById("log-tabs");
     if (tabs) tabs.addEventListener("click", (e) => {
@@ -47,6 +75,13 @@ G.ui = {
   // abre um modal e atualiza o conteúdo dele
   openModal(id) {
     this.renderAll();
+    // o World Map só renderiza ao abrir (não a cada tick), e começa sem painel
+    if (id === "modal-worldmap") {
+      this.renderWorldMap();
+      if (this.el["wmap-info"]) this.el["wmap-info"].hidden = true;
+    }
+    if (id === "modal-convergence") this.renderConvergence();
+    if (id === "modal-awaken") this.renderAwaken();
     const m = document.getElementById(id);
     if (m) m.hidden = false;
   },
@@ -91,31 +126,138 @@ G.ui = {
     this.renderHero();
     this.renderStats();
     this.renderGear();
-    this.renderWorldMap();
     this.renderUpgrade();
     this.renderHeroHp();
   },
 
-  // ---- World Map: nós das áreas sobre a ilustração do mapa ----
+  // painel do Awaken — lista os pacotes, status e botão de desbloquear
+  renderAwaken() {
+    const d = G.state.data;
+    if (this.el["awaken-essence"]) this.el["awaken-essence"].textContent = G.util.fmt(d.awakenEssence || 0);
+    const wrap = this.el["awaken-list"];
+    if (!wrap) return;
+    wrap.innerHTML = G.data.awakens
+      .map((a) => {
+        const unlocked = G.awaken.isUnlocked(a.id);
+        const can = G.awaken.canUnlock(a.id);
+        const b = a.bonus;
+        const fx = [
+          b.atkMult ? `ATK ×${b.atkMult}` : null,
+          b.hpMult ? `HP ×${b.hpMult}` : null,
+          b.crit ? `Crit +${b.crit}%` : null,
+          b.critDmg ? `Crit Dmg +${b.critDmg}%` : null,
+          b.lumensBonus ? `Gold +${b.lumensBonus}%` : null,
+          b.xpBonus ? `XP +${b.xpBonus}%` : null,
+        ].filter(Boolean).join(" · ");
+        const reqs = `Area ${a.areaIndex + 1} · Lv ${a.level} · ${a.essence} Essence · ${G.util.fmt(a.lumens)} ✦`;
+        const action = unlocked
+          ? `<span class="awaken-done">Awakened ✓</span>`
+          : `<button class="btn attack-btn awaken-btn" data-awaken="${a.id}"${can ? "" : " disabled"}>Awaken</button>`;
+        return `<li class="awaken-node${unlocked ? " is-done" : ""}">
+          <div class="awaken-node__head"><b>${a.name}</b>${action}</div>
+          <div class="awaken-node__fx">${fx}</div>
+          <div class="awaken-node__req">${reqs}</div>
+        </li>`;
+      })
+      .join("");
+  },
+
+  // painel da Convergence (prestige) — renderiza ao abrir o modal
+  renderConvergence() {
+    const d = G.state.data;
+    if (this.el["conv-points"]) this.el["conv-points"].textContent = G.util.fmt(d.convergencePoints || 0);
+    if (this.el["conv-count"]) this.el["conv-count"].textContent = d.convergences || 0;
+    if (this.el["conv-highest"]) this.el["conv-highest"].textContent = G.util.fmt(d.highestLevel || d.level);
+    if (this.el["conv-pending"]) this.el["conv-pending"].textContent = G.util.fmt(G.convergence.pending());
+    const btn = this.el["btn-converge"];
+    if (btn) {
+      const ok = G.convergence.canConverge();
+      btn.disabled = !ok;
+      btn.textContent = ok ? "Converge" : `Converge (reach Lv ${G.convergence.gateLevel})`;
+    }
+  },
+
+  // posições dos 9 nós no mapa (% x,y) — fonte única p/ nós E trilha
+  mapNodePos: [
+    [34, 8], [66, 12], [67, 28], [39, 27], [31, 54],
+    [66, 53], [34, 74], [68, 76], [47, 88],
+  ],
+
+  // ---- World Map: nós das áreas + trilha sobre a ilustração do mapa ----
   renderWorldMap() {
     const wrap = this.el["wmap-nodes"];
     if (!wrap) return;
     const d = G.state.data;
+    const pos = this.mapNodePos;
     const maxU = Math.min(d.maxAreaUnlocked || 0, G.data.areas.length - 1);
+
+    const curArea = G.data.currentArea();
+    if (this.el["wmap-area-name"]) this.el["wmap-area-name"].textContent = curArea.name;
+    if (this.el["wmap-area-range"])
+      this.el["wmap-area-range"].textContent = `Lv ${curArea.levelRange[0]}–${curArea.levelRange[1]}`;
+
+    // trilha: linha ligando os nós na ordem (parte percorrida x bloqueada)
+    const trail = this.el["wmap-trail"];
+    if (trail) {
+      const pts = pos.map((p) => p.join(",")).join(" ");
+      const donePts = pos.slice(0, maxU + 1).map((p) => p.join(",")).join(" ");
+      trail.innerHTML =
+        `<polyline points="${pts}" fill="none" stroke="rgba(120,140,180,0.45)" stroke-width="2" vector-effect="non-scaling-stroke" stroke-dasharray="5 6" stroke-linecap="round" stroke-linejoin="round"/>` +
+        `<polyline points="${donePts}" fill="none" stroke="rgba(232,181,74,0.9)" stroke-width="2.5" vector-effect="non-scaling-stroke" stroke-dasharray="5 6" stroke-linecap="round" stroke-linejoin="round"/>`;
+    }
+
     wrap.innerHTML = G.data.areas
       .map((a, i) => {
         const locked = i > maxU;
         const cur = i === d.areaIndex;
-        const cls = `wmap-node wn-${i + 1}${locked ? " is-locked" : ""}${cur ? " is-current" : ""}`;
-        return `<button class="${cls}" data-area="${i}" title="${a.name}"${locked ? " disabled" : ""}>
+        const [x, y] = pos[i] || [50, 50];
+        const cls = `wmap-node${locked ? " is-locked" : ""}${cur ? " is-current" : ""}`;
+        return `<button class="${cls}" style="left:${x}%;top:${y}%" data-area="${i}" title="${a.name}"${locked ? " disabled" : ""}>
           <img src="assets/ui/node_${i + 1}.png" alt="" onerror="this.remove()" />
-          <span class="wmap-node__num">${i + 1}</span>
+          <span class="wmap-node__name">${a.name}</span>
         </button>`;
       })
       .join("");
     wrap.querySelectorAll("[data-area]").forEach((b) => {
-      b.addEventListener("click", () => this.travelTo(+b.dataset.area));
+      b.addEventListener("click", () => this.openAreaInfo(+b.dataset.area));
     });
+  },
+
+  // abre o painel de info de uma área (lore + range + criaturas + boss)
+  openAreaInfo(i) {
+    const a = G.data.areas[i];
+    if (!a || !this.el["wmap-info"]) return;
+    this._infoArea = i;
+    const d = G.state.data;
+    const maxU = Math.min(d.maxAreaUnlocked || 0, G.data.areas.length - 1);
+    const locked = i > maxU;
+
+    this.el["wmap-info-name"].textContent = a.name;
+    this.el["wmap-info-range"].textContent = `Levels ${a.levelRange[0]}–${a.levelRange[1]}`;
+    this.el["wmap-info-lore"].textContent = a.blurb || "";
+
+    // criaturas: nomes únicos definidos na área (boss listado à parte)
+    const seen = {};
+    const mobs = (a.enemies || []).filter((e) => !seen[e.name] && (seen[e.name] = 1));
+    this.el["wmap-info-mobs"].innerHTML = mobs
+      .map((e) => `<li>${e.name}</li>`)
+      .join("");
+
+    // boss (algumas áreas não têm)
+    if (a.boss) {
+      this.el["wmap-info-boss-wrap"].hidden = false;
+      this.el["wmap-info-boss"].textContent = a.boss.name;
+    } else {
+      this.el["wmap-info-boss-wrap"].hidden = true;
+    }
+
+    // botão Travel: desabilitado se travada ou se já é a área atual
+    const tbtn = this.el["wmap-info-travel"];
+    if (i === d.areaIndex) { tbtn.disabled = true; tbtn.textContent = "You are here"; }
+    else if (locked) { tbtn.disabled = true; tbtn.textContent = "Locked"; }
+    else { tbtn.disabled = false; tbtn.textContent = "Travel here"; }
+
+    this.el["wmap-info"].hidden = false;
   },
 
   // viaja pra uma área específica (se desbloqueada) e fecha o mapa

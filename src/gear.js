@@ -84,11 +84,12 @@ G.gear = {
     return rarity && rarity.cap ? rarity.cap : 10;
   },
 
-  // custo p/ subir do nível atual (LINEAR)
+  // custo p/ subir do nível atual (GEOMÉTRICO — acopla à renda exponencial)
+  //   custo = gearCostBase × gearCostGrowth^(nível-1)
   cost(item) {
     const b = G.data.balance;
     const lvl = item.level || 1;
-    return Math.ceil(b.gearCostBase * lvl + b.gearCostFlat);
+    return Math.ceil(b.gearCostBase * Math.pow(b.gearCostGrowth, lvl - 1));
   },
 
   isMaxed(item) {
