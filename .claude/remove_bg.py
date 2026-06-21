@@ -1,11 +1,12 @@
 # Remove fundo branco E preserva transparência já existente; recorta ao conteúdo.
 # Uso: python remove_bg.py <entrada> <saida>
 import sys
-from PIL import Image, ImageChops
+from PIL import Image, ImageChops, ImageFilter
 
 src = sys.argv[1]
 dst = sys.argv[2]
-hi, lo = 248, 222  # >=hi vira transparente; <=lo fica opaco; entre = rampa
+hi, lo = 242, 200  # >=hi vira transparente; <=lo fica opaco; entre = rampa
+# (mais agressivo que antes p/ comer a franja branca anti-aliased da borda)
 
 im = Image.open(src).convert("RGBA")
 r, g, b, a0 = im.split()
@@ -24,6 +25,8 @@ white_alpha = mn.point(lut)
 # alpha final = mínimo(alpha original, remoção-do-branco)
 # -> transparente se já era transparente OU se é branco
 a = ImageChops.darker(a0, white_alpha)
+# erode 1px a borda do alpha p/ matar o halo branco residual (MinFilter = mínimo 3x3)
+a = a.filter(ImageFilter.MinFilter(3))
 im.putalpha(a)
 
 # recorta ao conteúdo SÓLIDO (ignora glow/sparkles fracos que esticam o bbox)

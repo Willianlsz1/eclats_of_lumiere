@@ -150,6 +150,32 @@ G.data = {
       ],
       boss: { name: "The Drowned Lantern", sprite: "🕯", img: "assets/enemies/drowned_lantern.png" },
     },
+    {
+      // Área 3 — The Whispering Hollows: árvores ocas que cantam a luz presa.
+      id: 3,
+      name: "The Whispering Hollows",
+      img: "assets/areas/whispering_hollows.png",
+      levelRange: [21, 30],
+      enemies: [
+        { name: "Husklight Murmur", sprite: "🌳", img: "assets/enemies/husklight_murmur.png" },  // novo
+        { name: "Dreamhorn Warden", sprite: "🦌", img: "assets/enemies/dreamhorn_warden.png" },  // reaproveitado (Área 1)
+        { name: "Mirelight Drifter", sprite: "🏮", img: "assets/enemies/mirelight_drifter.png" }, // reaproveitado (Área 2)
+      ],
+      boss: { name: "The Hollow Cantor", sprite: "🎶", img: "assets/enemies/hollow_cantor.png" },
+    },
+    {
+      // Área 4 — The Moonlit Canopy: a copa alta, perto da aurora.
+      id: 4,
+      name: "The Moonlit Canopy",
+      img: "assets/areas/moonlit_canopy.png",
+      levelRange: [31, 40],
+      enemies: [
+        { name: "Boughlight Creeper", sprite: "🍃", img: "assets/enemies/boughlight_creeper.png" }, // novo
+        { name: "Mothlight Herald", sprite: "🦋", img: "assets/enemies/mothlight_herald.png" },      // reaproveitado (Área 1)
+        { name: "Husklight Murmur", sprite: "🌳", img: "assets/enemies/husklight_murmur.png" },       // reaproveitado (Área 3)
+      ],
+      boss: { name: "The Moonlit Sovereign", sprite: "👑", img: "assets/enemies/moonlit_sovereign.png" },
+    },
   ],
 
   // área atual (em função do progresso salvo)
