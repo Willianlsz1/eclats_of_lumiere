@@ -8,9 +8,9 @@
       "port": 5173
     },
     {
-      "name": "game",
+      "name": "eclats",
       "runtimeExecutable": "node",
-      "runtimeArgs": [".claude/static-server.js"],
+      "runtimeArgs": [".claude/dev-server.js"],
       "port": 4321
     },
     {

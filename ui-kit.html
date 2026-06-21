@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Éclats — Kit de UI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <!-- fonte da verdade: o MESMO css do jogo (catálogo vivo) -->
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* ---- layout SÓ do catálogo (não vai pro jogo) ---- */
+    body { padding: 0; }
+    .kit-header {
+      padding: 28px 32px; border-bottom: 1px solid var(--card-border);
+      background: linear-gradient(180deg, #101a30, rgba(16, 26, 48, 0.5));
+    }
+    .kit-header h1 {
+      font-family: "Cormorant Garamond", serif; font-style: italic; font-weight: 600; font-size: 34px;
+      background: linear-gradient(90deg, var(--cyan), var(--teal), var(--gold));
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+    }
+    .kit-header p { color: var(--muted); margin-top: 4px; font-size: 14px; }
+    .kit-wrap { max-width: 1100px; margin: 0 auto; padding: 24px 32px 80px; }
+    .kit-section { margin-top: 40px; }
+    .kit-section > h2 {
+      font-family: "Cormorant Garamond", serif; font-style: italic; font-size: 24px;
+      color: var(--cyan); margin-bottom: 4px;
+    }
+    .kit-section > .kit-desc { color: var(--muted); font-size: 13px; margin-bottom: 16px; }
+    .kit-grid { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start; }
+    .kit-item {
+      background: var(--card); border: 1px solid var(--card-border); border-radius: 12px;
+      padding: 18px; display: flex; flex-direction: column; gap: 12px; align-items: flex-start;
+      min-width: 160px;
+    }
+    .kit-item.kit-wide { width: 100%; }
+    .kit-demo { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+    .kit-code {
+      font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: 11px;
+      color: var(--teal); background: rgba(0, 0, 0, 0.4); border: 1px solid var(--card-border);
+      border-radius: 5px; padding: 2px 7px;
+    }
+    /* swatches da paleta */
+    .swatches { display: flex; flex-wrap: wrap; gap: 12px; }
+    .swatch { width: 120px; }
+    .swatch__block { height: 56px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.1); }
+    .swatch__name { font-size: 12px; margin-top: 6px; color: var(--text); }
+    .swatch__hex { font-size: 11px; color: var(--muted); font-family: monospace; }
+    /* tipografia */
+    .type-row { display: flex; align-items: baseline; gap: 14px; padding: 6px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+    .type-row .kit-code { margin-left: auto; }
+  </style>
+</head>
+<body>
+  <header class="kit-header">
+    <h1>Éclats — Kit de UI</h1>
+    <p>Catálogo vivo dos componentes. Usa o mesmo <code class="kit-code">styles.css</code> do jogo — mexeu no estilo, reflete aqui.</p>
+  </header>
+
+  <div class="kit-wrap">
+
+    <!-- ===== FUNDAMENTOS ===== -->
+    <section class="kit-section">
+      <h2>Paleta</h2>
+      <div class="kit-desc">Variáveis CSS em <code class="kit-code">:root</code>. Mundo quente (dourado), interface fria (ciano).</div>
+      <div class="swatches" id="swatches"></div>
+    </section>
+
+    <section class="kit-section">
+      <h2>Tipografia</h2>
+      <div class="kit-desc">Cormorant Garamond (títulos, itálico) · Outfit (texto e números).</div>
+      <div class="kit-item kit-wide">
+        <div class="type-row"><span class="panel-title" style="margin:0">Título de painel</span><code class="kit-code">.panel-title</code></div>
+        <div class="type-row"><span class="sub-title" style="margin:0">SUBTÍTULO</span><code class="kit-code">.sub-title</code></div>
+        <div class="type-row"><span style="font-size:15px">Texto padrão (Outfit)</span><code class="kit-code">body</code></div>
+        <div class="type-row"><span style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:24px;color:var(--gold)">Nome lendário</span><code class="kit-code">serif italic</code></div>
+      </div>
+    </section>
+
+    <!-- ===== BOTÕES ===== -->
+    <section class="kit-section">
+      <h2>Botões</h2>
+      <div class="kit-grid">
+        <div class="kit-item"><button class="btn attack-btn" style="width:auto">⚔ Atacar</button><code class="kit-code">.btn.attack-btn</code></div>
+        <div class="kit-item"><button class="btn upgrade-btn" style="width:auto">Reforçar</button><code class="kit-code">.btn.upgrade-btn</code></div>
+        <div class="kit-item"><button class="btn ghost" style="width:auto">Ghost</button><code class="kit-code">.btn.ghost</code></div>
+        <div class="kit-item"><button class="mini equip">Equipar</button><code class="kit-code">.mini.equip</code></div>
+        <div class="kit-item"><button class="mini sell">Vender ✦12</button><code class="kit-code">.mini.sell</code></div>
+      </div>
+    </section>
+
+    <!-- ===== BOTÕES DE ÍCONE / TOOLBAR ===== -->
+    <section class="kit-section">
+      <h2>Botões de ícone &amp; Toolbar</h2>
+      <div class="kit-desc">Estados: normal, ativo (borda dourada), bloqueado (cadeado). Como a barra de features/ações do Gaiadon.</div>
+      <div class="kit-grid">
+        <div class="kit-item">
+          <div class="toolbar">
+            <button class="icon-btn">⚔</button>
+            <button class="icon-btn icon-btn--active">⏸</button>
+            <button class="icon-btn">🛒</button>
+            <button class="icon-btn icon-btn--locked">🎁</button>
+            <button class="icon-btn icon-btn--round">⚙</button>
+          </div>
+          <code class="kit-code">.toolbar &gt; .icon-btn[--active|--locked|--round]</code>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== RECURSOS & BANNERS ===== -->
+    <section class="kit-section">
+      <h2>Recursos &amp; Banners</h2>
+      <div class="kit-grid">
+        <div class="kit-item"><span class="res-pill res-pill--gold"><span class="res-pill__icon">✦</span> 4.52M</span><code class="kit-code">.res-pill--gold</code></div>
+        <div class="kit-item">
+          <div class="area-banner">
+            <button class="area-banner__nav">◀</button>
+            <span class="area-banner__name">The Dreaming Wood</span>
+            <button class="area-banner__nav">▶</button>
+          </div>
+          <code class="kit-code">.area-banner</code>
+        </div>
+        <div class="kit-item"><span class="name-banner">FELINIMP</span><code class="kit-code">.name-banner</code></div>
+      </div>
+    </section>
+
+    <!-- ===== PAINÉIS ===== -->
+    <section class="kit-section">
+      <h2>Painéis</h2>
+      <div class="kit-grid">
+        <div class="kit-item" style="min-width:240px">
+          <div class="panel" style="width:100%">
+            <h3 class="panel-title">Painel</h3>
+            <p style="color:var(--muted);font-size:13px">Conteúdo do painel navy translúcido.</p>
+          </div>
+          <code class="kit-code">.panel</code>
+        </div>
+        <div class="kit-item" style="min-width:240px">
+          <div class="panel panel--collapsible" style="width:100%" id="collapsePanel">
+            <div class="panel__header" onclick="document.getElementById('collapsePanel').classList.toggle('panel--collapsed')">
+              <h3 class="panel-title" style="margin:0">Progress Tracker</h3>
+              <span class="panel__caret">▼</span>
+            </div>
+            <div class="panel__body" style="margin-top:10px">
+              <div class="quest">
+                <div class="quest__row"><span>Matar 10 champions</span><span class="quest__progress">1/10</span></div>
+                <div class="bar"><div class="bar-fill" style="width:10%"></div></div>
+              </div>
+            </div>
+          </div>
+          <code class="kit-code">.panel--collapsible · .quest</code>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== BARRAS ===== -->
+    <section class="kit-section">
+      <h2>Barras</h2>
+      <div class="kit-grid">
+        <div class="kit-item kit-wide">
+          <div style="width:100%;display:flex;flex-direction:column;gap:10px">
+            <div class="bar"><div class="bar-fill hp-fill" style="width:55%"></div><span class="bar-label">834 / 1.69K</span></div>
+            <div class="bar xp-bar"><div class="bar-fill" style="width:30%"></div><span class="bar-label">LVL 112</span></div>
+            <div class="bar"><div class="bar-fill enemy-fill" style="width:72%"></div><span class="bar-label">5.91K / 8.2K</span></div>
+          </div>
+          <code class="kit-code">.bar &gt; .bar-fill[.hp-fill|.enemy-fill] + .bar-label</code>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== RARIDADES / CHIPS ===== -->
+    <section class="kit-section">
+      <h2>Raridades &amp; Chips</h2>
+      <div class="kit-grid">
+        <div class="kit-item kit-wide">
+          <div class="kit-demo">
+            <span class="chip chip--common">Comum</span>
+            <span class="chip chip--magic">Mágico</span>
+            <span class="chip chip--rare">Raro</span>
+            <span class="chip chip--epic">Épico</span>
+            <span class="chip chip--legendary">Lendário</span>
+          </div>
+          <code class="kit-code">.chip.chip--{common|magic|rare|epic|legendary}</code>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== ABAS ===== -->
+    <section class="kit-section">
+      <h2>Abas</h2>
+      <div class="kit-grid">
+        <div class="kit-item kit-wide">
+          <div class="tabs" id="demoTabs">
+            <button class="tab is-active">System</button>
+            <button class="tab">Chest Loot</button>
+            <button class="tab">Incursion</button>
+            <button class="tab">Achievements</button>
+          </div>
+          <code class="kit-code">.tabs &gt; .tab.is-active</code>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== TOOLTIP / TOGGLE ===== -->
+    <section class="kit-section">
+      <h2>Tooltip &amp; Toggle</h2>
+      <div class="kit-grid">
+        <div class="kit-item">
+          <span class="tooltip"><button class="btn ghost" style="width:auto">Passe o mouse</button><span class="tooltip__content">+12% ATK · afixo lendário</span></span>
+          <code class="kit-code">.tooltip &gt; .tooltip__content</code>
+        </div>
+        <div class="kit-item">
+          <label class="toggle"><input type="checkbox" checked /><span class="toggle__track"></span> Auto-equipar</label>
+          <code class="kit-code">.toggle</code>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== LOOT ===== -->
+    <section class="kit-section">
+      <h2>Indicador de loot</h2>
+      <div class="kit-grid">
+        <div class="kit-item"><span class="loot-chip">🗡<span class="loot-chip__qty">x1</span></span><code class="kit-code">.loot-chip</code></div>
+        <div class="kit-item"><span class="loot-chip" style="border-color:var(--gold)">💍<span class="loot-chip__qty">x3</span></span><code class="kit-code">.loot-chip__qty</code></div>
+      </div>
+    </section>
+
+    <!-- ===== MODAL ===== -->
+    <section class="kit-section">
+      <h2>Modal / Diálogo</h2>
+      <div class="kit-grid">
+        <div class="kit-item">
+          <button class="btn attack-btn" style="width:auto" onclick="document.getElementById('demoModal').hidden=false">Abrir modal</button>
+          <code class="kit-code">.modal-overlay &gt; .modal</code>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== LOG ===== -->
+    <section class="kit-section">
+      <h2>Log de combate</h2>
+      <div class="kit-grid">
+        <div class="kit-item kit-wide">
+          <div class="log" style="max-height:none">
+            <div class="log-line boss">✦ Bem-vindo a Éclats of Lumière.</div>
+            <div class="log-line good">Derrotou Candlewisp Shade · +12 ✦</div>
+            <div class="log-line loot" style="color:var(--gold)">✦ Caiu: Prisma Talismã [Lendário]</div>
+            <div class="log-line level">★ Subiu para o nível 5!</div>
+            <div class="log-line bad">☠ O Seeker caiu — recuou.</div>
+          </div>
+          <code class="kit-code">.log &gt; .log-line[.good|.bad|.loot|.boss|.level]</code>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- modal de exemplo -->
+  <div class="modal-overlay" id="demoModal" hidden>
+    <div class="modal">
+      <div class="modal__title">Feature desbloqueada: Forja</div>
+      <div class="modal__body">Reforce sua arma gastando Lumens. Cada reforço dá +4% de ATK.</div>
+      <div class="modal__actions">
+        <button class="btn ghost" style="width:auto" onclick="document.getElementById('demoModal').hidden=true">Fechar</button>
+        <button class="btn attack-btn" style="width:auto" onclick="document.getElementById('demoModal').hidden=true">Okay</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // swatches da paleta
+    var palette = [
+      ["--navy", "#0c0a18"], ["--card", "rgba(10,16,32,.88)"], ["--sky", "#2e7cc4"],
+      ["--cyan", "#37c8f0"], ["--teal", "#5ee0d2"], ["--violet", "#9d7bff"],
+      ["--gold", "#e8b54a"], ["--orange", "#ff9a4d"], ["--text", "#eaf2ff"],
+      ["--muted", "#9aa7bd"], ["--bad", "#ff6b6b"],
+    ];
+    document.getElementById("swatches").innerHTML = palette.map(function (p) {
+      return '<div class="swatch"><div class="swatch__block" style="background:' + p[1] + '"></div>' +
+        '<div class="swatch__name">' + p[0] + '</div><div class="swatch__hex">' + p[1] + '</div></div>';
+    }).join("");
+
+    // abas (troca a ativa)
+    var tabs = document.getElementById("demoTabs");
+    tabs.addEventListener("click", function (e) {
+      if (!e.target.classList.contains("tab")) return;
+      tabs.querySelectorAll(".tab").forEach(function (t) { t.classList.remove("is-active"); });
+      e.target.classList.add("is-active");
+    });
+  </script>
+</body>
+</html>

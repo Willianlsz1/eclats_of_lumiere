@@ -1,0 +1,671 @@
+/* =============================================================
+   styles.css — identidade visual (art direction: warm world, cold UI)
+   ============================================================= */
+:root {
+  --navy: #0c0a18;
+  --card: rgba(10, 16, 32, 0.88);
+  --card-border: rgba(46, 124, 196, 0.35);
+  --sky: #2e7cc4;
+  --cyan: #37c8f0;
+  --teal: #5ee0d2;
+  --violet: #9d7bff;
+  --gold: #e8b54a;
+  --orange: #ff9a4d;
+  --text: #eaf2ff;
+  --muted: #9aa7bd;
+  --bad: #ff6b6b;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: "Outfit", system-ui, sans-serif;
+  color: var(--text);
+  min-height: 100vh;
+  background:
+    radial-gradient(1200px 600px at 70% -10%, rgba(94, 224, 210, 0.18), transparent 60%),
+    radial-gradient(900px 500px at 10% 110%, rgba(157, 123, 255, 0.20), transparent 60%),
+    linear-gradient(160deg, #0c0a18 0%, #0a0f22 55%, #0c0a18 100%);
+  background-attachment: fixed;
+}
+
+/* ---------- topbar ---------- */
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 24px;
+  background: linear-gradient(180deg, #101a30, rgba(16, 26, 48, 0.7));
+  border-bottom: 1px solid var(--card-border);
+  position: sticky; top: 0; z-index: 10;
+  backdrop-filter: blur(6px);
+}
+.game-title {
+  font-family: "Cormorant Garamond", serif;
+  font-style: italic; font-weight: 600; font-size: 28px;
+  background: linear-gradient(90deg, var(--cyan), var(--teal), var(--gold));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  letter-spacing: 0.5px;
+}
+.resources { display: flex; gap: 18px; font-size: 15px; }
+.res { color: var(--muted); }
+.res b { color: var(--text); }
+.res.lumens b { color: var(--gold); }
+
+/* ---------- layout ---------- */
+.layout {
+  display: grid;
+  grid-template-columns: 320px 1fr 360px;
+  gap: 16px; padding: 16px; max-width: 1400px; margin: 0 auto;
+  align-items: start;
+}
+@media (max-width: 1100px) { .layout { grid-template-columns: 1fr; } }
+
+.panel {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 14px; padding: 16px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+}
+.panel-title {
+  font-family: "Cormorant Garamond", serif; font-style: italic;
+  font-size: 22px; margin-bottom: 12px; color: var(--cyan);
+}
+.panel-title small { color: var(--muted); font-size: 14px; }
+.sub-title {
+  font-size: 13px; text-transform: uppercase; letter-spacing: 1px;
+  color: var(--muted); margin: 16px 0 8px;
+}
+
+/* ---------- herói ---------- */
+.hero-card {
+  background: linear-gradient(160deg, rgba(46, 124, 196, 0.15), transparent);
+  border: 1px solid var(--card-border); border-radius: 10px;
+  padding: 12px; text-align: center;
+}
+.hero-tier {
+  font-family: "Cormorant Garamond", serif; font-style: italic;
+  font-size: 19px; color: var(--gold);
+}
+.hero-level { color: var(--muted); margin: 2px 0 10px; }
+.hero-level b { color: var(--text); }
+
+.stats { list-style: none; margin-top: 12px; }
+.stats li {
+  display: flex; justify-content: space-between;
+  padding: 6px 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 14px;
+}
+.stats li span { color: var(--muted); }
+
+/* ---------- barras ---------- */
+.bar {
+  position: relative; height: 18px; border-radius: 9px;
+  background: rgba(2, 4, 10, 0.72); overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+.bar-fill { height: 100%; width: 0%; transition: width 0.12s linear; }
+.xp-bar { margin-top: 6px; }
+.xp-bar .bar-fill { background: linear-gradient(90deg, var(--violet), var(--cyan)); }
+.enemy-fill { background: linear-gradient(90deg, #b0344f, var(--orange)); }
+.hp-fill { background: linear-gradient(90deg, var(--teal), var(--cyan)); }
+.bar-label {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: #fff;
+  text-shadow: 0 1px 2px #000, 0 0 4px #000;
+}
+
+/* ---------- equipamento ---------- */
+.equip-slots { display: flex; flex-direction: column; gap: 8px; }
+.equip-slot {
+  border: 1px solid var(--card-border); border-radius: 8px; padding: 8px 10px;
+  cursor: pointer; transition: transform 0.1s, background 0.1s;
+}
+.equip-slot:not(.empty):hover { background: rgba(255, 255, 255, 0.04); transform: translateX(2px); }
+.equip-slot.empty { opacity: 0.5; cursor: default; }
+.slot-label { font-size: 11px; text-transform: uppercase; color: var(--muted); letter-spacing: 1px; }
+.equip-slot__head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.equip-slot__lvl { font-size: 11px; font-weight: 600; color: var(--cyan); white-space: nowrap; }
+.equip-slot__actions { display: flex; gap: 6px; margin-top: 8px; }
+.equip-slot__actions .mini { flex: 1; }
+.mini[disabled] { opacity: 0.5; cursor: default; }
+.slot-empty { float: right; font-style: italic; color: var(--muted); }
+.item-name { display: block; font-weight: 600; margin: 2px 0; }
+.affixes, .inv-affixes { font-size: 12px; color: var(--teal); }
+.affix { display: inline-block; margin-right: 8px; }
+
+/* ---------- botões ---------- */
+.btn {
+  width: 100%; border: none; border-radius: 10px; cursor: pointer;
+  padding: 12px; font-family: inherit; font-weight: 600; font-size: 15px;
+  color: var(--text); transition: transform 0.08s, filter 0.1s;
+}
+.btn:active { transform: scale(0.97); }
+.attack-btn {
+  background: linear-gradient(135deg, var(--sky), var(--cyan));
+  font-size: 18px; margin-top: 12px; box-shadow: 0 4px 16px rgba(55, 200, 240, 0.35);
+}
+.attack-btn:hover { filter: brightness(1.1); }
+.upgrade-btn { background: linear-gradient(135deg, #6b4f1a, var(--gold)); color: #1a1206; }
+.upgrade-btn small { font-weight: 500; opacity: 0.85; }
+.btn.ghost {
+  background: transparent; border: 1px solid var(--card-border); margin-top: 10px;
+  color: var(--muted); font-size: 13px;
+}
+.btn.ghost:hover { color: var(--text); border-color: var(--cyan); }
+
+/* ---------- cena de batalha (herói × mob) ---------- */
+.combat-panel { text-align: center; }
+.battle-scene {
+  display: flex; align-items: center; justify-content: center; gap: 14px;
+  padding: 10px 4px 6px; min-height: 320px;
+}
+.battle-card {
+  position: relative; flex: 1; max-width: 240px;
+  background: linear-gradient(180deg, rgba(20, 28, 48, 0.7), rgba(10, 16, 32, 0.85));
+  border: 1px solid var(--card-border); border-radius: 12px; padding: 10px;
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.4);
+}
+.enemy-battle { border-color: rgba(255, 154, 77, 0.45); }
+
+/* herói SEM card/moldura — só o Seeker de corpo inteiro na cena */
+.battle-hero {
+  flex: 1; max-width: 240px; align-self: stretch;
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 10px;
+}
+.hero-figure {
+  position: relative; width: 100%; height: 300px;
+  display: flex; align-items: flex-end; justify-content: center;
+}
+.hero-figure .art-ph { font-size: 96px; }
+/* esconde o emoji placeholder sempre que a arte (img) existir — herói E mob */
+.art-ph:has(~ .art-img) { display: none; }
+.hero-figure .art-img {
+  position: static; inset: auto; width: 100%; height: 100%; object-fit: contain;
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.5)) drop-shadow(0 0 14px rgba(94, 224, 210, 0.25));
+}
+.hero-info {
+  width: 100%; display: flex; flex-direction: column; align-items: center; gap: 6px;
+  background: rgba(6, 10, 22, 0.55); border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 12px; padding: 8px 14px; backdrop-filter: blur(4px);
+}
+.hero-name {
+  font-family: "Cormorant Garamond", serif; font-style: italic; font-size: 18px; color: var(--teal);
+  text-shadow: 0 1px 4px #000, 0 0 10px rgba(0, 0, 0, 0.85);
+}
+.hero-info .bar { width: 100%; }
+
+/* mob SEM card/moldura — só o inimigo de corpo inteiro na cena */
+.battle-enemy {
+  position: relative; flex: 1; max-width: 260px; align-self: center;
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 8px;
+}
+.enemy-figure {
+  position: relative; width: 100%; height: 320px;
+  display: flex; align-items: flex-end; justify-content: center;
+}
+.enemy-figure .art-ph { font-size: 90px; animation: float 3s ease-in-out infinite; }
+.enemy-figure .art-img {
+  position: static; inset: auto; width: 100%; height: 100%; object-fit: contain;
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.5)) drop-shadow(0 0 16px rgba(255, 154, 77, 0.18));
+}
+.enemy-figure.boss .art-img {
+  filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.55)) drop-shadow(0 0 24px rgba(232, 181, 74, 0.45));
+}
+.enemy-info {
+  width: 100%; display: flex; flex-direction: column; align-items: center; gap: 5px;
+  background: rgba(6, 10, 22, 0.55); border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 12px; padding: 8px 14px; backdrop-filter: blur(4px);
+}
+.enemy-name {
+  font-family: "Cormorant Garamond", serif; font-style: italic; font-size: 20px; color: var(--orange);
+  text-shadow: 0 1px 4px #000, 0 0 10px rgba(0, 0, 0, 0.85);
+}
+.battle-enemy .floaters { position: absolute; inset: 0; z-index: 6; pointer-events: none; }
+/* mob morto/ausente: esconde a plaquinha de info (mantém o espaço no layout) */
+.battle-enemy.enemy-hidden .enemy-info { visibility: hidden; }
+.battle-enemy .enemy-bar { width: 100%; }
+.enemy-battle.boss { border-color: var(--gold); box-shadow: 0 0 26px rgba(232, 181, 74, 0.4); }
+
+/* espaço da arte: a imagem cobre o emoji-placeholder quando existir */
+.card-art {
+  position: relative; width: 100%; aspect-ratio: 3 / 4; border-radius: 8px;
+  overflow: hidden; background: radial-gradient(circle at 50% 40%, rgba(94,224,210,.12), rgba(0,0,0,.35));
+  display: flex; align-items: center; justify-content: center;
+}
+.enemy-battle .card-art { background: radial-gradient(circle at 50% 40%, rgba(255,154,77,.14), rgba(0,0,0,.35)); }
+.art-ph {
+  font-size: 84px; line-height: 1;
+  animation: float 3s ease-in-out infinite;
+  filter: drop-shadow(0 0 16px rgba(255, 255, 255, 0.25));
+}
+.art-img {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+}
+/* mob: mostra o corpo inteiro (sem cortar) */
+.card-art .art-img { object-fit: contain; }
+@keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+
+.card-plate {
+  display: flex; flex-direction: column; align-items: center;
+  margin: 8px 0 4px;
+  background: rgba(0, 0, 0, 0.4); border-radius: 6px; padding: 4px 8px;
+}
+.card-name {
+  font-family: "Cormorant Garamond", serif; font-style: italic; font-size: 19px;
+}
+.hero-battle .card-name { color: var(--teal); }
+.enemy-battle .card-name { color: var(--orange); }
+.card-sub { font-size: 12px; color: #c7d2e4; text-shadow: 0 1px 3px #000; }
+.card-sub b { color: #fff; }
+.card-row { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+.card-row b { color: var(--text); }
+.battle-card .bar { height: 18px; }
+
+.versus { font-size: 26px; color: var(--cyan); opacity: 0.7; flex-shrink: 0; }
+
+.hint { font-size: 12px; color: var(--muted); margin-top: 8px; }
+
+/* projétil — voa do atacante ao alvo; screen = o preto da arte some */
+.projectile {
+  position: fixed; z-index: 30; width: 150px; height: auto; pointer-events: none;
+  mix-blend-mode: screen; transform-origin: center;
+  transition: left 0.5s cubic-bezier(0.3, 0, 0.7, 1), top 0.5s cubic-bezier(0.3, 0, 0.7, 1), opacity 0.5s;
+}
+/* mob usa arte dourada dedicada (bolt_mob.png) — sem filtro */
+
+/* texto de dano flutuante (sobre o card do mob) */
+.floaters { position: absolute; inset: 0; pointer-events: none; z-index: 5; }
+.floater {
+  position: absolute; top: 30%; font-weight: 700; font-size: 22px;
+  animation: rise 0.8s ease-out forwards; text-shadow: 0 2px 4px #000;
+}
+.floater.hit { color: var(--text); }
+.floater.crit { color: var(--gold); font-size: 30px; }
+.floater.enemy { color: var(--bad); font-size: 18px; top: 70%; }
+@keyframes rise { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-40px); } }
+
+@media (max-width: 1100px) { .battle-scene { min-height: 0; } .battle-card { max-width: 45%; } }
+
+/* log de combate */
+.log {
+  margin-top: 14px; text-align: left; max-height: 220px; overflow-y: auto;
+  font-size: 13px; display: flex; flex-direction: column; gap: 3px;
+}
+.log-line { padding: 3px 8px; border-radius: 5px; background: rgba(255, 255, 255, 0.03); }
+.log-line.good { color: var(--teal); }
+.log-line.bad { color: var(--bad); }
+.log-line.loot { font-weight: 600; }
+.log-line.boss { color: var(--gold); }
+.log-line.level { color: var(--violet); font-weight: 600; }
+
+/* ---------- inventário ---------- */
+.inv-grid { display: flex; flex-direction: column; gap: 8px; max-height: 70vh; overflow-y: auto; }
+.inv-item {
+  border: 1px solid var(--card-border); border-left-width: 3px;
+  border-radius: 8px; padding: 8px 10px;
+}
+.inv-top { display: flex; justify-content: space-between; align-items: baseline; }
+.inv-slot { font-size: 11px; color: var(--muted); }
+.inv-affixes { margin: 4px 0 8px; }
+.inv-actions { display: flex; gap: 6px; }
+.mini {
+  flex: 1; border: none; border-radius: 6px; padding: 6px; cursor: pointer;
+  font-family: inherit; font-size: 12px; font-weight: 600;
+}
+.mini.equip { background: var(--sky); color: var(--text); }
+.mini.equip:hover { filter: brightness(1.15); }
+.mini.sell { background: rgba(232, 181, 74, 0.2); color: var(--gold); }
+.mini.sell:hover { background: rgba(232, 181, 74, 0.35); }
+
+/* scrollbar discreta */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-thumb { background: rgba(55, 200, 240, 0.3); border-radius: 4px; }
+
+/* =============================================================
+   LAYOUT HUD DO JOGO — tela cheia sobre o mundo (estilo Gaiadon)
+   ============================================================= */
+body.game { overflow: hidden; height: 100vh; }
+.world-bg {
+  position: fixed; inset: 0; z-index: -2;
+  background:
+    radial-gradient(1200px 600px at 70% -10%, rgba(94, 224, 210, 0.18), transparent 60%),
+    radial-gradient(900px 500px at 10% 110%, rgba(157, 123, 255, 0.20), transparent 60%),
+    linear-gradient(160deg, #0c0a18 0%, #0a0f22 55%, #0c0a18 100%);
+}
+.world-img { position: fixed; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1; }
+/* vignette: escurece bordas e dá contraste pros cutouts, sobre qualquer fundo */
+.world-overlay {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    radial-gradient(125% 95% at 50% 42%, transparent 42%, rgba(8, 10, 22, 0.55) 100%),
+    linear-gradient(180deg, rgba(8, 10, 22, 0.12), rgba(8, 10, 22, 0.42));
+}
+
+.hud { position: fixed; z-index: 10; }
+.hud-topleft { top: 14px; left: 14px; display: flex; align-items: flex-start; gap: 10px; }
+.hud-topcenter { top: 14px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.hud-topright { top: 14px; right: 14px; width: 280px; }
+.hud-bottomleft { bottom: 14px; left: 14px; width: 360px; max-width: 40vw; }
+.hud-bottomcenter { bottom: 14px; left: 50%; transform: translateX(-50%); }
+.hud-bottomright { bottom: 14px; right: 14px; }
+
+/* minimapa */
+.minimap {
+  width: 84px; height: 84px; border-radius: 50%;
+  background: radial-gradient(circle at 50% 35%, rgba(46, 124, 196, 0.45), rgba(10, 16, 32, 0.9));
+  border: 2px solid var(--card-border);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+.minimap__time { font-weight: 700; font-size: 13px; color: var(--text); }
+.minimap__weather { font-size: 14px; }
+.feature-bar { flex-direction: column; }
+.feature-bar .icon-btn { width: 38px; height: 38px; font-size: 17px; }
+
+/* tracker (topo direita) */
+.hud-topright .panel { padding: 12px 14px; }
+
+/* log (baixo esquerda) */
+.hud-bottomleft .tabs {
+  background: var(--card); border: 1px solid var(--card-border); border-bottom: none;
+  border-radius: 10px 10px 0 0; padding: 0 4px;
+}
+.hud-bottomleft .tab { padding: 6px 12px; }
+.hud-bottomleft .log {
+  margin-top: 0; background: var(--card); border: 1px solid var(--card-border);
+  border-radius: 0 0 10px 10px; padding: 8px 10px; max-height: 150px;
+}
+
+/* readout de stats (baixo centro) */
+.hud-stats {
+  display: flex; gap: 18px; padding: 6px 16px; border-radius: 10px;
+  background: rgba(10, 16, 32, 0.7); border: 1px solid var(--card-border);
+  font-size: 13px; color: var(--muted);
+}
+.hud-stats b { color: var(--text); }
+
+/* cena de batalha sobre o mundo */
+.battle-stage {
+  position: fixed; inset: 0; z-index: 1; pointer-events: none;
+  display: flex; align-items: center; justify-content: center; gap: 12%;
+}
+.battle-stage .battle-hero, .battle-stage .battle-enemy { pointer-events: auto; align-self: center; }
+.battle-stage .hero-figure .floaters { z-index: 6; }
+
+/* modal mais largo p/ ficha de personagem e inventário */
+.modal--wide { width: min(520px, 94vw); max-height: 86vh; overflow-y: auto; }
+.char-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 6px; }
+.modal .equip-slots { margin-bottom: 6px; }
+.modal .inv-grid { max-height: 50vh; }
+
+/* =============================================================
+   UI KIT — componentes reutilizáveis (catálogo em ui-kit.html)
+   Genéricos e on-brand. Adicione CLASSES, não estilos presos a
+   um elemento específico do jogo. Esta é a fonte da verdade.
+   ============================================================= */
+
+/* cores de raridade mapeadas pras vars existentes */
+:root {
+  --rarity-common: var(--muted);
+  --rarity-magic: var(--teal);
+  --rarity-rare: var(--violet);
+  --rarity-epic: var(--orange);
+  --rarity-legendary: var(--gold);
+}
+
+/* ---- chip / badge ---- */
+.chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 999px;
+  border: 1px solid var(--card-border); background: rgba(0, 0, 0, 0.35); color: var(--text);
+}
+.chip--common { border-color: var(--rarity-common); color: var(--rarity-common); }
+.chip--magic { border-color: var(--rarity-magic); color: var(--rarity-magic); }
+.chip--rare { border-color: var(--rarity-rare); color: var(--rarity-rare); }
+.chip--epic { border-color: var(--rarity-epic); color: var(--rarity-epic); }
+.chip--legendary {
+  border-color: var(--rarity-legendary); color: var(--rarity-legendary);
+  box-shadow: 0 0 10px rgba(232, 181, 74, 0.35);
+}
+
+/* ---- botão de ícone (toolbar / ações) ---- */
+.icon-btn {
+  position: relative; width: 44px; height: 44px; border-radius: 10px; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center; font-size: 20px;
+  background: var(--card); border: 1px solid var(--card-border); color: var(--text);
+  transition: transform 0.08s, border-color 0.1s, filter 0.1s;
+}
+.icon-btn:hover { border-color: var(--cyan); filter: brightness(1.1); }
+.icon-btn:active { transform: scale(0.94); }
+.icon-btn--round { border-radius: 50%; }
+.icon-btn--active { border-color: var(--gold); box-shadow: inset 0 0 0 1px var(--gold); }
+.icon-btn--locked { opacity: 0.45; cursor: not-allowed; }
+.icon-btn--locked::after {
+  content: "🔒"; position: absolute; font-size: 12px; right: 1px; bottom: -1px;
+}
+.icon-btn--reset:hover { border-color: var(--bad); filter: none; }
+/* slot de ícone-imagem dentro do botão (cobre o emoji-placeholder) */
+.icon-btn .ico-img { position: absolute; inset: 16%; width: 68%; height: 68%; object-fit: contain; }
+.icon-btn .ico-ph:has(~ .ico-img) { display: none; }
+.toolbar { display: flex; gap: 8px; flex-wrap: wrap; }
+/* barra de ações no topo-esquerda: ícones um pouco maiores */
+.hud-topleft .icon-btn { width: 54px; height: 54px; font-size: 24px; }
+
+/* ---- pílula de recurso ---- */
+.res-pill {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 5px 14px; border-radius: 999px; font-weight: 600;
+  background: linear-gradient(180deg, #101a30, rgba(16, 26, 48, 0.8));
+  border: 1px solid var(--card-border); color: var(--text);
+}
+.res-pill__icon { font-size: 16px; }
+.res-pill--gold { border-color: var(--gold); }
+.res-pill--gold .res-pill__icon { color: var(--gold); }
+
+/* banner ornamentado (arte) — texto centralizado no painel escuro */
+.banner {
+  position: relative; display: flex; align-items: center; justify-content: center;
+  background-repeat: no-repeat; background-size: 100% 100%;
+}
+.banner__text {
+  font-family: "Cormorant Garamond", serif; font-style: italic; font-weight: 600;
+  color: var(--text); text-align: center; max-width: 64%;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  text-shadow: 0 1px 4px #000, 0 0 10px rgba(55, 200, 240, 0.3);
+}
+.banner--area {
+  width: 460px; aspect-ratio: 1276 / 291;
+  background-image: url("assets/ui/banner_teal.png");
+}
+.banner--area .banner__text { font-size: 17px; }
+
+/* ---- banner de área (com navegação) — legado ---- */
+.area-banner {
+  display: inline-flex; align-items: center; gap: 14px;
+  padding: 8px 16px; border-radius: 10px;
+  background: linear-gradient(180deg, #101a30, rgba(16, 26, 48, 0.7));
+  border: 1px solid var(--card-border);
+}
+.area-banner__nav {
+  background: none; border: none; color: var(--cyan); cursor: pointer; font-size: 16px; padding: 4px;
+}
+.area-banner__nav:hover { filter: brightness(1.4); }
+.area-banner__name {
+  font-family: "Cormorant Garamond", serif; font-style: italic; font-size: 20px; color: var(--text);
+}
+
+/* ---- banner de nome (estilo pincelada/rasgado) ---- */
+.name-banner {
+  display: inline-block; position: relative; padding: 4px 24px;
+  font-family: "Cormorant Garamond", serif; font-style: italic; font-size: 18px; color: var(--text);
+  background: linear-gradient(90deg, transparent, rgba(10, 16, 32, 0.95) 12%, rgba(10, 16, 32, 0.95) 88%, transparent);
+  clip-path: polygon(3% 0, 98% 7%, 96% 100%, 2% 90%);
+}
+
+/* ---- painel colapsável ---- */
+.panel__header {
+  display: flex; align-items: center; justify-content: space-between; cursor: pointer;
+}
+.panel__caret { transition: transform 0.15s; color: var(--cyan); }
+.panel--collapsed .panel__caret { transform: rotate(-90deg); }
+.panel--collapsed .panel__body { display: none; }
+
+/* ---- linha de quest/objetivo ---- */
+.quest { display: flex; flex-direction: column; gap: 5px; padding: 8px 0; }
+.quest__row { display: flex; justify-content: space-between; font-size: 14px; }
+.quest__progress { color: var(--muted); }
+.quest .bar { height: 8px; }
+.quest .bar-fill { background: linear-gradient(90deg, var(--teal), var(--cyan)); }
+
+/* ---- abas ---- */
+.tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--card-border); }
+.tab {
+  background: none; border: none; cursor: pointer; font-family: inherit; font-size: 13px;
+  padding: 8px 14px; color: var(--muted); border-bottom: 2px solid transparent;
+}
+.tab:hover { color: var(--text); }
+.tab.is-active { color: var(--cyan); border-bottom-color: var(--cyan); }
+
+/* ---- tooltip ---- */
+.tooltip { position: relative; display: inline-flex; }
+.tooltip__content {
+  position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%);
+  white-space: nowrap; padding: 6px 10px; border-radius: 6px; font-size: 12px;
+  background: rgba(10, 16, 32, 0.96); border: 1px solid var(--card-border); color: var(--text);
+  opacity: 0; pointer-events: none; transition: opacity 0.12s; z-index: 50;
+}
+.tooltip:hover .tooltip__content { opacity: 1; }
+
+/* ---- toggle (switch) ---- */
+.toggle { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
+.toggle input { display: none; }
+.toggle__track {
+  width: 42px; height: 22px; border-radius: 999px; background: rgba(0, 0, 0, 0.5);
+  border: 1px solid var(--card-border); position: relative; transition: background 0.15s, border-color 0.15s;
+}
+.toggle__track::after {
+  content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%;
+  background: var(--muted); transition: transform 0.15s, background 0.15s;
+}
+.toggle input:checked + .toggle__track { background: rgba(55, 200, 240, 0.3); border-color: var(--cyan); }
+.toggle input:checked + .toggle__track::after { transform: translateX(20px); background: var(--cyan); }
+
+/* ---- loot chip (ícone + quantidade) ---- */
+.loot-chip {
+  position: relative; width: 48px; height: 48px; border-radius: 8px;
+  display: inline-flex; align-items: center; justify-content: center; font-size: 24px;
+  background: var(--card); border: 1px solid var(--card-border);
+}
+.loot-chip__qty {
+  position: absolute; right: -4px; bottom: -4px; font-size: 11px; font-weight: 700;
+  background: var(--sky); color: var(--text); border-radius: 999px; padding: 1px 6px;
+}
+
+/* ---- modal / diálogo ---- */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(4, 6, 12, 0.7); backdrop-filter: blur(3px);
+  display: flex; align-items: center; justify-content: center; z-index: 100;
+}
+.modal-overlay[hidden] { display: none; }
+.modal {
+  width: min(440px, 92vw); background: var(--card); border: 1px solid var(--card-border);
+  border-radius: 14px; padding: 20px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+}
+.modal__title {
+  font-family: "Cormorant Garamond", serif; font-style: italic; font-size: 22px;
+  color: var(--cyan); margin-bottom: 10px;
+}
+.modal__body { color: var(--text); font-size: 14px; line-height: 1.5; }
+.modal__actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 18px; }
+
+/* =============================================================
+   Tela EQUIPMENT — 6 peças fixas em torno do NPC central
+   ============================================================= */
+.modal--gear {
+  width: min(1500px, 96vw); height: 92vh; position: relative;
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.modal-close {
+  position: absolute; top: 14px; right: 14px;
+  width: 34px; height: 34px; border-radius: 8px; cursor: pointer;
+  background: var(--card); border: 1px solid var(--card-border); color: var(--text);
+  font-size: 15px; display: flex; align-items: center; justify-content: center;
+  transition: border-color 0.1s, filter 0.1s;
+}
+.modal-close:hover { border-color: var(--bad); }
+
+.gear-layout {
+  flex: 1; min-height: 0;
+  display: grid; gap: 16px;
+  grid-template-columns: 260px 1fr;
+  grid-template-rows: 1fr auto;
+  grid-template-areas: "stats board" "stats footer";
+}
+.gear-stats-panel { grid-area: stats; min-height: 0; overflow-y: auto; }
+.gear-board { grid-area: board; min-height: 0; }
+.gear-footer { grid-area: footer; }
+@media (max-width: 780px) {
+  .gear-layout { grid-template-columns: 1fr; grid-template-rows: auto auto auto; grid-template-areas: "board" "stats" "footer"; }
+}
+
+/* tabuleiro: 3 slots · NPC · 3 slots — preenche a altura toda */
+.gear-board {
+  display: grid; grid-template-columns: 1fr auto 1fr; gap: 18px; align-items: stretch;
+}
+.gear-col { display: flex; flex-direction: column; justify-content: space-between; gap: 14px; }
+
+.gear-npc {
+  position: relative; align-self: stretch;
+  width: clamp(220px, 24vw, 380px);
+  display: flex; align-items: center; justify-content: center;
+}
+.gear-npc .art-ph { font-size: 120px; opacity: 0.35; }
+.gear-npc .art-img {
+  max-width: 100%; max-height: 100%; object-fit: contain;
+  filter: drop-shadow(0 12px 26px rgba(0, 0, 0, 0.55));
+}
+
+/* card de slot */
+.gear-slot {
+  display: grid; grid-template-columns: 68px 1fr auto; gap: 12px; align-items: center;
+  background: rgba(10, 16, 32, 0.7); border: 1px solid var(--card-border);
+  border-left: 3px solid var(--rar, var(--card-border));
+  border-radius: 10px; padding: 12px 14px;
+}
+.gear-slot__icon {
+  width: 68px; height: 68px; border-radius: 10px; font-size: 34px;
+  background: rgba(2, 4, 10, 0.6); border: 1px solid var(--card-border);
+  display: flex; align-items: center; justify-content: center;
+}
+.gear-slot__info { min-width: 0; }
+.gear-slot__top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.gear-slot__name { font-weight: 600; font-size: 15px; }
+.gear-slot__lvl { font-size: 13px; color: var(--muted); white-space: nowrap; }
+.gear-slot__affixes { display: flex; flex-direction: column; gap: 4px; margin-top: 6px; }
+.gear-affix { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.gear-affix__main { font-size: 13px; color: var(--teal); font-weight: 600; }
+.gear-affix__perlv { font-size: 11px; color: var(--muted); }
+
+.gear-levelup {
+  border: 1px solid var(--card-border); background: rgba(46, 124, 196, 0.18);
+  color: var(--text); border-radius: 8px; padding: 8px 14px; min-width: 76px;
+  font-size: 13px; line-height: 1.2; cursor: pointer; text-align: center;
+  transition: border-color 0.1s, filter 0.1s, transform 0.08s;
+}
+.gear-levelup small { color: var(--gold); }
+.gear-levelup:hover { border-color: var(--cyan); filter: brightness(1.1); }
+.gear-levelup:active { transform: scale(0.96); }
+.gear-levelup.is-max { opacity: 0.5; cursor: default; color: var(--gold); }
+
+/* rodapé: multiplicador de level-up */
+.gear-footer { display: flex; align-items: center; gap: 10px; justify-content: flex-end; padding-top: 4px; }
+.gear-mult__label { font-size: 13px; color: var(--muted); }
+.gear-mult { display: flex; gap: 4px; }
+.gear-mult button {
+  border: 1px solid var(--card-border); background: var(--card); color: var(--text);
+  border-radius: 8px; padding: 6px 12px; font-size: 13px; cursor: pointer;
+  transition: border-color 0.1s;
+}
+.gear-mult button:hover { border-color: var(--cyan); }
+.gear-mult button.is-active {
+  border-color: var(--gold); color: var(--gold); box-shadow: inset 0 0 0 1px var(--gold);
+}
