@@ -93,6 +93,7 @@
       </button>
       <button class="icon-btn" title="Convergence" onclick="G.ui.openModal('modal-convergence')">✦</button>
       <button class="icon-btn" title="Awaken" onclick="G.ui.openModal('modal-awaken')">✷</button>
+      <button class="icon-btn" title="Passives" onclick="G.ui.openModal('modal-passives')">❉</button>
       <button class="icon-btn" title="Ajuda" onclick="G.ui.openModal('modal-help')">❓</button>
       <button class="icon-btn icon-btn--reset" title="Reiniciar (testar do zero)" onclick="G.ui.resetGame()">🔄</button>
     </div>
@@ -162,6 +163,20 @@
     </div>
   </div>
 
+  <!-- ===== SCREEN: PASSIVES (Árvore-Mundo, tela própria) ===== -->
+  <div class="passives-screen" id="modal-passives" hidden>
+    <div class="pv-screen" aria-hidden="true"></div>
+    <button class="modal-close" title="Close" onclick="document.getElementById('modal-passives').hidden=true">✕</button>
+    <div class="pv-points">Convergence Points: <b id="pv-points">0</b></div>
+    <div class="pv-tabs" id="pv-tabs"></div>
+    <div class="pv-body" id="pv-body"></div>
+    <div class="pv-lock" id="pv-lock" hidden>
+      <div class="glyph">✦</div>
+      <h2>The passives sleep</h2>
+      <p>The Seed awakens at your <b>first Convergence</b>. Converge to open the three trees.</p>
+    </div>
+  </div>
+
   <!-- ===== MODAL: AWAKEN (3ª fonte de poder) ===== -->
   <div class="modal-overlay" id="modal-awaken" hidden onclick="if(event.target===this)this.hidden=true">
     <div class="modal modal--wide">
@@ -228,6 +243,7 @@
   <script src="src/combat.js"></script>
   <script src="src/convergence.js"></script>
   <script src="src/awaken.js"></script>
+  <script src="src/passives.js"></script>
   <script src="src/ui.js"></script>
   <script src="src/main.js"></script>
 </body>

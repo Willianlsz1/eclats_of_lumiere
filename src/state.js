@@ -26,6 +26,7 @@ G.state = {
       highestLevel: 1,       // recorde de nível (não reseta na Convergence)
       awakenEssence: 0,      // material do Awaken (dropa na Área 7+)
       awakensUnlocked: [],   // ids dos Awakens desbloqueados (permanentes)
+      passives: G.passives.freshSet(), // árvores Éclat/Vestige/Fracture (ver passives.js)
       equipped: G.gear.freshSet(), // 6 peças FIXAS (Nv.1, Comum) — ver gear.js
       lastSeen: Date.now(),  // p/ progresso offline
     };
@@ -73,6 +74,15 @@ G.state = {
 
     // ---- camada Awaken (3ª fonte de poder; permanente) ----
     if (G.awaken) G.awaken.applyTo(layer);
+
+    // ---- passivas (compradas com Pontos de Convergence) ----
+    if (G.passives) {
+      const P = G.passives;
+      layer("atk").mult *= P.dmgMult();   // árvore Éclat
+      layer("hp").mult *= P.hpMult();     // árvore Fracture
+      layer("crit").flat += P.critAddPts();   // alavanca Luminal Edge
+      layer("atkSpeed").mult *= P.apsMult();  // alavanca Fracture Pulse
+    }
 
     const fin = (k) => {
       const x = layer(k);
@@ -156,6 +166,8 @@ G.state = {
     // reconcilia as 6 peças fixas com a definição atual (stats/afixos novos),
     // preservando nível e raridade salvos
     this.data.equipped = G.gear.reconcile(this.data.equipped);
+    // migra passivas pro formato de árvores (saves antigos tinham objeto/12-nós)
+    if (!this.data.passives || !Array.isArray(this.data.passives.eclat)) this.data.passives = G.passives.freshSet();
     if (this.data.hp <= 0) this.data.hp = this.maxHp();
     return !!loaded;
   },

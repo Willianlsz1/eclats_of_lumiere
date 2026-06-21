@@ -21,6 +21,7 @@ G.ui = {
       "wmap-info-mobs", "wmap-info-boss", "wmap-info-boss-wrap", "wmap-info-travel", "wmap-info-close",
       "conv-points", "conv-count", "conv-highest", "conv-pending", "btn-converge",
       "awaken-essence", "awaken-list",
+      "pv-points", "pv-tabs", "pv-body", "pv-lock",
     ];
     for (const id of ids) this.el[id] = document.getElementById(id);
   },
@@ -63,6 +64,17 @@ G.ui = {
         if (!btn) return;
         if (G.awaken.unlock(+btn.dataset.awaken)) this.renderAwaken();
       });
+    // Passivas (Árvore-Mundo): trocar de aba / comprar nó (clique delegado na tela)
+    const pscreen = document.getElementById("modal-passives");
+    if (pscreen)
+      pscreen.addEventListener("click", (e) => {
+        const tab = e.target.closest(".pv-tab");
+        if (tab) { this.passivesTab = tab.dataset.tree; this.renderPassives(); return; }
+        const node = e.target.closest(".pv-node");
+        if (node) {
+          if (G.passives.buy(this.passivesTab || "eclat", +node.dataset.i)) this.renderPassives();
+        }
+      });
     // abas do log (cosmético por enquanto)
     const tabs = document.getElementById("log-tabs");
     if (tabs) tabs.addEventListener("click", (e) => {
@@ -82,6 +94,7 @@ G.ui = {
     }
     if (id === "modal-convergence") this.renderConvergence();
     if (id === "modal-awaken") this.renderAwaken();
+    if (id === "modal-passives") this.renderPassives();
     const m = document.getElementById(id);
     if (m) m.hidden = false;
   },
@@ -128,6 +141,89 @@ G.ui = {
     this.renderGear();
     this.renderUpgrade();
     this.renderHeroHp();
+  },
+
+  // Árvore-Mundo de passivas — 3 árvores, nós posicionados sobre a arte
+  renderPassives() {
+    const P = G.passives;
+    if (!this.passivesTab) this.passivesTab = "eclat";
+    const tab = this.passivesTab;
+    if (this.el["pv-points"]) this.el["pv-points"].textContent = G.util.fmt(G.state.data.convergencePoints || 0);
+    const unlocked = P.unlocked();
+    if (this.el["pv-lock"]) this.el["pv-lock"].hidden = unlocked;
+    const tabs = this.el["pv-tabs"];
+    if (tabs) {
+      tabs.style.visibility = unlocked ? "" : "hidden";
+      tabs.innerHTML = P.TREES.map((t) => {
+        const tr = P.trees[t];
+        return `<button class="pv-tab ${tr.cls}${t === tab ? " active" : ""}" data-tree="${t}">
+          <span class="pv-emblem"><img class="pv-fruit" src="assets/passives/fruit_${t}.webp" alt="" onerror="this.style.display='none'"></span>
+          <span class="pv-tab-name">${tr.label}</span>
+          <span class="pv-tab-count">${this._pvCount(t)}</span>
+        </button>`;
+      }).join("");
+    }
+    const body = this.el["pv-body"];
+    if (body) {
+      body.style.visibility = unlocked ? "" : "hidden";
+      body.className = `pv-body ${P.trees[tab].cls}`;
+      body.innerHTML = unlocked ? this._pvTreeHtml(tab) : "";
+    }
+  },
+
+  _pvCount(tree) {
+    const pr = G.passives.treeProgress(tree);
+    return `${pr.unlocked}/${pr.total}${pr.maxed ? ` · ✦${pr.maxed}` : ""}`;
+  },
+  _pvTreeHtml(tree) {
+    const P = G.passives, tr = P.trees[tree];
+    const summary = `<div class="pv-summary">
+      <span class="pv-sum-orb"></span><span class="pv-sum-l">${tr.label} bonus</span>
+      <span class="pv-sum-div"></span><span class="pv-total">×${(() => { const m = P.treeMult(tree); return m < 100 ? m.toFixed(2) : G.util.fmt(m); })()}</span>
+      <span class="pv-sum-stat">${tr.stat}</span></div>`;
+    let nodes = "";
+    for (let i = 0; i < 15; i++) nodes += this._pvNode(tree, i);
+    return summary + `<div class="pv-tree">${nodes}</div>`;
+  },
+  _pvNode(tree, i) {
+    const P = G.passives;
+    const [name, key] = P.trees[tree].list[i];
+    const pos = P.POSITIONS[i];
+    const level = P.level(tree, i);
+    const maxed = P.isMax(tree, i);
+    const locked = !P.groupUnlocked(tree, P.groupOf(i)) && level === 0;
+    const role = P.isEngine(tree, key) ? "role-engine" : (P.leverOf(key) ? "role-lever" : "");
+    const cls = ["pv-node", role, i >= 10 ? "tip-below" : "", maxed ? "maxed" : "",
+      P.canBuy(tree, i) ? "buyable" : "", level > 0 && !maxed ? "owned" : "", locked ? "locked" : ""]
+      .filter(Boolean).join(" ");
+    const m = `assets/passives/${tree}/${key}.webp`;
+    const mc = `-webkit-mask-image:url('${m}');mask-image:url('${m}')`;
+    const lvlText = maxed ? "✦" : (level > 0 ? `${level}/${P.maxLevel}` : "");
+    const foot = maxed ? `<div class="pv-tip-foot max">Max Level</div>`
+      : locked ? `<div class="pv-tip-foot locked">Locked — max the tier below</div>`
+      : `<div class="pv-tip-foot cost">${level === 0 ? "Unlock" : "Upgrade"} · ${G.util.fmt(P.nextCost(tree, i))} pts</div>`;
+    return `<button class="${cls}" data-i="${i}" style="left:${pos.x}%;top:${pos.y}%;--p:${(level / P.maxLevel).toFixed(3)}">
+      <span class="pv-disc"><span class="pv-icon" style="${mc}"></span><i class="pv-ring"></i></span>
+      <span class="pv-node-name">${name}</span>
+      <span class="pv-node-lvl">${lvlText}</span>
+      <div class="pv-tip">
+        <div class="pv-tip-head"><span class="pv-tip-icon"><span class="pv-icon" style="${mc}"></span></span>
+          <div class="pv-tip-htext"><div class="pv-tip-name">${name} <span class="pv-tip-tag">Passive</span></div>
+            <div class="pv-tip-lvl">Level ${level}/${P.maxLevel}</div></div></div>
+        <p class="pv-tip-eff">${this._pvEffect(tree, i, level)}</p>${foot}
+      </div>
+    </button>`;
+  },
+  _pvEffect(tree, i, level) {
+    const P = G.passives, stat = P.trees[tree].stat, key = P.trees[tree].list[i][1];
+    const lev = P.leverOf(key);
+    const T = { crit: "Increases your critical chance.", aps: "Increases your attack speed.",
+      mobCap: "More enemies appear at once.", material: "Increases the materials you find.",
+      enemyPen: "Your hits ignore part of enemy defense.", enemyReduce: "Weakens enemy defense." };
+    if (lev) return T[lev] || "A special effect.";
+    if (P.isEngine(tree, key)) return `Multiplies your ${stat}, compounding every level — the strongest growth in the tree.`;
+    const pct = P.groupAddPct[P.groupOf(i)] * 100;
+    return level > 0 ? `Increases your ${stat} by ${G.util.fmt(level * pct)}%.` : `Increases your ${stat} by ${pct}% per level.`;
   },
 
   // painel do Awaken — lista os pacotes, status e botão de desbloquear

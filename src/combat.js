@@ -154,9 +154,11 @@ G.combat = {
   onKill() {
     const e = this.enemy;
     const s = G.state.stats();
-    const lumens = Math.ceil(e.lumens * (1 + s.lumensBonus / 100));
+    const pLum = G.passives ? G.passives.ecoMult() : 1; // árvore Vestige
+    const pXp = G.passives ? G.passives.ecoMult() : 1;
+    const lumens = Math.ceil(e.lumens * (1 + s.lumensBonus / 100) * pLum);
     G.state.data.lumens += lumens;
-    G.state.data.xp += Math.round(e.xp * (1 + s.xpBonus / 100));
+    G.state.data.xp += Math.round(e.xp * (1 + s.xpBonus / 100) * pXp);
 
     if (G.ui && G.ui.log)
       G.ui.log(
@@ -172,7 +174,8 @@ G.combat = {
     // nível com ouro). O sistema de drop/inventário fica reservado p/ futuro.
 
     // Awakening Essence: dropa na Área 7+ (índice 6+) — alimenta o Awaken
-    if (G.state.data.areaIndex >= 6 && G.util.chance(G.data.balance.awakenDropChance)) {
+    const matMult = G.passives ? G.passives.materialsMult() : 1;
+    if (G.state.data.areaIndex >= 6 && G.util.chance(G.data.balance.awakenDropChance * matMult)) {
       G.state.data.awakenEssence = (G.state.data.awakenEssence || 0) + 1;
     }
 
