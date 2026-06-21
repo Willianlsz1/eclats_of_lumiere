@@ -14,7 +14,6 @@ G.combat = {
   pendingHits: [], // projéteis em voo: o dano aplica quando chegam
   projectileTravel: 0.5, // s — DEVE casar com a transição do .projectile no CSS (0.5s)
   enemyInterval: 0.99, // inimigo ataca a cada 0.99s (atk speed do mob)
-
   spawnCount: 0,
 
   // pool de mobs comuns disponível na área atual: todos os mobs das áreas
@@ -48,29 +47,41 @@ G.combat = {
     const hp = G.data.mobHpAt(level);
     const atk = b.mobAtkBase * Math.pow(b.mobAtkGrowth, level - 1);
 
-    let def, maxHp, dmg, lumens, xp;
+    let def, maxHp, dmg, lumens, xp, name, rarity = null;
     if (isBoss) {
       def = area.boss;
       maxHp = hp * b.bossHpMult;
       dmg = atk * b.bossDmgMult;
       xp = b.baseXp * level * b.bossRewardMult;
+      name = def.name;
     } else {
       // pool cumulativo: mobs de TODAS as áreas até a atual (sorteado aleatório)
       def = G.util.pick(this.enemyPool());
       maxHp = hp;
       dmg = atk;
       xp = b.baseXp * level;
+      name = def.name;
+      // chance de virar RARO / RARO+ (mais forte, nome de lore, mais recompensa)
+      const rm = G.data.rareMobs;
+      if (rm && G.util.chance(rm.chance)) {
+        rarity = G.util.chance(rm.plusChance) ? rm.plus : rm.rare;
+        maxHp *= rarity.hpMult;
+        dmg *= rarity.dmgMult;
+        xp *= rarity.rewardMult;
+        name = G.util.pick(rarity.names);
+      }
     }
-    // gold-base ANCORADO à vida do mob (boss dá mais automaticamente: HP 4×)
+    // gold-base ANCORADO à vida do mob (boss/raro dão mais automaticamente via HP maior)
     lumens = maxHp * b.goldRatio;
     this.spawnCount++;
 
     this.enemy = {
-      name: def.name,
+      name,
       sprite: def.sprite,
       img: def.img,
       level,
       isBoss,
+      rarity: rarity ? { tag: rarity.tag, color: rarity.color } : null,
       maxHp: Math.ceil(maxHp),
       hp: Math.ceil(maxHp),
       dmg: Math.max(1, Math.ceil(dmg)),
@@ -144,21 +155,19 @@ G.combat = {
   // ----- Seeker morreu: cura total e recomeça o encontro -----
   onDeath() {
     G.state.data.hp = G.state.maxHp();
-    if (G.ui && G.ui.log) G.ui.log("☠ O Seeker caiu — recuperou-se e voltou à luta.", "bad");
-    this.pendingHits = [];          // descarta projéteis em voo
-    this.enemy = null;              // mob some e reaparece após o delay
+    if (G.ui && G.ui.log) G.ui.log("☠ The Seeker fell — recovered and returned to the fight.", "bad");
+    this.pendingHits = [];
+    this.enemy = null;
     this.respawnTimer = G.data.balance.respawnDelay;
   },
 
   // ----- inimigo morreu: recompensas, cura, loot, próximo -----
   onKill() {
     const e = this.enemy;
-    const s = G.state.stats();
-    const pLum = G.passives ? G.passives.ecoMult() : 1; // árvore Vestige
-    const pXp = G.passives ? G.passives.ecoMult() : 1;
-    const lumens = Math.ceil(e.lumens * (1 + s.lumensBonus / 100) * pLum);
+    const s = G.state.stats(); // ecoMult já embutido em lumensBonus/xpBonus via state.stats()
+    const lumens = Math.ceil(e.lumens * (1 + s.lumensBonus / 100));
     G.state.data.lumens += lumens;
-    G.state.data.xp += Math.round(e.xp * (1 + s.xpBonus / 100) * pXp);
+    G.state.data.xp += Math.round(e.xp * (1 + s.xpBonus / 100));
 
     if (G.ui && G.ui.log)
       G.ui.log(
@@ -224,8 +233,9 @@ G.combat = {
       G.state.data.xp -= G.state.xpToNext();
       G.state.data.level += 1;
       if (G.state.data.level > (G.state.data.highestLevel || 0)) G.state.data.highestLevel = G.state.data.level;
-      G.state.data.hp = G.state.maxHp(); // cura ao subir de nível
-      if (G.ui && G.ui.log) G.ui.log(`★ Subiu para o nível ${G.state.data.level}!`, "level");
+      G.state.invalidateStats(); // nível mudou → stats mudam (atk/hp base)
+      G.state.data.hp = G.state.maxHp();
+      if (G.ui && G.ui.log) G.ui.log(`★ Reached level ${G.state.data.level}!`, "level");
     }
   },
 
@@ -260,20 +270,22 @@ G.combat = {
   // ----- progresso offline: simula tempo ausente de forma simplificada -----
   simulateIdle(seconds) {
     if (seconds < 5) return null;
-    // simula ataques em lote, sem gráfico, até no máx. 8h
     const capped = Math.min(seconds, 8 * 3600);
     const interval = G.state.attackInterval();
-    const hits = Math.floor(capped / interval);
-    if (hits <= 0) return null;
+    // step mínimo = respawnDelay para não subamostrar a fase de respawn
+    const step = Math.max(interval, G.data.balance.respawnDelay);
+    const ticks = Math.floor(capped / step);
+    if (ticks <= 0) return null;
 
-    // suprime TODA a UI durante a simulação (sem render/log/crash; só a matemática)
     const realUi = G.ui;
     G.ui = null;
+    let done = 0;
     try {
-      for (let i = 0; i < hits && i < 50000; i++) this.tick(interval);
+      for (; done < ticks && done < 50000; done++) this.tick(step);
     } finally {
       G.ui = realUi;
     }
-    return { seconds: capped };
+    // retorna os segundos REALMENTE simulados (não o tempo total afastado)
+    return { seconds: done * step };
   },
 };

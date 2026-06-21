@@ -16,10 +16,10 @@ G.ui = {
       "enemy-art", "enemy-name", "enemy-level", "enemy-atk",
       "enemy-hp-fill", "enemy-hp-label", "floaters",
       "hero-card-level", "hero-hp-fill", "hero-hp-label", "log",
-      "gear-stats", "gear-slots", "gear-mult", "gear-tooltip", "wmap-nodes", "wmap-trail", "wmap-area-name",
-      "wmap-area-range", "wmap-info", "wmap-info-name", "wmap-info-range", "wmap-info-lore",
-      "wmap-info-mobs", "wmap-info-boss", "wmap-info-boss-wrap", "wmap-info-travel", "wmap-info-close",
-      "conv-points", "conv-count", "conv-highest", "conv-pending", "btn-converge",
+      "gear-stats", "gear-slots", "gear-mult", "gear-tooltip", "wmap-nodes", "wmap-trail",
+      "wmap-info", "wmap-info-art", "wmap-info-name", "wmap-info-lore", "wmap-info-level",
+      "wmap-info-enemies", "wmap-info-status", "wmap-info-res", "wmap-info-travel", "wmap-info-close",
+      "conv-points", "conv-count", "conv-highest", "conv-pending", "conv-current", "conv-return", "btn-converge",
       "awaken-essence", "awaken-list",
       "pv-points", "pv-tabs", "pv-body", "pv-lock",
     ];
@@ -42,11 +42,16 @@ G.ui = {
     }
     // painel de info da área no World Map
     if (this.el["wmap-info-close"])
-      this.el["wmap-info-close"].addEventListener("click", () => { this.el["wmap-info"].hidden = true; });
+      this.el["wmap-info-close"].addEventListener("click", () => {
+        this.el["wmap-info"].hidden = true;
+      });
     if (this.el["wmap-info-travel"])
       this.el["wmap-info-travel"].addEventListener("click", () => {
         if (this._infoArea != null) this.travelTo(this._infoArea);
       });
+    // World Map: "◀ World" sai do mapa
+    const wback = document.getElementById("wmap-back");
+    if (wback) wback.addEventListener("click", () => { document.getElementById("modal-worldmap").hidden = true; });
     // Convergence (prestige): confirma e renasce
     if (this.el["btn-converge"])
       this.el["btn-converge"].addEventListener("click", () => {
@@ -90,7 +95,7 @@ G.ui = {
     // o World Map só renderiza ao abrir (não a cada tick), e começa sem painel
     if (id === "modal-worldmap") {
       this.renderWorldMap();
-      if (this.el["wmap-info"]) this.el["wmap-info"].hidden = true;
+      this.openAreaInfo(G.state.data.areaIndex); // painel dockado começa na área atual
     }
     if (id === "modal-convergence") this.renderConvergence();
     if (id === "modal-awaken") this.renderAwaken();
@@ -117,8 +122,8 @@ G.ui = {
   },
 
   upgradeCost() {
-    // mesma curva da vida do mob (1.064) => renda e custo andam juntos pra sempre
-    return Math.ceil(20 * Math.pow(1.064, G.state.data.weaponUpgrades));
+    const b = G.data.balance;
+    return Math.ceil(b.forgeCostBase * Math.pow(b.forgeCostGrowth, G.state.data.weaponUpgrades));
   },
 
   doUpgrade() {
@@ -129,6 +134,7 @@ G.ui = {
     }
     G.state.data.lumens -= cost;
     G.state.data.weaponUpgrades += 1;
+    G.state.invalidateStats();
     this.log(`Forge: weapon reforged (+4% ATK).`, "good");
     this.renderAll();
   },
@@ -248,7 +254,7 @@ G.ui = {
         const reqs = `Area ${a.areaIndex + 1} · Lv ${a.level} · ${a.essence} Essence · ${G.util.fmt(a.lumens)} ✦`;
         const action = unlocked
           ? `<span class="awaken-done">Awakened ✓</span>`
-          : `<button class="btn attack-btn awaken-btn" data-awaken="${a.id}"${can ? "" : " disabled"}>Awaken</button>`;
+          : `<button class="btn btn-ornate awaken-btn" data-awaken="${a.id}"${can ? "" : " disabled"}>Awaken</button>`;
         return `<li class="awaken-node${unlocked ? " is-done" : ""}">
           <div class="awaken-node__head"><b>${a.name}</b>${action}</div>
           <div class="awaken-node__fx">${fx}</div>
@@ -265,18 +271,28 @@ G.ui = {
     if (this.el["conv-count"]) this.el["conv-count"].textContent = d.convergences || 0;
     if (this.el["conv-highest"]) this.el["conv-highest"].textContent = G.util.fmt(d.highestLevel || d.level);
     if (this.el["conv-pending"]) this.el["conv-pending"].textContent = G.util.fmt(G.convergence.pending());
+    if (this.el["conv-current"]) this.el["conv-current"].textContent = `Lv ${G.util.fmt(d.level)} · ${G.data.currentArea().name}`;
+    if (this.el["conv-return"]) this.el["conv-return"].textContent = `Lv 1 · ${G.data.areas[0].name}`;
     const btn = this.el["btn-converge"];
     if (btn) {
       const ok = G.convergence.canConverge();
       btn.disabled = !ok;
-      btn.textContent = ok ? "Converge" : `Converge (reach Lv ${G.convergence.gateLevel})`;
+      btn.textContent = ok ? "Converge" : `Reach Lv ${G.convergence.gateLevel}`;
     }
   },
 
   // posições dos 9 nós no mapa (% x,y) — fonte única p/ nós E trilha
+  // posicionadas pelo usuário sobre a arte mapa1.png
   mapNodePos: [
-    [34, 8], [66, 12], [67, 28], [39, 27], [31, 54],
-    [66, 53], [34, 74], [68, 76], [47, 88],
+    [20, 23], // 1 — The Dreaming Wood (esquerda-alta)
+    [59, 19], // 2 — The Lantern Mire (centro-direita alta)
+    [83, 34], // 3 — The Whispering Hollows (extrema direita)
+    [19, 45], // 4 — The Moonlit Canopy (esquerda-centro)
+    [53, 43], // 5 — The Sunken Grove (centro)
+    [34, 56], // 6 — The Gilded Thicket (lotus pool)
+    [72, 55], // 7 — The Hollow Cathedral (direita-centro, cristais)
+    [20, 71], // 8 — The Weeping Roots (esquerda-baixo)
+    [46, 74], // 9 — The Hollow Sanctum (centro-baixo)
   ],
 
   // ---- World Map: nós das áreas + trilha sobre a ilustração do mapa ----
@@ -287,19 +303,37 @@ G.ui = {
     const pos = this.mapNodePos;
     const maxU = Math.min(d.maxAreaUnlocked || 0, G.data.areas.length - 1);
 
-    const curArea = G.data.currentArea();
-    if (this.el["wmap-area-name"]) this.el["wmap-area-name"].textContent = curArea.name;
-    if (this.el["wmap-area-range"])
-      this.el["wmap-area-range"].textContent = `Lv ${curArea.levelRange[0]}–${curArea.levelRange[1]}`;
-
-    // trilha: linha ligando os nós na ordem (parte percorrida x bloqueada)
+    // trilha: ribbon curvo Catmull-Rom (curva passa PELOS nós, não perto)
     const trail = this.el["wmap-trail"];
     if (trail) {
-      const pts = pos.map((p) => p.join(",")).join(" ");
-      const donePts = pos.slice(0, maxU + 1).map((p) => p.join(",")).join(" ");
+      // Catmull-Rom → cubic bezier. tension=0.5 = curvatura natural
+      const crPath = (pts, tension = 0.5) => {
+        if (pts.length < 2) return '';
+        const p = [pts[0], ...pts, pts[pts.length - 1]]; // duplica extremos
+        let d = `M${p[1][0]},${p[1][1]}`;
+        for (let i = 1; i < p.length - 2; i++) {
+          const c1x = +(p[i][0] + (p[i+1][0] - p[i-1][0]) * tension / 3).toFixed(2);
+          const c1y = +(p[i][1] + (p[i+1][1] - p[i-1][1]) * tension / 3).toFixed(2);
+          const c2x = +(p[i+1][0] - (p[i+2][0] - p[i][0]) * tension / 3).toFixed(2);
+          const c2y = +(p[i+1][1] - (p[i+2][1] - p[i][1]) * tension / 3).toFixed(2);
+          d += ` C${c1x},${c1y} ${c2x},${c2y} ${p[i+1][0]},${p[i+1][1]}`;
+        }
+        return d;
+      };
+
+      const allPath  = crPath(pos);
+      const donePath = crPath(pos.slice(0, maxU + 1));
+      const vne = 'fill="none" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"';
+
       trail.innerHTML =
-        `<polyline points="${pts}" fill="none" stroke="rgba(120,140,180,0.45)" stroke-width="2" vector-effect="non-scaling-stroke" stroke-dasharray="5 6" stroke-linecap="round" stroke-linejoin="round"/>` +
-        `<polyline points="${donePts}" fill="none" stroke="rgba(232,181,74,0.9)" stroke-width="2.5" vector-effect="non-scaling-stroke" stroke-dasharray="5 6" stroke-linecap="round" stroke-linejoin="round"/>`;
+        // Caminho futuro (bloqueado) — ribbon prata discreto
+        `<path d="${allPath}" ${vne} stroke="rgba(30,40,100,0.30)" stroke-width="8"/>` +
+        `<path d="${allPath}" ${vne} stroke="rgba(110,125,200,0.22)" stroke-width="4"/>` +
+        `<path d="${allPath}" ${vne} stroke="rgba(180,190,240,0.18)" stroke-width="1.5"/>` +
+        // Caminho desbloqueado — ribbon dourado luminoso (3 camadas limpas)
+        `<path d="${donePath}" ${vne} stroke="rgba(0,0,0,0.55)" stroke-width="10"/>` +
+        `<path d="${donePath}" ${vne} stroke="rgba(210,155,20,0.88)" stroke-width="5.5"/>` +
+        `<path d="${donePath}" ${vne} stroke="rgba(255,242,170,0.65)" stroke-width="1.8"/>`;
     }
 
     wrap.innerHTML = G.data.areas
@@ -319,38 +353,46 @@ G.ui = {
     });
   },
 
-  // abre o painel de info de uma área (lore + range + criaturas + boss)
+  // painel dockado de info da área (arte + name·N/9 + lore + stats + resources + CTA)
   openAreaInfo(i) {
     const a = G.data.areas[i];
     if (!a || !this.el["wmap-info"]) return;
     this._infoArea = i;
     const d = G.state.data;
-    const maxU = Math.min(d.maxAreaUnlocked || 0, G.data.areas.length - 1);
+    const total = G.data.areas.length;
+    const maxU = Math.min(d.maxAreaUnlocked || 0, total - 1);
     const locked = i > maxU;
+    const isCurrent = i === d.areaIndex;
 
-    this.el["wmap-info-name"].textContent = a.name;
-    this.el["wmap-info-range"].textContent = `Levels ${a.levelRange[0]}–${a.levelRange[1]}`;
+    // arte da área como header + cor temática
+    const art = this.el["wmap-info-art"];
+    if (art)
+      art.style.backgroundImage = a.img
+        ? `linear-gradient(180deg, rgba(7,10,22,0.05), rgba(7,10,22,0.55)), url('${a.img}')`
+        : "none";
+    const tints = ["#5ee0d2", "#e8b54a", "#9d7bff", "#7fb0ff", "#5ee0d2", "#e8b54a", "#cdb06a", "#c46a8a", "#e8d24a"];
+    this.el["wmap-info"].style.setProperty("--area-tint", tints[i % tints.length]);
+
+    this.el["wmap-info-name"].textContent = `${a.name} · ${i + 1}/${total}`;
     this.el["wmap-info-lore"].textContent = a.blurb || "";
 
-    // criaturas: nomes únicos definidos na área (boss listado à parte)
-    const seen = {};
-    const mobs = (a.enemies || []).filter((e) => !seen[e.name] && (seen[e.name] = 1));
-    this.el["wmap-info-mobs"].innerHTML = mobs
-      .map((e) => `<li>${e.name}</li>`)
-      .join("");
+    // stats
+    this.el["wmap-info-level"].textContent = `${a.levelRange[0]}–${a.levelRange[1]}`;
+    const pack = i < 2 ? 1 : i < 5 ? 2 : 3; // packs: áreas 1-2=1 · 3-5=2 · 6-9=3
+    this.el["wmap-info-enemies"].textContent = `${pack} per wave`;
+    this.el["wmap-info-status"].textContent = locked ? "Locked" : isCurrent ? "Current" : "Unlocked";
 
-    // boss (algumas áreas não têm)
-    if (a.boss) {
-      this.el["wmap-info-boss-wrap"].hidden = false;
-      this.el["wmap-info-boss"].textContent = a.boss.name;
-    } else {
-      this.el["wmap-info-boss-wrap"].hidden = true;
-    }
+    // resources: Lumens/kill (estimado pela vida do mob na entrada) + Essência (Área 7+) + XP
+    const lumPerKill = Math.ceil(G.data.mobHpAt(a.levelRange[0]) * G.data.balance.goldRatio);
+    const res = [`<li><span>Lumens</span><b>+${G.util.fmt(lumPerKill)}</b></li>`];
+    res.push(`<li><span>XP</span><b>+${G.util.fmt(Math.ceil(G.data.balance.baseXp * a.levelRange[0]))}</b></li>`);
+    if (i >= 6) res.push(`<li><span>Awakening Essence · T1</span><b>${(G.data.balance.awakenDropChance * 100).toFixed(0)}% / kill</b></li>`);
+    this.el["wmap-info-res"].innerHTML = res.join("");
 
-    // botão Travel: desabilitado se travada ou se já é a área atual
+    // CTA: você está aqui / travado (mostra o nível) / viajar
     const tbtn = this.el["wmap-info-travel"];
-    if (i === d.areaIndex) { tbtn.disabled = true; tbtn.textContent = "You are here"; }
-    else if (locked) { tbtn.disabled = true; tbtn.textContent = "Locked"; }
+    if (isCurrent) { tbtn.disabled = true; tbtn.textContent = "You are here"; }
+    else if (locked) { tbtn.disabled = true; tbtn.textContent = `🔒 Reach Lv ${a.levelRange[0]}`; }
     else { tbtn.disabled = false; tbtn.textContent = "Travel here"; }
 
     this.el["wmap-info"].hidden = false;
@@ -366,6 +408,7 @@ G.ui = {
     }
     d.areaIndex = i;
     G.combat.enemy = null;
+    G.combat.pendingHits = []; // projéteis em voo não vazam pra nova área
     G.combat.respawnTimer = G.data.balance.respawnDelay;
     this.onAreaChange();
     const m = document.getElementById("modal-worldmap"); if (m) m.hidden = true;
@@ -379,6 +422,7 @@ G.ui = {
     if (ni === d.areaIndex) return;
     d.areaIndex = ni;
     G.combat.enemy = null; // o próximo mob já nasce na nova área
+    G.combat.pendingHits = []; // projéteis em voo não vazam pra nova área
     G.combat.respawnTimer = G.data.balance.respawnDelay;
     this.onAreaChange();
   },
@@ -393,7 +437,7 @@ G.ui = {
     this.el["res-lumens"].textContent = G.util.fmt(G.state.data.lumens);
     const d = G.state.data;
     const area = G.data.currentArea();
-    this.el["res-area"].textContent = `Area ${area.id} · ${area.name}`;
+    this.el["res-area"].textContent = area.name;
     // mantém o fundo do mundo sincronizado com a área atual
     const wimg = document.querySelector(".world-img");
     if (wimg && area.img && wimg.getAttribute("src") !== area.img) wimg.src = area.img;
@@ -427,7 +471,7 @@ G.ui = {
   //  - inteiro -> fmt (1.2K, etc.)
   //  - fracionário pequeno -> até 3 casas, sem zeros à toa (0.05, 0.025, 0.5)
   //  - número grande -> fmt
-  fmtStat(v) {
+  fmtStat(v, _pct = false) {
     const r = Math.round(v * 1000) / 1000;
     if (Number.isInteger(r)) return G.util.fmt(r);
     if (Math.abs(r) < 1000) return String(parseFloat(r.toFixed(3)));
@@ -517,6 +561,7 @@ G.ui = {
     tip.innerHTML = this.gearTipHtml(item);
     tip.hidden = false;
     const modal = slot.closest(".modal--gear");
+    if (!modal) return;
     const mr = modal.getBoundingClientRect();
     const sr = slot.getBoundingClientRect();
     const tr = tip.getBoundingClientRect();
@@ -571,7 +616,9 @@ G.ui = {
         `<span class="art-ph">${e.sprite}</span>` +
         (e.img ? `<img class="art-img" src="${e.img}" alt="" onerror="this.remove()" />` : "");
       this.el["enemy-art"].classList.toggle("boss", e.isBoss);
-      this.el["enemy-name"].textContent = e.name + (e.isBoss ? " 👑" : "");
+      // nome + raridade (raro/raro+ ganham cor e tag; boss ganha coroa)
+      this.el["enemy-name"].textContent = e.rarity ? `${e.name} · ${e.rarity.tag}` : (e.name + (e.isBoss ? " 👑" : ""));
+      this.el["enemy-name"].style.color = e.rarity ? e.rarity.color : "";
       this.el["enemy-level"].textContent = e.level;
       this.el["enemy-atk"].textContent = G.util.fmt(e.dmg);
     }

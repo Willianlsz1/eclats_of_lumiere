@@ -5,7 +5,8 @@
 // Atributos finais = base + bônus do equipamento + forja.
 
 G.state = {
-  data: null, // o objeto salvo de fato (preenchido em init)
+  data: null,         // o objeto salvo de fato (preenchido em init)
+  _statsCache: null,  // cache de stats(); limpo por invalidateStats()
 
   SAVE_KEY: "eclats_save_v2",
 
@@ -37,7 +38,10 @@ G.state = {
   // Fórmula final = flat × (1 + pct/100) × mult.
   // Fontes hoje: base do jogo, nível, forja, equipamento.
   // (No futuro: Ascension/Divinity/etc. é só somar mais em cada camada.)
+  invalidateStats() { this._statsCache = null; },
+
   stats() {
+    if (this._statsCache) return this._statsCache;
     const d = this.data;
     const L = {}; // L[stat] = { flat, pct, mult }
     const layer = (k) => (L[k] || (L[k] = { flat: 0, pct: 0, mult: 1 }));
@@ -78,10 +82,14 @@ G.state = {
     // ---- passivas (compradas com Pontos de Convergence) ----
     if (G.passives) {
       const P = G.passives;
-      layer("atk").mult *= P.dmgMult();   // árvore Éclat
-      layer("hp").mult *= P.hpMult();     // árvore Fracture
-      layer("crit").flat += P.critAddPts();   // alavanca Luminal Edge
-      layer("atkSpeed").mult *= P.apsMult();  // alavanca Fracture Pulse
+      layer("atk").mult *= P.dmgMult();        // árvore Éclat
+      layer("hp").mult *= P.hpMult();          // árvore Fracture
+      layer("crit").flat += P.critAddPts();    // alavanca Luminal Edge
+      layer("atkSpeed").mult *= P.apsMult();   // alavanca Fracture Pulse
+      // árvore Vestige: multiplica os bônus de loot (painel agora reflete o real)
+      const eco = P.ecoMult();
+      layer("lumensBonus").mult *= eco;
+      layer("xpBonus").mult *= eco;
     }
 
     const fin = (k) => {
@@ -89,17 +97,18 @@ G.state = {
       return x.flat * (1 + x.pct / 100) * x.mult;
     };
 
-    return {
+    this._statsCache = {
       atk: Math.round(fin("atk")),
       hp: Math.round(fin("hp")),
       crit: G.util.clamp(fin("crit"), 0, 100),
-      critDmg: fin("critDmg"),            // % de dano extra no crit (ex.: 50 = +50%)
-      critMult: 1 + fin("critDmg") / 100, // multiplicador final do crit
-      atkSpeed: fin("atkSpeed"),          // ataques por segundo (base 1.0)
-      xpBonus: fin("xpBonus"),            // % de XP extra por kill
+      critDmg: fin("critDmg"),
+      critMult: 1 + fin("critDmg") / 100,
+      atkSpeed: fin("atkSpeed"),
+      xpBonus: fin("xpBonus"),
       lumensBonus: fin("lumensBonus"),
-      _layers: L, // exposto p/ tooltip detalhado no futuro
+      _layers: L,
     };
+    return this._statsCache;
   },
 
   maxHp() {
@@ -161,13 +170,25 @@ G.state = {
       loaded = null;
     }
     this.data = loaded || this.fresh();
-    // garante campos novos em saves antigos
+    // garante campos escalares novos em saves antigos (shallow merge é suficiente
+    // para primitivos; objetos aninhados são reconciliados individualmente abaixo)
     this.data = Object.assign(this.fresh(), this.data);
     // reconcilia as 6 peças fixas com a definição atual (stats/afixos novos),
     // preservando nível e raridade salvos
     this.data.equipped = G.gear.reconcile(this.data.equipped);
-    // migra passivas pro formato de árvores (saves antigos tinham objeto/12-nós)
-    if (!this.data.passives || !Array.isArray(this.data.passives.eclat)) this.data.passives = G.passives.freshSet();
+    // deep merge das passivas: preserva níveis salvos, garante novas árvores/índices
+    {
+      const fresh = G.passives.freshSet();
+      const saved = this.data.passives;
+      if (saved && typeof saved === "object") {
+        for (const tree of Object.keys(fresh)) {
+          if (Array.isArray(saved[tree]))
+            fresh[tree] = fresh[tree].map((_, i) => saved[tree][i] || 0);
+        }
+      }
+      this.data.passives = fresh;
+    }
+    this.invalidateStats();
     if (this.data.hp <= 0) this.data.hp = this.maxHp();
     return !!loaded;
   },

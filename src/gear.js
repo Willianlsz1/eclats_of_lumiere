@@ -1,9 +1,9 @@
 // =============================================================
-// gear.js — level-up de equipamento (custo LINEAR, estilo Gaiadon)
+// gear.js — level-up de equipamento (custo GEOMÉTRICO, estilo Gaiadon)
 // =============================================================
 // Cada peça equipada tem um nível. Subir o nível dá +% nos afixos
-// daquela peça. Custo cresce LINEAR com o nível (barato/cedo, "se
-// resolve" conforme sua renda — que é exponencial — cresce).
+// daquela peça. Custo cresce GEOMÉTRICO com o nível (acompanha a
+// renda exponencial do jogador — ver gearCostBase/Growth em data.balance).
 // O teto (cap) é por raridade, definido em data.js.
 
 G.gear = {
@@ -22,6 +22,8 @@ G.gear = {
     const base = G.data.gearBase[slotId];
     const slot = G.data.slots.find((s) => s.id === slotId);
     const rarity = G.data.rarities.find((r) => r.id === rarityId) || G.data.rarities[0];
+    // raridade determina quantos afixos a peça tem (Common=1 … Legendary=5)
+    const afxCount = Math.min(rarity.affixes || 1, base.affixes.length);
     return {
       slot: slotId,
       slotLabel: slot ? slot.label : slotId,
@@ -30,7 +32,7 @@ G.gear = {
       rarityName: rarity.name,
       color: rarity.color,
       level: 1,
-      affixes: base.affixes.map((a) => ({
+      affixes: base.affixes.slice(0, afxCount).map((a) => ({
         id: a.id,
         label: a.label,
         stat: a.stat,
@@ -69,7 +71,7 @@ G.gear = {
   // sobe N níveis de uma vez (x10 / Max). Devolve quantos subiu de fato.
   // mult "max" sobe até o teto ou até acabar o ouro.
   levelUpTimes(item, n) {
-    const times = n === "max" ? this.cap(item) : n;
+    const times = n === "max" ? this.cap(item) - (item.level || 1) : n;
     let done = 0;
     for (let i = 0; i < times; i++) {
       if (this.levelUp(item)) done++;
@@ -103,6 +105,7 @@ G.gear = {
     if (G.state.data.lumens < cost) return false;
     G.state.data.lumens -= cost;
     item.level = (item.level || 1) + 1;
+    G.state.invalidateStats(); // gear afixo aumentou → stats mudam
     return true;
   },
 };

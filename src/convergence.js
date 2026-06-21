@@ -33,10 +33,13 @@ G.convergence = {
 
     d.level = 1;
     d.xp = 0;
-    d.areaIndex = 0; // volta pra Área 1 (maxAreaUnlocked é mantido)
+    d.lumens = 0;
+    d.areaIndex = 0;
+    G.state.invalidateStats(); // nível zerou → stats recomputam antes de maxHp()
     d.hp = G.state.maxHp();
 
     G.combat.enemy = null;
+    G.combat.pendingHits = []; // descarta projéteis em voo (não vazam pro recomeço)
     G.combat.respawnTimer = G.data.balance.respawnDelay;
 
     if (G.ui && G.ui.log)

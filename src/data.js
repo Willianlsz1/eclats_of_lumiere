@@ -103,11 +103,13 @@ G.data = {
     { id: "hp", label: "Vida", stat: "hp", layer: "flat", value: [10, 25] },
     { id: "hpp", label: "Vida", stat: "hp", layer: "pct", value: [4, 10] },
     { id: "crit", label: "Crítico", stat: "crit", layer: "flat", value: [1, 3] },
-    { id: "haste", label: "Vel. Ataque", stat: "haste", layer: "flat", value: [2, 5] },
+    { id: "atkspd", label: "Atk Speed", stat: "atkSpeed", layer: "flat", value: [2, 5] },
     { id: "lumens", label: "Lumens", stat: "lumensBonus", layer: "flat", value: [3, 8] },
   ],
 
-  // stats que são exibidos com "%" mesmo quando entram na camada flat
+  // stats que são exibidos com "%" no TOOLTIP (af.pct = true em buildPiece).
+  // Atenção: state.stats() roteia por af.layer ("flat"/"pct"), não por pctStats.
+  // pctStats controla APENAS display — adicionar aqui não muda o pipeline de stats.
   pctStats: ["crit", "critDmg", "xpBonus", "lumensBonus"],
 
   // ---- Base de nomes de item por slot ----
@@ -129,7 +131,7 @@ G.data = {
       name: "The Dreaming Wood",
       blurb: "Where the Seeker first wakes. Soft auroras drip through ancient boughs, and here the light still dreams.",
       img: "assets/areas/dreaming_wood.png",
-      levelRange: [1, 40],
+      levelRange: [1, 80],
       enemies: [
         { name: "Candlewisp Shade", sprite: "🔥", img: "assets/enemies/candlewisp_shade.png" },
         { name: "Mothlight Herald", sprite: "🦋", img: "assets/enemies/mothlight_herald.png" },
@@ -144,7 +146,7 @@ G.data = {
       name: "The Lantern Mire",
       blurb: "A drowned bog of guttering lanterns, where Fragmented souls lost themselves chasing the light.",
       img: "assets/areas/lantern_mire.png",
-      levelRange: [41, 120],
+      levelRange: [81, 350],
       enemies: [
         { name: "Mirelight Drifter", sprite: "🏮", img: "assets/enemies/mirelight_drifter.png" }, // novo
         { name: "Candlewisp Shade", sprite: "🔥", img: "assets/enemies/candlewisp_shade.png" },   // reaproveitado (Área 1)
@@ -158,7 +160,7 @@ G.data = {
       name: "The Whispering Hollows",
       blurb: "Hollow trees that sing the trapped light, their murmurs curling endlessly through the dark.",
       img: "assets/areas/whispering_hollows.png",
-      levelRange: [121, 250],
+      levelRange: [351, 700],
       enemies: [
         { name: "Husklight Murmur", sprite: "🌳", img: "assets/enemies/husklight_murmur.png" },  // novo
         { name: "Dreamhorn Warden", sprite: "🦌", img: "assets/enemies/dreamhorn_warden.png" },  // reaproveitado (Área 1)
@@ -172,7 +174,7 @@ G.data = {
       name: "The Moonlit Canopy",
       blurb: "The high canopy, nearest the aurora, where moths and wardens drift through a pale, restless glow.",
       img: "assets/areas/moonlit_canopy.png",
-      levelRange: [251, 430],
+      levelRange: [701, 1150],
       enemies: [
         { name: "Boughlight Creeper", sprite: "🍃", img: "assets/enemies/boughlight_creeper.png" }, // novo
         { name: "Mothlight Herald", sprite: "🦋", img: "assets/enemies/mothlight_herald.png" },      // reaproveitado (Área 1)
@@ -186,7 +188,7 @@ G.data = {
       name: "The Sunken Grove",
       blurb: "A flooded, mirrored grove — every still pool reflects the creeping Mist back at the Seeker.",
       img: "assets/areas/sunken_grove.png",
-      levelRange: [431, 660],
+      levelRange: [1151, 1700],
       enemies: [
         { name: "Glasswater Wraith", sprite: "💧", img: "assets/enemies/glasswater_wraith.png" }, // novo
         { name: "Mirelight Drifter", sprite: "🏮", img: "assets/enemies/mirelight_drifter.png" }, // reaproveitado (Área 2)
@@ -200,7 +202,7 @@ G.data = {
       name: "The Gilded Thicket",
       blurb: "A bramble of thorns where the golden corruption climbs — beautiful, and entirely wrong.",
       img: "assets/areas/gilded_thicket.png",
-      levelRange: [661, 940],
+      levelRange: [1701, 2350],
       enemies: [
         { name: "Thornlight Stalker", sprite: "🌵", img: "assets/enemies/thornlight_stalker.png" }, // novo
         { name: "Candlewisp Shade", sprite: "🔥", img: "assets/enemies/candlewisp_shade.png" },     // reaproveitado (Área 1)
@@ -214,7 +216,7 @@ G.data = {
       name: "The Hollow Cathedral",
       blurb: "A cathedral grown of living wood, where the Fragmented kneel and worship the captured light.",
       img: "assets/areas/hollow_cathedral.png",
-      levelRange: [941, 1260],
+      levelRange: [2351, 3150],
       enemies: [
         { name: "Hollowed Acolyte", sprite: "⛪", img: "assets/enemies/hollowed_acolyte.png" },   // novo
         { name: "Husklight Murmur", sprite: "🌳", img: "assets/enemies/husklight_murmur.png" },    // reaproveitado (Área 3)
@@ -228,7 +230,7 @@ G.data = {
       name: "The Weeping Roots",
       blurb: "The deep roots, where the forest bleeds light and mourns everything it has lost.",
       img: "assets/areas/weeping_roots.png",
-      levelRange: [1261, 1610],
+      levelRange: [3151, 4050],
       enemies: [
         { name: "Rootbound Weeper", sprite: "🌱", img: "assets/enemies/rootbound_weeper.png" },   // novo
         { name: "Thornlight Stalker", sprite: "🌵", img: "assets/enemies/thornlight_stalker.png" }, // reaproveitado (Área 6)
@@ -242,13 +244,46 @@ G.data = {
       name: "The Hollow Sanctum",
       blurb: "The heart of the wood — the climax of the Dreaming, where the Gilded Hollow waits in the hush.",
       img: "assets/areas/hollow_sanctum.png",
-      levelRange: [1611, 2000],
+      levelRange: [4051, 5000],
       enemies: [
         { name: "Rootbound Weeper", sprite: "🌱", img: "assets/enemies/rootbound_weeper.png" },   // reaproveitado (Á8)
         { name: "Hollowed Acolyte", sprite: "⛪", img: "assets/enemies/hollowed_acolyte.png" },     // reaproveitado (Á7)
         { name: "Thornlight Stalker", sprite: "🌵", img: "assets/enemies/thornlight_stalker.png" }, // reaproveitado (Á6)
       ],
       boss: { name: "The Gilded Hollow", sprite: "👁", img: "assets/enemies/gilded_hollow.png" },
+    },
+  ],
+
+  // ---- Rare mob variants (names + multipliers) ----
+  rareMobs: {
+    chance: 0.08,       // 8% de chance de um mob virar raro
+    plusChance: 0.15,   // desses, 15% viram raro+
+    rare: {
+      tag: "Rare", color: "#9d7bff",
+      hpMult: 3, dmgMult: 1.5, rewardMult: 3,
+      names: ["Pale Wanderer", "Dusk Remnant", "Mist Shard", "Fractured Echo", "Gilded Wisp"],
+    },
+    plus: {
+      tag: "Rare+", color: "#e8b54a",
+      hpMult: 6, dmgMult: 2, rewardMult: 6,
+      names: ["Luminal Wraith", "Éclat Splinter", "Hollow Sovereign", "Veil Incarnate", "Shard of Luce"],
+    },
+  },
+
+  // ---- Awaken definitions (permanent power unlocked at area 7+) ----
+  awakens: [
+    {
+      id: "first_light",
+      name: "First Light",
+      areaIndex: 6,     // Area 7 = index 6 (The Hollow Cathedral)
+      level: 2351,      // start of area 7 level range
+      essence: 50,      // Awakening Essence cost
+      lumens: 500000,   // Lumens cost
+      bonus: {
+        atkMult: 2.5,   // ATK ×2.5 permanently
+        hpMult: 1.5,    // HP ×1.5 permanently
+        lumensBonus: 25, // +25% gold drops
+      },
     },
   ],
 
@@ -293,9 +328,9 @@ G.data = {
     // no mid, e fica agressivo no end (God Mode). Alvos validados:
     //   ~985k no Lv1000 · ~395M no Lv4000 · ~58B no Lv5000.
     mobHpStages: [
-      { upTo: 1000, growth: 1.0062 }, // Early (1–1000): HP sobe rápido logo cedo
-      { upTo: 4000, growth: 1.002 },  // Mid (1001–4000): estabiliza
-      { upTo: 5000, growth: 1.005 },  // End (4001–5000): agressivo (desafios finais)
+      { upTo: 1000, growth: 1.0085 }, // Early (1–1000): HP sobe rápido logo cedo
+      { upTo: 4000, growth: 1.0040 },  // Mid (1001–4000): estabiliza
+      { upTo: 5000, growth: 1.0090 },  // End (4001–5000): agressivo (desafios finais)
     ],
     mobAtkBase: 45,       // ATK do mob no nível 1
     mobAtkGrowth: 1.00085,// +0,085% de ATK por nível
@@ -316,18 +351,10 @@ G.data = {
     //   custo = gearCostBase × gearCostGrowth^(nível-1)
     gearCostBase: 1100,
     gearCostGrowth: 1.05,
-    awakenDropChance: 0.02, // chance de Awakening Essence por kill (Área 7+)
+    // Forge (weapon reforge — custo separado do gear fixo)
+    forgeCostBase: 20,
+    forgeCostGrowth: 1.064,
+    // Awaken Essence drop chance por kill em área 7+ (multiplicado por matMult passiva)
+    awakenDropChance: 0.02,
   },
-
-  // ---- AWAKEN: 3ª fonte de poder (Gear × Awaken × Convergence) ----
-  // Desbloqueia na Área 7+. Cada Awaken é um PACOTE de bônus aplicado
-  // globalmente (camada própria em stats() — ver awaken.js). Requisitos:
-  // nível + Awakening Essence (dropa na Área 7+) + Lumens. Os bônus são
-  // PERMANENTES (sobrevivem à Convergence). Valores = placeholder (passada final).
-  awakenMaterialName: "Awakening Essence",
-  // MAPA 1 = só 1 Awaken (na Área 7). Os próximos awakenings entram no Mapa 2.
-  awakens: [
-    { id: 1, name: "First Light", areaIndex: 6, level: 1000, essence: 40, lumens: 500000,
-      bonus: { atkMult: 2, hpMult: 2, critDmg: 500, crit: 3, lumensBonus: 300, xpBonus: 100 } },
-  ],
 };

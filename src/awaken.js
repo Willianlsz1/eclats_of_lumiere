@@ -29,6 +29,7 @@ G.awaken = {
     d.lumens -= a.lumens;
     if (!d.awakensUnlocked) d.awakensUnlocked = [];
     d.awakensUnlocked.push(id);
+    G.state.invalidateStats();
     if (G.ui && G.ui.log) G.ui.log(`✦ Awakening: ${a.name} — the light stirs.`, "boss");
     if (G.ui && G.ui.renderAll) G.ui.renderAll();
     G.state.save();

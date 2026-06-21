@@ -40,6 +40,7 @@ G.util = {
 
   // formata número grande de forma legível: 1234 -> "1.23K"
   fmt(n) {
+    if (n < 0) return "-" + this.fmt(-n);
     n = Math.floor(n);
     if (n < 1000) return String(n);
     const units = ["", "K", "M", "B", "T", "Qa", "Qi"];

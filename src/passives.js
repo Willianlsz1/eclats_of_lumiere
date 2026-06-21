@@ -66,7 +66,8 @@ G.passives = {
   isMax(tree, i) { return this.level(tree, i) >= this.maxLevel; },
   groupUnlocked(tree, g) {
     if (g === 0) return true;
-    const arr = G.state.data.passives[tree];
+    const arr = G.state.data.passives?.[tree];
+    if (!arr) return false;
     for (let p = 0; p < this.GROUP_SIZE; p++) if (arr[(g - 1) * this.GROUP_SIZE + p] < this.maxLevel) return false;
     return true;
   },
@@ -78,6 +79,7 @@ G.passives = {
     if (!this.canBuy(tree, i)) return false;
     G.state.data.convergencePoints -= this.nextCost(tree, i);
     G.state.data.passives[tree][i] += 1;
+    G.state.invalidateStats();
     G.state.save();
     return true;
   },
