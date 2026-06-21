@@ -152,15 +152,13 @@
     </div>
   </div>
 
-  <!-- ===== MODAL: WORLD MAP (Mapa 1 + nós das áreas) ===== -->
-  <div class="modal-overlay" id="modal-worldmap" hidden onclick="if(event.target===this)this.hidden=true">
-    <div class="modal modal--worldmap">
-      <button class="modal-close" title="Close" onclick="document.getElementById('modal-worldmap').hidden=true">✕</button>
-      <div class="modal__title">WORLD MAP · The Dreaming Wood</div>
-      <div class="wmap" id="wmap">
-        <img class="wmap__bg" src="assets/ui/map1.png" alt="" />
-        <div class="wmap__nodes" id="wmap-nodes"></div>
-      </div>
+  <!-- ===== SCREEN: WORLD MAP (tela própria, cobre tudo) ===== -->
+  <div class="worldmap-screen" id="modal-worldmap" hidden>
+    <button class="modal-close" title="Close" onclick="document.getElementById('modal-worldmap').hidden=true">✕</button>
+    <div class="worldmap-screen__title">WORLD MAP · The Dreaming Wood</div>
+    <div class="wmap" id="wmap">
+      <img class="wmap__bg" src="assets/ui/map1.png" alt="" />
+      <div class="wmap__nodes" id="wmap-nodes"></div>
     </div>
   </div>
 
