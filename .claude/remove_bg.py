@@ -5,8 +5,13 @@ from PIL import Image, ImageChops, ImageFilter
 
 src = sys.argv[1]
 dst = sys.argv[2]
-hi, lo = 242, 200  # >=hi vira transparente; <=lo fica opaco; entre = rampa
-# (mais agressivo que antes p/ comer a franja branca anti-aliased da borda)
+# hi/lo: >=hi vira transparente; <=lo fica opaco; entre = rampa.
+# erode: 1 = encolhe 1px a borda (mata halo) — use 0 p/ criaturas CLARAS/translúcidas
+#        (água, vidro), senão o corpo pálido some junto com o fundo.
+# Padrão = agressivo (bom p/ criaturas escuras). Suave: python remove_bg.py in out 252 240 0
+hi = int(sys.argv[3]) if len(sys.argv) > 3 else 242
+lo = int(sys.argv[4]) if len(sys.argv) > 4 else 200
+erode = int(sys.argv[5]) if len(sys.argv) > 5 else 1
 
 im = Image.open(src).convert("RGBA")
 r, g, b, a0 = im.split()
@@ -26,7 +31,8 @@ white_alpha = mn.point(lut)
 # -> transparente se já era transparente OU se é branco
 a = ImageChops.darker(a0, white_alpha)
 # erode 1px a borda do alpha p/ matar o halo branco residual (MinFilter = mínimo 3x3)
-a = a.filter(ImageFilter.MinFilter(3))
+if erode:
+    a = a.filter(ImageFilter.MinFilter(3))
 im.putalpha(a)
 
 # recorta ao conteúdo SÓLIDO (ignora glow/sparkles fracos que esticam o bbox)

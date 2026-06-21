@@ -176,6 +176,32 @@ G.data = {
       ],
       boss: { name: "The Moonlit Sovereign", sprite: "👑", img: "assets/enemies/moonlit_sovereign.png" },
     },
+    {
+      // Área 5 — The Sunken Grove: bosque inundado e espelhado, reflexos da Névoa.
+      id: 5,
+      name: "The Sunken Grove",
+      img: "assets/areas/sunken_grove.png",
+      levelRange: [41, 50],
+      enemies: [
+        { name: "Glasswater Wraith", sprite: "💧", img: "assets/enemies/glasswater_wraith.png" }, // novo
+        { name: "Mirelight Drifter", sprite: "🏮", img: "assets/enemies/mirelight_drifter.png" }, // reaproveitado (Área 2)
+        { name: "Boughlight Creeper", sprite: "🍃", img: "assets/enemies/boughlight_creeper.png" }, // reaproveitado (Área 4)
+      ],
+      boss: { name: "The Stillwater Maiden", sprite: "🪷", img: "assets/enemies/stillwater_maiden.png" },
+    },
+    {
+      // Área 6 — The Gilded Thicket: matagal de espinhos onde a corrupção dourada sobe.
+      id: 6,
+      name: "The Gilded Thicket",
+      img: "assets/areas/gilded_thicket.png",
+      levelRange: [51, 60],
+      enemies: [
+        { name: "Thornlight Stalker", sprite: "🌵", img: "assets/enemies/thornlight_stalker.png" }, // novo
+        { name: "Candlewisp Shade", sprite: "🔥", img: "assets/enemies/candlewisp_shade.png" },     // reaproveitado (Área 1)
+        { name: "Glasswater Wraith", sprite: "💧", img: "assets/enemies/glasswater_wraith.png" },    // reaproveitado (Área 5)
+      ],
+      boss: { name: "The Bramble King", sprite: "🥀", img: "assets/enemies/bramble_king.png" },
+    },
   ],
 
   // área atual (em função do progresso salvo)
