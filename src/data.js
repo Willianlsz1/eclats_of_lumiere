@@ -202,6 +202,32 @@ G.data = {
       ],
       boss: { name: "The Bramble King", sprite: "🥀", img: "assets/enemies/bramble_king.png" },
     },
+    {
+      // Área 7 — The Hollow Cathedral: catedral-árvore onde os Fragmented adoram a luz.
+      id: 7,
+      name: "The Hollow Cathedral",
+      img: "assets/areas/hollow_cathedral.png",
+      levelRange: [61, 70],
+      enemies: [
+        { name: "Hollowed Acolyte", sprite: "⛪", img: "assets/enemies/hollowed_acolyte.png" },   // novo
+        { name: "Husklight Murmur", sprite: "🌳", img: "assets/enemies/husklight_murmur.png" },    // reaproveitado (Área 3)
+        { name: "Thornlight Stalker", sprite: "🌵", img: "assets/enemies/thornlight_stalker.png" }, // reaproveitado (Área 6)
+      ],
+      boss: { name: "The Gilded Confessor", sprite: "✝", img: "assets/enemies/gilded_confessor.png" },
+    },
+    {
+      // Área 8 — The Weeping Roots: as raízes fundas, a floresta sangrando luz.
+      id: 8,
+      name: "The Weeping Roots",
+      img: "assets/areas/weeping_roots.png",
+      levelRange: [71, 80],
+      enemies: [
+        { name: "Rootbound Weeper", sprite: "🌱", img: "assets/enemies/rootbound_weeper.png" },   // novo
+        { name: "Thornlight Stalker", sprite: "🌵", img: "assets/enemies/thornlight_stalker.png" }, // reaproveitado (Área 6)
+        { name: "Hollowed Acolyte", sprite: "⛪", img: "assets/enemies/hollowed_acolyte.png" },     // reaproveitado (Área 7)
+      ],
+      boss: { name: "The Heartroot Mourner", sprite: "🩸", img: "assets/enemies/heartroot_mourner.png" },
+    },
   ],
 
   // área atual (em função do progresso salvo)
