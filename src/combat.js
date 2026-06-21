@@ -20,7 +20,7 @@ G.combat = {
   // ----- cria o próximo inimigo (vida exponencial no nível do MOB) -----
   spawn() {
     const b = G.data.balance;
-    const area = G.data.area;
+    const area = G.data.currentArea();
     // nível do mob = SEU nível (sobe junto com o player), limitado à faixa da área
     const level = G.util.clamp(G.state.data.level, area.levelRange[0], area.levelRange[1]);
     // chegou no teto da área => boss da área
@@ -152,11 +152,32 @@ G.combat = {
     // loot DESLIGADO por enquanto (gear agora é 6 peças fixas que sobem de
     // nível com ouro). O sistema de drop/inventário fica reservado p/ futuro.
 
+    // boss derrotado => LIBERA a próxima sub-área (o jogador decide quando avançar)
+    if (e.isBoss) this.markBossCleared();
+
     this.checkLevelUp(); // o nível do mob sobe junto com o player (via XP), não por kill
     // mob some da tela e espera o delay antes do próximo aparecer
     this.enemy = null;
     this.respawnTimer = G.data.balance.respawnDelay;
     if (G.ui && G.ui.renderAll) G.ui.renderAll();
+  },
+
+  // boss derrotado: LIBERA a próxima sub-área (não avança sozinho — o jogador
+  // navega com as setas do banner quando quiser).
+  markBossCleared() {
+    const d = G.state.data;
+    if (typeof d.maxAreaUnlocked !== "number") d.maxAreaUnlocked = d.areaIndex;
+    if (d.areaIndex < G.data.areas.length - 1) {
+      const newly = d.areaIndex + 1 > d.maxAreaUnlocked;
+      d.maxAreaUnlocked = Math.max(d.maxAreaUnlocked, d.areaIndex + 1);
+      if (newly && G.ui && G.ui.log) {
+        const next = G.data.areas[d.areaIndex + 1];
+        G.ui.log(`✦ Area cleared! ${next.name} unlocked — advance when ready.`, "boss");
+      }
+      if (G.ui && G.ui.renderResources) G.ui.renderResources(); // atualiza as setas
+    } else if (G.ui && G.ui.log) {
+      G.ui.log(`✦ ${G.data.currentArea().name} cleared — more awaits beyond.`, "boss");
+    }
   },
 
   checkLevelUp() {

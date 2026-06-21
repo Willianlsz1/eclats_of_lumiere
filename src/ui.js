@@ -95,9 +95,38 @@ G.ui = {
     this.renderHeroHp();
   },
 
+  // o jogador navega entre as sub-áreas DESBLOQUEADAS (setas do banner)
+  goToArea(delta) {
+    const d = G.state.data;
+    const maxUnlocked = Math.min(d.maxAreaUnlocked || 0, G.data.areas.length - 1);
+    const ni = G.util.clamp(d.areaIndex + delta, 0, maxUnlocked);
+    if (ni === d.areaIndex) return;
+    d.areaIndex = ni;
+    G.combat.enemy = null; // o próximo mob já nasce na nova área
+    G.combat.respawnTimer = G.data.balance.respawnDelay;
+    this.onAreaChange();
+  },
+
+  // chamado quando muda de sub-área
+  onAreaChange() {
+    this._lastArt = null; // força recriar a arte do próximo mob
+    this.renderResources();
+  },
+
   renderResources() {
     this.el["res-lumens"].textContent = G.util.fmt(G.state.data.lumens);
-    this.el["res-area"].textContent = `Area ${G.data.area.id} · ${G.data.area.name}`;
+    const d = G.state.data;
+    const area = G.data.currentArea();
+    this.el["res-area"].textContent = `Area ${area.id} · ${area.name}`;
+    // mantém o fundo do mundo sincronizado com a área atual
+    const wimg = document.querySelector(".world-img");
+    if (wimg && area.img && wimg.getAttribute("src") !== area.img) wimg.src = area.img;
+    // setas: ‹ se não é a primeira; › se a próxima já foi desbloqueada
+    const maxUnlocked = Math.min(d.maxAreaUnlocked || 0, G.data.areas.length - 1);
+    const prev = document.getElementById("area-prev");
+    const next = document.getElementById("area-next");
+    if (prev) prev.classList.toggle("is-disabled", d.areaIndex <= 0);
+    if (next) next.classList.toggle("is-disabled", d.areaIndex >= maxUnlocked);
   },
 
   currentTier() {

@@ -18,6 +18,8 @@ G.state = {
       weaponUpgrades: 0,     // quantas vezes reforçou a arma na forja
       hp: 0,                 // vida atual (0 = será preenchida com a máxima)
       inventory: [],         // (loot desligado por enquanto — mantido p/ futuro)
+      areaIndex: 0,          // sub-área atual do Mapa 1 (0 = The Dreaming Wood)
+      maxAreaUnlocked: 0,    // maior sub-área liberada (boss anterior derrotado)
       equipped: G.gear.freshSet(), // 6 peças FIXAS (Nv.1, Comum) — ver gear.js
       lastSeen: Date.now(),  // p/ progresso offline
     };

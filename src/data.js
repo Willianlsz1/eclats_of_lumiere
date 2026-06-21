@@ -117,21 +117,45 @@ G.data = {
     trinket: ["Amuleto", "Anel", "Selo", "Relicário", "Prisma"],
   },
 
-  // ---- Área 1: The Dreaming Wood (trio canônico + boss) ----
-  // img = caminho da arte (você cria em assets/). Se a imagem não existir,
-  // o jogo mostra o emoji de fallback automaticamente.
-  area: {
-    id: 1,
-    name: "The Dreaming Wood",
-    levelRange: [1, 60], // a Área 1 cobre os níveis 1 a 60; ao chegar no 60 surge o boss
-    // inimigos comuns (ciclam conforme você avança)
-    enemies: [
-      { name: "Candlewisp Shade", sprite: "🔥", img: "assets/enemies/candlewisp_shade.png" },
-      { name: "Mothlight Herald", sprite: "🦋", img: "assets/enemies/mothlight_herald.png" },
-      { name: "Dreamhorn Warden", sprite: "🦌", img: "assets/enemies/dreamhorn_warden.png" },
-    ],
-    // boss a cada 10 estágios
-    boss: { name: "The Gilded Hollow", sprite: "👁", img: "assets/enemies/gilded_hollow.png" },
+  // ---- MAPA 1: The Dreaming Wood — 9 sub-áreas ----
+  // Cada sub-área tem: bg (img), faixa de nível, trio de inimigos e um boss.
+  // Vencer o boss da área libera a próxima. As áreas 2-9 são adicionadas aqui
+  // conforme criamos a arte (cada nova área = 1 mob novo + 1 mid-boss novo,
+  // reaproveitando mobs das áreas anteriores). Faixas são PLACEHOLDER (o
+  // balanceamento vem depois). O emoji é fallback se a imagem não existir.
+  areas: [
+    {
+      id: 1,
+      name: "The Dreaming Wood",
+      img: "assets/areas/dreaming_wood.png",
+      levelRange: [1, 10],
+      enemies: [
+        { name: "Candlewisp Shade", sprite: "🔥", img: "assets/enemies/candlewisp_shade.png" },
+        { name: "Mothlight Herald", sprite: "🦋", img: "assets/enemies/mothlight_herald.png" },
+        { name: "Dreamhorn Warden", sprite: "🦌", img: "assets/enemies/dreamhorn_warden.png" },
+      ],
+      // (placeholder: o Gilded Hollow vira o boss do clímax — Área 9 — quando criarmos)
+      boss: { name: "The Gilded Hollow", sprite: "👁", img: "assets/enemies/gilded_hollow.png" },
+    },
+    {
+      // Área 2 — The Lantern Mire: brejo afogado, Fragmented que se perderam na luz.
+      id: 2,
+      name: "The Lantern Mire",
+      img: "assets/areas/lantern_mire.png",
+      levelRange: [11, 20],
+      enemies: [
+        { name: "Mirelight Drifter", sprite: "🏮", img: "assets/enemies/mirelight_drifter.png" }, // novo
+        { name: "Candlewisp Shade", sprite: "🔥", img: "assets/enemies/candlewisp_shade.png" },   // reaproveitado (Área 1)
+        { name: "Mothlight Herald", sprite: "🦋", img: "assets/enemies/mothlight_herald.png" },    // reaproveitado (Área 1)
+      ],
+      boss: { name: "The Drowned Lantern", sprite: "🕯", img: "assets/enemies/drowned_lantern.png" },
+    },
+  ],
+
+  // área atual (em função do progresso salvo)
+  currentArea() {
+    const i = G.util.clamp(G.state.data.areaIndex || 0, 0, this.areas.length - 1);
+    return this.areas[i];
   },
 
   // ---- Constantes de balanceamento (modelo Gaiadon) ----

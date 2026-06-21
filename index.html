@@ -18,7 +18,9 @@
   <!-- ===== HUD: TOPO CENTRO — recurso + banner de área ===== -->
   <div class="hud hud-topcenter">
     <div class="banner banner--area">
-      <span class="banner__text" id="res-area">Área 1 · The Dreaming Wood</span>
+      <button class="area-nav area-nav--prev" id="area-prev" title="Previous area" onclick="G.ui.goToArea(-1)">‹</button>
+      <span class="banner__text" id="res-area">Area 1 · The Dreaming Wood</span>
+      <button class="area-nav area-nav--next" id="area-next" title="Next area" onclick="G.ui.goToArea(1)">›</button>
     </div>
   </div>
 
