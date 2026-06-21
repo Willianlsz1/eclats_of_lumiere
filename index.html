@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Éclats of Lumière</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='26' fill='%23070a16'/%3E%3Cpath d='M32 8l7 17 17 7-17 7-7 17-7-17-17-7 17-7z' fill='%23e8b54a'/%3E%3Ccircle cx='32' cy='32' r='7' fill='%235ee0d2'/%3E%3C/svg%3E" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -91,7 +92,9 @@
       <button class="icon-btn" title="Equipment" onclick="G.ui.openModal('modal-gear')">
         <span class="ico-ph">🎒</span><img class="ico-img" src="assets/ui/icon_gear.png" alt="" onerror="this.remove()" />
       </button>
-      <button class="icon-btn" title="Convergence" onclick="G.ui.openModal('modal-convergence')">✦</button>
+      <button class="icon-btn" title="Convergence" onclick="G.ui.openModal('modal-convergence')">
+        <span class="ico-ph">✦</span><img class="ico-img" src="assets/ui/icon_convergence.png" alt="" onerror="this.remove()" />
+      </button>
       <button class="icon-btn" title="Awaken" onclick="G.ui.openModal('modal-awaken')">✷</button>
       <button class="icon-btn" title="Passives" onclick="G.ui.openModal('modal-passives')">❉</button>
       <button class="icon-btn" title="Ajuda" onclick="G.ui.openModal('modal-help')">❓</button>
@@ -145,20 +148,28 @@
 
   <!-- ===== MODAL: CONVERGENCE (prestige) ===== -->
   <div class="modal-overlay" id="modal-convergence" hidden onclick="if(event.target===this)this.hidden=true">
-    <div class="modal">
-      <div class="modal__title">Convergence</div>
-      <div class="modal__body">
-        <p class="conv-desc">Break the Seeker and begin anew. Your <b>level</b> resets to 1 and you return to the first area — but your <b>gear, materials and Convergence Points</b> remain. Spend points on permanent passives.</p>
-        <div class="conv-stats">
-          <span>Convergence Points: <b id="conv-points">0</b></span>
-          <span>Convergences: <b id="conv-count">0</b></span>
-          <span>Highest level: <b id="conv-highest">1</b></span>
+    <div class="modal conv-modal">
+      <button class="conv-modal__x" onclick="document.getElementById('modal-convergence').hidden=true" title="Close">✕</button>
+      <div class="conv-modal__pad">
+        <h3 class="conv-modal__title">Convergence</h3>
+        <p class="conv-desc">Break the Seeker and begin anew — sacrifice this run for permanent power.</p>
+        <div class="conv-keep">
+          <span class="conv-keep__label">You keep</span>
+          <div class="conv-keep__items">
+            <span>⚔ Gear</span><span>✦ Materials</span><span>◈ Points</span><span>❉ Passives</span>
+          </div>
         </div>
-        <p class="conv-pending-line">Converging now grants <b id="conv-pending">0</b> points.</p>
-      </div>
-      <div class="modal__actions">
-        <button class="btn attack-btn" id="btn-converge" style="width:auto">Converge</button>
-        <button class="btn ghost" style="width:auto" onclick="document.getElementById('modal-convergence').hidden=true">Close</button>
+        <div class="conv-grant">
+          <span class="conv-grant__l">Converging now grants</span>
+          <span class="conv-grant__v"><b id="conv-pending">0</b> points</span>
+        </div>
+        <div class="conv-transition">
+          <div class="conv-transition__cell"><small>Current</small><b id="conv-current">Lv 1</b></div>
+          <span class="conv-transition__arrow">→</span>
+          <div class="conv-transition__cell"><small>Return to</small><b id="conv-return">Lv 1</b></div>
+        </div>
+        <button class="btn btn-ornate conv-modal__cta" id="btn-converge" style="--btn-c:#7fb0ff">Converge</button>
+        <div class="conv-foot">Points <b id="conv-points">0</b> · Convergences <b id="conv-count">0</b> · Highest Lv <b id="conv-highest">1</b></div>
       </div>
     </div>
   </div>
@@ -204,33 +215,31 @@
 
   <!-- ===== SCREEN: WORLD MAP (tela própria, cobre tudo) ===== -->
   <div class="worldmap-screen" id="modal-worldmap" hidden>
-    <button class="modal-close" title="Close" onclick="document.getElementById('modal-worldmap').hidden=true">✕</button>
-    <div class="worldmap-screen__header">
-      <span class="worldmap-screen__map">The Dreaming Wood</span>
-      <span class="worldmap-screen__area" id="wmap-area-name">The Dreaming Wood</span>
-      <span class="worldmap-screen__range" id="wmap-area-range">Lv 1–80</span>
-    </div>
+    <button class="wmap-back" id="wmap-back" title="Back">◀ World</button>
     <div class="wmap" id="wmap">
-      <img class="wmap__bg" src="assets/ui/map1.png" alt="" />
-      <svg class="wmap-trail" id="wmap-trail" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
-      <div class="wmap__nodes" id="wmap-nodes"></div>
-    </div>
-    <!-- painel de info da área (abre ao clicar num nó) -->
-    <div class="wmap-info" id="wmap-info" hidden>
-      <button class="modal-close" title="Close" id="wmap-info-close">✕</button>
-      <h3 class="wmap-info__name" id="wmap-info-name"></h3>
-      <div class="wmap-info__range" id="wmap-info-range"></div>
-      <p class="wmap-info__lore" id="wmap-info-lore"></p>
-      <div class="wmap-info__section">
-        <span class="wmap-info__label">Creatures</span>
-        <ul class="wmap-info__mobs" id="wmap-info-mobs"></ul>
+      <div class="wmap__inner">
+        <img class="wmap__bg" src="assets/ui/map1.png" alt="" />
+        <svg class="wmap-trail" id="wmap-trail" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
+        <div class="wmap__nodes" id="wmap-nodes"></div>
       </div>
-      <div class="wmap-info__section" id="wmap-info-boss-wrap">
-        <span class="wmap-info__label">Boss</span>
-        <div class="wmap-info__boss" id="wmap-info-boss"></div>
-      </div>
-      <button class="btn attack-btn wmap-info__travel" id="wmap-info-travel">Travel here</button>
     </div>
+    <!-- painel de info dockado à direita -->
+    <aside class="wmap-info" id="wmap-info">
+      <button class="wmap-info__x" id="wmap-info-close" title="Close">✕</button>
+      <div class="wmap-info__art" id="wmap-info-art"></div>
+      <div class="wmap-info__pad">
+        <div class="wmap-info__name" id="wmap-info-name"></div>
+        <p class="wmap-info__lore" id="wmap-info-lore"></p>
+        <dl class="wmap-info__stats">
+          <div class="wmap-info__row"><dt>Level</dt><dd id="wmap-info-level"></dd></div>
+          <div class="wmap-info__row"><dt>Enemies</dt><dd id="wmap-info-enemies"></dd></div>
+          <div class="wmap-info__row"><dt>Status</dt><dd id="wmap-info-status"></dd></div>
+        </dl>
+        <span class="wmap-info__label">Resources</span>
+        <ul class="wmap-info__res" id="wmap-info-res"></ul>
+        <button class="btn btn-ornate wmap-info__travel" id="wmap-info-travel">Travel here</button>
+      </div>
+    </aside>
   </div>
 
   <!-- Sistemas (sem build, sem servidor). -->
