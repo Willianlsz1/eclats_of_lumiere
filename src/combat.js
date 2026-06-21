@@ -38,8 +38,11 @@ G.combat = {
     const area = G.data.currentArea();
     // nível do mob = SEU nível (sobe junto com o player), limitado à faixa da área
     const level = G.util.clamp(G.state.data.level, area.levelRange[0], area.levelRange[1]);
-    // chegou no teto da área => boss da área
-    const isBoss = G.state.data.level >= area.levelRange[1];
+    // chegou no teto da área => boss da área (se a área TIVER boss)
+    const atCap = G.state.data.level >= area.levelRange[1];
+    const isBoss = atCap && !!area.boss;
+    // área SEM boss: ao atingir o teto, libera a próxima automaticamente
+    if (atCap && !area.boss) this.unlockNext();
 
     // curva exponencial derivada do Gaiadon
     const hp = b.mobHpBase * Math.pow(b.mobHpGrowth, level - 1);
@@ -178,29 +181,32 @@ G.combat = {
     if (G.ui && G.ui.renderAll) G.ui.renderAll();
   },
 
-  // boss derrotado: LIBERA a próxima sub-área (não avança sozinho — o jogador
-  // navega com as setas do banner quando quiser).
-  markBossCleared() {
+  // libera a próxima sub-área (uso comum: boss derrotado OU área sem boss no teto).
+  // Não avança sozinho — o jogador navega quando quiser.
+  unlockNext() {
     const d = G.state.data;
     if (typeof d.maxAreaUnlocked !== "number") d.maxAreaUnlocked = d.areaIndex;
-    if (d.areaIndex < G.data.areas.length - 1) {
-      const newly = d.areaIndex + 1 > d.maxAreaUnlocked;
-      d.maxAreaUnlocked = Math.max(d.maxAreaUnlocked, d.areaIndex + 1);
-      if (newly && G.ui && G.ui.log) {
+    if (d.areaIndex < G.data.areas.length - 1 && d.areaIndex + 1 > d.maxAreaUnlocked) {
+      d.maxAreaUnlocked = d.areaIndex + 1;
+      if (G.ui && G.ui.log) {
         const next = G.data.areas[d.areaIndex + 1];
-        G.ui.log(`✦ Area cleared! ${next.name} unlocked — advance when ready.`, "boss");
+        G.ui.log(`✦ ${next.name} unlocked — advance when ready.`, "good");
       }
-      if (G.ui && G.ui.renderResources) G.ui.renderResources(); // atualiza as setas
-    } else {
+      if (G.ui && G.ui.renderResources) G.ui.renderResources();
+    }
+  },
+
+  // boss derrotado: libera a próxima; no clímax (última área), fecha o Mapa 1.
+  markBossCleared() {
+    const d = G.state.data;
+    if (d.areaIndex < G.data.areas.length - 1) {
+      this.unlockNext();
+    } else if (!d.mapOneCleared) {
       // última sub-área = clímax do Mapa 1 (gancho pro Mapa 2)
-      if (!d.mapOneCleared) {
-        d.mapOneCleared = true;
-        if (G.ui && G.ui.log) {
-          G.ui.log("✦ The Dreaming Wood falls silent. The Gilded Hollow is undone — Map 1 complete.", "boss");
-          G.ui.log("✦ In the hush, a cold crystalline call echoes from deep below: fragments singing in the Cavernes Luminis. Something deeper begins to wake.", "boss");
-        }
-      } else if (G.ui && G.ui.log) {
-        G.ui.log(`✦ ${G.data.currentArea().name} cleared again.`, "boss");
+      d.mapOneCleared = true;
+      if (G.ui && G.ui.log) {
+        G.ui.log("✦ The Dreaming Wood falls silent. The Gilded Hollow is undone — Map 1 complete.", "boss");
+        G.ui.log("✦ In the hush, a cold crystalline call echoes from deep below: fragments singing in the Cavernes Luminis. Something deeper begins to wake.", "boss");
       }
     }
   },

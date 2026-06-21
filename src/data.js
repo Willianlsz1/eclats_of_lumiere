@@ -134,8 +134,8 @@ G.data = {
         { name: "Mothlight Herald", sprite: "🦋", img: "assets/enemies/mothlight_herald.png" },
         { name: "Dreamhorn Warden", sprite: "🦌", img: "assets/enemies/dreamhorn_warden.png" },
       ],
-      // (placeholder: o Gilded Hollow vira o boss do clímax — Área 9 — quando criarmos)
-      boss: { name: "The Gilded Hollow", sprite: "👁", img: "assets/enemies/gilded_hollow.png" },
+      // Área 1 não tem boss: só os mobs normais. Ao atingir o teto, libera a Área 2.
+      boss: null,
     },
     {
       // Área 2 — The Lantern Mire: brejo afogado, Fragmented que se perderam na luz.
