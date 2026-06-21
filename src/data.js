@@ -228,6 +228,19 @@ G.data = {
       ],
       boss: { name: "The Heartroot Mourner", sprite: "🩸", img: "assets/enemies/heartroot_mourner.png" },
     },
+    {
+      // Área 9 — The Hollow Sanctum: o coração da floresta, clímax do Mapa 1.
+      id: 9,
+      name: "The Hollow Sanctum",
+      img: "assets/areas/hollow_sanctum.png",
+      levelRange: [81, 90],
+      enemies: [
+        { name: "Rootbound Weeper", sprite: "🌱", img: "assets/enemies/rootbound_weeper.png" },   // reaproveitado (Á8)
+        { name: "Hollowed Acolyte", sprite: "⛪", img: "assets/enemies/hollowed_acolyte.png" },     // reaproveitado (Á7)
+        { name: "Thornlight Stalker", sprite: "🌵", img: "assets/enemies/thornlight_stalker.png" }, // reaproveitado (Á6)
+      ],
+      boss: { name: "The Gilded Hollow", sprite: "👁", img: "assets/enemies/gilded_hollow.png" },
+    },
   ],
 
   // área atual (em função do progresso salvo)

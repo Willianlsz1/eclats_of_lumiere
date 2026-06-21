@@ -17,6 +17,21 @@ G.combat = {
 
   spawnCount: 0,
 
+  // pool de mobs comuns disponível na área atual: todos os mobs das áreas
+  // 0..areaIndex, sem repetir (dedupe por nome). Área 1 só tem os da 1; cada
+  // área seguinte herda os anteriores + os seus.
+  enemyPool() {
+    const idx = G.util.clamp(G.state.data.areaIndex || 0, 0, G.data.areas.length - 1);
+    const pool = [];
+    const seen = {};
+    for (let i = 0; i <= idx; i++) {
+      for (const e of G.data.areas[i].enemies) {
+        if (!seen[e.name]) { seen[e.name] = 1; pool.push(e); }
+      }
+    }
+    return pool;
+  },
+
   // ----- cria o próximo inimigo (vida exponencial no nível do MOB) -----
   spawn() {
     const b = G.data.balance;
@@ -37,7 +52,8 @@ G.combat = {
       dmg = atk * b.bossDmgMult;
       xp = b.baseXp * level * b.bossRewardMult;
     } else {
-      def = area.enemies[this.spawnCount % area.enemies.length];
+      // pool cumulativo: mobs de TODAS as áreas até a atual (sorteado aleatório)
+      def = G.util.pick(this.enemyPool());
       maxHp = hp;
       dmg = atk;
       xp = b.baseXp * level;
@@ -175,8 +191,17 @@ G.combat = {
         G.ui.log(`✦ Area cleared! ${next.name} unlocked — advance when ready.`, "boss");
       }
       if (G.ui && G.ui.renderResources) G.ui.renderResources(); // atualiza as setas
-    } else if (G.ui && G.ui.log) {
-      G.ui.log(`✦ ${G.data.currentArea().name} cleared — more awaits beyond.`, "boss");
+    } else {
+      // última sub-área = clímax do Mapa 1 (gancho pro Mapa 2)
+      if (!d.mapOneCleared) {
+        d.mapOneCleared = true;
+        if (G.ui && G.ui.log) {
+          G.ui.log("✦ The Dreaming Wood falls silent. The Gilded Hollow is undone — Map 1 complete.", "boss");
+          G.ui.log("✦ In the hush, a cold crystalline call echoes from deep below: fragments singing in the Cavernes Luminis. Something deeper begins to wake.", "boss");
+        }
+      } else if (G.ui && G.ui.log) {
+        G.ui.log(`✦ ${G.data.currentArea().name} cleared again.`, "boss");
+      }
     }
   },
 

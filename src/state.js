@@ -20,6 +20,7 @@ G.state = {
       inventory: [],         // (loot desligado por enquanto — mantido p/ futuro)
       areaIndex: 0,          // sub-área atual do Mapa 1 (0 = The Dreaming Wood)
       maxAreaUnlocked: 0,    // maior sub-área liberada (boss anterior derrotado)
+      mapOneCleared: false,  // Mapa 1 concluído (boss final derrotado ao menos 1x)
       equipped: G.gear.freshSet(), // 6 peças FIXAS (Nv.1, Comum) — ver gear.js
       lastSeen: Date.now(),  // p/ progresso offline
     };
