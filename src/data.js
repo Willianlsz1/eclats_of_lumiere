@@ -79,16 +79,14 @@ G.data = {
     },
   },
 
-  // ---- Raridades (cor + nº de afixos + peso de drop) ----
-  // Quanto mais raro, menos peso (mais difícil) e mais afixos.
-  // cap = teto de nível do gear por raridade (AJUSTE SEUS CAPS AQUI)
-  // name em inglês (UI do jogo).
+  // ---- Raridades (Mapa 1: SÓ Common + Uncommon) ----
+  // cap = teto de nível do gear por raridade (spec RARITY_PROMOTION_V1).
+  // Promoção Common→Uncommon apenas AUMENTA o cap (500→1200): affixes e mult
+  // ficam iguais (placeholders — tuning de Uncommon adiado, fora de escopo).
+  // Rare/Epic/Legendary foram removidas (não existem no Mapa 1).
   rarities: [
-    { id: "common", name: "Common", color: "#9aa7bd", affixes: 1, weight: 60, mult: 1.0, cap: 500 },
-    { id: "magic", name: "Magic", color: "#5ee0d2", affixes: 2, weight: 28, mult: 1.4, cap: 600 },
-    { id: "rare", name: "Rare", color: "#9d7bff", affixes: 3, weight: 9, mult: 1.9, cap: 700 },
-    { id: "epic", name: "Epic", color: "#ff9a4d", affixes: 4, weight: 2.5, mult: 2.6, cap: 800 },
-    { id: "legendary", name: "Legendary", color: "#e8b54a", affixes: 5, weight: 0.5, mult: 3.6, cap: 1000 },
+    { id: "common",   name: "Common",   color: "#9aa7bd", affixes: 1, weight: 60, mult: 1.0, cap: 500 },
+    { id: "uncommon", name: "Uncommon", color: "#5ee0d2", affixes: 1, weight: 40, mult: 1.0, cap: 1200 },
   ],
 
   // ---- Afixos possíveis num item ----
@@ -379,6 +377,9 @@ G.data = {
     //   custo = gearCostBase × gearCostGrowth^(nível-1)
     gearCostBase: 1100,
     gearCostGrowth: 1.05,
+    // Promoção de raridade: custo em Gear Materials (PLACEHOLDER — balanceamento
+    // pendente). Keyed pela raridade-ALVO. Common→Uncommon consome Common material.
+    promotionCost: { uncommon: { common: 10 } },
     // Forge (weapon reforge — custo separado do gear fixo)
     forgeCostBase: 20,
     forgeCostGrowth: 1.064,

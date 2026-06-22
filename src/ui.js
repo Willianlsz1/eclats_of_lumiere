@@ -583,14 +583,26 @@ G.ui = {
       const item = G.state.data.equipped[slot.id];
       if (!item) return "";
       const lvl = item.level || 1;
+      const cap = G.gear.cap(item);
       const maxed = G.gear.isMaxed(item);
       const icon = slot.icon || "❔";
-      const action = maxed
-        ? `<span class="gear-max">MAX</span>`
-        : `<span class="gear-slot__cost">✦ ${G.util.fmt(G.gear.cost(item))}</span>
+      let action;
+      if (maxed && G.gear.promotable(item)) {
+        // no cap e há raridade acima: oferece PROMOÇÃO (custo em materiais)
+        const cost = G.gear.promotionCost(item);
+        const costStr = Object.keys(cost).map((k) => `${G.util.fmt(cost[k])} ${k}`).join(" · ");
+        const can = G.gear.canPromote(item);
+        action = `<span class="gear-slot__cost">⬆ ${costStr}</span>
+           <button class="gear-levelup gear-promote" data-promote="${slot.id}"${can ? "" : " disabled"}>Promote</button>`;
+      } else if (maxed) {
+        action = `<span class="gear-max">MAX</span>`;
+      } else {
+        action = `<span class="gear-slot__cost">✦ ${G.util.fmt(G.gear.cost(item))}</span>
            <button class="gear-levelup" data-levelup="${slot.id}">Level up</button>`;
+      }
       return `<div class="gear-slot pos-${slot.id}" data-tip="${slot.id}" style="--rar:${item.color}">
-        <span class="gear-slot__lvl">LVL ${lvl}</span>
+        <span class="gear-slot__rar" style="color:${item.color}">${item.rarityName}</span>
+        <span class="gear-slot__lvl">LVL ${lvl}/${G.util.fmt(cap)}</span>
         <div class="gear-slot__icon">
           <span class="ico-ph">${icon}</span>
           <img class="ico-img" src="assets/gear/${slot.id}.png" alt="" onerror="this.remove()" />
@@ -602,6 +614,9 @@ G.ui = {
     node.innerHTML = G.data.slots.map(slotCard).join("");
     node.querySelectorAll("[data-levelup]").forEach((b) => {
       b.addEventListener("click", () => this.doGearLevelUp(b.dataset.levelup));
+    });
+    node.querySelectorAll("[data-promote]").forEach((b) => {
+      b.addEventListener("click", () => this.doGearPromote(b.dataset.promote));
     });
     node.querySelectorAll(".gear-slot[data-tip]").forEach((s) => {
       s.addEventListener("mouseenter", () => this.showGearTip(s));
@@ -664,6 +679,18 @@ G.ui = {
     const done = G.gear.levelUpTimes(item, this.gearMult);
     if (done > 0) this.log(`${item.name} → Lv. ${item.level}`, "good");
     else this.log("Not enough Lumens.", "bad");
+    this.renderAll();
+  },
+
+  doGearPromote(slotId) {
+    const item = G.state.data.equipped[slotId];
+    if (!item) return;
+    if (G.gear.promote(item)) {
+      const np = G.state.data.equipped[slotId];
+      this.log(`${np.name} promoted to ${np.rarityName}! (cap ${G.util.fmt(G.gear.cap(np))})`, "good");
+    } else {
+      this.log("Cannot promote yet — reach the cap and gather materials.", "bad");
+    }
     this.renderAll();
   },
 

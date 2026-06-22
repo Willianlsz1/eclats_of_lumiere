@@ -7,6 +7,17 @@
 // O teto (cap) é por raridade, definido em data.js.
 
 G.gear = {
+  // ---- raridade do Mapa 1: escada Common → Uncommon ----
+  RARITY_ORDER: ["common", "uncommon"],
+  // migração de saves: raridades do modelo antigo (5 tiers) → modelo Mapa 1.
+  // Common fica Common; QUALQUER tier promovido antigo (magic/rare/epic/legendary)
+  // colapsa em Uncommon (a única raridade promovida do Mapa 1). Nível é
+  // preservado e clampado ao novo cap em reconcile().
+  MIGRATE_RARITY: {
+    common: "common", uncommon: "uncommon",
+    magic: "uncommon", rare: "uncommon", epic: "uncommon", legendary: "uncommon",
+  },
+
   // valor EFETIVO de um afixo no nível atual da peça:
   //   base + perLevel × (nível - 1)
   // (o multiplicador de raridade já está embutido em base/perLevel — ver buildPiece)
@@ -60,12 +71,63 @@ G.gear = {
     const out = {};
     for (const slot of G.data.slots) {
       const prev = saved && saved[slot.id];
-      const rarity = (prev && prev.rarity) || "common";
+      // migra a raridade do modelo antigo p/ o modelo Mapa 1 (Common/Uncommon)
+      const rawR = (prev && prev.rarity) || "common";
+      const rarity = this.MIGRATE_RARITY[rawR] || "common";
       const piece = this.buildPiece(slot.id, rarity);
       if (prev && prev.level) piece.level = Math.min(prev.level, this.cap(piece));
       out[slot.id] = piece;
     }
     return out;
+  },
+
+  // ================= PROMOÇÃO DE RARIDADE (Common → Uncommon) =================
+  // Promoção é individual por slot. Exige: estar no cap atual + ter materiais.
+  // Preserva o nível; apenas o cap aumenta. Consome Gear Materials (economy.js).
+
+  // próxima raridade na escada, ou null se já é a máxima do Mapa 1
+  nextRarity(item) {
+    const i = this.RARITY_ORDER.indexOf(item.rarity);
+    return (i >= 0 && i < this.RARITY_ORDER.length - 1) ? this.RARITY_ORDER[i + 1] : null;
+  },
+  // existe uma raridade acima? (independe de cap/materiais)
+  promotable(item) { return this.nextRarity(item) != null; },
+
+  // custo de materiais p/ promover (placeholder; aplica redução da passiva Fracture)
+  promotionCost(item) {
+    const target = this.nextRarity(item);
+    if (!target) return null;
+    const base = (G.data.balance.promotionCost && G.data.balance.promotionCost[target]) || {};
+    const reduction = G.passives ? (G.passives.effect("promotionCostReduction") || 0) / 100 : 0;
+    const factor = Math.max(0, 1 - reduction);
+    const out = {};
+    for (const k of Object.keys(base)) out[k] = Math.ceil(base[k] * factor);
+    return out;
+  },
+
+  hasMaterials(cost) {
+    if (!cost || !G.economy) return false;
+    for (const k of Object.keys(cost)) if (G.economy.getGear(k) < cost[k]) return false;
+    return true;
+  },
+
+  // pode promover AGORA? (raridade acima existe + no cap + materiais suficientes)
+  canPromote(item) {
+    return this.promotable(item) && this.isMaxed(item) && this.hasMaterials(this.promotionCost(item));
+  },
+
+  // promove a peça: consome materiais, sobe a raridade, PRESERVA o nível.
+  promote(item) {
+    if (!this.canPromote(item)) return false;
+    const cost = this.promotionCost(item);
+    for (const k of Object.keys(cost)) G.economy.addGear(k, -cost[k]); // consome materiais
+    const lvl = item.level || 1;
+    const rebuilt = this.buildPiece(item.slot, this.nextRarity(item));
+    rebuilt.level = lvl;                                  // nível preservado
+    G.state.data.equipped[item.slot] = rebuilt;           // cap sobe via nova raridade
+    G.state.invalidateStats();
+    G.state.save();
+    return true;
   },
 
   // sobe N níveis de uma vez (x10 / Max). Devolve quantos subiu de fato.
