@@ -90,6 +90,10 @@ G.convergence = {
     d.runKills = 0;
     d.runBosses = 0;
     d.runMaxAreaIndex = 0;
+    // thresholds de encontro também reiniciam
+    d.miniBossProgress = 0;
+    d.bossProgress = 0;
+    d.bossOnCooldown = false;
 
     G.state.invalidateStats(); // nível zerou → stats recomputam antes de maxHp()
     d.hp = G.state.maxHp();

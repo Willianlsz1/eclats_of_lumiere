@@ -137,8 +137,10 @@ G.data = {
         { name: "Mothlight Herald", sprite: "🦋", img: "assets/enemies/mothlight_herald.png" },
         { name: "Dreamhorn Warden", sprite: "🦌", img: "assets/enemies/dreamhorn_warden.png" },
       ],
-      // Área 1 não tem boss: só os mobs normais. Ao atingir o teto, libera a Área 2.
-      boss: null,
+      // Área 1 agora tem Boss de progressão (ENEMY_STRUCTURE_V1). Sem Mini Boss.
+      // Nome/sprite são PLACEHOLDERS.
+      miniBoss: null,
+      boss: { name: "The Waking Bloom", sprite: "🌸", img: "assets/enemies/waking_bloom.png" },
     },
     {
       // Área 2 — The Lantern Mire: brejo afogado, Fragmented que se perderam na luz.
@@ -153,6 +155,7 @@ G.data = {
         { name: "Candlewisp Shade", sprite: "🔥", img: "assets/enemies/candlewisp_shade.png" },   // reaproveitado (Área 1)
         { name: "Mothlight Herald", sprite: "🦋", img: "assets/enemies/mothlight_herald.png" },    // reaproveitado (Área 1)
       ],
+      miniBoss: { name: "Mirewarden", sprite: "🪼", img: "assets/enemies/mirewarden.png" }, // placeholder
       boss: { name: "The Drowned Lantern", sprite: "🕯", img: "assets/enemies/drowned_lantern.png" },
     },
     {
@@ -168,6 +171,7 @@ G.data = {
         { name: "Dreamhorn Warden", sprite: "🦌", img: "assets/enemies/dreamhorn_warden.png" },  // reaproveitado (Área 1)
         { name: "Mirelight Drifter", sprite: "🏮", img: "assets/enemies/mirelight_drifter.png" }, // reaproveitado (Área 2)
       ],
+      miniBoss: { name: "Hollow Echoling", sprite: "🌀", img: "assets/enemies/hollow_echoling.png" }, // placeholder
       boss: { name: "The Hollow Cantor", sprite: "🎶", img: "assets/enemies/hollow_cantor.png" },
     },
     {
@@ -183,6 +187,7 @@ G.data = {
         { name: "Mothlight Herald", sprite: "🦋", img: "assets/enemies/mothlight_herald.png" },      // reaproveitado (Área 1)
         { name: "Husklight Murmur", sprite: "🌳", img: "assets/enemies/husklight_murmur.png" },       // reaproveitado (Área 3)
       ],
+      miniBoss: { name: "Canopy Stalker", sprite: "🕸", img: "assets/enemies/canopy_stalker.png" }, // placeholder
       boss: { name: "The Moonlit Sovereign", sprite: "👑", img: "assets/enemies/moonlit_sovereign.png" },
     },
     {
@@ -198,6 +203,7 @@ G.data = {
         { name: "Mirelight Drifter", sprite: "🏮", img: "assets/enemies/mirelight_drifter.png" }, // reaproveitado (Área 2)
         { name: "Boughlight Creeper", sprite: "🍃", img: "assets/enemies/boughlight_creeper.png" }, // reaproveitado (Área 4)
       ],
+      miniBoss: { name: "Glassmere Sentinel", sprite: "🔮", img: "assets/enemies/glassmere_sentinel.png" }, // placeholder
       boss: { name: "The Stillwater Maiden", sprite: "🪷", img: "assets/enemies/stillwater_maiden.png" },
     },
     {
@@ -213,6 +219,7 @@ G.data = {
         { name: "Candlewisp Shade", sprite: "🔥", img: "assets/enemies/candlewisp_shade.png" },     // reaproveitado (Área 1)
         { name: "Glasswater Wraith", sprite: "💧", img: "assets/enemies/glasswater_wraith.png" },    // reaproveitado (Área 5)
       ],
+      miniBoss: { name: "Thornward Brute", sprite: "🌿", img: "assets/enemies/thornward_brute.png" }, // placeholder
       boss: { name: "The Bramble King", sprite: "🥀", img: "assets/enemies/bramble_king.png" },
     },
     {
@@ -228,6 +235,7 @@ G.data = {
         { name: "Husklight Murmur", sprite: "🌳", img: "assets/enemies/husklight_murmur.png" },    // reaproveitado (Área 3)
         { name: "Thornlight Stalker", sprite: "🌵", img: "assets/enemies/thornlight_stalker.png" }, // reaproveitado (Área 6)
       ],
+      miniBoss: { name: "Cathedral Warden", sprite: "🔔", img: "assets/enemies/cathedral_warden.png" }, // placeholder
       boss: { name: "The Gilded Confessor", sprite: "✝", img: "assets/enemies/gilded_confessor.png" },
     },
     {
@@ -243,6 +251,7 @@ G.data = {
         { name: "Thornlight Stalker", sprite: "🌵", img: "assets/enemies/thornlight_stalker.png" }, // reaproveitado (Área 6)
         { name: "Hollowed Acolyte", sprite: "⛪", img: "assets/enemies/hollowed_acolyte.png" },     // reaproveitado (Área 7)
       ],
+      miniBoss: { name: "Rootbound Colossus", sprite: "🪵", img: "assets/enemies/rootbound_colossus.png" }, // placeholder
       boss: { name: "The Heartroot Mourner", sprite: "🩸", img: "assets/enemies/heartroot_mourner.png" },
     },
     {
@@ -258,6 +267,8 @@ G.data = {
         { name: "Hollowed Acolyte", sprite: "⛪", img: "assets/enemies/hollowed_acolyte.png" },     // reaproveitado (Á7)
         { name: "Thornlight Stalker", sprite: "🌵", img: "assets/enemies/thornlight_stalker.png" }, // reaproveitado (Á6)
       ],
+      // Área 9: Mini Boss ALEATÓRIO (sorteado entre os Mini Bosses das áreas anteriores).
+      miniBossRandom: true,
       boss: { name: "The Gilded Hollow", sprite: "👁", img: "assets/enemies/gilded_hollow.png" },
     },
   ],
@@ -365,6 +376,15 @@ G.data = {
     bossHpMult: 4,        // boss tem 4× a vida normal
     bossDmgMult: 1.5,     // e bate 50% mais forte
     bossRewardMult: 6,    // multiplicador de XP do boss
+    // ---- estrutura de inimigos (ENEMY_STRUCTURE_V1) — TODOS placeholders ----
+    // Multiplicadores de Elite/Mini Boss e thresholds: NÃO são finais.
+    eliteChance: 0.03,            // chance de um encontro comum virar Elite [PLACEHOLDER]
+    eliteColor: "#ff9a4d",
+    eliteHpMult: 8, eliteDmgMult: 1.8, eliteRewardMult: 4,            // [PLACEHOLDER]
+    miniBossColor: "#e8b54a",
+    miniBossHpMult: 15, miniBossDmgMult: 2.5, miniBossRewardMult: 10, // [PLACEHOLDER]
+    miniBossKillsRequired: 50,     // kills até o Mini Boss aparecer       [PLACEHOLDER]
+    bossRespawnKillsRequired: 100, // kills até o Boss reaparecer (no cap)  [PLACEHOLDER]
     goldRatio: 0.25,      // gold-base por kill = goldRatio × vida do mob (âncora ao HP)
     baseXp: 10,           // xp por kill = baseXp × nível do mob
     dropChance: 0.35,     // chance de drop por kill

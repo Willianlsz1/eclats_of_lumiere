@@ -35,6 +35,10 @@ G.state = {
       runKills: 0,           // kills nesta run
       runBosses: 0,          // bosses derrotados nesta run
       runMaxAreaIndex: 0,    // maior sub-área alcançada nesta run
+      // ---- thresholds de encontro (ENEMY_STRUCTURE_V1) — por sessão de área ----
+      miniBossProgress: 0,   // kills acumuladas rumo ao Mini Boss
+      bossProgress: 0,       // kills rumo ao respawn do Boss
+      bossOnCooldown: false, // Boss já derrotado (aguardando respawn por threshold)
       passives: G.passives.freshSet(), // árvores Éclat/Vestige/Fracture (ver passives.js)
       equipped: G.gear.freshSet(), // 6 peças FIXAS (Nv.1, Comum) — ver gear.js
       lastSeen: Date.now(),  // p/ progresso offline
