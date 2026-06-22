@@ -182,6 +182,10 @@ G.combat = {
         e.isBoss ? "boss" : "good"
       );
 
+    // drops de materiais (fundação econômica — tabela/quantidades placeholders).
+    // Alimenta gearMaterials/awakenMaterials; passivas Vestige/Fracture modulam.
+    if (G.economy) G.economy.rollDrops(e);
+
     // fôlego: cura uma fração do HP a cada kill
     const heal = G.state.maxHp() * G.data.balance.healOnKillFrac;
     G.state.data.hp = Math.min(G.state.maxHp(), G.state.data.hp + heal);
