@@ -1,0 +1,206 @@
+/* =============================================================
+   hud.css — HUD do jogo (battle stage, world-bg, log, lumens, banner)
+   ============================================================= */
+
+/* ---- fundo do mundo ---- */
+.world-bg {
+  position: fixed; inset: 0; z-index: -2;
+  background:
+    radial-gradient(1200px 600px at 70% -10%, rgba(94, 224, 210, 0.18), transparent 60%),
+    radial-gradient(900px 500px at 10% 110%, rgba(157, 123, 255, 0.20), transparent 60%),
+    linear-gradient(160deg, #0c0a18 0%, #0a0f22 55%, #0c0a18 100%);
+}
+.world-img { position: fixed; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1; }
+.world-overlay {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    radial-gradient(125% 95% at 50% 42%, transparent 42%, rgba(8, 10, 22, 0.55) 100%),
+    linear-gradient(180deg, rgba(8, 10, 22, 0.12), rgba(8, 10, 22, 0.42));
+}
+
+/* ---- posições fixas do HUD ---- */
+.hud { position: fixed; z-index: 10; }
+.hud-topleft { top: 14px; left: 14px; display: flex; align-items: flex-start; gap: 10px; }
+.hud-topcenter { top: 14px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.hud-topright { top: 14px; right: 14px; }
+.hud-bottomleft { bottom: 14px; left: 14px; width: 360px; max-width: 40vw; }
+.hud-bottomcenter { bottom: 14px; left: 50%; transform: translateX(-50%); }
+.hud-bottomright { bottom: 14px; right: 14px; }
+
+/* ---- log (baixo esquerda) ---- */
+.hud-bottomleft .tabs {
+  background: var(--card); border: 1px solid var(--card-border); border-bottom: none;
+  border-radius: 10px 10px 0 0; padding: 0 4px;
+}
+.hud-bottomleft .tab { padding: 6px 12px; }
+.hud-bottomleft .log {
+  margin-top: 0; background: var(--card); border: 1px solid var(--card-border);
+  border-radius: 0 0 10px 10px; padding: 8px 10px; max-height: 150px;
+}
+
+/* ---- readout de stats (baixo centro) ---- */
+.hud-stats {
+  display: flex; gap: 18px; padding: 6px 16px; border-radius: 10px;
+  background: rgba(10, 16, 32, 0.7); border: 1px solid var(--card-border);
+  font-size: 13px; color: var(--muted);
+}
+.hud-stats b { color: var(--text); }
+
+/* ---- cena de batalha sobre o mundo ---- */
+.battle-stage {
+  position: fixed; inset: 0; z-index: 1; pointer-events: none;
+  display: flex; align-items: center; justify-content: center; gap: 12%;
+}
+.battle-stage .battle-hero, .battle-stage .battle-enemy { pointer-events: auto; align-self: center; }
+.battle-stage .hero-figure .floaters { z-index: 6; }
+
+/* ---- herói (sem card — corpo inteiro) ---- */
+.battle-hero {
+  flex: 1; max-width: 240px; align-self: stretch;
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 10px;
+}
+.hero-figure {
+  position: relative; width: 100%; height: 300px;
+  display: flex; align-items: flex-end; justify-content: center;
+}
+.hero-figure .art-ph { font-size: 96px; }
+.art-ph:has(~ .art-img) { display: none; }
+.hero-figure .art-img {
+  position: static; inset: auto; width: 100%; height: 100%; object-fit: contain;
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.5)) drop-shadow(0 0 14px rgba(94, 224, 210, 0.25));
+}
+.hero-info {
+  width: 100%; display: flex; flex-direction: column; align-items: center; gap: 6px;
+  background: rgba(6, 10, 22, 0.55); border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 12px; padding: 8px 14px; backdrop-filter: blur(4px);
+}
+.hero-name {
+  font-family: "Cormorant Garamond", serif; font-style: italic; font-size: 18px; color: var(--teal);
+  text-shadow: 0 1px 4px #000, 0 0 10px rgba(0, 0, 0, 0.85);
+}
+.hero-info .bar { width: 100%; }
+
+/* ---- mob (sem card — corpo inteiro) ---- */
+.battle-enemy {
+  position: relative; flex: 1; max-width: 260px; align-self: center;
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 8px;
+}
+.enemy-figure {
+  position: relative; width: 100%; height: 320px;
+  display: flex; align-items: flex-end; justify-content: center;
+}
+.enemy-figure .art-ph { font-size: 90px; animation: float 3s ease-in-out infinite; }
+.enemy-figure .art-img {
+  position: static; inset: auto; width: 100%; height: 100%; object-fit: contain;
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.5)) drop-shadow(0 0 16px rgba(255, 154, 77, 0.18));
+}
+.enemy-figure.boss .art-img {
+  filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.55)) drop-shadow(0 0 24px rgba(232, 181, 74, 0.45));
+}
+.enemy-info {
+  width: 100%; display: flex; flex-direction: column; align-items: center; gap: 5px;
+  background: rgba(6, 10, 22, 0.55); border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 12px; padding: 8px 14px; backdrop-filter: blur(4px);
+}
+.enemy-name {
+  font-family: "Cormorant Garamond", serif; font-style: italic; font-size: 20px; color: var(--orange);
+  text-shadow: 0 1px 4px #000, 0 0 10px rgba(0, 0, 0, 0.85);
+}
+.battle-enemy .floaters { position: absolute; inset: 0; z-index: 6; pointer-events: none; }
+.battle-enemy.enemy-hidden .enemy-info { visibility: hidden; }
+.battle-enemy .enemy-bar { width: 100%; }
+.card-sub { font-size: 12px; color: #c7d2e4; text-shadow: 0 1px 3px #000; }
+.card-sub b { color: #fff; }
+
+/* ---- arte genérica (legacy card-art) ---- */
+.art-ph {
+  font-size: 84px; line-height: 1;
+  animation: float 3s ease-in-out infinite;
+  filter: drop-shadow(0 0 16px rgba(255, 255, 255, 0.25));
+}
+.art-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.card-art {
+  position: relative; width: 100%; aspect-ratio: 3 / 4; border-radius: 8px; overflow: hidden;
+  background: radial-gradient(circle at 50% 40%, rgba(94,224,210,.12), rgba(0,0,0,.35));
+  display: flex; align-items: center; justify-content: center;
+}
+.enemy-battle .card-art { background: radial-gradient(circle at 50% 40%, rgba(255,154,77,.14), rgba(0,0,0,.35)); }
+.card-art .art-img { object-fit: contain; }
+
+@keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+
+/* ---- dano flutuante ---- */
+.floaters { position: absolute; inset: 0; pointer-events: none; z-index: 5; }
+.floater {
+  position: absolute; top: 30%; font-weight: 700; font-size: 22px;
+  animation: rise 0.8s ease-out forwards; text-shadow: 0 2px 4px #000;
+}
+.floater.hit { color: var(--text); }
+.floater.crit { color: var(--gold); font-size: 30px; }
+.floater.enemy { color: var(--bad); font-size: 18px; top: 70%; }
+@keyframes rise { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-40px); } }
+
+/* ---- projétil ---- */
+.projectile {
+  position: fixed; z-index: 30; width: 150px; height: auto; pointer-events: none;
+  mix-blend-mode: screen; transform-origin: center;
+  transition: left 0.5s cubic-bezier(0.3, 0, 0.7, 1), top 0.5s cubic-bezier(0.3, 0, 0.7, 1), opacity 0.5s;
+}
+
+/* ---- log de combate ---- */
+.log {
+  margin-top: 14px; text-align: left; max-height: 220px; overflow-y: auto;
+  font-size: 13px; display: flex; flex-direction: column; gap: 3px;
+}
+.log-line { padding: 3px 8px; border-radius: 5px; background: rgba(255, 255, 255, 0.03); }
+.log-line.good { color: var(--teal); }
+.log-line.bad { color: var(--bad); }
+.log-line.loot { font-weight: 600; }
+.log-line.boss { color: var(--gold); }
+.log-line.level { color: var(--violet); font-weight: 600; }
+
+/* ---- Lumens HUD (banner com arte) ---- */
+.lumens-hud {
+  position: relative; height: 48px; aspect-ratio: 1490 / 248;
+  background: url("../assets/ui/lumens_banner.png") no-repeat center / 100% 100%;
+  display: flex; align-items: center;
+}
+.lumens-hud__icon {
+  position: absolute; left: 0.5%; top: 50%; transform: translateY(-50%);
+  height: 86%; width: auto; pointer-events: none;
+  filter: drop-shadow(0 0 6px rgba(232, 181, 74, 0.55));
+}
+.lumens-hud__value {
+  position: absolute; left: 57%; top: 50%; transform: translate(-50%, -50%);
+  font-size: 18px; font-weight: 700; color: var(--text); text-align: center;
+  letter-spacing: 0.5px; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
+}
+
+/* ---- banner ornamentado (área atual) ---- */
+.banner {
+  position: relative; display: flex; align-items: center; justify-content: center;
+  background-repeat: no-repeat; background-size: 100% 100%;
+}
+.banner__text {
+  font-family: "Cormorant Garamond", serif; font-style: italic; font-weight: 600;
+  color: var(--text); text-align: center; max-width: 64%;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  text-shadow: 0 1px 4px #000, 0 0 10px rgba(55, 200, 240, 0.3);
+}
+.banner--area {
+  width: 460px; aspect-ratio: 1276 / 291;
+  background-image: url("../assets/ui/banner_teal.png");
+}
+.banner--area .banner__text { font-size: 24px; font-weight: 600; letter-spacing: 0.4px; text-shadow: 0 1px 4px #000, 0 0 12px #000; }
+
+/* ---- setas de navegação de área ---- */
+.area-nav {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  background: none; border: none; cursor: pointer; padding: 0 8px;
+  color: var(--cyan); font-size: 26px; line-height: 1; font-weight: 700;
+  text-shadow: 0 1px 4px #000; transition: filter 0.1s, opacity 0.1s;
+}
+.area-nav--prev { left: 8%; }
+.area-nav--next { right: 8%; }
+.area-nav:hover { filter: brightness(1.4); }
+.area-nav.is-disabled { opacity: 0.25; pointer-events: none; }

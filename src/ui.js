@@ -20,7 +20,7 @@ G.ui = {
       "wmap-info", "wmap-info-art", "wmap-info-name", "wmap-info-lore", "wmap-info-level",
       "wmap-info-enemies", "wmap-info-status", "wmap-info-res", "wmap-info-travel", "wmap-info-close",
       "conv-points", "conv-count", "conv-highest", "conv-pending", "conv-current", "conv-return", "btn-converge",
-      "awaken-essence", "awaken-list",
+      "awaken-essence", "awaken-list", "awaken-preview",
       "pv-points", "pv-tabs", "pv-body", "pv-lock",
     ];
     for (const id of ids) this.el[id] = document.getElementById(id);
@@ -62,12 +62,23 @@ G.ui = {
           this.renderConvergence();
         }
       });
-    // Awaken: desbloquear (clique delegado nos botões da lista)
+    // Awaken: selecionar entry (sidebar esquerda)
     if (this.el["awaken-list"])
       this.el["awaken-list"].addEventListener("click", (e) => {
+        const entry = e.target.closest("[data-id]");
+        if (!entry) return;
+        this._selectedAwaken = entry.dataset.id;
+        this.el["awaken-list"].querySelectorAll(".awk-entry").forEach(el =>
+          el.classList.toggle("is-active", el.dataset.id === this._selectedAwaken)
+        );
+        this.renderAwakenPreview(this._selectedAwaken);
+      });
+    // Awaken: desbloquear (botão no painel de preview direito)
+    if (this.el["awaken-preview"])
+      this.el["awaken-preview"].addEventListener("click", (e) => {
         const btn = e.target.closest("[data-awaken]");
         if (!btn) return;
-        if (G.awaken.unlock(+btn.dataset.awaken)) this.renderAwaken();
+        if (G.awaken.unlock(btn.dataset.awaken)) this.renderAwaken();
       });
     // Passivas (Árvore-Mundo): trocar de aba / comprar nó (clique delegado na tela)
     const pscreen = document.getElementById("modal-passives");
@@ -92,10 +103,10 @@ G.ui = {
   // abre um modal e atualiza o conteúdo dele
   openModal(id) {
     this.renderAll();
-    // o World Map só renderiza ao abrir (não a cada tick), e começa sem painel
+    // o World Map só renderiza ao abrir (não a cada tick); painel começa fechado
     if (id === "modal-worldmap") {
       this.renderWorldMap();
-      this.openAreaInfo(G.state.data.areaIndex); // painel dockado começa na área atual
+      if (this.el["wmap-info"]) this.el["wmap-info"].hidden = true;
     }
     if (id === "modal-convergence") this.renderConvergence();
     if (id === "modal-awaken") this.renderAwaken();
@@ -232,36 +243,109 @@ G.ui = {
     return level > 0 ? `Increases your ${stat} by ${G.util.fmt(level * pct)}%.` : `Increases your ${stat} by ${pct}% per level.`;
   },
 
-  // painel do Awaken — lista os pacotes, status e botão de desbloquear
+  // sidebar esquerda: lista compacta de awakens
   renderAwaken() {
     const d = G.state.data;
     if (this.el["awaken-essence"]) this.el["awaken-essence"].textContent = G.util.fmt(d.awakenEssence || 0);
     const wrap = this.el["awaken-list"];
     if (!wrap) return;
-    wrap.innerHTML = G.data.awakens
-      .map((a) => {
-        const unlocked = G.awaken.isUnlocked(a.id);
-        const can = G.awaken.canUnlock(a.id);
-        const b = a.bonus;
-        const fx = [
-          b.atkMult ? `ATK ×${b.atkMult}` : null,
-          b.hpMult ? `HP ×${b.hpMult}` : null,
-          b.crit ? `Crit +${b.crit}%` : null,
-          b.critDmg ? `Crit Dmg +${b.critDmg}%` : null,
-          b.lumensBonus ? `Gold +${b.lumensBonus}%` : null,
-          b.xpBonus ? `XP +${b.xpBonus}%` : null,
-        ].filter(Boolean).join(" · ");
-        const reqs = `Area ${a.areaIndex + 1} · Lv ${a.level} · ${a.essence} Essence · ${G.util.fmt(a.lumens)} ✦`;
-        const action = unlocked
-          ? `<span class="awaken-done">Awakened ✓</span>`
-          : `<button class="btn btn-ornate awaken-btn" data-awaken="${a.id}"${can ? "" : " disabled"}>Awaken</button>`;
-        return `<li class="awaken-node${unlocked ? " is-done" : ""}">
-          <div class="awaken-node__head"><b>${a.name}</b>${action}</div>
-          <div class="awaken-node__fx">${fx}</div>
-          <div class="awaken-node__req">${reqs}</div>
-        </li>`;
-      })
-      .join("");
+
+    // auto-select: mantém seleção ou escolhe o primeiro pendente
+    if (!this._selectedAwaken) {
+      const first = G.data.awakens.find((a) => !G.awaken.isUnlocked(a.id)) || G.data.awakens[0];
+      if (first) this._selectedAwaken = first.id;
+    }
+
+    wrap.innerHTML = G.data.awakens.map((a) => {
+      const unlocked = G.awaken.isUnlocked(a.id);
+      const can = G.awaken.canUnlock(a.id);
+      const state = unlocked ? "done" : can ? "ready" : "locked";
+      const badge = unlocked ? "Awakened" : can ? "Ready" : "Locked";
+      const b = a.bonus;
+      const shortFx = [
+        b.atkMult ? `ATK ×${b.atkMult}` : null,
+        b.hpMult ? `HP ×${b.hpMult}` : null,
+        b.crit ? `Crit +${b.crit}%` : null,
+        b.lumensBonus ? `Gold +${b.lumensBonus}%` : null,
+        b.xpBonus ? `XP +${b.xpBonus}%` : null,
+      ].filter(Boolean).slice(0, 2).join(" · ");
+      const active = this._selectedAwaken === a.id ? " is-active" : "";
+      return `<li class="awk-entry is-${state}${active}" data-id="${a.id}">
+        <div class="awk-entry__top">
+          <span class="awk-entry__name">${a.name}</span>
+          <span class="awk-entry__badge">${badge}</span>
+        </div>
+        <span class="awk-entry__fx">${shortFx}</span>
+      </li>`;
+    }).join("");
+
+    this.renderAwakenPreview(this._selectedAwaken);
+  },
+
+  // painel direito: preview completo do awakening selecionado
+  renderAwakenPreview(id) {
+    const panel = this.el["awaken-preview"];
+    if (!panel) return;
+    const a = G.data.awakens.find((x) => x.id === id);
+    if (!a) { panel.innerHTML = ""; return; }
+
+    const unlocked = G.awaken.isUnlocked(a.id);
+    const can = G.awaken.canUnlock(a.id);
+    const d = G.state.data;
+    const s = G.state.stats();
+    const b = a.bonus;
+
+    // linhas de preview de stat: before → after
+    const statRows = [
+      b.atkMult  ? { label: "ATK",       before: G.util.fmt(s.atk),                     after: G.util.fmt(Math.round(s.atk * b.atkMult)),  active: unlocked } : null,
+      b.hpMult   ? { label: "HP",        before: G.util.fmt(s.hp),                      after: G.util.fmt(Math.round(s.hp  * b.hpMult)),   active: unlocked } : null,
+      b.crit     ? { label: "Crit",      before: `${s.crit.toFixed(1)}%`,               after: `${Math.min(100, s.crit + b.crit).toFixed(1)}%`,  active: unlocked } : null,
+      b.critDmg  ? { label: "Crit Dmg",  before: `${s.critDmg.toFixed(0)}%`,            after: `${(s.critDmg + b.critDmg).toFixed(0)}%`,   active: unlocked } : null,
+      b.lumensBonus ? { label: "Gold Bonus", before: `${s.lumensBonus.toFixed(0)}%`,    after: `${(s.lumensBonus + b.lumensBonus).toFixed(0)}%`, active: unlocked } : null,
+      b.xpBonus  ? { label: "XP Bonus",  before: `${s.xpBonus.toFixed(0)}%`,            after: `${(s.xpBonus + b.xpBonus).toFixed(0)}%`,   active: unlocked } : null,
+    ].filter(Boolean);
+
+    // checklist de requisitos
+    const reqs = [
+      { label: `Area ${a.areaIndex + 1}`,      met: (d.maxAreaUnlocked || 0) >= a.areaIndex },
+      { label: `Lv ${G.util.fmt(a.level)}`,    met: d.level >= a.level },
+      { label: `${a.essence} Essence`,          met: (d.awakenEssence || 0) >= a.essence },
+      { label: `${G.util.fmt(a.lumens)} ✦`,    met: (d.lumens || 0) >= a.lumens },
+    ];
+
+    const stateClass = unlocked ? " is-done" : can ? " is-ready" : "";
+    const action = unlocked
+      ? `<div class="awk-preview__done">✦ Awakened — the light endures</div>`
+      : `<button class="btn btn-ornate awk-preview__btn" data-awaken="${a.id}"${can ? "" : " disabled"}>${can ? "◈ Awaken" : "Requirements not met"}</button>`;
+
+    panel.innerHTML = `<div class="awk-preview__inner${stateClass}">
+      <div class="awk-preview__head">
+        <img class="awk-emblem" src="assets/ui/icon_awaken.svg" alt="">
+        <h3 class="awk-preview__title">${a.name}</h3>
+        ${a.lore ? `<p class="awk-preview__lore">"${a.lore}"</p>` : ""}
+      </div>
+      <div class="awk-preview__stats">
+        ${statRows.map((r) => `<div class="awk-stat-row">
+          <span class="awk-stat-row__label">${r.label}</span>
+          <div class="awk-stat-row__right">
+            <span class="awk-stat-row__before">${r.before}</span>
+            ${r.active
+              ? `<span class="awk-stat-row__active">Active ✓</span>`
+              : `<span class="awk-stat-row__arrow">→</span><span class="awk-stat-row__after">${r.after}</span>`}
+          </div>
+        </div>`).join("")}
+      </div>
+      <div class="awk-preview__reqs">
+        <span class="awk-preview__reqs-label">Requirements</span>
+        <div class="awk-reqs-grid">
+          ${reqs.map((r) => `<div class="awk-req${r.met ? " is-met" : ""}">
+            <span class="awk-req__icon">${r.met ? "✓" : "✗"}</span>
+            <span class="awk-req__label">${r.label}</span>
+          </div>`).join("")}
+        </div>
+      </div>
+      <div class="awk-preview__action">${action}</div>
+    </div>`;
   },
 
   // painel da Convergence (prestige) — renderiza ao abrir o modal
@@ -282,17 +366,17 @@ G.ui = {
   },
 
   // posições dos 9 nós no mapa (% x,y) — fonte única p/ nós E trilha
-  // posicionadas pelo usuário sobre a arte mapa1.png
+  // posicionadas pelo usuário sobre a arte mapa1.png (atualizado conforme marcações)
   mapNodePos: [
-    [20, 23], // 1 — The Dreaming Wood (esquerda-alta)
-    [59, 19], // 2 — The Lantern Mire (centro-direita alta)
-    [83, 34], // 3 — The Whispering Hollows (extrema direita)
-    [19, 45], // 4 — The Moonlit Canopy (esquerda-centro)
-    [53, 43], // 5 — The Sunken Grove (centro)
-    [34, 56], // 6 — The Gilded Thicket (lotus pool)
-    [72, 55], // 7 — The Hollow Cathedral (direita-centro, cristais)
-    [20, 71], // 8 — The Weeping Roots (esquerda-baixo)
-    [46, 74], // 9 — The Hollow Sanctum (centro-baixo)
+    [10, 23], // 1 — The Dreaming Wood (extrema esquerda, árvore alta)
+    [36, 18], // 2 — The Lantern Mire (centro-esquerda, alto)
+    [66, 17], // 3 — The Whispering Hollows (centro-direita, cascata)
+    [82, 27], // 4 — The Moonlit Canopy (extrema direita, alto)
+    [61, 42], // 5 — The Sunken Grove (centro-direita, meio)
+    [35, 51], // 6 — The Gilded Thicket (centro-esquerda, lotus pool)
+    [10, 64], // 7 — The Hollow Cathedral (extrema esquerda, baixo)
+    [28, 71], // 8 — The Weeping Roots (centro-esquerda, baixo)
+    [71, 64], // 9 — The Hollow Sanctum (direita, cristais)
   ],
 
   // ---- World Map: nós das áreas + trilha sobre a ilustração do mapa ----

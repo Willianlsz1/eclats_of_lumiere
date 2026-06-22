@@ -1,0 +1,41 @@
+/* =============================================================
+   base.css — variáveis CSS, reset global, body
+   ============================================================= */
+:root {
+  --navy: #0c0a18;
+  --card: rgba(10, 16, 32, 0.88);
+  --card-border: rgba(46, 124, 196, 0.35);
+  --sky: #2e7cc4;
+  --cyan: #37c8f0;
+  --teal: #5ee0d2;
+  --violet: #9d7bff;
+  --gold: #e8b54a;
+  --orange: #ff9a4d;
+  --text: #eaf2ff;
+  --muted: #9aa7bd;
+  --bad: #ff6b6b;
+  /* raridades */
+  --rarity-common: var(--muted);
+  --rarity-magic: var(--teal);
+  --rarity-rare: var(--violet);
+  --rarity-epic: var(--orange);
+  --rarity-legendary: var(--gold);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: "Outfit", system-ui, sans-serif;
+  color: var(--text);
+  min-height: 100vh;
+  background:
+    radial-gradient(1200px 600px at 70% -10%, rgba(94, 224, 210, 0.18), transparent 60%),
+    radial-gradient(900px 500px at 10% 110%, rgba(157, 123, 255, 0.20), transparent 60%),
+    linear-gradient(160deg, #0c0a18 0%, #0a0f22 55%, #0c0a18 100%);
+  background-attachment: fixed;
+}
+
+body.game { overflow: hidden; height: 100vh; }
+
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-thumb { background: rgba(55, 200, 240, 0.3); border-radius: 4px; }

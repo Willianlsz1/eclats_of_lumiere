@@ -275,15 +275,12 @@ G.data = {
     {
       id: "first_light",
       name: "First Light",
+      lore: "In the astral hush, the light you carry stirs for the first time — and answers.",
       areaIndex: 6,     // Area 7 = index 6 (The Hollow Cathedral)
-      level: 2351,      // start of area 7 level range
-      essence: 50,      // Awakening Essence cost
-      lumens: 500000,   // Lumens cost
-      bonus: {
-        atkMult: 2.5,   // ATK ×2.5 permanently
-        hpMult: 1.5,    // HP ×1.5 permanently
-        lumensBonus: 25, // +25% gold drops
-      },
+      level: 2351,
+      essence: 50,
+      lumens: 500000,
+      bonus: { atkMult: 2.5, hpMult: 1.5, lumensBonus: 25 },
     },
   ],
 

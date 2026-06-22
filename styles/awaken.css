@@ -1,0 +1,181 @@
+/* =============================================================
+   awaken.css — Modal Awaken (split: sidebar + preview)
+   ============================================================= */
+.modal.awk-modal {
+  --awk-c: #9d7bff;
+  width: 96vw; height: 92vh; max-width: 1100px; max-height: 820px;
+  padding: 0; overflow: hidden; position: relative; border-radius: 18px;
+  border: 1px solid color-mix(in srgb, var(--awk-c) 40%, transparent);
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.7), 0 0 50px -16px var(--awk-c);
+  background:
+    linear-gradient(180deg, rgba(6, 8, 20, 0.34) 0%, rgba(6, 8, 20, 0.70) 100%),
+    url('../assets/ui/awaken_bg.png') center / cover no-repeat,
+    #060810;
+}
+.awk-modal__x {
+  position: absolute; top: 12px; right: 12px; z-index: 10; width: 30px; height: 30px;
+  border-radius: 8px; cursor: pointer; color: #fff; font-size: 14px;
+  background: rgba(8, 10, 22, 0.5); border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.awk-modal__x:hover { border-color: var(--bad); }
+
+/* ---- split container ---- */
+.awk-split {
+  display: flex; height: 100%;
+}
+
+/* ================================================================
+   ESQUERDA — sidebar com lista compacta de awakens
+   ================================================================ */
+.awk-sidebar {
+  width: 270px; flex-shrink: 0; display: flex; flex-direction: column;
+  border-right: 1px solid color-mix(in srgb, var(--awk-c) 22%, rgba(255,255,255,0.08));
+  background: rgba(4, 5, 14, 0.66);
+}
+
+.awk-sidebar__head {
+  flex-shrink: 0; display: flex; flex-direction: column; align-items: center;
+  gap: 4px; padding: 22px 16px 16px;
+  border-bottom: 1px solid color-mix(in srgb, var(--awk-c) 22%, rgba(255,255,255,0.07));
+}
+.awk-cur-label {
+  font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: #8a94b0;
+}
+.awk-cur-val {
+  font-family: "Cormorant Garamond", serif; font-size: 32px; color: #fff;
+  text-shadow: 0 2px 8px #000, 0 0 18px var(--awk-c);
+}
+
+.awk-entries {
+  list-style: none; flex: 1; overflow-y: auto; padding: 10px 8px; margin: 0; display: flex; flex-direction: column; gap: 6px;
+}
+
+/* entry item */
+.awk-entry {
+  width: 100%; text-align: left; padding: 12px 14px; border-radius: 10px; cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(8, 10, 22, 0.45);
+  transition: border-color 0.12s, background 0.12s;
+  list-style: none;
+}
+.awk-entry:hover { background: rgba(14, 18, 36, 0.7); border-color: color-mix(in srgb, var(--awk-c) 38%, transparent); }
+.awk-entry.is-active {
+  background: color-mix(in srgb, var(--awk-c) 12%, rgba(8, 10, 22, 0.7));
+  border-color: color-mix(in srgb, var(--awk-c) 55%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--awk-c) 22%, transparent);
+}
+.awk-entry.is-done { border-color: color-mix(in srgb, var(--gold) 30%, transparent); }
+.awk-entry.is-done.is-active { background: color-mix(in srgb, var(--gold) 10%, rgba(8,10,22,0.7)); border-color: color-mix(in srgb, var(--gold) 55%, transparent); }
+
+.awk-entry__top { display: flex; justify-content: space-between; align-items: center; gap: 6px; margin-bottom: 5px; }
+.awk-entry__name { font-family: "Cormorant Garamond", serif; font-style: italic; font-size: 17px; color: #eae6ff; flex: 1; }
+.awk-entry.is-done .awk-entry__name { color: #f0dda0; }
+
+.awk-entry__badge {
+  font-size: 10px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase;
+  padding: 2px 8px; border-radius: 999px; white-space: nowrap;
+  background: color-mix(in srgb, var(--awk-c) 16%, transparent);
+  border: 1px solid color-mix(in srgb, var(--awk-c) 40%, transparent);
+  color: color-mix(in srgb, var(--awk-c) 90%, #fff);
+}
+.awk-entry.is-done .awk-entry__badge { background: color-mix(in srgb, var(--gold) 14%, transparent); border-color: color-mix(in srgb, var(--gold) 42%, transparent); color: var(--gold); }
+.awk-entry.is-locked .awk-entry__badge { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.12); color: #6a7488; }
+
+.awk-entry__fx { font-size: 12px; color: #7a85a4; }
+.awk-entry.is-ready .awk-entry__fx { color: color-mix(in srgb, var(--awk-c) 70%, #9aa3b8); }
+.awk-entry.is-done .awk-entry__fx { color: color-mix(in srgb, var(--gold) 65%, #9aa3b8); }
+
+/* ================================================================
+   DIREITA — painel de preview
+   ================================================================ */
+.awk-preview {
+  flex: 1; overflow-y: auto; min-width: 0;
+}
+.awk-preview__inner {
+  --pk: var(--awk-c);
+  display: flex; flex-direction: column; gap: 0; height: 100%; padding: 36px 40px 28px;
+  background: radial-gradient(ellipse 82% 68% at 50% 42%, rgba(5, 8, 18, 0.66) 0%, rgba(5, 8, 18, 0.34) 56%, rgba(5, 8, 18, 0) 82%);
+}
+.awk-preview__inner.is-done { --pk: var(--gold); }
+.awk-preview__inner.is-ready { --pk: var(--awk-c); }
+
+/* header: glyph + title + lore */
+.awk-preview__head { text-align: center; margin-bottom: 28px; }
+.awk-emblem {
+  width: 80px; height: 80px; display: block; margin: 0 auto 10px;
+  filter: drop-shadow(0 0 16px color-mix(in srgb, var(--pk) 70%, transparent));
+  animation: awk-pulse 3.5s ease-in-out infinite;
+}
+@keyframes awk-pulse {
+  0%, 100% { filter: drop-shadow(0 0 12px color-mix(in srgb, var(--awk-c) 55%, transparent)); }
+  50% { filter: drop-shadow(0 0 26px color-mix(in srgb, var(--awk-c) 90%, transparent)) drop-shadow(0 0 8px rgba(255,255,255,0.10)); }
+}
+.awk-preview__title {
+  margin: 0 0 12px; font-family: "Cormorant Garamond", serif; font-style: italic;
+  font-size: 42px; color: #f0eaff;
+  text-shadow: 0 2px 12px #000, 0 4px 24px #000, 0 0 28px var(--pk);
+}
+.awk-preview__inner.is-done .awk-preview__title { color: #f8e8c0; }
+.awk-preview__lore {
+  margin: 0 auto; max-width: 440px; font-family: "Cormorant Garamond", serif;
+  font-size: 18px; font-style: italic; line-height: 1.6; color: #e6e3f6;
+  text-shadow: 0 1px 4px #000, 0 2px 14px rgba(0, 0, 0, 0.92), 0 0 24px rgba(0, 0, 0, 0.7);
+}
+.awk-preview__inner.is-done .awk-preview__lore { color: #c8bea0; }
+
+/* stat rows: before → after */
+.awk-preview__stats {
+  margin-bottom: 22px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+.awk-stat-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 11px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+.awk-stat-row__label {
+  font-size: 13px; letter-spacing: 1.5px; text-transform: uppercase; color: #c6cee1;
+  text-shadow: 0 1px 4px #000, 0 1px 10px rgba(0, 0, 0, 0.7);
+}
+.awk-stat-row__right { display: flex; align-items: center; gap: 8px; }
+.awk-stat-row__before { font-size: 16px; font-weight: 600; color: #d4dbee; text-shadow: 0 1px 4px #000, 0 1px 10px rgba(0, 0, 0, 0.7); }
+.awk-stat-row__arrow { color: var(--pk); font-size: 14px; opacity: 0.8; }
+.awk-stat-row__after {
+  font-size: 18px; font-weight: 700; color: #fff;
+  text-shadow: 0 1px 5px #000, 0 2px 10px rgba(0, 0, 0, 0.85), 0 0 14px color-mix(in srgb, var(--pk) 65%, transparent);
+}
+.awk-stat-row__active {
+  font-size: 13px; font-weight: 700; color: var(--gold);
+  letter-spacing: 0.5px;
+}
+
+/* requirements checklist */
+.awk-preview__reqs { margin-bottom: 24px; }
+.awk-preview__reqs-label {
+  display: block; font-size: 12px; letter-spacing: 2.5px; text-transform: uppercase;
+  color: #b2bcd0; margin-bottom: 10px; text-shadow: 0 1px 4px #000, 0 1px 10px rgba(0, 0, 0, 0.7);
+}
+.awk-reqs-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+.awk-req {
+  display: flex; align-items: center; gap: 7px;
+  padding: 6px 14px; border-radius: 999px; font-size: 13px; font-weight: 600;
+  background: rgba(8, 11, 24, 0.55); border: 1px solid rgba(255, 255, 255, 0.14); color: #b6c0d4;
+  text-shadow: 0 1px 3px #000;
+}
+.awk-req.is-met {
+  background: rgba(94, 224, 210, 0.07); border-color: rgba(94, 224, 210, 0.35); color: var(--teal);
+}
+.awk-req__icon { font-size: 12px; font-weight: 900; }
+
+/* action area */
+.awk-preview__action { margin-top: auto; padding-top: 4px; }
+.awk-preview__btn {
+  width: 100%; font-size: 18px; padding: 14px 28px;
+  --btn-c: var(--awk-c);
+}
+.awk-preview__inner.is-done .awk-preview__btn { --btn-c: var(--gold); }
+.awk-preview__done {
+  text-align: center; font-family: "Cormorant Garamond", serif; font-style: italic;
+  font-size: 20px; color: var(--gold);
+  text-shadow: 0 0 18px rgba(232, 181, 74, 0.5);
+  padding: 14px 0;
+}

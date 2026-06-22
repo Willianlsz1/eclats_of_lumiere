@@ -8,7 +8,14 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles/base.css" />
+  <link rel="stylesheet" href="styles/components.css" />
+  <link rel="stylesheet" href="styles/hud.css" />
+  <link rel="stylesheet" href="styles/gear.css" />
+  <link rel="stylesheet" href="styles/convergence.css" />
+  <link rel="stylesheet" href="styles/awaken.css" />
+  <link rel="stylesheet" href="styles/worldmap.css" />
+  <link rel="stylesheet" href="styles/passives.css" />
 </head>
 <body class="game">
   <!-- ===== FUNDO DO MUNDO (tela cheia) ===== -->
@@ -188,16 +195,22 @@
     </div>
   </div>
 
-  <!-- ===== MODAL: AWAKEN (3ª fonte de poder) ===== -->
+  <!-- ===== MODAL: AWAKEN (3ª fonte de poder · tema violeta) ===== -->
   <div class="modal-overlay" id="modal-awaken" hidden onclick="if(event.target===this)this.hidden=true">
-    <div class="modal modal--wide">
-      <div class="modal__title">Awaken</div>
-      <div class="modal__body">
-        <p class="conv-desc">Awaken the light to surge in power. Each awakening is a permanent bundle of bonuses — it survives Convergence. Unlocks from Area 7 with <b>Awakening Essence</b> + Lumens.</p>
-        <p class="conv-pending-line"><b id="awaken-essence">0</b> Awakening Essence</p>
-        <ul class="awaken-list" id="awaken-list"></ul>
+    <div class="modal awk-modal">
+      <button class="awk-modal__x" onclick="document.getElementById('modal-awaken').hidden=true" title="Close">✕</button>
+      <div class="awk-split">
+        <!-- ESQUERDA: lista compacta de awakenings -->
+        <div class="awk-sidebar">
+          <div class="awk-sidebar__head">
+            <span class="awk-cur-label">Awakening Essence</span>
+            <b class="awk-cur-val" id="awaken-essence">0</b>
+          </div>
+          <ul class="awk-entries" id="awaken-list"></ul>
+        </div>
+        <!-- DIREITA: preview do awakening selecionado -->
+        <div class="awk-preview" id="awaken-preview"></div>
       </div>
-      <div class="modal__actions"><button class="btn ghost" style="width:auto" onclick="document.getElementById('modal-awaken').hidden=true">Close</button></div>
     </div>
   </div>
 
@@ -224,7 +237,7 @@
       </div>
     </div>
     <!-- painel de info dockado à direita -->
-    <aside class="wmap-info" id="wmap-info">
+    <aside class="wmap-info" id="wmap-info" hidden>
       <button class="wmap-info__x" id="wmap-info-close" title="Close">✕</button>
       <div class="wmap-info__art" id="wmap-info-art"></div>
       <div class="wmap-info__pad">

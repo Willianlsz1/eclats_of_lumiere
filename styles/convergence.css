@@ -1,0 +1,64 @@
+/* =============================================================
+   convergence.css — Modal de prestige (Convergence)
+   ============================================================= */
+.modal.conv-modal {
+  --conv-c: #7fb0ff;
+  width: 96vw; height: 92vh; max-width: 1600px; max-height: 920px;
+  padding: 0; overflow: hidden; position: relative; border-radius: 18px;
+  border: 1px solid color-mix(in srgb, var(--conv-c) 45%, transparent);
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.7), 0 0 50px -16px var(--conv-c);
+  background:
+    linear-gradient(180deg, rgba(6, 9, 20, 0.65) 0%, rgba(6, 9, 20, 0.82) 100%),
+    url('../assets/ui/convergence_bg.png') center / cover no-repeat, #0a1024;
+}
+.conv-modal__pad {
+  width: min(640px, 90%); margin: 0 auto; height: 100%;
+  display: flex; flex-direction: column; justify-content: space-evenly; text-align: center; padding: 40px 0;
+  background: radial-gradient(ellipse 540px 96% at center, rgba(4, 6, 16, 0.42) 0%, transparent 100%);
+}
+.conv-modal__title {
+  margin: 0; font-family: "Cormorant Garamond", serif; font-style: italic;
+  font-size: 44px; color: #edf3ff; text-shadow: 0 2px 12px #000, 0 4px 24px #000, 0 0 30px var(--conv-c);
+}
+.conv-modal__x {
+  position: absolute; top: 12px; right: 12px; z-index: 3; width: 30px; height: 30px;
+  border-radius: 8px; cursor: pointer; color: #fff; font-size: 14px;
+  background: rgba(8, 10, 22, 0.5); border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.conv-modal__x:hover { border-color: var(--bad); }
+.conv-banner {
+  position: relative; height: 175px; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 12px;
+  background:
+    linear-gradient(180deg, rgba(8, 11, 24, 0) 38%, rgba(8, 11, 24, 0.9) 100%),
+    url('../assets/ui/convergence_bg.png') center / cover no-repeat, #0a1024;
+  border-bottom: 1px solid color-mix(in srgb, var(--conv-c) 40%, transparent);
+}
+.conv-banner__emblem { width: 96px; height: 96px; object-fit: contain;
+  filter: drop-shadow(0 0 22px color-mix(in srgb, var(--conv-c) 70%, transparent)); }
+.conv-banner__title { margin: 0; font-family: "Cormorant Garamond", serif; font-style: italic;
+  font-size: 26px; color: #e6efff; text-shadow: 0 2px 8px #000, 0 0 18px var(--conv-c); }
+.conv-desc { margin: 0; font-size: 18px; line-height: 1.6; color: #dde6f8; text-shadow: 0 1px 6px #000, 0 2px 12px #000; }
+.conv-keep { margin: 0; }
+.conv-keep__label { display: block; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; color: #b4bfcf; margin-bottom: 10px; text-shadow: 0 1px 4px #000; }
+.conv-keep__items { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+.conv-keep__items span {
+  font-size: 15px; font-weight: 500; color: #dde6f8; padding: 8px 20px; border-radius: 999px;
+  background: color-mix(in srgb, var(--conv-c) 18%, rgba(4, 8, 22, 0.72));
+  border: 1px solid color-mix(in srgb, var(--conv-c) 42%, transparent);
+  text-shadow: 0 1px 4px #000; box-shadow: 0 2px 10px -4px #000;
+}
+.conv-grant { margin: 0; padding: 22px 28px; border-radius: 14px;
+  background: color-mix(in srgb, var(--conv-c) 10%, rgba(4, 8, 22, 0.82));
+  border: 1px solid color-mix(in srgb, var(--conv-c) 46%, transparent);
+  box-shadow: 0 6px 26px -8px #000, inset 0 1px 0 rgba(255,255,255,0.04); }
+.conv-grant__l { display: block; font-size: 13px; text-transform: uppercase; letter-spacing: 1.5px; color: #b8c5db; margin-bottom: 6px; text-shadow: 0 1px 4px #000; }
+.conv-grant__v { font-family: "Cormorant Garamond", serif; font-size: 22px; color: #d4e2fa; }
+.conv-grant__v b { font-size: 56px; color: #fff; text-shadow: 0 2px 14px #000, 0 0 30px var(--conv-c); line-height: 1; }
+.conv-transition { display: flex; align-items: center; justify-content: center; gap: 28px; margin: 0; }
+.conv-transition__cell { display: flex; flex-direction: column; gap: 4px; }
+.conv-transition__cell small { font-size: 13px; text-transform: uppercase; letter-spacing: 1.2px; color: #b0bcd0; text-shadow: 0 1px 4px #000; }
+.conv-transition__cell b { font-size: 20px; color: #eaf0fb; text-shadow: 0 1px 8px #000, 0 2px 10px #000; }
+.conv-transition__arrow { font-size: 30px; color: var(--conv-c); text-shadow: 0 0 14px var(--conv-c), 0 1px 6px #000; }
+.conv-modal__cta { width: 100%; font-size: 21px; padding: 16px 30px; }
+.conv-foot { margin: 0; font-size: 14px; color: #a8b4c8; text-shadow: 0 1px 4px #000; }
+.conv-foot b { color: #d0daee; }

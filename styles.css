@@ -254,6 +254,105 @@ body {
 .conv-foot { margin: 0; font-size: 14px; color: #a8b4c8; text-shadow: 0 1px 4px #000; }
 .conv-foot b { color: #d0daee; }
 
+/* ===== Modal AWAKEN (3ª fonte de poder · tema violeta-teal) ===== */
+.modal.awk-modal {
+  --awk-c: #9d7bff;
+  width: 96vw; height: 92vh; max-width: 960px; max-height: 900px;
+  padding: 0; overflow: hidden; position: relative; border-radius: 18px;
+  border: 1px solid color-mix(in srgb, var(--awk-c) 45%, transparent);
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.7), 0 0 50px -16px var(--awk-c);
+  background:
+    linear-gradient(180deg, rgba(6, 8, 20, 0.80) 0%, rgba(6, 8, 20, 0.94) 100%),
+    radial-gradient(ellipse 85% 65% at 25% 10%, rgba(157, 123, 255, 0.35) 0%, transparent 65%),
+    radial-gradient(ellipse 60% 40% at 80% 80%, rgba(94, 224, 210, 0.18) 0%, transparent 65%),
+    radial-gradient(ellipse 70% 55% at 55% 45%, rgba(232, 181, 74, 0.08) 0%, transparent 70%),
+    #060810;
+}
+.awk-modal__x {
+  position: absolute; top: 12px; right: 12px; z-index: 3; width: 30px; height: 30px;
+  border-radius: 8px; cursor: pointer; color: #fff; font-size: 14px;
+  background: rgba(8, 10, 22, 0.5); border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.awk-modal__x:hover { border-color: var(--bad); }
+.awk-modal__pad {
+  width: min(680px, 90%); margin: 0 auto; height: 100%;
+  display: flex; flex-direction: column; padding: 36px 0 28px;
+  background: radial-gradient(ellipse 520px 94% at center, rgba(4, 6, 18, 0.35) 0%, transparent 100%);
+  overflow: hidden;
+}
+.awk-header { flex-shrink: 0; text-align: center; padding-bottom: 20px; }
+.awk-glyph {
+  font-size: 48px; display: block; line-height: 1; margin-bottom: 8px; color: var(--awk-c);
+  filter: drop-shadow(0 0 18px color-mix(in srgb, var(--awk-c) 75%, transparent));
+  animation: awk-pulse 3.5s ease-in-out infinite;
+}
+@keyframes awk-pulse {
+  0%, 100% { filter: drop-shadow(0 0 14px color-mix(in srgb, var(--awk-c) 65%, transparent)); }
+  50% { filter: drop-shadow(0 0 28px color-mix(in srgb, var(--awk-c) 95%, transparent)) drop-shadow(0 0 8px rgba(255,255,255,0.15)); }
+}
+.awk-modal__title {
+  margin: 0 0 8px; font-family: "Cormorant Garamond", serif; font-style: italic;
+  font-size: 44px; color: #f0eaff;
+  text-shadow: 0 2px 12px #000, 0 4px 24px #000, 0 0 30px var(--awk-c);
+}
+.awk-desc {
+  margin: 0 auto; max-width: 480px; font-size: 16px; line-height: 1.55;
+  color: #ccc8e8; text-shadow: 0 1px 6px #000;
+}
+.awk-currency { flex-shrink: 0; display: flex; justify-content: center; margin: 16px 0 20px; }
+.awk-cur-box {
+  display: flex; align-items: center; gap: 14px; padding: 10px 28px; border-radius: 999px;
+  background: color-mix(in srgb, var(--awk-c) 14%, rgba(4, 6, 18, 0.85));
+  border: 1px solid color-mix(in srgb, var(--awk-c) 50%, transparent);
+  box-shadow: 0 4px 18px -6px #000, 0 0 22px -10px var(--awk-c);
+}
+.awk-cur-label { font-size: 13px; letter-spacing: 1.5px; text-transform: uppercase; color: #b8b0d4; }
+.awk-cur-val {
+  font-family: "Cormorant Garamond", serif; font-size: 28px; color: #fff;
+  text-shadow: 0 2px 8px #000, 0 0 16px var(--awk-c);
+}
+/* cards da lista de awakens */
+.awaken-list {
+  list-style: none; flex: 1; overflow-y: auto;
+  display: flex; flex-direction: column; gap: 12px; padding: 0 2px 4px;
+}
+.awk-card {
+  padding: 16px 20px; border-radius: 14px;
+  background: color-mix(in srgb, var(--awk-c) 9%, rgba(6, 8, 20, 0.82));
+  border: 1px solid color-mix(in srgb, var(--awk-c) 32%, transparent);
+  box-shadow: 0 6px 22px -8px #000, inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.awk-card.is-ready {
+  border-color: color-mix(in srgb, var(--awk-c) 72%, transparent);
+  box-shadow: 0 6px 24px -8px #000, 0 0 24px -10px var(--awk-c), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+.awk-card.is-done {
+  background: color-mix(in srgb, var(--gold) 9%, rgba(6, 8, 20, 0.82));
+  border-color: color-mix(in srgb, var(--gold) 45%, transparent);
+}
+.awk-card__head { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; flex-wrap: wrap; }
+.awk-card__name {
+  font-family: "Cormorant Garamond", serif; font-style: italic; font-size: 22px;
+  color: #f0ecff; flex: 1; text-shadow: 0 1px 4px #000;
+}
+.awk-card.is-done .awk-card__name { color: #f0dda0; }
+.awk-status { font-size: 14px; font-weight: 700; color: var(--gold); white-space: nowrap; }
+.awk-card__fx { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.awk-tag {
+  font-size: 14px; font-weight: 600; padding: 4px 14px; border-radius: 999px; white-space: nowrap;
+  background: color-mix(in srgb, var(--awk-c) 18%, rgba(6, 8, 20, 0.80));
+  border: 1px solid color-mix(in srgb, var(--awk-c) 48%, transparent);
+  color: #d0cbf8;
+}
+.awk-card.is-done .awk-tag {
+  background: color-mix(in srgb, var(--gold) 16%, rgba(6, 8, 20, 0.80));
+  border-color: color-mix(in srgb, var(--gold) 42%, transparent);
+  color: #f0d898;
+}
+.awk-card__req { font-size: 13px; color: #9094b4; }
+.awk-btn { font-size: 16px; padding: 9px 22px; white-space: nowrap; --btn-c: #9d7bff; }
+
 /* ---------- cena de batalha (herói × mob) ---------- */
 .combat-panel { text-align: center; }
 .battle-scene {
