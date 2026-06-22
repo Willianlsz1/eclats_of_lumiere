@@ -132,6 +132,8 @@ G.data = {
       blurb: "Where the Seeker first wakes. Soft auroras drip through ancient boughs, and here the light still dreams.",
       img: "assets/areas/dreaming_wood.png",
       levelRange: [1, 80],
+      // HP do mob: [inicial, final] DESTA área (ver mobHpAt / areaHpGrowth).
+      hp: [2000, 2500],
       enemies: [
         { name: "Candlewisp Shade", sprite: "🔥", img: "assets/enemies/candlewisp_shade.png" },
         { name: "Mothlight Herald", sprite: "🦋", img: "assets/enemies/mothlight_herald.png" },
@@ -147,6 +149,7 @@ G.data = {
       blurb: "A drowned bog of guttering lanterns, where Fragmented souls lost themselves chasing the light.",
       img: "assets/areas/lantern_mire.png",
       levelRange: [81, 350],
+      hp: [40000, 80000],
       enemies: [
         { name: "Mirelight Drifter", sprite: "🏮", img: "assets/enemies/mirelight_drifter.png" }, // novo
         { name: "Candlewisp Shade", sprite: "🔥", img: "assets/enemies/candlewisp_shade.png" },   // reaproveitado (Área 1)
@@ -161,6 +164,7 @@ G.data = {
       blurb: "Hollow trees that sing the trapped light, their murmurs curling endlessly through the dark.",
       img: "assets/areas/whispering_hollows.png",
       levelRange: [351, 700],
+      hp: [1000000, 3000000],
       enemies: [
         { name: "Husklight Murmur", sprite: "🌳", img: "assets/enemies/husklight_murmur.png" },  // novo
         { name: "Dreamhorn Warden", sprite: "🦌", img: "assets/enemies/dreamhorn_warden.png" },  // reaproveitado (Área 1)
@@ -175,6 +179,7 @@ G.data = {
       blurb: "The high canopy, nearest the aurora, where moths and wardens drift through a pale, restless glow.",
       img: "assets/areas/moonlit_canopy.png",
       levelRange: [701, 1150],
+      hp: [20000000, 80000000],
       enemies: [
         { name: "Boughlight Creeper", sprite: "🍃", img: "assets/enemies/boughlight_creeper.png" }, // novo
         { name: "Mothlight Herald", sprite: "🦋", img: "assets/enemies/mothlight_herald.png" },      // reaproveitado (Área 1)
@@ -189,6 +194,7 @@ G.data = {
       blurb: "A flooded, mirrored grove — every still pool reflects the creeping Mist back at the Seeker.",
       img: "assets/areas/sunken_grove.png",
       levelRange: [1151, 1700],
+      hp: [400000000, 1500000000],
       enemies: [
         { name: "Glasswater Wraith", sprite: "💧", img: "assets/enemies/glasswater_wraith.png" }, // novo
         { name: "Mirelight Drifter", sprite: "🏮", img: "assets/enemies/mirelight_drifter.png" }, // reaproveitado (Área 2)
@@ -203,6 +209,7 @@ G.data = {
       blurb: "A bramble of thorns where the golden corruption climbs — beautiful, and entirely wrong.",
       img: "assets/areas/gilded_thicket.png",
       levelRange: [1701, 2350],
+      hp: [6000000000, 20000000000],
       enemies: [
         { name: "Thornlight Stalker", sprite: "🌵", img: "assets/enemies/thornlight_stalker.png" }, // novo
         { name: "Candlewisp Shade", sprite: "🔥", img: "assets/enemies/candlewisp_shade.png" },     // reaproveitado (Área 1)
@@ -217,6 +224,7 @@ G.data = {
       blurb: "A cathedral grown of living wood, where the Fragmented kneel and worship the captured light.",
       img: "assets/areas/hollow_cathedral.png",
       levelRange: [2351, 3150],
+      hp: [40000000000, 100000000000],
       enemies: [
         { name: "Hollowed Acolyte", sprite: "⛪", img: "assets/enemies/hollowed_acolyte.png" },   // novo
         { name: "Husklight Murmur", sprite: "🌳", img: "assets/enemies/husklight_murmur.png" },    // reaproveitado (Área 3)
@@ -231,6 +239,7 @@ G.data = {
       blurb: "The deep roots, where the forest bleeds light and mourns everything it has lost.",
       img: "assets/areas/weeping_roots.png",
       levelRange: [3151, 4050],
+      hp: [120000000000, 200000000000],
       enemies: [
         { name: "Rootbound Weeper", sprite: "🌱", img: "assets/enemies/rootbound_weeper.png" },   // novo
         { name: "Thornlight Stalker", sprite: "🌵", img: "assets/enemies/thornlight_stalker.png" }, // reaproveitado (Área 6)
@@ -245,6 +254,7 @@ G.data = {
       blurb: "The heart of the wood — the climax of the Dreaming, where the Gilded Hollow waits in the hush.",
       img: "assets/areas/hollow_sanctum.png",
       levelRange: [4051, 5000],
+      hp: [220000000000, 350000000000],
       enemies: [
         { name: "Rootbound Weeper", sprite: "🌱", img: "assets/enemies/rootbound_weeper.png" },   // reaproveitado (Á8)
         { name: "Hollowed Acolyte", sprite: "⛪", img: "assets/enemies/hollowed_acolyte.png" },     // reaproveitado (Á7)
@@ -284,19 +294,53 @@ G.data = {
     },
   ],
 
-  // HP do mob num nível — crescimento em ESTÁGIOS (piecewise), contínuo.
-  // Aplica o growth de cada estágio da fronteira anterior até min(nível, teto).
-  mobHpAt(level) {
-    const b = this.balance;
-    let hp = b.mobHpBase, prev = 1;
-    for (const st of b.mobHpStages) {
-      if (level <= prev) break;
-      const top = Math.min(level, st.upTo);
-      hp *= Math.pow(st.growth, top - prev);
-      prev = top;
-      if (level <= st.upTo) break;
+  // ---- PROGRESSÃO DE HP EM DOIS NÍVEIS (modelo em degraus) ----
+  // O HP NÃO é uma curva global no nível total do personagem. É calculado em
+  // duas camadas independentes, balanceáveis por área:
+  //
+  //   (1) Progressão HORIZONTAL — crescimento suave DENTRO da área.
+  //       Cada área tem hp: [inicial, final]. Dentro dela o HP cresce
+  //       exponencialmente, mas devagar:
+  //         HP = hpInicial × (taxa ^ nívelDentroDaArea)
+  //       onde nívelDentroDaArea = nível − levelRange[0], e a taxa é DERIVADA
+  //       automaticamente para que o último nível da área chegue ao hpFinal:
+  //         taxa = (hpFinal / hpInicial) ^ (1 / span),  span = hi − lo
+  //
+  //   (2) Progressão VERTICAL — salto BRUTAL entre áreas.
+  //       Não há interpolação entre áreas: o hpInicial da próxima área é muito
+  //       maior que o hpFinal da anterior (ex.: 2.500 → 40.000). É o "choque
+  //       de dificuldade" intencional ao trocar de região.
+  //
+  // Para calcular o HP de um mob: (1) descobre em qual área o nível cai,
+  // (2) aplica a curva interna daquela área.
+
+  // encontra a área cujo levelRange contém o nível (clamp nas bordas do mapa).
+  areaAt(level) {
+    for (const a of this.areas) {
+      if (level <= a.levelRange[1]) return a;
     }
-    return hp;
+    return this.areas[this.areas.length - 1];
+  },
+
+  // taxa de crescimento interna de uma área (derivada de hp:[ini,fim] e span).
+  // span 0 (área de 1 nível) ⇒ taxa 1 (HP constante = hpInicial).
+  areaHpGrowth(area) {
+    const [lo, hi] = area.levelRange;
+    const [hpIni, hpFim] = area.hp;
+    const span = hi - lo;
+    if (span <= 0 || hpIni <= 0) return 1;
+    return Math.pow(hpFim / hpIni, 1 / span);
+  },
+
+  // HP do mob num nível. Camada (1) aplicada DENTRO da área (camada (2) já está
+  // embutida nos hp:[ini,fim] distintos de cada área). `area` é opcional — se
+  // omitido, é resolvido por areaAt(level).
+  mobHpAt(level, area) {
+    area = area || this.areaAt(level);
+    const lo = area.levelRange[0];
+    const hpIni = area.hp[0];
+    const within = G.util.clamp(level, lo, area.levelRange[1]) - lo;
+    return hpIni * Math.pow(this.areaHpGrowth(area), within);
   },
 
   // área atual (em função do progresso salvo)
@@ -311,24 +355,11 @@ G.data = {
   // bem mais devagar (~+4,5%/nível). O nível do mob é um eixo de progressão
   // SEPARADO do seu nível de personagem (sobe a cada kill, recua ao morrer).
   balance: {
-    // Curva balanceada p/ o Mapa 1 (validada por simulação, jun/2026):
-    // Escala 1000/1000 (ATK/HP inicial), nível 1 → 5000 ao longo das 9 áreas.
-    // TTK do mob ~2s do início ao fim (você reinveste a renda em gear pra
-    // manter o ritmo); cada BOSS é o pico/parede (~7-9s), vencível se o gear
-    // da faixa está em dia. Não reinvestir → o mob acompanha seu nível e o TTK
-    // sobe. Mapa 1 inteiro ≈ 6h de jogo ativo.
-    mobHpBase: 2050,      // vida do mob no nível 1 (TTK ~2s com o ATK base 1000)
-    // HP do mob em ESTÁGIOS (growth por faixa de nível) — ver G.data.mobHpAt().
-    // Cada estágio aplica seu growth da fronteira anterior até o seu teto, de
-    // forma CONTÍNUA (o HP no fim de um estágio = início do próximo). Resolve o
-    // "HP achatado": growth maior no early (sobe rápido e visível), estabiliza
-    // no mid, e fica agressivo no end (God Mode). Alvos validados:
-    //   ~985k no Lv1000 · ~395M no Lv4000 · ~58B no Lv5000.
-    mobHpStages: [
-      { upTo: 1000, growth: 1.0085 }, // Early (1–1000): HP sobe rápido logo cedo
-      { upTo: 4000, growth: 1.0040 },  // Mid (1001–4000): estabiliza
-      { upTo: 5000, growth: 1.0090 },  // End (4001–5000): agressivo (desafios finais)
-    ],
+    // HP do mob: NÃO está mais aqui. Migrou para o modelo em DOIS NÍVEIS,
+    // definido POR ÁREA no campo hp:[inicial, final] de cada área e calculado
+    // por G.data.mobHpAt() (ver comentário lá em cima). Cada região é
+    // balanceada de forma independente: curva suave dentro da área + salto
+    // brutal ao entrar na próxima. ATK do mob segue uma curva global no nível.
     mobAtkBase: 45,       // ATK do mob no nível 1
     mobAtkGrowth: 1.00085,// +0,085% de ATK por nível
     healOnKillFrac: 0.10, // cura 10% do HP máx a cada kill (fôlego)

@@ -43,8 +43,9 @@ G.combat = {
     // área SEM boss: ao atingir o teto, libera a próxima automaticamente
     if (atCap && !area.boss) this.unlockNext();
 
-    // HP em estágios (piecewise); ATK em crescimento único
-    const hp = G.data.mobHpAt(level);
+    // HP em DOIS NÍVEIS: curva interna da área atual (ver G.data.mobHpAt);
+    // ATK segue crescimento global no nível do mob.
+    const hp = G.data.mobHpAt(level, area);
     const atk = b.mobAtkBase * Math.pow(b.mobAtkGrowth, level - 1);
 
     let def, maxHp, dmg, lumens, xp, name, rarity = null;

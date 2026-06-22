@@ -467,7 +467,7 @@ G.ui = {
     this.el["wmap-info-status"].textContent = locked ? "Locked" : isCurrent ? "Current" : "Unlocked";
 
     // resources: Lumens/kill (estimado pela vida do mob na entrada) + Essência (Área 7+) + XP
-    const lumPerKill = Math.ceil(G.data.mobHpAt(a.levelRange[0]) * G.data.balance.goldRatio);
+    const lumPerKill = Math.ceil(G.data.mobHpAt(a.levelRange[0], a) * G.data.balance.goldRatio);
     const res = [`<li><span>Lumens</span><b>+${G.util.fmt(lumPerKill)}</b></li>`];
     res.push(`<li><span>XP</span><b>+${G.util.fmt(Math.ceil(G.data.balance.baseXp * a.levelRange[0]))}</b></li>`);
     if (i >= 6) res.push(`<li><span>Awakening Essence · T1</span><b>${(G.data.balance.awakenDropChance * 100).toFixed(0)}% / kill</b></li>`);
