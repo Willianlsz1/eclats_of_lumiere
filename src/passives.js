@@ -38,13 +38,17 @@ G.passives = {
     // --- NÃO-LIVE (aguardando sistemas/balanceamento) — magnitude 0 ---
     bossDmg: 0, eliteDmg: 0, capstoneEclat: 0,
     matCommonPct: 0, matUncommonPct: 0, matGeneralPct: 0, dropRate: 0,
-    matQuantity: 0, matPct: 0, capstoneVestige: 0,
+    matQuantity: 0, capstoneVestige: 0,
     convPointsPct: 0, convPointsMin: 0, awakenMatPct: 0, awakenReqReduction: 0,
     eliteChance: 0, miniBossThreshold: 0, moreEnemies: 0, gearXp: 0,
     upgradeCostReduction: 0, promotionCostReduction: 0,
     convEfficiency: 0, awakenEfficiency: 0, capstoneFracture: 0,
     _default: 0,
   },
+  // efeitos ADIADOS para o Mapa 2 (exigem sistemas inexistentes: combate
+  // multi-inimigo / XP de gear). Seus nós ficam INDISPONÍVEIS (não compráveis e
+  // fora do gating de grupo) — nenhum nó comprável fica sem efeito.
+  MAP2: ["moreEnemies", "gearXp"],
   // efeitos que o motor de stats consome agora (para estilo/roteamento)
   LIVE: ["atkPct", "hpPct", "critRate", "critDmg", "lumensPct", "xpPct"],
   // efeito "primário" de cada árvore (usado só no resumo visual ×multiplicador)
@@ -73,7 +77,7 @@ G.passives = {
         ["General Materials %", "matGeneralPct"],
         ["Drop Rate", "dropRate"], ["Drop Rate", "dropRate"],
         ["Material Quantity", "matQuantity"],
-        ["Lumens %", "lumensPct"], ["Materials %", "matPct"],
+        ["Lumens %", "lumensPct"], ["Materials %", "matGeneralPct"],
         ["Infinite Prosperity Capstone", "capstoneVestige"],
       ],
     },
@@ -104,16 +108,17 @@ G.passives = {
     lumensPct: "Increases Lumens gained.", xpPct: "Increases XP gained.",
     matCommonPct: "Increases Common material gains.", matUncommonPct: "Increases Uncommon material gains.",
     matGeneralPct: "Increases all material gains.", dropRate: "Increases drop rate.",
-    matQuantity: "Increases the quantity of materials dropped.", matPct: "Increases material gains.",
-    capstoneVestige: "Infinite Prosperity — ultimate economy bonus.",
+    matQuantity: "Increases the quantity of materials dropped.",
+    capstoneVestige: "Infinite Prosperity — ultimate economy bonus (Lumens & XP).",
     convPointsPct: "Increases Convergence Points earned.",
     convPointsMin: "Guarantees a minimum of Convergence Points.",
     awakenMatPct: "Increases Awaken material gains.",
     awakenReqReduction: "Reduces Awaken requirements.",
     eliteChance: "Increases the chance for Elites to appear.",
     miniBossThreshold: "Lowers the kill threshold for Mini Bosses.",
-    moreEnemies: "More enemies appear at once.",
-    gearXp: "Grants XP toward Gear.", upgradeCostReduction: "Reduces Gear upgrade cost.",
+    moreEnemies: "Planned for Map 2 — requires multi-enemy combat.",
+    gearXp: "Planned for Map 2 — requires the Gear XP system.",
+    upgradeCostReduction: "Reduces Gear upgrade cost.",
     promotionCostReduction: "Reduces rarity promotion cost.",
     convEfficiency: "Improves Convergence efficiency.", awakenEfficiency: "Improves Awaken efficiency.",
     capstoneFracture: "Hybrid capstone — combined account power.",
@@ -134,6 +139,8 @@ G.passives = {
   level(tree, i) { const p = G.state.data.passives; return (p && p[tree] && p[tree][i]) || 0; },
   effectOf(tree, i) { return this.trees[tree].list[i][1]; },
   isCapstone(key) { return /^capstone/.test(key); },
+  // nó adiado ao Mapa 2: indisponível (não comprável, fora do gating de grupo)
+  isDeferred(tree, i) { return this.MAP2.indexOf(this.effectOf(tree, i)) !== -1; },
   // teto de nível POR NÓ: capstone = 1 (nó único); demais = maxLevel (placeholder)
   nodeMax(tree, i) { return this.isCapstone(this.effectOf(tree, i)) ? 1 : this.maxLevel; },
 
@@ -151,12 +158,14 @@ G.passives = {
     if (!arr) return false;
     for (let p = 0; p < this.GROUP_SIZE; p++) {
       const idx = (g - 1) * this.GROUP_SIZE + p;
+      if (this.isDeferred(tree, idx)) continue;        // nós Mapa 2 não travam o grupo
       if (arr[idx] < this.nodeMax(tree, idx)) return false;
     }
     return true;
   },
   canBuy(tree, i) {
-    return this.unlocked() && !this.isMax(tree, i) && this.groupUnlocked(tree, this.groupOf(i)) &&
+    return this.unlocked() && !this.isDeferred(tree, i) && !this.isMax(tree, i) &&
+      this.groupUnlocked(tree, this.groupOf(i)) &&
       (G.state.data.convergencePoints || 0) >= this.nextCost(tree, i);
   },
   buy(tree, i) {
@@ -176,6 +185,7 @@ G.passives = {
     for (const tree of this.TREES) {
       const list = this.trees[tree].list;
       for (let i = 0; i < list.length; i++) {
+        if (this.isDeferred(tree, i)) continue;        // nós Mapa 2 não produzem efeito
         const lv = this.level(tree, i);
         if (!lv) continue;
         const key = list[i][1];
@@ -201,8 +211,13 @@ G.passives = {
 
   treeProgress(tree) {
     const arr = G.state.data.passives[tree];
-    let u = 0, m = 0;
-    for (let i = 0; i < arr.length; i++) { if (arr[i] > 0) u++; if (arr[i] >= this.nodeMax(tree, i)) m++; }
-    return { unlocked: u, maxed: m, total: arr.length };
+    let u = 0, m = 0, total = 0;
+    for (let i = 0; i < arr.length; i++) {
+      if (this.isDeferred(tree, i)) continue;          // nós Mapa 2 não contam
+      total++;
+      if (arr[i] > 0) u++;
+      if (arr[i] >= this.nodeMax(tree, i)) m++;
+    }
+    return { unlocked: u, maxed: m, total };
   },
 };

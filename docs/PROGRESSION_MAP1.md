@@ -71,6 +71,9 @@ Ao final do Mapa 1 o jogador deve compreender:
 ### Área 3 — Ecos da Convergence
 
 - **Objetivo:** apresentar a existência da Convergence.
+- **Desbloqueio:** Convergence desbloqueia por **nível** — aproximadamente entre
+  os níveis correspondentes ao **início da Área 3** (não é um gate por Área; ver
+  `PRE_BALANCE_REVIEW_V2`).
 - **Sistemas introduzidos:** interface de Convergence · primeiras informações
   sobre Passivas.
 - **Inimigos:** Comuns · Raros · **Elites**.

@@ -36,10 +36,14 @@ G.awaken = {
     if (!a || !a.requirements) return [];
     const r = a.requirements;
     const out = [];
+    // passiva Fracture: awakenReqReduction reduz os LIMIARES numéricos (não a Área)
+    const red = G.passives ? (G.passives.effect("awakenReqReduction") || 0) / 100 : 0;
+    const factor = Math.max(0, 1 - red);
     for (const key of ["area", "level", "kills", "convergences"]) {
       if (r[key] == null) continue;
+      const need = key === "area" ? r[key] : Math.ceil(r[key] * factor);
       const have = this.playerValue(key);
-      out.push({ key, need: r[key], have, met: have >= r[key] });
+      out.push({ key, need, have, met: have >= need });
     }
     if (r.materials) {
       for (const mk of Object.keys(r.materials)) {
@@ -75,16 +79,18 @@ G.awaken = {
   // injeta os bônus de TODOS os awakens concluídos nas camadas de stat.
   // (infra de bônus — magnitudes em data.awakens[].bonus são placeholders)
   applyTo(layer) {
+    // passiva Fracture: awakenEfficiency amplifica os bônus (placeholder 0 → ×1)
+    const eff = 1 + (G.passives ? (G.passives.effect("awakenEfficiency") || 0) / 100 : 0);
     for (const a of G.data.awakens) {
       if (!this.isDone(a.id)) continue;
       const b = a.bonus;
       if (!b) continue;
-      if (b.atkMult) layer("atk").mult *= b.atkMult;
-      if (b.hpMult) layer("hp").mult *= b.hpMult;
-      if (b.critDmg) layer("critDmg").flat += b.critDmg;
-      if (b.crit) layer("crit").flat += b.crit;
-      if (b.lumensBonus) layer("lumensBonus").flat += b.lumensBonus;
-      if (b.xpBonus) layer("xpBonus").flat += b.xpBonus;
+      if (b.atkMult) layer("atk").mult *= 1 + (b.atkMult - 1) * eff;
+      if (b.hpMult) layer("hp").mult *= 1 + (b.hpMult - 1) * eff;
+      if (b.critDmg) layer("critDmg").flat += b.critDmg * eff;
+      if (b.crit) layer("crit").flat += b.crit * eff;
+      if (b.lumensBonus) layer("lumensBonus").flat += b.lumensBonus * eff;
+      if (b.xpBonus) layer("xpBonus").flat += b.xpBonus * eff;
     }
   },
 };

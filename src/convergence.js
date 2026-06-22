@@ -61,9 +61,10 @@ G.convergence = {
   points() {
     let p = this.rawPoints();
     if (G.passives) {
-      p *= 1 + G.passives.effect("convPointsPct") / 100;   // Fracture: + % de pontos
-      p *= 1 + G.passives.effect("convEfficiency") / 100;  // Fracture: eficiência
-      p = Math.max(p, G.passives.effect("convPointsMin")); // Fracture: mínimo garantido
+      p *= 1 + G.passives.effect("convPointsPct") / 100;     // Fracture: + % de pontos
+      p *= 1 + G.passives.effect("convEfficiency") / 100;    // Fracture: eficiência
+      p *= 1 + G.passives.effect("capstoneFracture") / 100;  // Fracture: capstone híbrido (meta)
+      p = Math.max(p, G.passives.effect("convPointsMin"));   // Fracture: mínimo garantido
     }
     return Math.floor(p);
   },

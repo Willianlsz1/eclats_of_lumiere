@@ -153,7 +153,11 @@ G.gear = {
   cost(item) {
     const b = G.data.balance;
     const lvl = item.level || 1;
-    return Math.ceil(b.gearCostBase * Math.pow(b.gearCostGrowth, lvl - 1));
+    let c = b.gearCostBase * Math.pow(b.gearCostGrowth, lvl - 1);
+    // passiva Fracture: upgradeCostReduction (placeholder 0 → sem efeito)
+    const red = G.passives ? (G.passives.effect("upgradeCostReduction") || 0) / 100 : 0;
+    c *= Math.max(0, 1 - red);
+    return Math.ceil(c);
   },
 
   isMaxed(item) {

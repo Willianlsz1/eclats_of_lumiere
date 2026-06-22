@@ -208,7 +208,8 @@ G.ui = {
     const pos = P.POSITIONS[i];
     const level = P.level(tree, i);
     const maxed = P.isMax(tree, i);
-    const locked = !P.groupUnlocked(tree, P.groupOf(i)) && level === 0;
+    const deferred = P.isDeferred(tree, i); // nó adiado ao Mapa 2 (indisponível)
+    const locked = deferred || (!P.groupUnlocked(tree, P.groupOf(i)) && level === 0);
     const role = P.isEngine(tree, key) ? "role-engine" : (P.leverOf(key) ? "role-lever" : "");
     const cls = ["pv-node", role, i >= 10 ? "tip-below" : "", maxed ? "maxed" : "",
       P.canBuy(tree, i) ? "buyable" : "", level > 0 && !maxed ? "owned" : "", locked ? "locked" : ""]
@@ -216,8 +217,9 @@ G.ui = {
     const m = `assets/passives/${tree}/${key}.webp`;
     const mc = `-webkit-mask-image:url('${m}');mask-image:url('${m}')`;
     const nmax = P.nodeMax(tree, i);
-    const lvlText = maxed ? "✦" : (level > 0 ? `${level}/${nmax}` : "");
-    const foot = maxed ? `<div class="pv-tip-foot max">Max Level</div>`
+    const lvlText = deferred ? "M2" : (maxed ? "✦" : (level > 0 ? `${level}/${nmax}` : ""));
+    const foot = deferred ? `<div class="pv-tip-foot locked">Map 2 — coming later</div>`
+      : maxed ? `<div class="pv-tip-foot max">Max Level</div>`
       : locked ? `<div class="pv-tip-foot locked">Locked — max the tier below</div>`
       : `<div class="pv-tip-foot cost">${level === 0 ? "Unlock" : "Upgrade"} · ${G.util.fmt(P.nextCost(tree, i))} pts</div>`;
     return `<button class="${cls}" data-i="${i}" style="left:${pos.x}%;top:${pos.y}%;--p:${(level / nmax).toFixed(3)}">

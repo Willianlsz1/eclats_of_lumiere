@@ -303,7 +303,7 @@ Mapa 1 possui:
 |---|---|---|
 | **1** | Aprender o jogo | Combate, Lumens, Gear. Parede: nível necessário para a Área 2. |
 | **2** | Aprender Gear | Descobre: **Gear = Poder**. |
-| **3** | Descobrir Convergence | Convergence é desbloqueada. Ainda não é obrigatória. |
+| **3** | Descobrir Convergence | Convergence desbloqueia por **nível** (≈ os níveis correspondentes ao início da Área 3). Ainda não é obrigatória. |
 | **4** | Primeira parede real | Primeira Convergence acontece naturalmente. Primeiras passivas. Aprende: Gear melhora a run · Convergence melhora a conta. |
 | **5** | Descobrir Raridade e Materiais | Primeiras promoções para Uncommon. Aprende: Lumens = Níveis · Materiais = Raridade. |
 | **6** | Descobrir First Light | Primeiro contato com o objetivo final do capítulo. Última área relativamente confortável. |

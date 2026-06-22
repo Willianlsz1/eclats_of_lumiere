@@ -73,9 +73,9 @@ G.state = {
     // Forja: cada reforço dá +4% de ATK (camada de bônus, sempre relevante).
     layer("atk").pct += d.weaponUpgrades * 4;
     layer("crit").flat += 5;
-    // atk speed em ATAQUES POR SEGUNDO (estilo Gaiadon): base 1.0 atk/s.
+    // atk speed em ATAQUES POR SEGUNDO: base 0.9 atk/s (teto 15 — ver stats()).
     // gear soma valores tipo +0.05. intervalo = 1 / atkSpeed.
-    layer("atkSpeed").flat += 1.0;
+    layer("atkSpeed").flat += G.data.balance.atkSpeedBase;
     // crit damage base: +50% (multiplicador ×1.5). Gear soma % em cima disso.
     layer("critDmg").flat += 50;
     // xp bonus base: 0% (só vem de gear por enquanto)
@@ -110,6 +110,11 @@ G.state = {
       layer("critDmg").flat += passEff.critDmg || 0;       // Éclat: Crit Damage
       layer("lumensBonus").flat += passEff.lumensPct || 0; // Vestige: Lumens %
       layer("xpBonus").flat += passEff.xpPct || 0;         // Vestige: XP %
+      // capstones híbridos (multiplicadores da própria árvore)
+      const capE = 1 + (passEff.capstoneEclat || 0) / 100;   // Éclat: ATK + HP
+      layer("atk").mult *= capE; layer("hp").mult *= capE;
+      const capV = 1 + (passEff.capstoneVestige || 0) / 100;  // Vestige: Lumens + XP
+      layer("lumensBonus").mult *= capV; layer("xpBonus").mult *= capV;
     }
 
     const fin = (k) => {
@@ -128,7 +133,7 @@ G.state = {
       crit: G.util.clamp(fin("crit"), 0, 100),
       critDmg: fin("critDmg"),
       critMult: 1 + fin("critDmg") / 100,
-      atkSpeed: fin("atkSpeed"),
+      atkSpeed: G.util.clamp(fin("atkSpeed"), 0, G.data.balance.atkSpeedCap),
       xpBonus: fin("xpBonus"),
       lumensBonus: fin("lumensBonus"),
       _layers: L,
@@ -143,7 +148,7 @@ G.state = {
   // intervalo entre ataques automáticos em segundos: 1 / (ataques por segundo)
   attackInterval() {
     const aps = this.stats().atkSpeed;
-    return G.util.clamp(1.0 / aps, 0.1, 5);
+    return G.util.clamp(1.0 / aps, 1 / G.data.balance.atkSpeedCap, 5);
   },
 
   // XP necessária para o próximo nível.

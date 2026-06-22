@@ -57,23 +57,26 @@ G.data = {
       ],
     },
     gloves: {
+      // Gloves = CRÍTICO (afixo primário = crit)
       name: "Worn Gloves",
       affixes: [
-        { id: "atkspd", label: "Attack Speed", stat: "atkSpeed", layer: "flat", base: 0, perLevel: 0.01 },
         { id: "crit", label: "Crit Rate", stat: "crit", layer: "flat", base: 0.05, perLevel: 0.025 },
+        { id: "critDmg", label: "Crit Damage", stat: "critDmg", layer: "flat", base: 0, perLevel: 1 },
       ],
     },
     boots: {
+      // Boots = ATTACK SPEED (afixo primário = atkSpeed)
       name: "Worn Boots",
       affixes: [
-        { id: "lumens", label: "Lumens", stat: "lumensBonus", layer: "flat", base: 5, perLevel: 1 },
+        { id: "atkspd", label: "Attack Speed", stat: "atkSpeed", layer: "flat", base: 0, perLevel: 0.01 },
         { id: "xp", label: "XP", stat: "xpBonus", layer: "flat", base: 2, perLevel: 0.5 },
       ],
     },
     cloak: {
+      // Cloak = ECONOMIA (afixo primário = lumens)
       name: "Worn Cloak",
       affixes: [
-        { id: "crit", label: "Crit Rate", stat: "crit", layer: "flat", base: 0.05, perLevel: 0.025 },
+        { id: "lumens", label: "Lumens", stat: "lumensBonus", layer: "flat", base: 5, perLevel: 1 },
         { id: "atkp", label: "Attack", stat: "atk", layer: "pct", base: 0, perLevel: 1 },
       ],
     },
@@ -377,6 +380,9 @@ G.data = {
     // balanceada de forma independente: curva suave dentro da área + salto
     // brutal ao entrar na próxima. ATK do mob segue uma curva global no nível.
     mobAtkBase: 45,       // ATK do mob no nível 1
+    // Attack Speed do jogador (decisão de design): base 0.9 aps, teto 15 aps.
+    atkSpeedBase: 0.9,
+    atkSpeedCap: 15,
     mobAtkGrowth: 1.00085,// +0,085% de ATK por nível
     healOnKillFrac: 0.10, // cura 10% do HP máx a cada kill (fôlego)
     retreatOnDeath: 3,    // ao morrer, recua N níveis de mob (autocorrige)

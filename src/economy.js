@@ -90,7 +90,7 @@ G.economy = {
   passiveQtyMult(materialKey) {
     if (!G.passives) return 1;
     const e = G.passives.effects();
-    const general = (e.matGeneralPct || 0) + (e.matPct || 0);
+    const general = e.matGeneralPct || 0; // "General Materials %" + "Materials %" unificados
     let mult = (1 + (e.matQuantity || 0) / 100) * (1 + general / 100);
     if (materialKey === "commonMaterial")   mult *= 1 + (e.matCommonPct || 0) / 100;
     if (materialKey === "uncommonMaterial") mult *= 1 + (e.matUncommonPct || 0) / 100;

@@ -51,9 +51,15 @@ Ao realizar uma Convergence:
 
 ## Desbloqueio
 
-- Convergence é apresentada ao jogador na **Área 3**.
-- A **primeira** Convergence normalmente ocorre na **Área 4**.
-- O sistema deve ser **descoberto naturalmente** através da progressão.
+> **Decisão oficial:** Convergence é desbloqueada por **NÍVEL**, não por Área
+> (ver `PRE_BALANCE_REVIEW_V2`). `canConverge() = nível ≥ gateLevel`.
+
+- Convergence desbloqueia **aproximadamente entre os níveis correspondentes ao
+  início da Área 3** (faixa estimada ~350–500; valor final na Fase 3).
+- A **primeira** Convergence normalmente ocorre por volta dos níveis da **Área 4**
+  (~700–1150).
+- O sistema deve ser **descoberto naturalmente** através da progressão; o gate por
+  nível deixa o jogador escolher o ritmo (convergir cedo ou tarde).
 
 ---
 

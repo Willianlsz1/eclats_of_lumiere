@@ -178,8 +178,19 @@ G.combat = {
   },
 
   // ----- aplica o dano no impacto (quando o projétil chega) -----
+  // dano extra por TIPO de alvo (passivas Éclat: Boss Damage / Elite Damage)
+  typeDamageMult() {
+    if (!G.passives || !this.enemy) return 1;
+    let m = 1;
+    if (this.enemy.isBoss) m += (G.passives.effect("bossDmg") || 0) / 100;
+    if (this.enemy.isElite) m += (G.passives.effect("eliteDmg") || 0) / 100;
+    return m;
+  },
+
   applyHitToEnemy(dmg, crit) {
     if (!this.enemy) return; // o mob já morreu antes do bolt chegar
+    const m = this.typeDamageMult();
+    if (m !== 1) dmg = Math.ceil(dmg * m);
     if (G.ui && G.ui.floater) G.ui.floater(dmg, crit ? "crit" : "hit");
     this.enemy.hp -= dmg;
     if (this.enemy.hp <= 0) this.onKill();
