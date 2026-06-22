@@ -226,6 +226,7 @@ G.combat = {
     // contadores da run (alimentam a fórmula de Pontos de Convergence)
     const d = G.state.data;
     d.runKills = (d.runKills || 0) + 1;
+    d.totalKills = (d.totalKills || 0) + 1; // acumulado (requisito de Awaken)
     if (e.isBoss) d.runBosses = (d.runBosses || 0) + 1;
     if ((d.runMaxAreaIndex || 0) < d.areaIndex) d.runMaxAreaIndex = d.areaIndex;
 
@@ -262,12 +263,8 @@ G.combat = {
 
     // loot DESLIGADO por enquanto (gear agora é 6 peças fixas que sobem de
     // nível com ouro). O sistema de drop/inventário fica reservado p/ futuro.
-
-    // Awakening Essence: dropa na Área 7+ (índice 6+) — alimenta o Awaken
-    const matMult = G.passives ? G.passives.materialsMult() : 1;
-    if (G.state.data.areaIndex >= 6 && G.util.chance(G.data.balance.awakenDropChance * matMult)) {
-      G.state.data.awakenEssence = (G.state.data.awakenEssence || 0) + 1;
-    }
+    // (O Awaken Material agora vem do sistema de drop — Mini Boss/Boss via
+    //  economy.rollDrops; a antiga "Awakening Essence" por kill foi removida.)
 
     // boss derrotado => LIBERA a próxima sub-área (o jogador decide quando avançar)
     if (e.isBoss) this.markBossCleared();

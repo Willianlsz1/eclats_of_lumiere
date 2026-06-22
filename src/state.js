@@ -25,8 +25,12 @@ G.state = {
       convergencePoints: 0,  // moeda de prestige (gasta nas passivas — ver convergence.js)
       convergences: 0,       // quantas vezes renasceu
       highestLevel: 1,       // recorde de nível (não reseta na Convergence)
-      awakenEssence: 0,      // material do Awaken legado (First Light atual; rework futuro)
-      awakensUnlocked: [],   // ids dos Awakens desbloqueados (permanentes)
+      totalKills: 0,         // kills acumuladas (NÃO reseta) — requisito de Awaken
+      awakenEssence: 0,      // material legado (migrado p/ awakenMaterials.firstLight)
+      awakensUnlocked: [],   // alias legado da lista de awakens concluídos
+      awakens: [],           // ids de Awakens concluídos (canônico — AWAKEN_V1)
+      awakenTier: 0,         // nº de Awakens concluídos / tier atual
+      awakenLevel: 0,        // nível do Awaken (futuro; placeholder)
       // ---- materiais (fundação econômica — ver economy.js) ----
       gearMaterials: { common: 0, uncommon: 0 },   // promoções de raridade (futuro)
       awakenMaterials: { firstLight: 0 },          // First Light / Awakens (futuro)
@@ -199,6 +203,18 @@ G.state = {
     this.data.equipped = G.gear.reconcile(this.data.equipped);
     // garante os campos de materiais em saves antigos (inicializa novos com zero)
     if (G.economy) G.economy.reconcile(this.data);
+    // migração do Awaken (AWAKEN_V1): consolida o estado antigo
+    if (!Array.isArray(this.data.awakens)) this.data.awakens = [];
+    if (!this.data.awakens.length && Array.isArray(this.data.awakensUnlocked) && this.data.awakensUnlocked.length)
+      this.data.awakens = this.data.awakensUnlocked.slice();   // antigo -> canônico
+    this.data.awakensUnlocked = this.data.awakens;             // alias sincronizado
+    if (typeof this.data.awakenTier !== "number" || this.data.awakenTier < this.data.awakens.length)
+      this.data.awakenTier = this.data.awakens.length;
+    // dobra a essência legada no material canônico do Awaken (uma vez)
+    if (this.data.awakenEssence && this.data.awakenMaterials) {
+      this.data.awakenMaterials.firstLight = (this.data.awakenMaterials.firstLight || 0) + this.data.awakenEssence;
+      this.data.awakenEssence = 0;
+    }
     // deep merge das passivas: preserva níveis salvos, garante novas árvores/índices
     {
       const fresh = G.passives.freshSet();

@@ -289,16 +289,23 @@ G.data = {
     },
   },
 
-  // ---- Awaken definitions (permanent power unlocked at area 7+) ----
+  // ---- Awaken definitions (AWAKEN_V1) ----
+  // A ESTRUTURA dos requisitos é final; os NÚMEROS são PLACEHOLDERS (balanceamento
+  // pendente). area = nº da área (1-based). materials consome awakenMaterials.
   awakens: [
     {
       id: "first_light",
       name: "First Light",
+      tier: 1,
       lore: "In the astral hush, the light you carry stirs for the first time — and answers.",
-      areaIndex: 6,     // Area 7 = index 6 (The Hollow Cathedral)
-      level: 2351,
-      essence: 50,
-      lumens: 500000,
+      requirements: {
+        area: 9,                       // conclusão do Mapa 1 (Área 9)
+        level: 4051,                   // nível mínimo (início da Área 9)  [placeholder]
+        kills: 0,                      // kills acumuladas mínimas          [placeholder]
+        convergences: 8,               // convergences mínimas              [placeholder]
+        materials: { firstLight: 1 },  // consome awakenMaterials.firstLight [placeholder]
+      },
+      // infra de bônus (aplicado por G.awaken.applyTo) — magnitudes PLACEHOLDER
       bonus: { atkMult: 2.5, hpMult: 1.5, lumensBonus: 25 },
     },
   ],

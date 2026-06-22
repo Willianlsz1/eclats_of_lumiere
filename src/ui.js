@@ -240,7 +240,8 @@ G.ui = {
   // sidebar esquerda: lista compacta de awakens
   renderAwaken() {
     const d = G.state.data;
-    if (this.el["awaken-essence"]) this.el["awaken-essence"].textContent = G.util.fmt(d.awakenEssence || 0);
+    if (this.el["awaken-essence"])
+      this.el["awaken-essence"].textContent = G.util.fmt((d.awakenMaterials && d.awakenMaterials.firstLight) || 0);
     const wrap = this.el["awaken-list"];
     if (!wrap) return;
 
@@ -299,13 +300,12 @@ G.ui = {
       b.xpBonus  ? { label: "XP Bonus",  before: `${s.xpBonus.toFixed(0)}%`,            after: `${(s.xpBonus + b.xpBonus).toFixed(0)}%`,   active: unlocked } : null,
     ].filter(Boolean);
 
-    // checklist de requisitos
-    const reqs = [
-      { label: `Area ${a.areaIndex + 1}`,      met: (d.maxAreaUnlocked || 0) >= a.areaIndex },
-      { label: `Lv ${G.util.fmt(a.level)}`,    met: d.level >= a.level },
-      { label: `${a.essence} Essence`,          met: (d.awakenEssence || 0) >= a.essence },
-      { label: `${G.util.fmt(a.lumens)} ✦`,    met: (d.lumens || 0) >= a.lumens },
-    ];
+    // checklist de requisitos (AWAKEN_V1 — configurável: area/level/kills/conv/materiais)
+    const reqName = { area: "Area", level: "Lv", kills: "Kills", convergences: "Convergences" };
+    const reqs = G.awaken.requirements(a.id).map((r) => {
+      const base = r.key.indexOf("material:") === 0 ? "Awaken Mat" : (reqName[r.key] || r.key);
+      return { label: `${base} ${G.util.fmt(r.have)}/${G.util.fmt(r.need)}`, met: r.met };
+    });
 
     const stateClass = unlocked ? " is-done" : can ? " is-ready" : "";
     const action = unlocked
@@ -464,7 +464,7 @@ G.ui = {
     const lumPerKill = Math.ceil(G.data.mobHpAt(a.levelRange[0], a) * G.data.balance.goldRatio);
     const res = [`<li><span>Lumens</span><b>+${G.util.fmt(lumPerKill)}</b></li>`];
     res.push(`<li><span>XP</span><b>+${G.util.fmt(Math.ceil(G.data.balance.baseXp * a.levelRange[0]))}</b></li>`);
-    if (i >= 6) res.push(`<li><span>Awakening Essence · T1</span><b>${(G.data.balance.awakenDropChance * 100).toFixed(0)}% / kill</b></li>`);
+    if (i >= 5) res.push(`<li><span>Awaken Material</span><b>Mini Boss / Boss</b></li>`);
     this.el["wmap-info-res"].innerHTML = res.join("");
 
     // CTA: você está aqui / travado (mostra o nível) / viajar

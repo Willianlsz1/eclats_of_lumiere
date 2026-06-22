@@ -1,47 +1,84 @@
 // =============================================================
-// awaken.js — AWAKEN: 3ª fonte de poder (desbloqueia na Área 7+)
+// awaken.js — AWAKEN: evolução permanente / marcos de progressão
 // =============================================================
-// Cada Awaken é um PACOTE de bônus que você DESBLOQUEIA (uma vez) gastando
-// nível + Awakening Essence + Lumens. Uma vez aberto, os bônus são
-// PERMANENTES (injetados nas camadas de stat; sobrevivem à Convergence).
-// É o empurrão que cobre a reta final do Mapa 1, junto com gear + convergence.
+// Conforme docs/AWAKEN_V1.md. Apenas INFRAESTRUTURA — sem balanceamento.
+// Requisitos são CONFIGURÁVEIS (data.awakens[].requirements); os números são
+// placeholders. Cada Awaken encerra um capítulo (First Light = fim do Mapa 1).
+//
+// Estado persistente (state.js): awakens[] (ids concluídos), awakenTier (nº de
+// awakens), awakenLevel (futuro). Requisitos suportados: area, level, kills,
+// convergences e materials (consome awakenMaterials via economy.js).
 
 G.awaken = {
+  ALL() { return G.data.awakens; },
   def(id) { return G.data.awakens.find((a) => a.id === id); },
-  isUnlocked(id) { return (G.state.data.awakensUnlocked || []).indexOf(id) !== -1; },
 
-  // requisitos atendidos p/ desbloquear este Awaken?
-  canUnlock(id) {
-    const a = this.def(id);
+  // lista de awakens concluídos (canônico: data.awakens; alias legado: awakensUnlocked)
+  done() { return G.state.data.awakens || G.state.data.awakensUnlocked || []; },
+  isDone(id) { return this.done().indexOf(id) !== -1; },
+  isUnlocked(id) { return this.isDone(id); }, // compat (UI antiga)
+
+  // valor "alcançado" pelo jogador para cada chave de requisito
+  playerValue(key) {
     const d = G.state.data;
-    if (!a || this.isUnlocked(id)) return false;
-    return (d.maxAreaUnlocked || 0) >= a.areaIndex &&
-      d.level >= a.level &&
-      (d.awakenEssence || 0) >= a.essence &&
-      (d.lumens || 0) >= a.lumens;
+    switch (key) {
+      case "area": return (d.maxAreaUnlocked || 0) + 1;   // 1-based (área alcançada)
+      case "level": return d.level || 1;
+      case "kills": return d.totalKills || 0;             // acumulado (não reseta)
+      case "convergences": return d.convergences || 0;
+      default: return 0;
+    }
   },
 
-  unlock(id) {
-    if (!this.canUnlock(id)) return false;
+  // status detalhado dos requisitos (para a UI): [{ key, need, have, met }]
+  requirements(id) {
     const a = this.def(id);
-    const d = G.state.data;
-    d.awakenEssence -= a.essence;
-    d.lumens -= a.lumens;
-    if (!d.awakensUnlocked) d.awakensUnlocked = [];
-    d.awakensUnlocked.push(id);
+    if (!a || !a.requirements) return [];
+    const r = a.requirements;
+    const out = [];
+    for (const key of ["area", "level", "kills", "convergences"]) {
+      if (r[key] == null) continue;
+      const have = this.playerValue(key);
+      out.push({ key, need: r[key], have, met: have >= r[key] });
+    }
+    if (r.materials) {
+      for (const mk of Object.keys(r.materials)) {
+        const have = G.economy ? G.economy.getAwaken(mk) : 0;
+        out.push({ key: "material:" + mk, need: r.materials[mk], have, met: have >= r.materials[mk] });
+      }
+    }
+    return out;
+  },
+
+  meetsRequirements(id) { return this.requirements(id).every((r) => r.met); },
+  canAwaken(id) { return !!this.def(id) && !this.isDone(id) && this.meetsRequirements(id); },
+  canUnlock(id) { return this.canAwaken(id); }, // compat
+
+  // realiza o Awaken: consome materiais, marca concluído, sobe tier
+  awaken(id) {
+    if (!this.canAwaken(id)) return false;
+    const a = this.def(id), d = G.state.data;
+    const mats = (a.requirements && a.requirements.materials) || {};
+    for (const mk of Object.keys(mats)) if (G.economy) G.economy.addAwaken(mk, -mats[mk]);
+    if (!Array.isArray(d.awakens)) d.awakens = [];
+    d.awakens.push(id);
+    d.awakensUnlocked = d.awakens;                 // mantém o alias legado em sincronia
+    d.awakenTier = Math.max(d.awakenTier || 0, a.tier || d.awakens.length);
     G.state.invalidateStats();
     if (G.ui && G.ui.log) G.ui.log(`✦ Awakening: ${a.name} — the light stirs.`, "boss");
     if (G.ui && G.ui.renderAll) G.ui.renderAll();
     G.state.save();
     return true;
   },
+  unlock(id) { return this.awaken(id); }, // compat (UI chama G.awaken.unlock)
 
-  // injeta os bônus de TODOS os awakens desbloqueados nas camadas de stat.
-  // chamado por state.stats() — `layer(stat)` devolve {flat,pct,mult}.
+  // injeta os bônus de TODOS os awakens concluídos nas camadas de stat.
+  // (infra de bônus — magnitudes em data.awakens[].bonus são placeholders)
   applyTo(layer) {
     for (const a of G.data.awakens) {
-      if (!this.isUnlocked(a.id)) continue;
+      if (!this.isDone(a.id)) continue;
       const b = a.bonus;
+      if (!b) continue;
       if (b.atkMult) layer("atk").mult *= b.atkMult;
       if (b.hpMult) layer("hp").mult *= b.hpMult;
       if (b.critDmg) layer("critDmg").flat += b.critDmg;
