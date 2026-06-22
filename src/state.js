@@ -27,6 +27,11 @@ G.state = {
       highestLevel: 1,       // recorde de nível (não reseta na Convergence)
       awakenEssence: 0,      // material do Awaken (dropa na Área 7+)
       awakensUnlocked: [],   // ids dos Awakens desbloqueados (permanentes)
+      // contadores da RUN (resetam na Convergence) — alimentam a fórmula de
+      // Pontos = Área + Bosses + Nível + Kills (ver convergence.js)
+      runKills: 0,           // kills nesta run
+      runBosses: 0,          // bosses derrotados nesta run
+      runMaxAreaIndex: 0,    // maior sub-área alcançada nesta run
       passives: G.passives.freshSet(), // árvores Éclat/Vestige/Fracture (ver passives.js)
       equipped: G.gear.freshSet(), // 6 peças FIXAS (Nv.1, Comum) — ver gear.js
       lastSeen: Date.now(),  // p/ progresso offline
@@ -79,23 +84,32 @@ G.state = {
     // ---- camada Awaken (3ª fonte de poder; permanente) ----
     if (G.awaken) G.awaken.applyTo(layer);
 
-    // ---- passivas (compradas com Pontos de Convergence) ----
+    // ---- passivas (efeitos com alvo no motor de stats) ----
+    // Efeitos LIVE somam nas camadas correspondentes; magnitudes vêm de
+    // G.passives.UNIT (placeholders configuráveis). HP→Dano é aplicado depois
+    // (precisa do HP final). Demais efeitos (Boss/Elite Damage, materiais,
+    // convergence, etc.) são expostos por G.passives.effect() para sistemas
+    // futuros e não tocam os stats agora.
+    let passEff = null;
     if (G.passives) {
-      const P = G.passives;
-      layer("atk").mult *= P.dmgMult();        // árvore Éclat
-      layer("hp").mult *= P.hpMult();          // árvore Fracture
-      layer("crit").flat += P.critAddPts();    // alavanca Luminal Edge
-      layer("atkSpeed").mult *= P.apsMult();   // alavanca Fracture Pulse
-      // árvore Vestige: multiplica os bônus de loot (painel agora reflete o real)
-      const eco = P.ecoMult();
-      layer("lumensBonus").mult *= eco;
-      layer("xpBonus").mult *= eco;
+      passEff = G.passives.effects();
+      layer("atk").pct += passEff.atkPct || 0;             // Éclat: ATK %
+      layer("hp").pct += passEff.hpPct || 0;               // Éclat: HP %
+      layer("crit").flat += passEff.critRate || 0;         // Éclat: Crit Rate
+      layer("critDmg").flat += passEff.critDmg || 0;       // Éclat: Crit Damage
+      layer("lumensBonus").flat += passEff.lumensPct || 0; // Vestige: Lumens %
+      layer("xpBonus").flat += passEff.xpPct || 0;         // Vestige: XP %
     }
 
     const fin = (k) => {
       const x = layer(k);
       return x.flat * (1 + x.pct / 100) * x.mult;
     };
+
+    // HP → Dano (Éclat): injeta uma fração do HP final no ATK antes de finalizar.
+    if (passEff && passEff.hpToDamage) {
+      layer("atk").flat += fin("hp") * (passEff.hpToDamage / 100);
+    }
 
     this._statsCache = {
       atk: Math.round(fin("atk")),
@@ -183,7 +197,9 @@ G.state = {
       if (saved && typeof saved === "object") {
         for (const tree of Object.keys(fresh)) {
           if (Array.isArray(saved[tree]))
-            fresh[tree] = fresh[tree].map((_, i) => saved[tree][i] || 0);
+            // preserva os níveis salvos por índice, clampando ao novo teto do nó
+            // (a arquitetura mudou o significado dos nós; o investimento é mantido)
+            fresh[tree] = fresh[tree].map((_, i) => Math.min(saved[tree][i] || 0, G.passives.nodeMax(tree, i)));
         }
       }
       this.data.passives = fresh;

@@ -1,49 +1,124 @@
 // =============================================================
-// passives.js — Árvore-Mundo (3 árvores × 15 nós) — recuperada do jogo antigo
+// passives.js — Árvores de Passivas (Éclat · Vestige · Fracture)
 // =============================================================
-// Éclat (dano) · Vestige (economia) · Fracture (HP). 3 grupos de 5 por árvore;
-// maximizar um grupo libera o próximo. 3 MOTORES por árvore (×1.52/nível) +
-// ALAVANCAS (efeitos especiais: crit, atk speed, materiais). Moeda = Pontos de
-// Convergence. Liberada na 1ª Convergence. Custos/efeitos = do design antigo.
+// Arquitetura conforme docs/CONVERGENCE_FINAL.md. 3 árvores × 15 nós.
+// Cada nó declara um EFEITO (chave semântica). A MAGNITUDE de cada efeito é
+// um PLACEHOLDER configurável (ver UNIT) — o balanceamento final virá depois.
+//
+// Efeitos "LIVE" (atkPct/hpPct/critRate/critDmg/lumensPct/xpPct/hpToDamage) já
+// têm alvo no motor de stats (state.stats()). Os demais efeitos existem
+// estruturalmente e são expostos por effect(key) para os sistemas futuros
+// (materiais, promoção, elite, mini boss, awaken, convergence) consumirem —
+// hoje com magnitude placeholder 0 (sem impacto no jogo).
+//
+// O modelo de GATING (3 grupos de 5; maximizar o grupo libera o próximo) e o
+// modelo de CUSTO (unlockLadder × groupMult, evolução geométrica) são mantidos
+// do sistema anterior — são placeholders já existentes, não alteram a economia.
 
 G.passives = {
   TREES: ["eclat", "vestige", "fracture"],
   GROUP_SIZE: 5,
-  maxLevel: 12,
+  maxLevel: 12,             // teto PADRÃO de nós multi-nível (placeholder)
+
+  // ---- gating / custo (placeholders herdados — economia de pontos inalterada) ----
   unlockLadder: [100, 500, 2500, 12500, 62500],
   groupMult: [1, 10, 100],
   evoFactor: 0.3, evoRamp: 1.3,
-  groupAddPct: [0.05, 0.1, 0.2],
-  engineMult: 1.52,
-  engines: {
-    eclat: ["e_luminal_explosion", "e_oreinsof_touch", "e_shattered_light"],
-    vestige: ["v_eternal_vestige", "v_fractured_soul", "v_collector"],
-    fracture: ["f_void_collapse", "f_claimed_domination", "f_void_endurance"],
+
+  // ================= PLACEHOLDERS DE MAGNITUDE (balanceamento pendente) =========
+  // Magnitude por nível, por tipo de efeito. Valores são PLACEHOLDERS.
+  //   LIVE (têm alvo no motor de stats): magnitude token = 1 (visível/funcional).
+  //   NÃO-LIVE (sistemas ainda inexistentes): magnitude 0 (estrutura sem efeito).
+  PLACEHOLDER_PER_LEVEL: 1,
+  UNIT: {
+    // --- LIVE (Éclat / economia) ---
+    atkPct: 1, hpPct: 1, critRate: 1, critDmg: 1,   // +1 (% ou ponto) por nível — placeholder
+    lumensPct: 1, xpPct: 1,
+    hpToDamage: 0,        // converte % do HP em ATK — magnitude pendente de design
+    // --- NÃO-LIVE (aguardando sistemas/balanceamento) — magnitude 0 ---
+    bossDmg: 0, eliteDmg: 0, capstoneEclat: 0,
+    matCommonPct: 0, matUncommonPct: 0, matGeneralPct: 0, dropRate: 0,
+    matQuantity: 0, matPct: 0, capstoneVestige: 0,
+    convPointsPct: 0, convPointsMin: 0, awakenMatPct: 0, awakenReqReduction: 0,
+    eliteChance: 0, miniBossThreshold: 0, moreEnemies: 0, gearXp: 0,
+    upgradeCostReduction: 0, promotionCostReduction: 0,
+    convEfficiency: 0, awakenEfficiency: 0, capstoneFracture: 0,
+    _default: 0,
   },
-  levers: {
-    e_luminal_edge: "crit", e_void_piercing: "enemyPen",
-    f_fracture_pulse: "aps", f_void_awareness: "mobCap", f_weakened_void: "enemyReduce",
-    v_vestige_pull: "material",
-  },
-  lever: { critPerLevel: 0.04, apsPerLevel: 0.46, mobPerLevel: 0.5, materialPerLevel: 0.75, penPerLevel: 0.04, reducePerLevel: 0.04 },
-  // árvore: label, sub, classe de cor, lista [nome, chave-de-arte]
+  // efeitos que o motor de stats consome agora (para estilo/roteamento)
+  LIVE: ["atkPct", "hpPct", "critRate", "critDmg", "lumensPct", "xpPct"],
+  // efeito "primário" de cada árvore (usado só no resumo visual ×multiplicador)
+  PRIMARY: { eclat: "atkPct", vestige: "lumensPct", fracture: "convPointsPct" },
+
+  // ---- definição das árvores (15 nós cada): list[i] = [nome, effectKey] ----
   trees: {
-    eclat: { label: "Éclat", sub: "Combat · damage", cls: "t-eclat", stat: "damage", list: [
-      ["Radiant Strike", "e_radiant_strike"], ["Luminal Edge", "e_luminal_edge"], ["Éclat Surge", "e_eclat_surge"], ["Refraction", "e_refraction"], ["Crit Cascade", "e_crit_cascade"],
-      ["Shard Burst", "e_shard_burst"], ["Resonant Force", "e_resonant_force"], ["Momentum", "e_momentum"], ["Fracture Weakness", "e_fracture_weakness"], ["Execute", "e_execute"],
-      ["Overkill", "e_overkill"], ["Luminal Explosion", "e_luminal_explosion"], ["Or Ein Sof's Touch", "e_oreinsof_touch"], ["Shattered Light", "e_shattered_light"], ["Void Piercing", "e_void_piercing"],
-    ] },
-    vestige: { label: "Vestige", sub: "Economy · gains", cls: "t-vest", stat: "gains (Lumens & XP)", list: [
-      ["Lumen's Blessing", "v_lumens_blessing"], ["Wisdom of Ruins", "v_wisdom_ruins"], ["Remnant Harvest", "v_remnant_harvest"], ["Scavenger", "v_scavenger"], ["Echo of Greed", "v_echo_greed"],
-      ["Awakened Harvest", "v_awakened_harvest"], ["Hoarder", "v_hoarder"], ["Dreamwalker", "v_dreamwalker"], ["Beast Caller", "v_beast_caller"], ["Vestige Pull", "v_vestige_pull"],
-      ["Void Scavenger", "v_void_scavenger"], ["Eternal Vestige", "v_eternal_vestige"], ["Fractured Soul", "v_fractured_soul"], ["Luminal Cache", "v_luminal_cache"], ["The Collector", "v_collector"],
-    ] },
-    fracture: { label: "Fracture", sub: "Utility · HP", cls: "t-frac", stat: "HP", list: [
-      ["Fracture Pulse", "f_fracture_pulse"], ["Void Haste", "f_void_haste"], ["Fracture Sense", "f_fracture_sense"], ["Void Awareness", "f_void_awareness"], ["Last Light", "f_last_light"],
-      ["Weakened Void", "f_weakened_void"], ["Shard Disruption", "f_shard_disruption"], ["Nihel's Shadow", "f_nihels_shadow"], ["Éclat Attunement", "f_eclat_attunement"], ["The Fracture's Gift", "f_fractures_gift"],
-      ["Void Collapse", "f_void_collapse"], ["La Fracture's Echo", "f_fractures_echo"], ["Claimed Domination", "f_claimed_domination"], ["Nil's Embrace", "f_nils_embrace"], ["Void Endurance", "f_void_endurance"],
-    ] },
+    eclat: {
+      label: "Éclat", sub: "Combat & Vitality", cls: "t-eclat", stat: "power",
+      list: [
+        ["ATK %", "atkPct"], ["ATK %", "atkPct"], ["ATK %", "atkPct"],
+        ["Crit Rate", "critRate"], ["Crit Rate", "critRate"],
+        ["Crit Damage", "critDmg"],
+        ["Boss Damage", "bossDmg"], ["Elite Damage", "eliteDmg"], ["Boss Damage", "bossDmg"],
+        ["HP %", "hpPct"], ["HP %", "hpPct"], ["HP → Damage", "hpToDamage"],
+        ["ATK %", "atkPct"], ["Crit Damage", "critDmg"],
+        ["Hybrid Capstone", "capstoneEclat"],
+      ],
+    },
+    vestige: {
+      label: "Vestige", sub: "Economy & Farm", cls: "t-vest", stat: "gains",
+      list: [
+        ["Lumens %", "lumensPct"], ["Lumens %", "lumensPct"], ["Lumens %", "lumensPct"],
+        ["XP %", "xpPct"], ["XP %", "xpPct"], ["XP %", "xpPct"],
+        ["Material Common %", "matCommonPct"], ["Material Uncommon %", "matUncommonPct"],
+        ["General Materials %", "matGeneralPct"],
+        ["Drop Rate", "dropRate"], ["Drop Rate", "dropRate"],
+        ["Material Quantity", "matQuantity"],
+        ["Lumens %", "lumensPct"], ["Materials %", "matPct"],
+        ["Infinite Prosperity Capstone", "capstoneVestige"],
+      ],
+    },
+    fracture: {
+      label: "Fracture", sub: "Metaprogression & World Rules", cls: "t-frac", stat: "account",
+      list: [
+        ["Convergence Points %", "convPointsPct"], ["Convergence Points %", "convPointsPct"],
+        ["Guaranteed Min Points", "convPointsMin"],
+        ["Awaken Materials %", "awakenMatPct"], ["Awaken Materials %", "awakenMatPct"],
+        ["Awaken Requirement Reduction", "awakenReqReduction"],
+        ["Elite Chance", "eliteChance"], ["Lower Mini Boss Threshold", "miniBossThreshold"],
+        ["More Simultaneous Enemies", "moreEnemies"],
+        ["Gear XP", "gearXp"], ["Upgrade Cost Reduction", "upgradeCostReduction"],
+        ["Promotion Cost Reduction", "promotionCostReduction"],
+        ["Convergence Efficiency", "convEfficiency"], ["Awaken Efficiency", "awakenEfficiency"],
+        ["Hybrid Capstone", "capstoneFracture"],
+      ],
+    },
   },
+
+  // descrição (texto de UI) por efeito — sem números (magnitude é placeholder)
+  EFFECT_DESC: {
+    atkPct: "Increases your ATK.", hpPct: "Increases your HP.",
+    critRate: "Increases your critical chance.", critDmg: "Increases your critical damage.",
+    hpToDamage: "Converts part of your HP into ATK.",
+    bossDmg: "Increases damage dealt to Bosses.", eliteDmg: "Increases damage dealt to Elites.",
+    capstoneEclat: "Hybrid capstone — combined combat power.",
+    lumensPct: "Increases Lumens gained.", xpPct: "Increases XP gained.",
+    matCommonPct: "Increases Common material gains.", matUncommonPct: "Increases Uncommon material gains.",
+    matGeneralPct: "Increases all material gains.", dropRate: "Increases drop rate.",
+    matQuantity: "Increases the quantity of materials dropped.", matPct: "Increases material gains.",
+    capstoneVestige: "Infinite Prosperity — ultimate economy bonus.",
+    convPointsPct: "Increases Convergence Points earned.",
+    convPointsMin: "Guarantees a minimum of Convergence Points.",
+    awakenMatPct: "Increases Awaken material gains.",
+    awakenReqReduction: "Reduces Awaken requirements.",
+    eliteChance: "Increases the chance for Elites to appear.",
+    miniBossThreshold: "Lowers the kill threshold for Mini Bosses.",
+    moreEnemies: "More enemies appear at once.",
+    gearXp: "Grants XP toward Gear.", upgradeCostReduction: "Reduces Gear upgrade cost.",
+    promotionCostReduction: "Reduces rarity promotion cost.",
+    convEfficiency: "Improves Convergence efficiency.", awakenEfficiency: "Improves Awaken efficiency.",
+    capstoneFracture: "Hybrid capstone — combined account power.",
+  },
+
   // posição de cada nó (%x,%y) sobre a Árvore-Mundo: G1 base → G2 meio → G3 copa
   POSITIONS: [
     { x: 31, y: 70 }, { x: 41, y: 65 }, { x: 50, y: 63 }, { x: 61, y: 63 }, { x: 73, y: 66 },
@@ -51,24 +126,33 @@ G.passives = {
     { x: 35, y: 26 }, { x: 43, y: 20 }, { x: 50, y: 16 }, { x: 59, y: 18 }, { x: 69, y: 23 },
   ],
 
-  // ---- estado / custos / gating ----
+  // ---- estado / metadados de nó ----
   freshSet() { return { eclat: Array(15).fill(0), vestige: Array(15).fill(0), fracture: Array(15).fill(0) }; },
   groupOf(i) { return Math.floor(i / this.GROUP_SIZE); },
   posOf(i) { return i % this.GROUP_SIZE; },
   unlocked() { return (G.state.data.convergences || 0) >= 1; },
   level(tree, i) { const p = G.state.data.passives; return (p && p[tree] && p[tree][i]) || 0; },
+  effectOf(tree, i) { return this.trees[tree].list[i][1]; },
+  isCapstone(key) { return /^capstone/.test(key); },
+  // teto de nível POR NÓ: capstone = 1 (nó único); demais = maxLevel (placeholder)
+  nodeMax(tree, i) { return this.isCapstone(this.effectOf(tree, i)) ? 1 : this.maxLevel; },
+
+  // ---- custo / gating (placeholders herdados) ----
   unlockCost(i) { return this.unlockLadder[this.posOf(i)] * this.groupMult[this.groupOf(i)]; },
   nextCost(tree, i) {
     const lv = this.level(tree, i);
     if (lv === 0) return this.unlockCost(i);
     return Math.ceil(this.unlockCost(i) * this.evoFactor * Math.pow(this.evoRamp, lv - 1));
   },
-  isMax(tree, i) { return this.level(tree, i) >= this.maxLevel; },
+  isMax(tree, i) { return this.level(tree, i) >= this.nodeMax(tree, i); },
   groupUnlocked(tree, g) {
     if (g === 0) return true;
-    const arr = G.state.data.passives?.[tree];
+    const arr = G.state.data.passives && G.state.data.passives[tree];
     if (!arr) return false;
-    for (let p = 0; p < this.GROUP_SIZE; p++) if (arr[(g - 1) * this.GROUP_SIZE + p] < this.maxLevel) return false;
+    for (let p = 0; p < this.GROUP_SIZE; p++) {
+      const idx = (g - 1) * this.GROUP_SIZE + p;
+      if (arr[idx] < this.nodeMax(tree, idx)) return false;
+    }
     return true;
   },
   canBuy(tree, i) {
@@ -84,36 +168,41 @@ G.passives = {
     return true;
   },
 
-  // ---- efeitos ----
-  isEngine(tree, art) { return this.engines[tree].indexOf(art) !== -1; },
-  leverOf(art) { return this.levers[art]; },
-  // multiplicador primário de uma árvore (default % aditivo × motores compostos)
-  treeMult(tree) {
-    const arr = G.state.data.passives[tree];
-    let add = 0, eng = 1;
-    this.trees[tree].list.forEach((entry, i) => {
-      const art = entry[1], lv = arr[i];
-      if (!lv || this.levers[art]) return;
-      if (this.isEngine(tree, art)) eng *= Math.pow(this.engineMult, lv);
-      else add += this.groupAddPct[this.groupOf(i)] * lv;
-    });
-    return (1 + add) * eng;
+  // ================= EFEITOS =================
+  unit(key) { return this.UNIT[key] != null ? this.UNIT[key] : this.UNIT._default; },
+  // soma de TODOS os efeitos investidos: { effectKey: magnitudeTotal } (placeholder)
+  effects() {
+    const out = {};
+    for (const tree of this.TREES) {
+      const list = this.trees[tree].list;
+      for (let i = 0; i < list.length; i++) {
+        const lv = this.level(tree, i);
+        if (!lv) continue;
+        const key = list[i][1];
+        out[key] = (out[key] || 0) + lv * this.unit(key);
+      }
+    }
+    return out;
   },
-  dmgMult() { return this.treeMult("eclat"); },
-  hpMult() { return this.treeMult("fracture"); },
-  ecoMult() { return this.treeMult("vestige"); },
-  leverLevel(art) {
-    for (const t of this.TREES) { const idx = this.trees[t].list.findIndex((e) => e[1] === art); if (idx >= 0) return G.state.data.passives[t][idx]; }
-    return 0;
+  effect(key) { return this.effects()[key] || 0; },
+
+  // materiais de Awaken (consumido por combat.js no drop de Essence) — placeholder
+  materialsMult() { return 1 + this.effect("awakenMatPct") / 100; },
+
+  // ---- helpers de UI (estilo) ----
+  // role-engine = capstone (visual de "ápice"); role-lever = efeito especial não-LIVE
+  isEngine(tree, key) { return this.isCapstone(key); },
+  leverOf(key) {
+    if (this.isCapstone(key)) return null;
+    return this.LIVE.indexOf(key) === -1 ? key : null; // não-LIVE → estilo "lever"
   },
-  critAddPts() { return this.leverLevel("e_luminal_edge") * this.lever.critPerLevel * 100; },
-  apsMult() { return 1 + this.leverLevel("f_fracture_pulse") * this.lever.apsPerLevel; },
-  materialsMult() { return 1 + Math.log10(1 + this.leverLevel("v_vestige_pull") * this.lever.materialPerLevel); },
+  // multiplicador representativo da árvore (apenas exibição do resumo)
+  treeMult(tree) { return 1 + this.effect(this.PRIMARY[tree]) / 100; },
 
   treeProgress(tree) {
     const arr = G.state.data.passives[tree];
     let u = 0, m = 0;
-    for (const lv of arr) { if (lv > 0) u++; if (lv >= this.maxLevel) m++; }
+    for (let i = 0; i < arr.length; i++) { if (arr[i] > 0) u++; if (arr[i] >= this.nodeMax(tree, i)) m++; }
     return { unlocked: u, maxed: m, total: arr.length };
   },
 };

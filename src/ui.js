@@ -215,32 +215,26 @@ G.ui = {
       .filter(Boolean).join(" ");
     const m = `assets/passives/${tree}/${key}.webp`;
     const mc = `-webkit-mask-image:url('${m}');mask-image:url('${m}')`;
-    const lvlText = maxed ? "✦" : (level > 0 ? `${level}/${P.maxLevel}` : "");
+    const nmax = P.nodeMax(tree, i);
+    const lvlText = maxed ? "✦" : (level > 0 ? `${level}/${nmax}` : "");
     const foot = maxed ? `<div class="pv-tip-foot max">Max Level</div>`
       : locked ? `<div class="pv-tip-foot locked">Locked — max the tier below</div>`
       : `<div class="pv-tip-foot cost">${level === 0 ? "Unlock" : "Upgrade"} · ${G.util.fmt(P.nextCost(tree, i))} pts</div>`;
-    return `<button class="${cls}" data-i="${i}" style="left:${pos.x}%;top:${pos.y}%;--p:${(level / P.maxLevel).toFixed(3)}">
+    return `<button class="${cls}" data-i="${i}" style="left:${pos.x}%;top:${pos.y}%;--p:${(level / nmax).toFixed(3)}">
       <span class="pv-disc"><span class="pv-icon" style="${mc}"></span><i class="pv-ring"></i></span>
       <span class="pv-node-name">${name}</span>
       <span class="pv-node-lvl">${lvlText}</span>
       <div class="pv-tip">
         <div class="pv-tip-head"><span class="pv-tip-icon"><span class="pv-icon" style="${mc}"></span></span>
           <div class="pv-tip-htext"><div class="pv-tip-name">${name} <span class="pv-tip-tag">Passive</span></div>
-            <div class="pv-tip-lvl">Level ${level}/${P.maxLevel}</div></div></div>
+            <div class="pv-tip-lvl">Level ${level}/${nmax}</div></div></div>
         <p class="pv-tip-eff">${this._pvEffect(tree, i, level)}</p>${foot}
       </div>
     </button>`;
   },
-  _pvEffect(tree, i, level) {
-    const P = G.passives, stat = P.trees[tree].stat, key = P.trees[tree].list[i][1];
-    const lev = P.leverOf(key);
-    const T = { crit: "Increases your critical chance.", aps: "Increases your attack speed.",
-      mobCap: "More enemies appear at once.", material: "Increases the materials you find.",
-      enemyPen: "Your hits ignore part of enemy defense.", enemyReduce: "Weakens enemy defense." };
-    if (lev) return T[lev] || "A special effect.";
-    if (P.isEngine(tree, key)) return `Multiplies your ${stat}, compounding every level — the strongest growth in the tree.`;
-    const pct = P.groupAddPct[P.groupOf(i)] * 100;
-    return level > 0 ? `Increases your ${stat} by ${G.util.fmt(level * pct)}%.` : `Increases your ${stat} by ${pct}% per level.`;
+  _pvEffect(tree, i) {
+    const P = G.passives, key = P.trees[tree].list[i][1];
+    return (P.EFFECT_DESC && P.EFFECT_DESC[key]) || "Effect pending balancing.";
   },
 
   // sidebar esquerda: lista compacta de awakens

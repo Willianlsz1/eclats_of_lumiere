@@ -165,10 +165,16 @@ G.combat = {
   // ----- inimigo morreu: recompensas, cura, loot, próximo -----
   onKill() {
     const e = this.enemy;
-    const s = G.state.stats(); // ecoMult já embutido em lumensBonus/xpBonus via state.stats()
+    const s = G.state.stats(); // bônus de passiva já embutidos em lumensBonus/xpBonus
     const lumens = Math.ceil(e.lumens * (1 + s.lumensBonus / 100));
     G.state.data.lumens += lumens;
     G.state.data.xp += Math.round(e.xp * (1 + s.xpBonus / 100));
+
+    // contadores da run (alimentam a fórmula de Pontos de Convergence)
+    const d = G.state.data;
+    d.runKills = (d.runKills || 0) + 1;
+    if (e.isBoss) d.runBosses = (d.runBosses || 0) + 1;
+    if ((d.runMaxAreaIndex || 0) < d.areaIndex) d.runMaxAreaIndex = d.areaIndex;
 
     if (G.ui && G.ui.log)
       G.ui.log(
