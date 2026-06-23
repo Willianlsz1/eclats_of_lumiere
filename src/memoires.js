@@ -25,7 +25,21 @@ G.memoires = {
   },
 
   // ids da Era I, em ordem canônica
-  all() { return ["premierMatin", "desRires", "deLaMarche"]; },
+  // definição CENTRALIZADA das Eras (generalizado p/ I..V; só a Era I existe hoje).
+  // Evita lógica hardcoded espalhada — Eras futuras entram aqui.
+  ERAS: {
+    1: ["premierMatin", "desRires", "deLaMarche"],
+    // 2: [...], 3: [...], 4: [...], 5: [...]  ← Mapas/Eras seguintes
+  },
+
+  // todos os ids (achatado das Eras, em ordem)
+  all() {
+    const out = [];
+    for (const era of Object.keys(this.ERAS)) for (const id of this.ERAS[era]) out.push(id);
+    return out;
+  },
+  eraOf(id) { return (this.defs[id] && this.defs[id].era) || null; },
+  eraIds(era) { return this.ERAS[era] || []; },
 
   // estrutura inicial p/ fresh()/reconcile()
   freshSet() {
@@ -119,6 +133,20 @@ G.memoires = {
     if (G.ui && G.ui.renderMemoires) G.ui.renderMemoires();
     if (G.ui && G.ui.renderResources) G.ui.renderResources();
     return true;
+  },
+
+  // ---- Era Restaurada (CP-2E): estado DERIVADO (sem campo novo no save) ----
+  // uma Mémoire está "completa" quando está no nível máximo (implica restaurada).
+  // progresso da Era: { total, completed }.
+  eraProgress(era) {
+    const ids = this.eraIds(era);
+    const completed = ids.filter((id) => this.get(id).level >= this.MAX_LEVEL).length;
+    return { total: ids.length, completed };
+  },
+  // a Era está restaurada quando TODAS as suas Mémoires estão no nível máximo.
+  isEraRestored(era) {
+    const p = this.eraProgress(era);
+    return p.total > 0 && p.completed === p.total;
   },
 
   // ---- tabela de descoberta (Era I) — chances PLACEHOLDER ----

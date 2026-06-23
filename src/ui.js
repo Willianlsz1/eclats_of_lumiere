@@ -245,7 +245,8 @@ G.ui = {
   renderMemoires() {
     const wrap = this.el["memoires-list"];
     if (!wrap || !G.memoires) return;
-    wrap.innerHTML = G.memoires.all().map((id) => {
+    const ROMAN = { 1: "I", 2: "II", 3: "III", 4: "IV", 5: "V" };
+    const memoireLi = (id) => {
       const m = G.memoires.get(id);
       if (m.state === "notFound")
         return `<li class="codex-memoire is-notFound" style="opacity:.45">???</li>`;
@@ -261,7 +262,16 @@ G.ui = {
       return `<li class="codex-memoire is-${m.state}">
         <b>${m.name}</b>${lvl} · <span class="codex-state">${stLabel}</span>${btn}
       </li>`;
-    }).join("");
+    };
+    let html = "";
+    for (const era of Object.keys(G.memoires.ERAS)) {
+      const p = G.memoires.eraProgress(+era);
+      const done = G.memoires.isEraRestored(+era);
+      const hdr = done ? `Era ${ROMAN[era]} Restaurada` : `Era ${ROMAN[era]} — ${p.completed} / ${p.total}`;
+      html += `<li class="codex-era${done ? " is-done" : ""}" style="margin-top:6px;opacity:.85"><b>${hdr}</b></li>`;
+      for (const id of G.memoires.eraIds(+era)) html += memoireLi(id);
+    }
+    wrap.innerHTML = html;
     wrap.querySelectorAll("[data-restore]").forEach((b) => {
       b.addEventListener("click", () => this.doMemoireRestore(b.dataset.restore));
     });
