@@ -1,5 +1,12 @@
 # Éclats of Lumière — Constituição do Projeto (Versão Consolidada)
 
+> ⚠️ **[SUPERADA POR `CANON_V2.md`]** — Este documento descrevia o Continente 1
+> como tendo **9 áreas / Boss Final na Área 9**. Isso ficou obsoleto: o Continente 1
+> agora tem **20 áreas**, organizadas em **2 mapas** (Mapa 1 = 9 áreas, Mapa 2 =
+> 11 áreas / Cavernes Luminis). Para a estrutura e as regras vigentes, consulte
+> **`docs/CANON_V2.md`** — em caso de conflito, **CANON_V2 prevalece**. O restante
+> deste arquivo é mantido por valor histórico/filosófico.
+
 > Documento canônico de design. Define a visão, a filosofia e as regras dos
 > sistemas do jogo. Em caso de conflito entre código e este documento, este
 > documento é a intenção; o código deve convergir para ele.
