@@ -271,6 +271,17 @@ G.ui = {
       html += `<li class="codex-era${done ? " is-done" : ""}" style="margin-top:6px;opacity:.85"><b>${hdr}</b></li>`;
       for (const id of G.memoires.eraIds(+era)) html += memoireLi(id);
     }
+    // Ascension I (CP-3E): status + botão quando todos os requisitos estão prontos
+    if (G.ascension) {
+      const done = G.ascension.count() >= 1;
+      const reqs = G.ascension.requirements()
+        .map((r) => `${r.met ? "✓" : "✗"} ${r.label}`).join(" · ");
+      const btn = G.ascension.canAscend()
+        ? ` <button class="gear-levelup" data-ascend="1">Ascend → Illuminate</button>` : "";
+      html += `<li class="codex-ascension" style="margin-top:10px;border-top:1px solid rgba(255,255,255,.1);padding-top:8px">
+        <b>Ascension I — ${done ? "Illuminate ✓" : "Seeker"}</b><br><span style="opacity:.7;font-size:.9em">${reqs}</span>${btn}
+      </li>`;
+    }
     wrap.innerHTML = html;
     wrap.querySelectorAll("[data-restore]").forEach((b) => {
       b.addEventListener("click", () => this.doMemoireRestore(b.dataset.restore));
@@ -278,6 +289,18 @@ G.ui = {
     wrap.querySelectorAll("[data-upgrade]").forEach((b) => {
       b.addEventListener("click", () => this.doMemoireUpgrade(b.dataset.upgrade));
     });
+    wrap.querySelectorAll("[data-ascend]").forEach((b) => {
+      b.addEventListener("click", () => this.doAscend());
+    });
+  },
+
+  doAscend() {
+    if (G.ascension && G.ascension.ascend()) {
+      this.log(`✦ Ascension I complete — you are now ${G.ascension.rank()}.`, "boss");
+    } else {
+      this.log("Cannot ascend — requirements not met.", "bad");
+    }
+    this.renderMemoires();
   },
 
   doMemoireRestore(id) {
@@ -593,10 +616,10 @@ G.ui = {
   },
 
   currentTier() {
-    const lvl = G.state.data.level;
-    let t = G.data.tiers[0];
-    for (const tier of G.data.tiers) if (lvl >= tier.level) t = tier;
-    return t;
+    // rank por ASCENSION (CP-3E) — substitui o rank por nível. data.tiers reusado
+    // como escada de nomes, indexado pelo nº de ascensions (0 = Seeker …).
+    const a = G.ascension ? G.ascension.count() : 0;
+    return G.data.tiers[G.util.clamp(a, 0, G.data.tiers.length - 1)];
   },
 
   renderHero() {

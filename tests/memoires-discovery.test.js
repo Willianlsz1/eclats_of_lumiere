@@ -19,6 +19,9 @@ for (const f of ["util", "data", "gear", "passives", "awaken", "state", "economy
 let failed = 0;
 function ok(c, m) { console.log((c ? "PASS" : "FAIL") + " — " + m); if (!c) failed++; }
 const IDS = ["premierMatin", "desRires", "deLaMarche"];
+// CP-3D ligou as chances de produção (0.02). Este teste valida o MECANISMO de
+// descoberta com chances controladas — zera a tabela para asserts determinísticos.
+IDS.forEach((id) => { G.memoires.discoveryTable[id].chance = 0; });
 
 // 1) estado inicial
 store = {}; G.state.data = null; G.state.load();

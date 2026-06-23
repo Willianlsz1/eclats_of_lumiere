@@ -258,10 +258,11 @@ G.data = {
       boss: { name: "The Heartroot Mourner", sprite: "🩸", img: "assets/enemies/heartroot_mourner.png" },
     },
     {
-      // Área 9 — The Hollow Sanctum: o coração da floresta, clímax do Mapa 1.
+      // Área 9 — The Hollow Sanctum: o GUARDIÃO que destrava o Awaken (First Light).
+      // (Boss Final do Continente 1 está na Área 20 — ver CONTINENT1_CANON.)
       id: 9,
       name: "The Hollow Sanctum",
-      blurb: "The heart of the wood — the climax of the Dreaming, where the Gilded Hollow waits in the hush.",
+      blurb: "The heart of the wood, where the Guardian keeps the gate before the first light.",
       img: "assets/areas/hollow_sanctum.png",
       levelRange: [4051, 5000],
       hp: [220000000000, 350000000000],
@@ -270,9 +271,9 @@ G.data = {
         { name: "Hollowed Acolyte", sprite: "⛪", img: "assets/enemies/hollowed_acolyte.png" },     // reaproveitado (Á7)
         { name: "Thornlight Stalker", sprite: "🌵", img: "assets/enemies/thornlight_stalker.png" }, // reaproveitado (Á6)
       ],
-      // Área 9: Mini Boss ALEATÓRIO (sorteado entre os Mini Bosses das áreas anteriores).
-      miniBossRandom: true,
-      boss: { name: "The Gilded Hollow", sprite: "👁", img: "assets/enemies/gilded_hollow.png" },
+      miniBoss: { name: "Sanctum Warden", sprite: "🗝", img: "assets/enemies/sanctum_warden.png" }, // placeholder
+      // Guardião da Área 9: derrotá-lo destrava o Awaken (First Light).
+      boss: { name: "The Guardian", sprite: "🛡", img: "assets/enemies/the_guardian.png" }, // Guardião (placeholder)
     },
   ],
 
@@ -400,6 +401,8 @@ G.data = {
     bossRespawnKillsRequired: 100, // kills até o Boss reaparecer (no cap)  [PLACEHOLDER]
     goldRatio: 0.25,      // gold-base por kill = goldRatio × vida do mob (âncora ao HP)
     baseXp: 10,           // xp por kill = baseXp × nível do mob
+    // Éclats por kill de Mini Boss/Boss (CP-3C) — PLACEHOLDER (Fase 3 calibra).
+    eclatsPerMiniBoss: 1, eclatsPerBoss: 1,
     dropChance: 0.35,     // chance de drop por kill
     respawnDelay: 1.0,    // segundos de espera entre matar um mob e o próximo aparecer
     // ---- level-up de gear: custo GEOMÉTRICO ----
@@ -420,3 +423,34 @@ G.data = {
     awakenDropChance: 0.02,
   },
 };
+
+// ---- Parte II do Continente 1 (Áreas 10–20 = Cavernes Luminis) — CP-3A ----
+// PLACEHOLDERS: nomes/faixas de nível/HP provisórios (a Fase 3 calibra). Estrutura
+// segue o modelo por-área (mobHpAt). O BOSS FINAL do Continente 1 fica na Área 20.
+(function () {
+  const reuse = G.data.areas[8].enemies; // reaproveita o pool tardio (cumulativo)
+  // [nívelIni, nívelFim, hpIni, hpFim] por área — placeholders
+  const bands = [
+    [5001, 6000, 5e11, 1e12], [6001, 7000, 2e12, 5e12], [7001, 8000, 1e13, 3e13],
+    [8001, 9000, 6e13, 1.5e14], [9001, 10000, 3e14, 8e14], [10001, 11000, 2e15, 5e15],
+    [11001, 12000, 1e16, 3e16], [12001, 13000, 6e16, 1.5e17], [13001, 14000, 3e17, 8e17],
+    [14001, 15000, 2e18, 5e18], [15001, 16000, 1e19, 3e19],
+  ];
+  bands.forEach((b, i) => {
+    const id = 10 + i, last = id === 20;
+    G.data.areas.push({
+      id,
+      name: `Cavernes Luminis — Reach ${id}`,
+      blurb: "",
+      img: `assets/areas/cavernes_${id}.png`,
+      levelRange: [b[0], b[1]],
+      hp: [b[2], b[3]],
+      enemies: reuse,
+      miniBoss: last ? undefined : { name: `Deep Sentinel ${id}`, sprite: "🔱", img: `assets/enemies/deep_sentinel_${id}.png` },
+      miniBossRandom: last ? true : undefined,
+      boss: last
+        ? { name: "The Gilded Hollow", sprite: "👁", img: "assets/enemies/gilded_hollow.png" } // BOSS FINAL (Área 20)
+        : { name: `Hollow Warden ${id}`, sprite: "🗿", img: `assets/enemies/hollow_warden_${id}.png` },
+    });
+  });
+})();

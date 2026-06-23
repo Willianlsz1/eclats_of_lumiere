@@ -268,10 +268,17 @@ G.combat = {
     // Alimenta gearMaterials/awakenMaterials; passivas Vestige/Fracture modulam.
     if (G.economy) G.economy.rollDrops(e);
 
-    // descoberta de Mémoires (CP-2B — infra; chances placeholder, sem outra consequência)
+    // Éclats por Mini Boss/Boss (CP-3C — fonte da moeda das Mémoires; placeholder)
+    if (G.economy) {
+      if (e.isBoss) G.economy.addEclats(G.data.balance.eclatsPerBoss);
+      else if (e.isMiniBoss) G.economy.addEclats(G.data.balance.eclatsPerMiniBoss);
+    }
+
+    // descoberta de Mémoires (CP-2B roll + CP-3D pity por área)
     if (G.memoires) {
       const found = G.memoires.rollDiscovery({ enemy: e });
       if (found) G.memoires.find(found);
+      G.memoires.applyPity((G.state.data.areaIndex || 0) + 1); // garante por área (1-based)
     }
 
     // fôlego: cura uma fração do HP a cada kill

@@ -35,8 +35,10 @@ let okMid = true;
 for (let i = 1; i <= 7; i++) okMid = okMid && !!A[i].miniBoss && !!A[i].boss;
 ok(okMid, "Áreas 2-8 têm Mini Boss próprio + Boss");
 
-// 3) Área 9: Mini Boss aleatório + Boss Final
-ok(A[8].miniBossRandom === true && !!A[8].boss, "Área 9 tem Mini Boss aleatório + Boss Final");
+// 3) Continente 1 = 20 áreas; Área 9 = Guardião; Área 20 = Mini Boss aleatório + Boss Final
+ok(A.length === 20, "Continente 1 tem 20 áreas (CP-3A)");
+ok(A[8].boss.name === "The Guardian", "Área 9 = Guardião (gate do Awaken)");
+ok(A[19].miniBossRandom === true && A[19].boss.name === "The Gilded Hollow", "Área 20 = Mini Boss aleatório + Boss Final");
 
 // 4) Elite só fora da Área 1
 ok(C.areaHasElite(A[0]) === false && C.areaHasElite(A[1]) === true, "Elite: ausente na Área 1, presente da Área 2+");
@@ -95,11 +97,11 @@ for (let i = 0; i < 3; i++) { G.combat.enemy = { name: "m", level: 1, maxHp: 1, 
 ok(G.state.data.bossOnCooldown === false, "após bossRespawnKillsRequired kills, Boss volta a aparecer");
 G.data.balance.bossRespawnKillsRequired = 100;
 
-// 10) Mini Boss aleatório da Área 9 sai do pool das áreas anteriores
+// 10) Mini Boss aleatório da Área 20 sai do pool das áreas anteriores
 const names = G.data.areas.filter((a) => a.miniBoss).map((a) => a.miniBoss.name);
 let allFromPool = true;
-for (let i = 0; i < 30; i++) { const mb = C.pickMiniBoss(A[8], Math.random); allFromPool = allFromPool && names.indexOf(mb.name) !== -1; }
-ok(allFromPool, "Área 9: Mini Boss aleatório vem do pool das áreas anteriores");
+for (let i = 0; i < 30; i++) { const mb = C.pickMiniBoss(A[19], Math.random); allFromPool = allFromPool && names.indexOf(mb.name) !== -1; }
+ok(allFromPool, "Área 20: Mini Boss aleatório vem do pool das áreas anteriores");
 
 // 11) passivas Fracture: eliteChance soma, miniBossThreshold reduz
 G.passives.UNIT.eliteChance = 10; G.state.data.passives.fracture[6] = 1; // "Elite Chance" (set direto)

@@ -31,6 +31,7 @@ G.state = {
       awakens: [],           // ids de Awakens concluídos (canônico — AWAKEN_V1)
       awakenTier: 0,         // nº de Awakens concluídos / tier atual
       awakenLevel: 0,        // nível do Awaken (futuro; placeholder)
+      ascensions: 0,         // nº de Ascensions realizadas (rank da Ordre — CP-3E)
       // ---- materiais (fundação econômica — ver economy.js) ----
       gearMaterials: { common: 0, uncommon: 0 },   // promoções de raridade (futuro)
       awakenMaterials: { firstLight: 0 },          // First Light / Awakens (futuro)

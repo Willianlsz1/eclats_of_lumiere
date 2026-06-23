@@ -149,12 +149,27 @@ G.memoires = {
     return p.total > 0 && p.completed === p.total;
   },
 
-  // ---- tabela de descoberta (Era I) — chances PLACEHOLDER ----
+  // ---- tabela de descoberta (Era I) — chances PLACEHOLDER (CP-3D ligou >0) ----
   // estrutura configurável; nenhum número é final (balanceamento na Fase 3).
   discoveryTable: {
-    premierMatin: { chance: 0 }, // [PLACEHOLDER]
-    desRires:     { chance: 0 }, // [PLACEHOLDER]
-    deLaMarche:   { chance: 0 }, // [PLACEHOLDER]
+    premierMatin: { chance: 0.02 }, // [PLACEHOLDER]
+    desRires:     { chance: 0.02 }, // [PLACEHOLDER]
+    deLaMarche:   { chance: 0.02 }, // [PLACEHOLDER]
+  },
+
+  // proteção anti-azar (CP-3D / CONTINENT1_CANON): área (1-based) até a qual cada
+  // Mémoire é GARANTIDA caso ainda não encontrada.
+  PITY: { premierMatin: 8, desRires: 14, deLaMarche: 18 },
+  // garante (find) as Mémoires vencidas pelo pity na área atual. Devolve os ids.
+  applyPity(areaNumber) {
+    const out = [];
+    for (const id of this.all()) {
+      const limit = this.PITY[id];
+      if (limit != null && areaNumber >= limit && this.get(id).state === "notFound") {
+        if (this.find(id)) out.push(id);
+      }
+    }
+    return out;
   },
 
   // ---- roll de descoberta (PURO: não muta; devolve o id candidato ou null) ----
