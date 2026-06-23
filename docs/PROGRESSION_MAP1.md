@@ -2,6 +2,11 @@
 
 > Documento de design — define a jornada do jogador no Mapa 1. **Nomes são
 > placeholders a definir depois.** Sem balanceamento numérico final.
+>
+> ⚠️ **Reenquadrado por `CONTINENT1_CANON` (CP-X):** "Mapa 1" = **Parte I (Áreas
+> 1–9) do Continente 1** (20 áreas no total). As 9 áreas abaixo continuam válidas
+> como Parte I; a Parte II (10–20), a proteção anti-azar das Mémoires, o Boss Final
+> na Área 20 e a Ascension I (exige Era I Restaurada) estão em `CONTINENT1_CANON`.
 
 ## Objetivo
 

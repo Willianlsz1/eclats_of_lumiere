@@ -75,8 +75,13 @@ Uma Ascension exige:
 
 - **Awaken** concluído
 - **Boss final** derrotado
-- **Mémoires** do mapa encontradas
+- **Era restaurada** (as Mémoires da Era no nível máximo)
 - Outros requisitos específicos do mapa
+
+> 🔄 **Atualizado por `CONTINENT1_CANON` (CP-X):** no Continente 1, a **Ascension I**
+> exige **Awaken (First Light) + Boss Final (Área 20) + Era I Restaurada (3 × Lv10)**
+> → rank **Illuminate**. O requisito antigo "Mémoires encontradas" passa a ser
+> **Era Restaurada** (gate mais forte).
 
 ---
 

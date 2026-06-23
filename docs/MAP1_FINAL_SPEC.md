@@ -1,9 +1,16 @@
 # MAP 1 — ESPECIFICAÇÃO FINAL (base única para a Fase 3)
 
-> Consolida **todas as decisões canônicas do Mapa 1**. Não inventa sistemas, não
-> altera números, não expande para Mapas 2–5 / Eras II–V. É a **fonte única** para
-> a Fase 3 (balanceamento). Todos os números marcados **[PH]** são placeholders já
-> existentes (não finais) — a Fase 3 os calibra.
+> ⚠️ **Reenquadrado por `CONTINENT1_CANON` (CP-X):** "Mapa 1" passa a ser a
+> **Parte I (Áreas 1–9) do Continente 1** (total 20 áreas; Parte II 10–20 é canon
+> não implementada). As **9 áreas abaixo continuam válidas como Parte I** e são a
+> base da Fase 3. Mudanças do CP-X: **Awaken na Área 9 via Guardião**, **Boss Final
+> move para a Área 20**, **proteção anti-azar das Mémoires**, e **Ascension I exige
+> Era I Restaurada**. Ver `CONTINENT1_CANON` para a moldura completa.
+>
+> Consolida **todas as decisões canônicas do Continente 1 / Parte I**. Não inventa
+> sistemas, não altera números. É a **fonte única** para a Fase 3 (balanceamento).
+> Todos os números marcados **[PH]** são placeholders já existentes — a Fase 3 os
+> calibra.
 >
 > **Legenda de status de implementação:**
 > ✅ no código · 🟡 infra no código, magnitude PH · 📄 decisão canônica, **não
@@ -145,8 +152,9 @@ Marco **institucional/narrativo** que **encerra o Mapa 1**. **Não implementado*
 decisão canônica (`ASCENSION_SYSTEM_V1` + `CANONICAL_ALIGNMENT_AUDIT_V1`).
 
 - **Rank concedido:** **Seeker → Illuminate**.
-- **Requisitos:** **Awaken (First Light) concluído** + **Boss Final derrotado** +
-  **3 Mémoires da Era I encontradas** + (outros requisitos específicos do mapa).
+- **Requisitos (CP-X):** **Awaken (First Light)** + **Boss Final (Área 20)** +
+  **Era I Restaurada** (as 3 Mémoires no **Lv10**). *(Atualiza o antigo "3 Mémoires
+  encontradas" → Era I Restaurada — ver `CONTINENT1_CANON` §7.)*
 - **Recompensas (4):** (1) **Rank** (Illuminate); (2) **Transformação visual**
   permanente; (3) **Compreensão e contextualização das 3 Mémoires da Era I** já
   encontradas durante a jornada *(a Ascension NÃO concede Mémoires — ver
@@ -175,10 +183,12 @@ decisão canônica (`ASCENSION_SYSTEM_V1` + `CANONICAL_ALIGNMENT_AUDIT_V1`).
 
 ## 9. Mémoires da Era I 📄
 
-**3 Mémoires** (Era I = Mapa 1). São **encontradas durante a jornada** (drop, uma
-vez cada — de qualquer tipo de inimigo, chance maior em conteúdo mais difícil) e
-depois **restauradas/evoluídas com Éclats**. **Não implementadas.** Tema: **o
-amanhecer de Lumière**. Spec completa: `MEMOIRES_V1`.
+**3 Mémoires** (Era I = Continente 1). São **encontradas durante a jornada** (drop,
+uma vez cada — de qualquer área/tipo de inimigo, chance maior em conteúdo mais
+difícil) e depois **restauradas/evoluídas com Éclats**. **Proteção anti-azar
+(CP-X):** M1 garantida até **Área 8**, M2 até **Área 14**, M3 até **Área 18** — todo
+jogador termina o Continente 1 com as 3. Tema: **o amanhecer de Lumière**. Spec
+completa: `MEMOIRES_V1` · moldura: `CONTINENT1_CANON`.
 
 | # | Mémoire | Relíquia (arte aprovada) | História | Efeito (knob) |
 |---|---|---|---|---|
@@ -197,15 +207,17 @@ amanhecer de Lumière**. Spec completa: `MEMOIRES_V1`.
 
 ---
 
-## 10. Critério oficial de conclusão do Mapa 1
+## 10. Critério oficial de conclusão do Continente 1 (CP-X)
 
-O Mapa 1 está concluído quando o jogador realiza a **Ascension I** — o que exige,
-em conjunto:
+O Continente 1 está concluído quando o jogador realiza a **Ascension I** — o que
+exige, em conjunto:
 
-1. **Boss Final derrotado** — *The Gilded Hollow* (Área 9). ✅ (`mapOneCleared` /
-   `markBossCleared` já marcam isso no código.)
-2. **Awaken concluído** — *First Light*. 🟡 (sistema implementado; requisitos [PH].)
-3. **3 Mémoires da Era I encontradas**. 📄 (depende de Éclats + Mémoires.)
+1. **Awaken concluído** — *First Light* (Área 9, via Guardião). 🟡 (sistema
+   implementado; requisitos [PH].)
+2. **Boss Final derrotado** — **Área 20** (Parte II). 📄 (Parte II não implementada;
+   no código atual o boss da Parte I é *The Gilded Hollow* na Área 9.)
+3. **Era I Restaurada** — as **3 Mémoires no Lv10** (estado derivado `isEraRestored`,
+   CP-2E ✅), após o Boss Final. 📄 (depende de Éclats + descoberta.)
 4. **Ascension I executada** → rank **Illuminate** + **contextualização** das
    Mémoires da Era I + bônus pequeno (a Ascension **não concede** Mémoires). 📄
 

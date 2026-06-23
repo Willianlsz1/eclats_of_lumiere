@@ -62,9 +62,19 @@ Mémoires **não devem ser maximizadas durante o Mapa 1**.
 - **Fontes:** Common · Rare · Elite · Mini Boss · Boss.
 - **Probabilidade:** **aumenta com a dificuldade do conteúdo** (conteúdo mais
   difícil = maior chance). Valores exatos na **Fase 3**.
-- **Proteção:** cada Mémoire é encontrada **apenas uma vez**; após descoberta é
-  **removida da tabela de drop**.
-- **Meta do Mapa 1:** ao concluir, as **3 Mémoires da Era I** devem ter sido
+- **Proteção (uma vez):** cada Mémoire é encontrada **apenas uma vez**; após
+  descoberta é **removida da tabela de drop**.
+- **Proteção anti-azar (CP-X — `CONTINENT1_CANON`):** caso ainda não tenham sido
+  encontradas, são **garantidas** até uma área-limite:
+
+  | Mémoire | Garantida até |
+  |---|---|
+  | M1 — du Premier Matin | **Área 8** |
+  | M2 — des Rires | **Área 14** |
+  | M3 — de la Marche | **Área 18** |
+
+  Garante que **todo jogador termine o Continente 1 com as 3 encontradas**.
+- **Meta do Continente 1:** ao concluir, as **3 Mémoires da Era I** devem ter sido
   encontradas.
 
 ---
