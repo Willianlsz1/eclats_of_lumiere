@@ -109,6 +109,7 @@
       </button>
       <button class="icon-btn" title="Awaken" onclick="G.ui.openModal('modal-awaken')">✷</button>
       <button class="icon-btn" title="Passives" onclick="G.ui.openModal('modal-passives')">❉</button>
+      <button class="icon-btn" title="Codex — Mémoires" onclick="G.ui.openModal('modal-codex')">📖</button>
       <button class="icon-btn" title="Ajuda" onclick="G.ui.openModal('modal-help')">❓</button>
       <button class="icon-btn icon-btn--reset" title="Reiniciar (testar do zero)" onclick="G.ui.resetGame()">🔄</button>
     </div>
@@ -220,6 +221,16 @@
   </div>
 
   <!-- ===== MODAL: AJUDA ===== -->
+  <!-- ===== MODAL: CODEX — Mémoires (CP-2B: somente descoberta) ===== -->
+  <div class="modal-overlay" id="modal-codex" hidden onclick="if(event.target===this)this.hidden=true">
+    <div class="modal">
+      <button class="modal-close" title="Close" onclick="document.getElementById('modal-codex').hidden=true">✕</button>
+      <h2 style="margin:0 0 4px">Mémoires</h2>
+      <p style="opacity:.7;margin:0 0 12px">Fragments of the memory of Lumière — Era I.</p>
+      <ul class="codex-list" id="memoires-list" style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px"></ul>
+    </div>
+  </div>
+
   <div class="modal-overlay" id="modal-help" hidden onclick="if(event.target===this)this.hidden=true">
     <div class="modal">
       <div class="modal__title">Éclats of Lumière</div>
@@ -265,6 +276,7 @@
   <script src="src/data.js"></script>
   <script src="src/state.js"></script>
   <script src="src/economy.js"></script>
+  <script src="src/memoires.js"></script>
   <script src="src/loot.js"></script>
   <script src="src/inventory.js"></script>
   <script src="src/gear.js"></script>

@@ -268,6 +268,12 @@ G.combat = {
     // Alimenta gearMaterials/awakenMaterials; passivas Vestige/Fracture modulam.
     if (G.economy) G.economy.rollDrops(e);
 
+    // descoberta de Mémoires (CP-2B — infra; chances placeholder, sem outra consequência)
+    if (G.memoires) {
+      const found = G.memoires.rollDiscovery({ enemy: e });
+      if (found) G.memoires.find(found);
+    }
+
     // fôlego: cura uma fração do HP a cada kill
     const heal = G.state.maxHp() * G.data.balance.healOnKillFrac;
     G.state.data.hp = Math.min(G.state.maxHp(), G.state.data.hp + heal);

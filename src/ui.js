@@ -20,7 +20,7 @@ G.ui = {
       "wmap-info", "wmap-info-art", "wmap-info-name", "wmap-info-lore", "wmap-info-level",
       "wmap-info-enemies", "wmap-info-status", "wmap-info-res", "wmap-info-travel", "wmap-info-close",
       "conv-points", "conv-count", "conv-highest", "conv-pending", "conv-current", "conv-return", "btn-converge",
-      "awaken-essence", "awaken-list", "awaken-preview",
+      "awaken-essence", "awaken-list", "awaken-preview", "memoires-list",
       "pv-points", "pv-tabs", "pv-body", "pv-lock",
     ];
     for (const id of ids) this.el[id] = document.getElementById(id);
@@ -111,6 +111,7 @@ G.ui = {
     if (id === "modal-convergence") this.renderConvergence();
     if (id === "modal-awaken") this.renderAwaken();
     if (id === "modal-passives") this.renderPassives();
+    if (id === "modal-codex") this.renderMemoires();
     const m = document.getElementById(id);
     if (m) m.hidden = false;
   },
@@ -237,6 +238,18 @@ G.ui = {
   _pvEffect(tree, i) {
     const P = G.passives, key = P.trees[tree].list[i][1];
     return (P.EFFECT_DESC && P.EFFECT_DESC[key]) || "Effect pending balancing.";
+  },
+
+  // Codex — Mémoires (CP-2B): lista mínima, só descoberta (??? até encontrar)
+  renderMemoires() {
+    const wrap = this.el["memoires-list"];
+    if (!wrap || !G.memoires) return;
+    wrap.innerHTML = G.memoires.all().map((id) => {
+      const m = G.memoires.get(id);
+      const found = m.state === "found";
+      const label = found ? m.name : "???";
+      return `<li class="codex-memoire is-${m.state}" style="opacity:${found ? 1 : 0.45}">${label}</li>`;
+    }).join("");
   },
 
   // sidebar esquerda: lista compacta de awakens
