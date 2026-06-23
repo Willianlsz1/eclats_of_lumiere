@@ -250,17 +250,23 @@ G.ui = {
       if (m.state === "notFound")
         return `<li class="codex-memoire is-notFound" style="opacity:.45">???</li>`;
       const restored = m.state === "restored";
-      const lvl = restored ? ` <span class="codex-lvl">Lv ${m.level}</span>` : "";
+      const maxed = restored && m.level >= G.memoires.maxLevel();
+      const lvl = restored ? ` <span class="codex-lvl">Lv ${m.level}${maxed ? " (max)" : ""}</span>` : "";
       const stLabel = restored ? "Restaurada" : "Encontrada";
-      const btn = G.memoires.canRestore(id)
-        ? ` <button class="gear-levelup" data-restore="${id}">Restore (${G.memoires.RESTORE_COST} Éclat)</button>`
-        : "";
+      let btn = "";
+      if (G.memoires.canRestore(id))
+        btn = ` <button class="gear-levelup" data-restore="${id}">Restore (${G.memoires.RESTORE_COST} Éclat)</button>`;
+      else if (G.memoires.canLevel(id))
+        btn = ` <button class="gear-levelup" data-upgrade="${id}">Upgrade (${G.memoires.upgradeCost(id)} Éclat)</button>`;
       return `<li class="codex-memoire is-${m.state}">
         <b>${m.name}</b>${lvl} · <span class="codex-state">${stLabel}</span>${btn}
       </li>`;
     }).join("");
     wrap.querySelectorAll("[data-restore]").forEach((b) => {
       b.addEventListener("click", () => this.doMemoireRestore(b.dataset.restore));
+    });
+    wrap.querySelectorAll("[data-upgrade]").forEach((b) => {
+      b.addEventListener("click", () => this.doMemoireUpgrade(b.dataset.upgrade));
     });
   },
 
@@ -270,6 +276,16 @@ G.ui = {
       G.state.save();
     } else {
       this.log(`Cannot restore — need ${G.memoires.RESTORE_COST} Éclat.`, "bad");
+    }
+    this.renderMemoires();
+  },
+
+  doMemoireUpgrade(id) {
+    if (G.memoires.upgrade(id)) {
+      this.log(`${G.memoires.get(id).name} → Lv ${G.memoires.level(id)}.`, "good");
+      G.state.save();
+    } else {
+      this.log("Cannot upgrade — not enough Éclats or max level.", "bad");
     }
     this.renderMemoires();
   },

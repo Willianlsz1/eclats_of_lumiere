@@ -12,6 +12,10 @@
 G.memoires = {
   STATES: { NOT_FOUND: "notFound", FOUND: "found", RESTORED: "restored" },
   RESTORE_COST: 1, // custo em Éclats p/ restaurar (Lv1) — PLACEHOLDER único (CP-2C)
+  MAX_LEVEL: 10,   // teto de nível das Mémoires (CP-2D) — igual p/ todas
+  // custo em Éclats para subir ATÉ o nível N (CP-2D) — PLACEHOLDER único (todos 1).
+  // A Fase 3 define a curva real.
+  LEVEL_COSTS: { 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 1, 10: 1 },
 
   // metadados mínimos da Era I (nome de exibição). SEM efeitos/lore/níveis.
   defs: {
@@ -42,7 +46,8 @@ G.memoires = {
       let st = cur.state;
       if (st !== "found" && st !== "restored") st = "notFound"; // sanea estado inválido
       let lv = (typeof cur.level === "number" && isFinite(cur.level)) ? Math.floor(cur.level) : 0;
-      lv = st === "restored" ? Math.max(1, lv) : 0;
+      // restored => clamp [1, MAX_LEVEL]; notFound/found => 0
+      lv = st === "restored" ? Math.min(this.MAX_LEVEL, Math.max(1, lv)) : 0;
       data.memoires[id] = { state: st, level: lv };
     }
     return data.memoires;
@@ -53,7 +58,7 @@ G.memoires = {
     const m = G.state.data && G.state.data.memoires && G.state.data.memoires[id];
     let st = (m && (m.state === "found" || m.state === "restored")) ? m.state : "notFound";
     let lv = (m && typeof m.level === "number" && isFinite(m.level)) ? Math.floor(m.level) : 0;
-    lv = st === "restored" ? Math.max(1, lv) : 0; // nunca estado/nível inválido
+    lv = st === "restored" ? Math.min(this.MAX_LEVEL, Math.max(1, lv)) : 0; // nunca estado/nível inválido
     return { id, state: st, level: lv, name: (this.defs[id] && this.defs[id].name) || id };
   },
   level(id) { return this.get(id).level; },
@@ -86,7 +91,31 @@ G.memoires = {
     G.economy.addEclats(-this.RESTORE_COST);          // consome Éclats (clamp >=0 garantido)
     const set = G.state.data.memoires;
     set[id].state = "restored";
-    set[id].level = 1;                                 // CP-2C: nível máximo = 1
+    set[id].level = 1;                                 // restauração entra no Lv1
+    if (G.ui && G.ui.renderMemoires) G.ui.renderMemoires();
+    if (G.ui && G.ui.renderResources) G.ui.renderResources();
+    return true;
+  },
+
+  // ---- evolução (CP-2D): Lv1 -> Lv10, consome Éclats ----
+  maxLevel() { return this.MAX_LEVEL; },
+  // custo em Éclats para subir do nível atual ao próximo (LEVEL_COSTS[nível-alvo])
+  upgradeCost(id) {
+    const next = this.get(id).level + 1;
+    return (this.LEVEL_COSTS[next] != null) ? this.LEVEL_COSTS[next] : 0;
+  },
+  // pode evoluir agora? (restaurada, abaixo do teto e com Éclats suficientes)
+  canLevel(id) {
+    if (!this.defs[id]) return false;
+    const g = this.get(id);
+    if (g.state !== "restored" || g.level >= this.MAX_LEVEL) return false;
+    return (G.economy ? G.economy.getEclats() : 0) >= this.upgradeCost(id);
+  },
+  upgrade(id) {
+    if (!this.canLevel(id)) return false;
+    G.economy.addEclats(-this.upgradeCost(id));        // consome Éclats (clamp >=0 garantido)
+    const set = G.state.data.memoires;
+    set[id].level = Math.min(this.MAX_LEVEL, (set[id].level || 1) + 1); // nunca passa do teto
     if (G.ui && G.ui.renderMemoires) G.ui.renderMemoires();
     if (G.ui && G.ui.renderResources) G.ui.renderResources();
     return true;
