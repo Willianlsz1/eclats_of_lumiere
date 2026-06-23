@@ -35,11 +35,11 @@ G.state = {
       gearMaterials: { common: 0, uncommon: 0 },   // promoções de raridade (futuro)
       awakenMaterials: { firstLight: 0 },          // First Light / Awakens (futuro)
       eclats: 0,                                   // moeda das Mémoires (fundação — ver economy.js)
-      // descoberta das Mémoires (CP-2B) — estados notFound/found (Era I)
+      // Mémoires (CP-2B descoberta + CP-2C restauração) — estado + nível (Era I)
       memoires: {
-        premierMatin: { state: "notFound" },
-        desRires: { state: "notFound" },
-        deLaMarche: { state: "notFound" },
+        premierMatin: { state: "notFound", level: 0 },
+        desRires: { state: "notFound", level: 0 },
+        deLaMarche: { state: "notFound", level: 0 },
       },
       // contadores da RUN (resetam na Convergence) — alimentam a fórmula de
       // Pontos = Área + Bosses + Nível + Kills (ver convergence.js)

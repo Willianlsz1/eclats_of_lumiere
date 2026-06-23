@@ -10,7 +10,8 @@
 // quando os estados "restored"/níveis entrarem no CP-2C.
 
 G.memoires = {
-  STATES: { NOT_FOUND: "notFound", FOUND: "found" },
+  STATES: { NOT_FOUND: "notFound", FOUND: "found", RESTORED: "restored" },
+  RESTORE_COST: 1, // custo em Éclats p/ restaurar (Lv1) — PLACEHOLDER único (CP-2C)
 
   // metadados mínimos da Era I (nome de exibição). SEM efeitos/lore/níveis.
   defs: {
@@ -25,20 +26,24 @@ G.memoires = {
   // estrutura inicial p/ fresh()/reconcile()
   freshSet() {
     return {
-      premierMatin: { state: "notFound" },
-      desRires: { state: "notFound" },
-      deLaMarche: { state: "notFound" },
+      premierMatin: { state: "notFound", level: 0 },
+      desRires: { state: "notFound", level: 0 },
+      deLaMarche: { state: "notFound", level: 0 },
     };
   },
 
-  // garante o campo em saves antigos; preenche faltantes; sanea estados inválidos.
-  // nunca apaga um "found" já existente.
+  // garante o campo em saves antigos; preenche faltantes; sanea estados/níveis
+  // inválidos. Nunca apaga uma descoberta/restauração válida. Regras de nível:
+  //   notFound/found => 0 · restored => >= 1.
   reconcile(data) {
     if (!data.memoires || typeof data.memoires !== "object") data.memoires = {};
     for (const id of this.all()) {
-      const cur = data.memoires[id];
-      const st = cur && cur.state === "found" ? "found" : "notFound";
-      data.memoires[id] = { state: st };
+      const cur = data.memoires[id] || {};
+      let st = cur.state;
+      if (st !== "found" && st !== "restored") st = "notFound"; // sanea estado inválido
+      let lv = (typeof cur.level === "number" && isFinite(cur.level)) ? Math.floor(cur.level) : 0;
+      lv = st === "restored" ? Math.max(1, lv) : 0;
+      data.memoires[id] = { state: st, level: lv };
     }
     return data.memoires;
   },
@@ -46,21 +51,44 @@ G.memoires = {
   // ---- leitura ----
   get(id) {
     const m = G.state.data && G.state.data.memoires && G.state.data.memoires[id];
-    const st = m && m.state === "found" ? "found" : "notFound"; // nunca estado inválido
-    return { id, state: st, name: (this.defs[id] && this.defs[id].name) || id };
+    let st = (m && (m.state === "found" || m.state === "restored")) ? m.state : "notFound";
+    let lv = (m && typeof m.level === "number" && isFinite(m.level)) ? Math.floor(m.level) : 0;
+    lv = st === "restored" ? Math.max(1, lv) : 0; // nunca estado/nível inválido
+    return { id, state: st, level: lv, name: (this.defs[id] && this.defs[id].name) || id };
   },
-  isFound(id) { return this.get(id).state === "found"; },
+  level(id) { return this.get(id).level; },
+  // "descoberta" = não-notFound (found OU restored) — usada por remaining/roll
+  isFound(id) { return this.get(id).state !== "notFound"; },
+  isRestored(id) { return this.get(id).state === "restored"; },
   remaining() { return this.all().filter((id) => !this.isFound(id)); },
 
   // ---- descoberta ----
-  // muda notFound -> found. Idempotente: já encontrada devolve false (não duplica).
+  // muda notFound -> found. Idempotente: já descoberta/restaurada devolve false.
   find(id) {
     if (!this.defs[id]) return false;
     const set = G.state.data.memoires || (G.state.data.memoires = this.freshSet());
-    if (!set[id]) set[id] = { state: "notFound" };
-    if (set[id].state === "found") return false;
+    if (!set[id]) set[id] = { state: "notFound", level: 0 };
+    if (set[id].state !== "notFound") return false; // já found/restored — não duplica
     set[id].state = "found";
+    set[id].level = 0;
     if (G.ui && G.ui.renderMemoires) G.ui.renderMemoires();
+    return true;
+  },
+
+  // ---- restauração (CP-2C): found -> restored (Lv1), consome Éclats ----
+  // pode restaurar agora? (existe, está em "found", e tem Éclats suficientes)
+  canRestore(id) {
+    return !!this.defs[id] && this.get(id).state === "found" &&
+      (G.economy ? G.economy.getEclats() : 0) >= this.RESTORE_COST;
+  },
+  restore(id) {
+    if (!this.canRestore(id)) return false;
+    G.economy.addEclats(-this.RESTORE_COST);          // consome Éclats (clamp >=0 garantido)
+    const set = G.state.data.memoires;
+    set[id].state = "restored";
+    set[id].level = 1;                                 // CP-2C: nível máximo = 1
+    if (G.ui && G.ui.renderMemoires) G.ui.renderMemoires();
+    if (G.ui && G.ui.renderResources) G.ui.renderResources();
     return true;
   },
 

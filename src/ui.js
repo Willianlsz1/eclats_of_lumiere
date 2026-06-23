@@ -240,16 +240,38 @@ G.ui = {
     return (P.EFFECT_DESC && P.EFFECT_DESC[key]) || "Effect pending balancing.";
   },
 
-  // Codex — Mémoires (CP-2B): lista mínima, só descoberta (??? até encontrar)
+  // Codex — Mémoires (CP-2B descoberta + CP-2C restauração). Mínimo: ??? →
+  // Encontrada → Restaurada (Lv 1) + botão Restore quando há Éclats.
   renderMemoires() {
     const wrap = this.el["memoires-list"];
     if (!wrap || !G.memoires) return;
     wrap.innerHTML = G.memoires.all().map((id) => {
       const m = G.memoires.get(id);
-      const found = m.state === "found";
-      const label = found ? m.name : "???";
-      return `<li class="codex-memoire is-${m.state}" style="opacity:${found ? 1 : 0.45}">${label}</li>`;
+      if (m.state === "notFound")
+        return `<li class="codex-memoire is-notFound" style="opacity:.45">???</li>`;
+      const restored = m.state === "restored";
+      const lvl = restored ? ` <span class="codex-lvl">Lv ${m.level}</span>` : "";
+      const stLabel = restored ? "Restaurada" : "Encontrada";
+      const btn = G.memoires.canRestore(id)
+        ? ` <button class="gear-levelup" data-restore="${id}">Restore (${G.memoires.RESTORE_COST} Éclat)</button>`
+        : "";
+      return `<li class="codex-memoire is-${m.state}">
+        <b>${m.name}</b>${lvl} · <span class="codex-state">${stLabel}</span>${btn}
+      </li>`;
     }).join("");
+    wrap.querySelectorAll("[data-restore]").forEach((b) => {
+      b.addEventListener("click", () => this.doMemoireRestore(b.dataset.restore));
+    });
+  },
+
+  doMemoireRestore(id) {
+    if (G.memoires.restore(id)) {
+      this.log(`Restored ${G.memoires.get(id).name}.`, "good");
+      G.state.save();
+    } else {
+      this.log(`Cannot restore — need ${G.memoires.RESTORE_COST} Éclat.`, "bad");
+    }
+    this.renderMemoires();
   },
 
   // sidebar esquerda: lista compacta de awakens
