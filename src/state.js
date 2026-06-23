@@ -34,6 +34,7 @@ G.state = {
       // ---- materiais (fundação econômica — ver economy.js) ----
       gearMaterials: { common: 0, uncommon: 0 },   // promoções de raridade (futuro)
       awakenMaterials: { firstLight: 0 },          // First Light / Awakens (futuro)
+      eclats: 0,                                   // moeda das Mémoires (fundação — ver economy.js)
       // contadores da RUN (resetam na Convergence) — alimentam a fórmula de
       // Pontos = Área + Bosses + Nível + Kills (ver convergence.js)
       runKills: 0,           // kills nesta run

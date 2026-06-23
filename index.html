@@ -32,11 +32,16 @@
     </div>
   </div>
 
-  <!-- ===== HUD: TOPO DIREITA — Lumens ===== -->
+  <!-- ===== HUD: TOPO DIREITA — Lumens + Éclats ===== -->
   <div class="hud hud-topright">
     <div class="lumens-hud">
       <img class="lumens-hud__icon" src="assets/ui/lumens.png" alt="Lumens" onerror="this.remove()" />
       <b class="lumens-hud__value" id="res-lumens">0</b>
+    </div>
+    <!-- Éclats: somente leitura (fundação CP-2A; ícone placeholder ✦) -->
+    <div class="lumens-hud" title="Éclats">
+      <span class="lumens-hud__icon" aria-hidden="true">✦</span>
+      <b class="lumens-hud__value" id="res-eclats">0</b>
     </div>
   </div>
 

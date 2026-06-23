@@ -33,6 +33,8 @@ G.economy = {
     const f = this.freshMaterials();
     data.gearMaterials = Object.assign({}, f.gearMaterials, data.gearMaterials || {});
     data.awakenMaterials = Object.assign({}, f.awakenMaterials, data.awakenMaterials || {});
+    // Éclats (fundação CP-2A): garante o campo em saves antigos, sem sobrescrever.
+    if (typeof data.eclats !== "number" || !isFinite(data.eclats) || data.eclats < 0) data.eclats = 0;
   },
 
   // ---- acesso / armazenamento ----
@@ -40,6 +42,21 @@ G.economy = {
   getAwaken(kind) { const m = G.state.data.awakenMaterials; return (m && m[kind]) || 0; },
   addGear(kind, n) { const m = G.state.data.gearMaterials; m[kind] = (m[kind] || 0) + n; },
   addAwaken(kind, n) { const m = G.state.data.awakenMaterials; m[kind] = (m[kind] || 0) + n; },
+
+  // ---- Éclats (moeda das Mémoires — fundação CP-2A) ----
+  // getter robusto: nunca devolve NaN/undefined (cai p/ 0).
+  getEclats() {
+    const v = G.state.data && G.state.data.eclats;
+    return (typeof v === "number" && isFinite(v)) ? v : 0;
+  },
+  // adiciona (ou remove, n negativo); clamp mínimo em 0; nunca grava NaN.
+  addEclats(n) {
+    n = Number(n);
+    if (!isFinite(n)) n = 0;
+    const v = this.getEclats() + n;
+    G.state.data.eclats = Math.max(0, isFinite(v) ? v : 0);
+    return G.state.data.eclats;
+  },
 
   // ================= SISTEMA DE DROP (configurável) =================
   // dropTable POR TIPO de inimigo. Cada material: { chance, min, max, minAreaIndex }.

@@ -10,7 +10,7 @@ G.ui = {
   // pega os elementos uma vez
   cache() {
     const ids = [
-      "res-lumens", "res-area",
+      "res-lumens", "res-eclats", "res-area",
       "hero-tier", "hero-level", "xp-fill", "xp-label",
       "stats-list", "btn-upgrade", "upgrade-cost",
       "enemy-art", "enemy-name", "enemy-level", "enemy-atk",
@@ -515,6 +515,8 @@ G.ui = {
 
   renderResources() {
     this.el["res-lumens"].textContent = G.util.fmt(G.state.data.lumens);
+    if (this.el["res-eclats"]) // Éclats: somente leitura (fundação CP-2A)
+      this.el["res-eclats"].textContent = G.util.fmt(G.economy ? G.economy.getEclats() : 0);
     const d = G.state.data;
     const area = G.data.currentArea();
     this.el["res-area"].textContent = area.name;
