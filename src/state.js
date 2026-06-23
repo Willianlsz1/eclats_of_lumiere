@@ -25,8 +25,24 @@ G.state = {
       convergencePoints: 0,  // moeda de prestige (gasta nas passivas — ver convergence.js)
       convergences: 0,       // quantas vezes renasceu
       highestLevel: 1,       // recorde de nível (não reseta na Convergence)
-      awakenEssence: 0,      // material do Awaken (dropa na Área 7+)
-      awakensUnlocked: [],   // ids dos Awakens desbloqueados (permanentes)
+      totalKills: 0,         // kills acumuladas (NÃO reseta) — requisito de Awaken
+      awakenEssence: 0,      // material legado (migrado p/ awakenMaterials.firstLight)
+      awakensUnlocked: [],   // alias legado da lista de awakens concluídos
+      awakens: [],           // ids de Awakens concluídos (canônico — AWAKEN_V1)
+      awakenTier: 0,         // nº de Awakens concluídos / tier atual
+      awakenLevel: 0,        // nível do Awaken (futuro; placeholder)
+      // ---- materiais (fundação econômica — ver economy.js) ----
+      gearMaterials: { common: 0, uncommon: 0 },   // promoções de raridade (futuro)
+      awakenMaterials: { firstLight: 0 },          // First Light / Awakens (futuro)
+      // contadores da RUN (resetam na Convergence) — alimentam a fórmula de
+      // Pontos = Área + Bosses + Nível + Kills (ver convergence.js)
+      runKills: 0,           // kills nesta run
+      runBosses: 0,          // bosses derrotados nesta run
+      runMaxAreaIndex: 0,    // maior sub-área alcançada nesta run
+      // ---- thresholds de encontro (ENEMY_STRUCTURE_V1) — por sessão de área ----
+      miniBossProgress: 0,   // kills acumuladas rumo ao Mini Boss
+      bossProgress: 0,       // kills rumo ao respawn do Boss
+      bossOnCooldown: false, // Boss já derrotado (aguardando respawn por threshold)
       passives: G.passives.freshSet(), // árvores Éclat/Vestige/Fracture (ver passives.js)
       equipped: G.gear.freshSet(), // 6 peças FIXAS (Nv.1, Comum) — ver gear.js
       lastSeen: Date.now(),  // p/ progresso offline
@@ -57,9 +73,9 @@ G.state = {
     // Forja: cada reforço dá +4% de ATK (camada de bônus, sempre relevante).
     layer("atk").pct += d.weaponUpgrades * 4;
     layer("crit").flat += 5;
-    // atk speed em ATAQUES POR SEGUNDO (estilo Gaiadon): base 1.0 atk/s.
+    // atk speed em ATAQUES POR SEGUNDO: base 0.9 atk/s (teto 15 — ver stats()).
     // gear soma valores tipo +0.05. intervalo = 1 / atkSpeed.
-    layer("atkSpeed").flat += 1.0;
+    layer("atkSpeed").flat += G.data.balance.atkSpeedBase;
     // crit damage base: +50% (multiplicador ×1.5). Gear soma % em cima disso.
     layer("critDmg").flat += 50;
     // xp bonus base: 0% (só vem de gear por enquanto)
@@ -79,17 +95,26 @@ G.state = {
     // ---- camada Awaken (3ª fonte de poder; permanente) ----
     if (G.awaken) G.awaken.applyTo(layer);
 
-    // ---- passivas (compradas com Pontos de Convergence) ----
+    // ---- passivas (efeitos com alvo no motor de stats) ----
+    // Efeitos LIVE somam nas camadas correspondentes; magnitudes vêm de
+    // G.passives.UNIT (placeholders configuráveis). HP→Dano é aplicado depois
+    // (precisa do HP final). Demais efeitos (Boss/Elite Damage, materiais,
+    // convergence, etc.) são expostos por G.passives.effect() para sistemas
+    // futuros e não tocam os stats agora.
+    let passEff = null;
     if (G.passives) {
-      const P = G.passives;
-      layer("atk").mult *= P.dmgMult();        // árvore Éclat
-      layer("hp").mult *= P.hpMult();          // árvore Fracture
-      layer("crit").flat += P.critAddPts();    // alavanca Luminal Edge
-      layer("atkSpeed").mult *= P.apsMult();   // alavanca Fracture Pulse
-      // árvore Vestige: multiplica os bônus de loot (painel agora reflete o real)
-      const eco = P.ecoMult();
-      layer("lumensBonus").mult *= eco;
-      layer("xpBonus").mult *= eco;
+      passEff = G.passives.effects();
+      layer("atk").pct += passEff.atkPct || 0;             // Éclat: ATK %
+      layer("hp").pct += passEff.hpPct || 0;               // Éclat: HP %
+      layer("crit").flat += passEff.critRate || 0;         // Éclat: Crit Rate
+      layer("critDmg").flat += passEff.critDmg || 0;       // Éclat: Crit Damage
+      layer("lumensBonus").flat += passEff.lumensPct || 0; // Vestige: Lumens %
+      layer("xpBonus").flat += passEff.xpPct || 0;         // Vestige: XP %
+      // capstones híbridos (multiplicadores da própria árvore)
+      const capE = 1 + (passEff.capstoneEclat || 0) / 100;   // Éclat: ATK + HP
+      layer("atk").mult *= capE; layer("hp").mult *= capE;
+      const capV = 1 + (passEff.capstoneVestige || 0) / 100;  // Vestige: Lumens + XP
+      layer("lumensBonus").mult *= capV; layer("xpBonus").mult *= capV;
     }
 
     const fin = (k) => {
@@ -97,13 +122,18 @@ G.state = {
       return x.flat * (1 + x.pct / 100) * x.mult;
     };
 
+    // HP → Dano (Éclat): injeta uma fração do HP final no ATK antes de finalizar.
+    if (passEff && passEff.hpToDamage) {
+      layer("atk").flat += fin("hp") * (passEff.hpToDamage / 100);
+    }
+
     this._statsCache = {
       atk: Math.round(fin("atk")),
       hp: Math.round(fin("hp")),
       crit: G.util.clamp(fin("crit"), 0, 100),
       critDmg: fin("critDmg"),
       critMult: 1 + fin("critDmg") / 100,
-      atkSpeed: fin("atkSpeed"),
+      atkSpeed: G.util.clamp(fin("atkSpeed"), 0, G.data.balance.atkSpeedCap),
       xpBonus: fin("xpBonus"),
       lumensBonus: fin("lumensBonus"),
       _layers: L,
@@ -118,7 +148,7 @@ G.state = {
   // intervalo entre ataques automáticos em segundos: 1 / (ataques por segundo)
   attackInterval() {
     const aps = this.stats().atkSpeed;
-    return G.util.clamp(1.0 / aps, 0.1, 5);
+    return G.util.clamp(1.0 / aps, 1 / G.data.balance.atkSpeedCap, 5);
   },
 
   // XP necessária para o próximo nível.
@@ -176,6 +206,20 @@ G.state = {
     // reconcilia as 6 peças fixas com a definição atual (stats/afixos novos),
     // preservando nível e raridade salvos
     this.data.equipped = G.gear.reconcile(this.data.equipped);
+    // garante os campos de materiais em saves antigos (inicializa novos com zero)
+    if (G.economy) G.economy.reconcile(this.data);
+    // migração do Awaken (AWAKEN_V1): consolida o estado antigo
+    if (!Array.isArray(this.data.awakens)) this.data.awakens = [];
+    if (!this.data.awakens.length && Array.isArray(this.data.awakensUnlocked) && this.data.awakensUnlocked.length)
+      this.data.awakens = this.data.awakensUnlocked.slice();   // antigo -> canônico
+    this.data.awakensUnlocked = this.data.awakens;             // alias sincronizado
+    if (typeof this.data.awakenTier !== "number" || this.data.awakenTier < this.data.awakens.length)
+      this.data.awakenTier = this.data.awakens.length;
+    // dobra a essência legada no material canônico do Awaken (uma vez)
+    if (this.data.awakenEssence && this.data.awakenMaterials) {
+      this.data.awakenMaterials.firstLight = (this.data.awakenMaterials.firstLight || 0) + this.data.awakenEssence;
+      this.data.awakenEssence = 0;
+    }
     // deep merge das passivas: preserva níveis salvos, garante novas árvores/índices
     {
       const fresh = G.passives.freshSet();
@@ -183,7 +227,9 @@ G.state = {
       if (saved && typeof saved === "object") {
         for (const tree of Object.keys(fresh)) {
           if (Array.isArray(saved[tree]))
-            fresh[tree] = fresh[tree].map((_, i) => saved[tree][i] || 0);
+            // preserva os níveis salvos por índice, clampando ao novo teto do nó
+            // (a arquitetura mudou o significado dos nós; o investimento é mantido)
+            fresh[tree] = fresh[tree].map((_, i) => Math.min(saved[tree][i] || 0, G.passives.nodeMax(tree, i)));
         }
       }
       this.data.passives = fresh;

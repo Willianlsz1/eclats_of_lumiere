@@ -208,45 +208,42 @@ G.ui = {
     const pos = P.POSITIONS[i];
     const level = P.level(tree, i);
     const maxed = P.isMax(tree, i);
-    const locked = !P.groupUnlocked(tree, P.groupOf(i)) && level === 0;
+    const deferred = P.isDeferred(tree, i); // nó adiado ao Mapa 2 (indisponível)
+    const locked = deferred || (!P.groupUnlocked(tree, P.groupOf(i)) && level === 0);
     const role = P.isEngine(tree, key) ? "role-engine" : (P.leverOf(key) ? "role-lever" : "");
     const cls = ["pv-node", role, i >= 10 ? "tip-below" : "", maxed ? "maxed" : "",
       P.canBuy(tree, i) ? "buyable" : "", level > 0 && !maxed ? "owned" : "", locked ? "locked" : ""]
       .filter(Boolean).join(" ");
     const m = `assets/passives/${tree}/${key}.webp`;
     const mc = `-webkit-mask-image:url('${m}');mask-image:url('${m}')`;
-    const lvlText = maxed ? "✦" : (level > 0 ? `${level}/${P.maxLevel}` : "");
-    const foot = maxed ? `<div class="pv-tip-foot max">Max Level</div>`
+    const nmax = P.nodeMax(tree, i);
+    const lvlText = deferred ? "M2" : (maxed ? "✦" : (level > 0 ? `${level}/${nmax}` : ""));
+    const foot = deferred ? `<div class="pv-tip-foot locked">Map 2 — coming later</div>`
+      : maxed ? `<div class="pv-tip-foot max">Max Level</div>`
       : locked ? `<div class="pv-tip-foot locked">Locked — max the tier below</div>`
       : `<div class="pv-tip-foot cost">${level === 0 ? "Unlock" : "Upgrade"} · ${G.util.fmt(P.nextCost(tree, i))} pts</div>`;
-    return `<button class="${cls}" data-i="${i}" style="left:${pos.x}%;top:${pos.y}%;--p:${(level / P.maxLevel).toFixed(3)}">
+    return `<button class="${cls}" data-i="${i}" style="left:${pos.x}%;top:${pos.y}%;--p:${(level / nmax).toFixed(3)}">
       <span class="pv-disc"><span class="pv-icon" style="${mc}"></span><i class="pv-ring"></i></span>
       <span class="pv-node-name">${name}</span>
       <span class="pv-node-lvl">${lvlText}</span>
       <div class="pv-tip">
         <div class="pv-tip-head"><span class="pv-tip-icon"><span class="pv-icon" style="${mc}"></span></span>
           <div class="pv-tip-htext"><div class="pv-tip-name">${name} <span class="pv-tip-tag">Passive</span></div>
-            <div class="pv-tip-lvl">Level ${level}/${P.maxLevel}</div></div></div>
+            <div class="pv-tip-lvl">Level ${level}/${nmax}</div></div></div>
         <p class="pv-tip-eff">${this._pvEffect(tree, i, level)}</p>${foot}
       </div>
     </button>`;
   },
-  _pvEffect(tree, i, level) {
-    const P = G.passives, stat = P.trees[tree].stat, key = P.trees[tree].list[i][1];
-    const lev = P.leverOf(key);
-    const T = { crit: "Increases your critical chance.", aps: "Increases your attack speed.",
-      mobCap: "More enemies appear at once.", material: "Increases the materials you find.",
-      enemyPen: "Your hits ignore part of enemy defense.", enemyReduce: "Weakens enemy defense." };
-    if (lev) return T[lev] || "A special effect.";
-    if (P.isEngine(tree, key)) return `Multiplies your ${stat}, compounding every level — the strongest growth in the tree.`;
-    const pct = P.groupAddPct[P.groupOf(i)] * 100;
-    return level > 0 ? `Increases your ${stat} by ${G.util.fmt(level * pct)}%.` : `Increases your ${stat} by ${pct}% per level.`;
+  _pvEffect(tree, i) {
+    const P = G.passives, key = P.trees[tree].list[i][1];
+    return (P.EFFECT_DESC && P.EFFECT_DESC[key]) || "Effect pending balancing.";
   },
 
   // sidebar esquerda: lista compacta de awakens
   renderAwaken() {
     const d = G.state.data;
-    if (this.el["awaken-essence"]) this.el["awaken-essence"].textContent = G.util.fmt(d.awakenEssence || 0);
+    if (this.el["awaken-essence"])
+      this.el["awaken-essence"].textContent = G.util.fmt((d.awakenMaterials && d.awakenMaterials.firstLight) || 0);
     const wrap = this.el["awaken-list"];
     if (!wrap) return;
 
@@ -305,13 +302,12 @@ G.ui = {
       b.xpBonus  ? { label: "XP Bonus",  before: `${s.xpBonus.toFixed(0)}%`,            after: `${(s.xpBonus + b.xpBonus).toFixed(0)}%`,   active: unlocked } : null,
     ].filter(Boolean);
 
-    // checklist de requisitos
-    const reqs = [
-      { label: `Area ${a.areaIndex + 1}`,      met: (d.maxAreaUnlocked || 0) >= a.areaIndex },
-      { label: `Lv ${G.util.fmt(a.level)}`,    met: d.level >= a.level },
-      { label: `${a.essence} Essence`,          met: (d.awakenEssence || 0) >= a.essence },
-      { label: `${G.util.fmt(a.lumens)} ✦`,    met: (d.lumens || 0) >= a.lumens },
-    ];
+    // checklist de requisitos (AWAKEN_V1 — configurável: area/level/kills/conv/materiais)
+    const reqName = { area: "Area", level: "Lv", kills: "Kills", convergences: "Convergences" };
+    const reqs = G.awaken.requirements(a.id).map((r) => {
+      const base = r.key.indexOf("material:") === 0 ? "Awaken Mat" : (reqName[r.key] || r.key);
+      return { label: `${base} ${G.util.fmt(r.have)}/${G.util.fmt(r.need)}`, met: r.met };
+    });
 
     const stateClass = unlocked ? " is-done" : can ? " is-ready" : "";
     const action = unlocked
@@ -467,10 +463,10 @@ G.ui = {
     this.el["wmap-info-status"].textContent = locked ? "Locked" : isCurrent ? "Current" : "Unlocked";
 
     // resources: Lumens/kill (estimado pela vida do mob na entrada) + Essência (Área 7+) + XP
-    const lumPerKill = Math.ceil(G.data.mobHpAt(a.levelRange[0]) * G.data.balance.goldRatio);
+    const lumPerKill = Math.ceil(G.data.mobHpAt(a.levelRange[0], a) * G.data.balance.goldRatio);
     const res = [`<li><span>Lumens</span><b>+${G.util.fmt(lumPerKill)}</b></li>`];
     res.push(`<li><span>XP</span><b>+${G.util.fmt(Math.ceil(G.data.balance.baseXp * a.levelRange[0]))}</b></li>`);
-    if (i >= 6) res.push(`<li><span>Awakening Essence · T1</span><b>${(G.data.balance.awakenDropChance * 100).toFixed(0)}% / kill</b></li>`);
+    if (i >= 5) res.push(`<li><span>Awaken Material</span><b>Mini Boss / Boss</b></li>`);
     this.el["wmap-info-res"].innerHTML = res.join("");
 
     // CTA: você está aqui / travado (mostra o nível) / viajar
@@ -589,14 +585,26 @@ G.ui = {
       const item = G.state.data.equipped[slot.id];
       if (!item) return "";
       const lvl = item.level || 1;
+      const cap = G.gear.cap(item);
       const maxed = G.gear.isMaxed(item);
       const icon = slot.icon || "❔";
-      const action = maxed
-        ? `<span class="gear-max">MAX</span>`
-        : `<span class="gear-slot__cost">✦ ${G.util.fmt(G.gear.cost(item))}</span>
+      let action;
+      if (maxed && G.gear.promotable(item)) {
+        // no cap e há raridade acima: oferece PROMOÇÃO (custo em materiais)
+        const cost = G.gear.promotionCost(item);
+        const costStr = Object.keys(cost).map((k) => `${G.util.fmt(cost[k])} ${k}`).join(" · ");
+        const can = G.gear.canPromote(item);
+        action = `<span class="gear-slot__cost">⬆ ${costStr}</span>
+           <button class="gear-levelup gear-promote" data-promote="${slot.id}"${can ? "" : " disabled"}>Promote</button>`;
+      } else if (maxed) {
+        action = `<span class="gear-max">MAX</span>`;
+      } else {
+        action = `<span class="gear-slot__cost">✦ ${G.util.fmt(G.gear.cost(item))}</span>
            <button class="gear-levelup" data-levelup="${slot.id}">Level up</button>`;
+      }
       return `<div class="gear-slot pos-${slot.id}" data-tip="${slot.id}" style="--rar:${item.color}">
-        <span class="gear-slot__lvl">LVL ${lvl}</span>
+        <span class="gear-slot__rar" style="color:${item.color}">${item.rarityName}</span>
+        <span class="gear-slot__lvl">LVL ${lvl}/${G.util.fmt(cap)}</span>
         <div class="gear-slot__icon">
           <span class="ico-ph">${icon}</span>
           <img class="ico-img" src="assets/gear/${slot.id}.png" alt="" onerror="this.remove()" />
@@ -608,6 +616,9 @@ G.ui = {
     node.innerHTML = G.data.slots.map(slotCard).join("");
     node.querySelectorAll("[data-levelup]").forEach((b) => {
       b.addEventListener("click", () => this.doGearLevelUp(b.dataset.levelup));
+    });
+    node.querySelectorAll("[data-promote]").forEach((b) => {
+      b.addEventListener("click", () => this.doGearPromote(b.dataset.promote));
     });
     node.querySelectorAll(".gear-slot[data-tip]").forEach((s) => {
       s.addEventListener("mouseenter", () => this.showGearTip(s));
@@ -670,6 +681,18 @@ G.ui = {
     const done = G.gear.levelUpTimes(item, this.gearMult);
     if (done > 0) this.log(`${item.name} → Lv. ${item.level}`, "good");
     else this.log("Not enough Lumens.", "bad");
+    this.renderAll();
+  },
+
+  doGearPromote(slotId) {
+    const item = G.state.data.equipped[slotId];
+    if (!item) return;
+    if (G.gear.promote(item)) {
+      const np = G.state.data.equipped[slotId];
+      this.log(`${np.name} promoted to ${np.rarityName}! (cap ${G.util.fmt(G.gear.cap(np))})`, "good");
+    } else {
+      this.log("Cannot promote yet — reach the cap and gather materials.", "bad");
+    }
     this.renderAll();
   },
 

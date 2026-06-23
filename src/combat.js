@@ -31,48 +31,102 @@ G.combat = {
     return pool;
   },
 
+  // ---------- estrutura de inimigos (ENEMY_STRUCTURE_V1) ----------
+  // helpers de threshold/chance — leem placeholders de data.balance + passivas Fracture.
+  areaHasMiniBoss(area) { return !!(area.miniBoss || area.miniBossRandom); },
+  areaHasElite(area) { return area.id !== 1; }, // Área 1 só Common/Rare/Boss
+
+  // kills até o Mini Boss (reduzido pela passiva Fracture "miniBossThreshold")
+  miniBossRequired() {
+    const base = G.data.balance.miniBossKillsRequired;
+    const red = G.passives ? (G.passives.effect("miniBossThreshold") || 0) / 100 : 0;
+    return Math.max(1, Math.ceil(base * Math.max(0, 1 - red)));
+  },
+  bossRespawnRequired() { return Math.max(1, G.data.balance.bossRespawnKillsRequired); },
+  // chance de Elite (somada pela passiva Fracture "eliteChance")
+  eliteChance() {
+    const base = G.data.balance.eliteChance || 0;
+    const add = G.passives ? (G.passives.effect("eliteChance") || 0) / 100 : 0;
+    return G.util.clamp(base + add, 0, 1);
+  },
+
+  // decide o TIPO do próximo encontro (boss > miniBoss > elite > common/rare).
+  // thresholds/chances são placeholders — nenhum número é final.
+  chooseEncounter(area, atCap, rng) {
+    rng = rng || Math.random;
+    const d = G.state.data;
+    if (atCap && area.boss && !d.bossOnCooldown) return "boss";
+    if (this.areaHasMiniBoss(area) && (d.miniBossProgress || 0) >= this.miniBossRequired()) return "miniBoss";
+    if (this.areaHasElite(area) && rng() < this.eliteChance()) return "elite";
+    return "common"; // (Rare é decidido dentro do ramo common)
+  },
+
+  // Mini Boss da área (Área 9: sorteia entre os Mini Bosses das áreas anteriores)
+  pickMiniBoss(area, rng) {
+    if (area.miniBossRandom) {
+      const pool = [];
+      for (const a of G.data.areas) if (a.miniBoss) pool.push(a.miniBoss);
+      if (pool.length) return rng ? pool[Math.floor(rng() * pool.length)] : G.util.pick(pool);
+      return area.boss || { name: "Mini Boss", sprite: "🔱" };
+    }
+    return area.miniBoss;
+  },
+
   // ----- cria o próximo inimigo (vida exponencial no nível do MOB) -----
   spawn() {
     const b = G.data.balance;
     const area = G.data.currentArea();
     // nível do mob = SEU nível (sobe junto com o player), limitado à faixa da área
     const level = G.util.clamp(G.state.data.level, area.levelRange[0], area.levelRange[1]);
-    // chegou no teto da área => boss da área (se a área TIVER boss)
     const atCap = G.state.data.level >= area.levelRange[1];
-    const isBoss = atCap && !!area.boss;
-    // área SEM boss: ao atingir o teto, libera a próxima automaticamente
+
+    // contadores de threshold são por SESSÃO de área: zeram ao trocar de área
+    if (this._lastAreaIndex !== G.state.data.areaIndex) {
+      this._lastAreaIndex = G.state.data.areaIndex;
+      G.state.data.miniBossProgress = 0;
+      G.state.data.bossProgress = 0;
+      G.state.data.bossOnCooldown = false;
+    }
+    // segurança (legado): área sem boss no teto libera a próxima
     if (atCap && !area.boss) this.unlockNext();
 
-    // HP em estágios (piecewise); ATK em crescimento único
-    const hp = G.data.mobHpAt(level);
+    const type = this.chooseEncounter(area, atCap);
+
+    // HP em DOIS NÍVEIS: curva interna da área atual; ATK global no nível do mob.
+    const hp = G.data.mobHpAt(level, area);
     const atk = b.mobAtkBase * Math.pow(b.mobAtkGrowth, level - 1);
 
-    let def, maxHp, dmg, lumens, xp, name, rarity = null;
-    if (isBoss) {
-      def = area.boss;
-      maxHp = hp * b.bossHpMult;
-      dmg = atk * b.bossDmgMult;
-      xp = b.baseXp * level * b.bossRewardMult;
+    let def, maxHp = hp, dmg = atk, xp = b.baseXp * level, rarity = null;
+    let isBoss = false, isElite = false, isMiniBoss = false, name;
+
+    if (type === "boss") {
+      def = area.boss; isBoss = true;
+      maxHp = hp * b.bossHpMult; dmg = atk * b.bossDmgMult; xp *= b.bossRewardMult;
       name = def.name;
+    } else if (type === "miniBoss") {
+      def = this.pickMiniBoss(area); isMiniBoss = true;
+      maxHp = hp * b.miniBossHpMult; dmg = atk * b.miniBossDmgMult; xp *= b.miniBossRewardMult;
+      name = def.name;
+      rarity = { tag: "Mini Boss", color: b.miniBossColor };
+    } else if (type === "elite") {
+      def = G.util.pick(this.enemyPool()); isElite = true;
+      maxHp = hp * b.eliteHpMult; dmg = atk * b.eliteDmgMult; xp *= b.eliteRewardMult;
+      name = def.name;
+      rarity = { tag: "Elite", color: b.eliteColor };
     } else {
-      // pool cumulativo: mobs de TODAS as áreas até a atual (sorteado aleatório)
+      // common pool, com chance de RARO / RARO+ (mais forte, nome de lore)
       def = G.util.pick(this.enemyPool());
-      maxHp = hp;
-      dmg = atk;
-      xp = b.baseXp * level;
       name = def.name;
-      // chance de virar RARO / RARO+ (mais forte, nome de lore, mais recompensa)
       const rm = G.data.rareMobs;
       if (rm && G.util.chance(rm.chance)) {
-        rarity = G.util.chance(rm.plusChance) ? rm.plus : rm.rare;
-        maxHp *= rarity.hpMult;
-        dmg *= rarity.dmgMult;
-        xp *= rarity.rewardMult;
-        name = G.util.pick(rarity.names);
+        const r = G.util.chance(rm.plusChance) ? rm.plus : rm.rare;
+        maxHp *= r.hpMult; dmg *= r.dmgMult; xp *= r.rewardMult;
+        name = G.util.pick(r.names);
+        rarity = { tag: r.tag, color: r.color };
       }
     }
-    // gold-base ANCORADO à vida do mob (boss/raro dão mais automaticamente via HP maior)
-    lumens = maxHp * b.goldRatio;
+    // gold-base ANCORADO à vida do mob (tipos mais fortes dão mais via HP maior)
+    const lumens = maxHp * b.goldRatio;
     this.spawnCount++;
 
     this.enemy = {
@@ -80,7 +134,7 @@ G.combat = {
       sprite: def.sprite,
       img: def.img,
       level,
-      isBoss,
+      isBoss, isElite, isMiniBoss,
       rarity: rarity ? { tag: rarity.tag, color: rarity.color } : null,
       maxHp: Math.ceil(maxHp),
       hp: Math.ceil(maxHp),
@@ -124,8 +178,19 @@ G.combat = {
   },
 
   // ----- aplica o dano no impacto (quando o projétil chega) -----
+  // dano extra por TIPO de alvo (passivas Éclat: Boss Damage / Elite Damage)
+  typeDamageMult() {
+    if (!G.passives || !this.enemy) return 1;
+    let m = 1;
+    if (this.enemy.isBoss) m += (G.passives.effect("bossDmg") || 0) / 100;
+    if (this.enemy.isElite) m += (G.passives.effect("eliteDmg") || 0) / 100;
+    return m;
+  },
+
   applyHitToEnemy(dmg, crit) {
     if (!this.enemy) return; // o mob já morreu antes do bolt chegar
+    const m = this.typeDamageMult();
+    if (m !== 1) dmg = Math.ceil(dmg * m);
     if (G.ui && G.ui.floater) G.ui.floater(dmg, crit ? "crit" : "hit");
     this.enemy.hp -= dmg;
     if (this.enemy.hp <= 0) this.onKill();
@@ -164,10 +229,34 @@ G.combat = {
   // ----- inimigo morreu: recompensas, cura, loot, próximo -----
   onKill() {
     const e = this.enemy;
-    const s = G.state.stats(); // ecoMult já embutido em lumensBonus/xpBonus via state.stats()
+    const s = G.state.stats(); // bônus de passiva já embutidos em lumensBonus/xpBonus
     const lumens = Math.ceil(e.lumens * (1 + s.lumensBonus / 100));
     G.state.data.lumens += lumens;
     G.state.data.xp += Math.round(e.xp * (1 + s.xpBonus / 100));
+
+    // contadores da run (alimentam a fórmula de Pontos de Convergence)
+    const d = G.state.data;
+    d.runKills = (d.runKills || 0) + 1;
+    d.totalKills = (d.totalKills || 0) + 1; // acumulado (requisito de Awaken)
+    if (e.isBoss) d.runBosses = (d.runBosses || 0) + 1;
+    if ((d.runMaxAreaIndex || 0) < d.areaIndex) d.runMaxAreaIndex = d.areaIndex;
+
+    // thresholds de encontro (ENEMY_STRUCTURE_V1) — infra; números placeholders
+    if (e.isBoss) {
+      // Boss derrotado: entra em cooldown e inicia novo threshold de respawn
+      d.bossOnCooldown = true;
+      d.bossProgress = 0;
+    } else if (e.isMiniBoss) {
+      // Mini Boss derrotado: o threshold reinicia
+      d.miniBossProgress = 0;
+    } else {
+      // kills normais (common/rare/elite) avançam os thresholds
+      d.miniBossProgress = (d.miniBossProgress || 0) + 1;
+      if (d.bossOnCooldown) {
+        d.bossProgress = (d.bossProgress || 0) + 1;
+        if (d.bossProgress >= this.bossRespawnRequired()) d.bossOnCooldown = false; // boss volta a aparecer
+      }
+    }
 
     if (G.ui && G.ui.log)
       G.ui.log(
@@ -175,18 +264,18 @@ G.combat = {
         e.isBoss ? "boss" : "good"
       );
 
+    // drops de materiais (fundação econômica — tabela/quantidades placeholders).
+    // Alimenta gearMaterials/awakenMaterials; passivas Vestige/Fracture modulam.
+    if (G.economy) G.economy.rollDrops(e);
+
     // fôlego: cura uma fração do HP a cada kill
     const heal = G.state.maxHp() * G.data.balance.healOnKillFrac;
     G.state.data.hp = Math.min(G.state.maxHp(), G.state.data.hp + heal);
 
     // loot DESLIGADO por enquanto (gear agora é 6 peças fixas que sobem de
     // nível com ouro). O sistema de drop/inventário fica reservado p/ futuro.
-
-    // Awakening Essence: dropa na Área 7+ (índice 6+) — alimenta o Awaken
-    const matMult = G.passives ? G.passives.materialsMult() : 1;
-    if (G.state.data.areaIndex >= 6 && G.util.chance(G.data.balance.awakenDropChance * matMult)) {
-      G.state.data.awakenEssence = (G.state.data.awakenEssence || 0) + 1;
-    }
+    // (O Awaken Material agora vem do sistema de drop — Mini Boss/Boss via
+    //  economy.rollDrops; a antiga "Awakening Essence" por kill foi removida.)
 
     // boss derrotado => LIBERA a próxima sub-área (o jogador decide quando avançar)
     if (e.isBoss) this.markBossCleared();
