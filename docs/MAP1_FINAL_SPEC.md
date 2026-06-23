@@ -148,8 +148,9 @@ decisão canônica (`ASCENSION_SYSTEM_V1` + `CANONICAL_ALIGNMENT_AUDIT_V1`).
 - **Requisitos:** **Awaken (First Light) concluído** + **Boss Final derrotado** +
   **3 Mémoires da Era I encontradas** + (outros requisitos específicos do mapa).
 - **Recompensas (4):** (1) **Rank** (Illuminate); (2) **Transformação visual**
-  permanente; (3) **3 Mémoires da Era I** (recompensa principal); (4) **Bônus
-  permanente pequeno** (nunca compete com Awaken).
+  permanente; (3) **Compreensão e contextualização das 3 Mémoires da Era I** já
+  encontradas durante a jornada *(a Ascension NÃO concede Mémoires — ver
+  `MEMOIRES_V1`)*; (4) **Bônus permanente pequeno** (nunca compete com Awaken).
 - **NPC:** **Séraphine, Doyenne de l'Ordre** (preside a cerimônia).
 - **NÃO** reseta a Convergence (decisão canônica — Ascension é marco leve).
 
@@ -163,20 +164,21 @@ decisão canônica (`ASCENSION_SYSTEM_V1` + `CANONICAL_ALIGNMENT_AUDIT_V1`).
 **Moeda da memória** — **não implementada** (decisão canônica de restauração,
 `CANONICAL_ALIGNMENT_AUDIT_V1`).
 
-- **Papel:** permanente (nunca reseta); **compra as Mémoires**.
+- **Papel:** permanente (nunca reseta); moeda **exclusiva** das Mémoires (nenhum
+  outro sistema consome Éclats). Recurso **automático** (não ocupa inventário).
 - **Hierarquia das moedas:** **Lumens (run) < Vestiges (permanente/Passivas) <
   Éclats (Mémoires)**.
-- **Origem no Mapa 1:** drops de Bosses / Mini Bosses / Elites (fonte já prevista no
-  sistema de drop) — magnitudes [PH] / a definir na Fase 3.
+- **Origem no Mapa 1:** **Mini Boss · Boss · Ascension** [PH] (ver `MEMOIRES_V1`).
 - É o recurso-título do jogo (Éclats *of Lumière*); essencial, não redundante.
 
 ---
 
 ## 9. Mémoires da Era I 📄
 
-**3 Mémoires** (Era I = Mapa 1), liberadas pela **Ascension I**, compradas com
-**Éclats**, movidas pelo motor **Clarté** (dano × `1.07^Σníveis`). **Não
-implementadas.** Tema: **o amanhecer de Lumière**.
+**3 Mémoires** (Era I = Mapa 1). São **encontradas durante a jornada** (drop, uma
+vez cada — de qualquer tipo de inimigo, chance maior em conteúdo mais difícil) e
+depois **restauradas/evoluídas com Éclats**. **Não implementadas.** Tema: **o
+amanhecer de Lumière**. Spec completa: `MEMOIRES_V1`.
 
 | # | Mémoire | Relíquia (arte aprovada) | História | Efeito (knob) |
 |---|---|---|---|---|
@@ -184,10 +186,14 @@ implementadas.** Tema: **o amanhecer de Lumière**.
 | 2 | **des Rires** | caixa de música com figuras de luz dançando | a vida e a alegria | × **TODA a economia** *(GDD: +10% Lumens)* |
 | 3 | **de la Marche** | botas com trilha de pegadas de luz | a jornada / expansão | × **a Convergence** *(GDD: +8% XP)* |
 
-- **Desbloqueio (Era 1):** 10 Éclats por Mémoire [PH]; evolução `2 × 3.0^n` [PH].
+- **Estados:** Não Encontrada (Lv0) → Encontrada (Lv0) → **Restaurada** (Lv1) →
+  Evolução (Lv2–10). Máx **Lv10**; não maximizar no Mapa 1.
+- **Restaurar** (Lv1) e **evoluir** (Lv2–10) custam **Éclats** [PH]. Quando as 3
+  chegam ao Lv10 → **Era I Restaurada** (amplificação das 3 [PH]).
 - Texto narrativo por Mémoire = a memória de Lumière (veículo da narrativa).
 
-> Detalhes completos das 15: `MEMOIRES_CODEX_FULL.md`. Aqui **só a Era I**.
+> Spec jogável: `MEMOIRES_V1`. Lore/arte das 15: `MEMOIRES_CODEX_FULL.md`. Aqui
+> **só a Era I**.
 
 ---
 
@@ -200,7 +206,8 @@ em conjunto:
    `markBossCleared` já marcam isso no código.)
 2. **Awaken concluído** — *First Light*. 🟡 (sistema implementado; requisitos [PH].)
 3. **3 Mémoires da Era I encontradas**. 📄 (depende de Éclats + Mémoires.)
-4. **Ascension I executada** → rank **Illuminate** + 3 Mémoires + bônus pequeno. 📄
+4. **Ascension I executada** → rank **Illuminate** + **contextualização** das
+   Mémoires da Era I + bônus pequeno (a Ascension **não concede** Mémoires). 📄
 
 **Estado esperado ao concluir** (canon): **8–12 Convergences**, várias passivas,
 algumas peças **Uncommon**, materiais suficientes para o First Light, e a

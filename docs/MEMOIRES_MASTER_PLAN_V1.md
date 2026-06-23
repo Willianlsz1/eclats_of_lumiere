@@ -1,8 +1,12 @@
 # MEMOIRES_MASTER_PLAN_V1
 
 > Documento de design **canônico** — *sujeito a mudanças (draft narrativo)*.
-> Detalha as 15 Mémoires da campanha (3 por mapa) que o sistema de
-> `ASCENSION_SYSTEM_V1` entrega. Conteúdo narrativo; nenhuma implementação aqui.
+> Detalha as 15 Mémoires da campanha (3 por mapa). Conteúdo **narrativo**.
+>
+> 🔄 **Revisado por `MEMOIRES_V1`:** a **aquisição** mudou — as Mémoires são
+> **encontradas durante a jornada** (drops), **não entregues pela Ascension**. As
+> marcações "Mémoire Maior (entregue na Ascension)" abaixo descrevem o **peso
+> narrativo** (a memória mais importante do mapa), não o mecanismo de obtenção.
 
 ---
 

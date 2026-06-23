@@ -92,7 +92,10 @@ Mudança **permanente** no personagem. Exemplos: vestimentas · halo · luz · c
 efeitos.
 
 ### 3. Mémoires
-**Principal recompensa do sistema.** Cada Ascension desbloqueia **três Mémoires**.
+> 🔄 **Revisado por `MEMOIRES_V1`:** a Ascension **NÃO concede Mémoires**. As
+> Mémoires são **encontradas durante a jornada** (drops). A Ascension entrega, no
+> lugar, **compreensão e contextualização das 3 Mémoires da Era I já encontradas**
+> — recompensa narrativa, não a posse das Mémoires.
 
 ### 4. Bônus Permanente
 Pequeno bônus **global**.
