@@ -74,7 +74,7 @@ ok(G.memoires.get("premierMatin").state === "restored", "pity não rebaixa uma M
 
 // ---------- CP-3E: Ascension I + rank por Ascension ----------
 store = {}; G.state.data = null; G.state.load();
-ok(G.ascension.count() === 0 && G.ascension.rank() === "Seeker", "rank inicial = Seeker (0 ascensions)");
+ok(G.ascension.count() === 0 && G.ascension.rank() === "Endormi", "rank inicial = Endormi (antes do Awaken)");
 ok(G.ascension.canAscend() === false, "não pode ascender sem requisitos");
 // satisfaz os 3 requisitos
 const req = G.awaken.def("first_light").requirements;
@@ -83,6 +83,7 @@ G.state.data.guardianDefeated = true;            // Guardião da Á9 derrotado (
 G.state.data.totalKills = req.kills; G.state.data.convergences = req.convergences;
 G.state.data.awakenMaterials.firstLight = req.materials.firstLight;
 G.awaken.awaken("first_light");                 // Awaken ✓
+ok(G.ascension.rank() === "Seeker", "após o Awaken (First Light) o rank vira Seeker");
 G.state.data.mapOneCleared = true;               // Boss Final ✓
 for (const id of G.memoires.all()) G.state.data.memoires[id] = { state: "restored", level: 10 }; // Era I Restaurada ✓
 ok(G.ascension.requirements().every((r) => r.met), "3 requisitos da Ascension I atendidos");

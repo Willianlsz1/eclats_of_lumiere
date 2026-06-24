@@ -1,18 +1,13 @@
 // =============================================================
 // data.js — CONTEÚDO do jogo (a "fonte da verdade" do que existe)
 // =============================================================
-// Inimigos, raridades, afixos, slots e tiers do herói.
+// Inimigos, raridades, afixos e slots. (O rank do herói mora em ascension.js.)
 // Mexer no balanceamento do jogo = mexer só aqui. Nenhuma lógica.
 
 G.data = {
-  // ---- Tiers do Seeker (escada T1->T5 do art direction) ----
-  tiers: [
-    { level: 1, name: "Seeker", code: "T1" },
-    { level: 10, name: "Illuminate", code: "T2" },
-    { level: 25, name: "Éclairé", code: "T3" },
-    { level: 50, name: "L'Éveillé", code: "T4" },
-    { level: 100, name: "Lumière", code: "T5" },
-  ],
+  // (rank do herói NÃO mora mais aqui — a escada por Ascensão vive em
+  //  ascension.js: Endormi → Seeker → Illuminate → Éclairé → L'Éveillé → Lumière.
+  //  data.tiers, que era por nível, foi removido — CANON_V2 §4.)
 
   // ---- Slots de equipamento (6 PEÇAS FIXAS) ----
   // Modelo estilo Gaiadon: as peças são permanentes (não dropam, não trocam).

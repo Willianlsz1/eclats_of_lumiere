@@ -8,11 +8,18 @@
 // Sem novos recursos/camadas de poder: só registra o marco e o rank.
 
 G.ascension = {
-  // ranks da Ordre por nº de Ascensions (0 = Seeker, 1 = Illuminate, …)
+  // ranks da Ordre por nº de Ascensions (0 = Seeker, 1 = Illuminate, …).
+  // Antes do Awaken o herói é "Endormi" (CANON_V2 §3-4) — estado pré-escada.
   RANKS: ["Seeker", "Illuminate", "Éclairé", "L'Éveillé", "Lumière"],
 
   count() { return G.state.data.ascensions || 0; },
-  rank() { return this.RANKS[G.util.clamp(this.count(), 0, this.RANKS.length - 1)]; },
+  // herói desperto? (First Light concluído) — o Awaken é o que o torna um Seeker
+  isAwakened() { return !!(G.awaken && G.awaken.isDone("first_light")); },
+  rankIndex() { return G.util.clamp(this.count(), 0, this.RANKS.length - 1); },
+  rank() { return this.isAwakened() ? this.RANKS[this.rankIndex()] : "Endormi"; },
+  // código curto p/ a UI (T1…T5); "—" enquanto Endormi
+  rankCode() { return this.isAwakened() ? "T" + (this.rankIndex() + 1) : "—"; },
+  rankInfo() { return { code: this.rankCode(), name: this.rank() }; },
 
   // requisitos da Ascension I (para a UI): [{ key, met }]
   requirements() {

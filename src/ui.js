@@ -616,10 +616,9 @@ G.ui = {
   },
 
   currentTier() {
-    // rank por ASCENSION (CP-3E) — substitui o rank por nível. data.tiers reusado
-    // como escada de nomes, indexado pelo nº de ascensions (0 = Seeker …).
-    const a = G.ascension ? G.ascension.count() : 0;
-    return G.data.tiers[G.util.clamp(a, 0, G.data.tiers.length - 1)];
+    // rank por ASCENSION (CANON_V2 §4): Endormi (pré-Awaken) → Seeker → Illuminate …
+    // A escada de nomes vive em G.ascension (data.tiers foi removido).
+    return G.ascension ? G.ascension.rankInfo() : { code: "—", name: "Endormi" };
   },
 
   renderHero() {
