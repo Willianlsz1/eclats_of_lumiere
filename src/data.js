@@ -303,7 +303,8 @@ G.data = {
       tier: 1,
       lore: "In the astral hush, the light you carry stirs for the first time — and answers.",
       requirements: {
-        area: 9,                       // conclusão do Mapa 1 (Área 9)
+        area: 9,                       // alcançar a Área 9 (fim do Mapa 1)
+        guardian: true,                // DERROTAR o Guardião da Área 9 (gate canônico — CANON_V2 §3)
         level: 4051,                   // nível mínimo (início da Área 9)  [placeholder]
         kills: 0,                      // kills acumuladas mínimas          [placeholder]
         convergences: 8,               // convergences mínimas              [placeholder]

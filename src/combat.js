@@ -246,6 +246,8 @@ G.combat = {
       // Boss derrotado: entra em cooldown e inicia novo threshold de respawn
       d.bossOnCooldown = true;
       d.bossProgress = 0;
+      // Guardião (Área 9 / fim do Mapa 1) = gate do Awaken (CANON_V2 §3)
+      if (d.areaIndex === 8) d.guardianDefeated = true;
     } else if (e.isMiniBoss) {
       // Mini Boss derrotado: o threshold reinicia
       d.miniBossProgress = 0;
@@ -321,11 +323,11 @@ G.combat = {
     if (d.areaIndex < G.data.areas.length - 1) {
       this.unlockNext();
     } else if (!d.mapOneCleared) {
-      // última sub-área = clímax do Mapa 1 (gancho pro Mapa 2)
+      // última sub-área (Área 20, fim do Mapa 2/Cavernes Luminis) = fim do Continente 1
       d.mapOneCleared = true;
       if (G.ui && G.ui.log) {
-        G.ui.log("✦ The Dreaming Wood falls silent. The Gilded Hollow is undone — Map 1 complete.", "boss");
-        G.ui.log("✦ In the hush, a cold crystalline call echoes from deep below: fragments singing in the Cavernes Luminis. Something deeper begins to wake.", "boss");
+        G.ui.log("✦ The Gilded Hollow is undone. The Cavernes Luminis fall silent — Continent 1 complete.", "boss");
+        G.ui.log("✦ The fragments of Era I are gathered. The light gathered here is enough to Ascend.", "boss");
       }
     }
   },

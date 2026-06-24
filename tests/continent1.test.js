@@ -79,6 +79,7 @@ ok(G.ascension.canAscend() === false, "não pode ascender sem requisitos");
 // satisfaz os 3 requisitos
 const req = G.awaken.def("first_light").requirements;
 G.state.data.maxAreaUnlocked = req.area - 1; G.state.data.level = req.level;
+G.state.data.guardianDefeated = true;            // Guardião da Á9 derrotado (gate do Awaken)
 G.state.data.totalKills = req.kills; G.state.data.convergences = req.convergences;
 G.state.data.awakenMaterials.firstLight = req.materials.firstLight;
 G.awaken.awaken("first_light");                 // Awaken ✓

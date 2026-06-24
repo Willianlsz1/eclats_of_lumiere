@@ -92,6 +92,7 @@ G.passives.UNIT.awakenReqReduction = 0; G.state.data.passives.fracture[5] = 0;
 fresh();
 const req = G.awaken.def("first_light").requirements;
 G.state.data.maxAreaUnlocked = req.area - 1; G.state.data.level = req.level;
+G.state.data.guardianDefeated = true;            // Guardião da Á9 derrotado (gate do Awaken)
 G.state.data.totalKills = req.kills; G.state.data.convergences = req.convergences;
 G.state.data.awakenMaterials.firstLight = req.materials.firstLight;
 G.state.invalidateStats();                       // nível mudou → recomputar baseline

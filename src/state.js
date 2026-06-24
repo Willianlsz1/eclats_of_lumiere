@@ -21,7 +21,8 @@ G.state = {
       inventory: [],         // (loot desligado por enquanto — mantido p/ futuro)
       areaIndex: 0,          // sub-área atual do Mapa 1 (0 = The Dreaming Wood)
       maxAreaUnlocked: 0,    // maior sub-área liberada (boss anterior derrotado)
-      mapOneCleared: false,  // Mapa 1 concluído (boss final derrotado ao menos 1x)
+      mapOneCleared: false,  // Continente 1 concluído (Boss Final da Área 20 derrotado ao menos 1x)
+      guardianDefeated: false, // Guardião (Área 9 / fim do Mapa 1) derrotado — gate do Awaken
       convergencePoints: 0,  // moeda de prestige (gasta nas passivas — ver convergence.js)
       convergences: 0,       // quantas vezes renasceu
       highestLevel: 1,       // recorde de nível (não reseta na Convergence)

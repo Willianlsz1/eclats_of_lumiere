@@ -45,6 +45,12 @@ G.awaken = {
       const have = this.playerValue(key);
       out.push({ key, need, have, met: have >= need });
     }
+    // gate do Guardião (booleano): exige DERROTAR o Guardião da Área 9, não só
+    // alcançá-la (CANON_V2 §3). Independe do requisito numérico "area".
+    if (r.guardian) {
+      const have = G.state.data.guardianDefeated ? 1 : 0;
+      out.push({ key: "guardian", need: 1, have, met: have >= 1 });
+    }
     if (r.materials) {
       for (const mk of Object.keys(r.materials)) {
         const have = G.economy ? G.economy.getAwaken(mk) : 0;

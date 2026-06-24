@@ -1,13 +1,13 @@
 // =============================================================
-// memoires.js — DESCOBERTA das Mémoires (CP-2B) — Era I apenas
+// memoires.js — Mémoires (Era I) — descoberta, restauração e níveis
 // =============================================================
-// Conforme MEMOIRES_V1. Esta camada implementa SOMENTE a descoberta:
-// estados notFound/found, find/remaining, tabela de descoberta e o roll.
-// NÃO há Éclats como custo, restauração, níveis, efeitos, Era Restaurada nem
-// Ascension — isso vem em CPs seguintes.
+// Conforme MEMOIRES_V1 / CANON_V2. Sistema completo da Era I:
+// estados notFound→found→restored, descoberta (tabela + roll + pity por área),
+// restauração e níveis (Lv1–Lv10) pagos em Éclats, e a Era Restaurada (derivada).
+// Os bônus mecânicos próprios de cada Mémoire (CANON_V2 §2) ainda NÃO estão
+// ligados aqui — são uma camada futura.
 //
-// O estado usa `state` (string), não `found:true/false`, p/ evitar migração
-// quando os estados "restored"/níveis entrarem no CP-2C.
+// O estado usa `state` (string: notFound/found/restored), não found:true/false.
 
 G.memoires = {
   STATES: { NOT_FOUND: "notFound", FOUND: "found", RESTORED: "restored" },

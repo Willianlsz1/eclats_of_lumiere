@@ -24,6 +24,7 @@ const FL = "first_light";
 function satisfyAll() {
   const d = G.state.data, req = G.awaken.def(FL).requirements;
   d.maxAreaUnlocked = req.area - 1;          // area (1-based) alcançada
+  d.guardianDefeated = true;                 // Guardião da Á9 derrotado (gate canônico)
   d.level = req.level;
   d.totalKills = req.kills;
   d.convergences = req.convergences;
@@ -48,6 +49,13 @@ satisfyAll();
 const all = G.awaken.requirements(FL);
 ok(all.every((r) => r.met), "todos os requisitos ficam concluídos quando satisfeitos");
 ok(G.awaken.canAwaken(FL) === true, "com tudo satisfeito, pode realizar Awaken");
+
+// 3b) gate do Guardião: derrotar o Guardião (Á9) é requisito; só alcançar a área não basta
+G.state.data.guardianDefeated = false;
+ok(G.awaken.requirements(FL).some((r) => r.key === "guardian"), "First Light lista o gate do Guardião");
+ok(G.awaken.canAwaken(FL) === false, "sem derrotar o Guardião -> não pode (mesmo alcançando a Á9)");
+G.state.data.guardianDefeated = true;
+ok(G.awaken.canAwaken(FL) === true, "com o Guardião derrotado -> pode");
 
 // 4) requisito de material é checado de fato
 G.state.data.awakenMaterials.firstLight = 0;
