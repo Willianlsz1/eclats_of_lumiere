@@ -130,10 +130,19 @@ O nível da Mémoire (Lv1–Lv10) escala a magnitude do seu efeito.
 - Moeda = **Vestiges**; árvore destrava na 1ª Convergence.
 - Supera a estrutura auditada em `PASSIVES_AUDIT.md` (45 nós, ~28 clones, 3 mortos).
 
-## 8. Pendências ainda em aberto
+## 8. Identidade das árvores de passiva (Decisão 10)
 
-- **"Fracture"**: nó/árvore de passiva (HP/defesa) vs. La Fracture (evento cósmico da
-  lore) — mesmo nome, coisas diferentes. (Última pergunta do grill.)
+A palavra **"Fracture"** é mantida na árvore (não renomear) — é **proposital**: a
+árvore homônima de *La Fracture* (o evento cósmico) é a **mais forte**, a da
+**meta-progressão**. Trinca de papéis:
+
+- **Éclat** → poder **imediato** (dano agora).
+- **Vestige** → **recursos** (economia).
+- **Fracture** → **longo prazo / meta** — seus nós são **fracos no início mas escalam
+  até dominar** (composição, profundidade, resets). Aposta de longo prazo. Ver a
+  árvore redesenhada em `PASSIVES_V1.md`.
+
+> Entrevista "grill me with docs" **encerrada** — 10 decisões registradas.
 
 ---
 

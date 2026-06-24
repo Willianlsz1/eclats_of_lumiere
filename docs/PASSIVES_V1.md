@@ -36,26 +36,40 @@
 | **Eternal Vestige** | **motor**: ×Lumens composto por nível | já existe (engine) |
 | **The Collector** | **+chance de Éclats** por kill | 🆕 novo (toca a meta-moeda) |
 
-## 🔵 Árvore FRACTURE — Defesa / Utilidade
-| Nó | Papel | Status no código |
-|---|---|---|
-| **Last Light** | +% HP | já existe |
-| **Void Endurance** | **motor**: ×HP composto por nível | já existe (engine) |
-| **Nihel's Shadow** | **regeneração de HP** (sustain) | 🆕 novo |
-| **Weakened Void** | **+chance de Elite** (mais elites = mais loot) | código já suporta (`eliteChance`) — revive nó morto |
-| **Void Awareness** | **reduz o limite do Mini Boss** (aparecem mais cedo) | código já suporta (`miniBossThreshold`) — revive nó morto |
+## 🔵 Árvore FRACTURE — A Quebra / Meta-progressão
+> **Identidade (Decisão 10):** a árvore leva o nome do evento cósmico *La Fracture*.
+> Seus nós são **fracos no início, mas escalam até serem os mais fortes** — efeitos
+> de **longo prazo / meta-progressão** que crescem com profundidade, resets e
+> composição. É uma aposta de longo prazo (vs. Éclat = poder imediato, Vestige =
+> recursos).
+
+| Nó | Papel | Caráter slow-burn | Status no código |
+|---|---|---|---|
+| **Last Light** | +% HP base | base humilde de sobrevivência | já existe |
+| **Void Endurance** | **motor**: ×HP composto por nível | composto — ínfimo cedo, enorme depois | já existe (engine) |
+| **Nihel's Shadow** | bônus de poder que **cresce com a profundidade** (áreas alcançadas) | fraco na Área 2, forte na Área 20 | 🆕 novo |
+| **The Fracture's Gift** | bônus global que **cresce a cada Convergence feita** | acumula a cada reset | 🆕 novo |
+| **Claimed Domination** | **multiplicador global** (amplifica dano **e** economia) | minúsculo no início, domina no fim | 🆕 novo |
+
+> **Nota:** as utilidades de encontro (chance de Elite, limite de Mini Boss — nós
+> "Weakened Void"/"Void Awareness") **saíram** da Fracture (não combinam com o papel
+> meta). Reservadas para um tier/árvore futura. **Void Piercing** também fica fora do
+> tier 1.
 
 ---
 
 ## Notas de implementação
-- **Reaproveita o código existente** para 11 dos 15 nós (multiplicadores de árvore,
-  engines, crit, atk speed, materiais, `eliteChance`, `miniBossThreshold`).
-- **Apenas 4 efeitos novos:** Execute (dano condicional vs Boss/Mini Boss),
-  Vestige Pull (+ganho de Vestiges), The Collector (+chance de Éclats), Nihel's
-  Shadow (regen de HP).
-- **Resolve 2 dos 3 nós mortos** do audit (Weakened Void, Void Awareness). O 3º
-  (Void Piercing) **sai** do tier do Continente 1 (penetração fica p/ continente futuro).
+- **Reaproveita o código existente** para os efeitos diretos (multiplicadores de
+  árvore, engines, crit, atk speed, materiais, Lumens, HP).
+- **Efeitos novos (6):** Execute (dano vs Boss/Mini Boss), Vestige Pull (+ganho de
+  Vestiges), The Collector (+chance de Éclats), e os 3 metas da Fracture — Nihel's
+  Shadow (escala com profundidade), The Fracture's Gift (escala com Convergences),
+  Claimed Domination (multiplicador global de dano+economia).
+- **Nós mortos do audit:** Weakened Void, Void Awareness e Void Piercing **ficam
+  fora do tier 1** (reservados para tier/árvore futura).
 - Mantém o gating atual (grupo abre quando o anterior está no nível 12); aqui o
   "próximo grupo" é o próximo continente.
+- **Trinca de papéis:** Éclat = poder imediato · Vestige = recursos · Fracture =
+  meta/longo prazo (fraca→mais forte).
 
 > **Pendência de balanceamento:** definir valores por nível de cada nó (Fase 3).
