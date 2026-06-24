@@ -45,19 +45,22 @@ As Mémoires **concedem bônus mecânico** (não são só narrativa). **Cada Mé
 um mecanismo próprio e distinto** — não são multiplicadores genéricos iguais.
 O nível da Mémoire (Lv1–Lv10) escala a magnitude do seu efeito.
 
-### Era I (Mapa 1) — as 3 Mémoires
-| Mémoire | História | Mecânica única | Escala por nível (rascunho, a balancear) |
-|---|---|---|---|
-| **du Premier Matin** | o amanhecer, a luz plena | **Acúmulo (ramp):** cada inimigo morto soma dano, empilhando até um teto; zera ao trocar de área (um novo amanhecer) | teto cresce com o nível (ex.: Lv1 +20% → Lv10 +200%) |
-| **des Rires** | a alegria, os risos | **Proc (sorte):** chance no kill de soltar **loot dobrado** (Lumens + materiais) | chance cresce com o nível (ex.: Lv1 5% → Lv10 50%) |
-| **de la Marche** | a jornada, a expansão | **Escala com progresso:** bônus permanente que cresce com o **nº de áreas já desbloqueadas** | valor por área cresce (ex.: Lv1 +1%/área → Lv10 +5%/área) |
+### Era I (Mapa 1) — as 3 Mémoires (IMPLEMENTADO)
+> Só valem quando **restauradas**; escalam com o nível (Lv1–10). Magnitudes 1ª
+> passagem em `memoires.js` (EFFECT_UNIT), ajustáveis na Fase 3.
 
-- **Princípio:** três *verbos de jogo* diferentes — **caçar** (ramp), **torcer pela
-  sorte** (proc), **avançar** (exploração). Nenhuma é "+% num número parado".
-- **Números acima são rascunho** — a fechar na fase de balanceamento.
-- **Pendência:** o motor global **Clarté** (×1.07^Σníveis) do design original
-  **não está decidido** aqui — as Mémoires da Era I usam os mecanismos próprios acima.
-  Decidir depois se Clarté coexiste como camada global.
+| Mémoire | História | Mecânica única (no código) | Sabor |
+|---|---|---|---|
+| **du Premier Matin** | o amanhecer, a luz plena | **Motor de dano** (`damageMult` × o dano) | poder |
+| **des Rires** | a alegria, os risos | **Proc:** chance de **Lumens × 2** por kill (`doubleLumensChance`) | sorte |
+| **de la Marche** | a jornada, a expansão | **Escala:** ganhos crescem com **áreas alcançadas** (`gainsMult`) | jornada |
+
+- **Princípio:** três *sabores* diferentes — **motor** (Premier Matin), **sorte**
+  (des Rires), **avançar** (de la Marche). Nenhuma é "+% parado".
+- Ligadas em `combat.js` (dano no `typeDamageMult`; Lumens no `onKill`). Testes:
+  `tests/memoires-effects.test.js`.
+- **Pendência futura:** o motor global **Clarté** (×1.07^Σníveis) do design original
+  fica fora por ora — as Mémoires usam os mecanismos próprios acima.
 
 ---
 
@@ -121,14 +124,29 @@ O nível da Mémoire (Lv1–Lv10) escala a magnitude do seu efeito.
   que é a Convergence e suas vantagens.
 - *(Atualiza/supera os docs que diziam "Área 3".)*
 
-## 7. Passivas (Decisão 9)
+## 7. Passivas (Decisão 9 — REVISADA na implementação)
 
-- **Continente 1 = 15 nós** (5 por árvore: Éclat / Vestige / Fracture), **primeiro
-  tier simples**, **cada nó distinto** (sem clones). Desenho completo em
-  **`docs/PASSIVES_V1.md`**.
-- Próximos continentes abrem +5 por árvore (Grupo 2, 3…).
-- Moeda = **Vestiges**; árvore destrava na 1ª Convergence.
-- Supera a estrutura auditada em `PASSIVES_AUDIT.md` (45 nós, ~28 clones, 3 mortos).
+> **Decisão de criador (implementada):** mantém-se a estrutura **3 árvores × 15 nós
+> (45)** que o motor, a UI (Árvore-Mundo) e o gating já suportavam — em vez de
+> encolher para 5/árvore (que seria churn sem ganho). O problema real do audit
+> (clones + nós mortos) foi resolvido por **dar a cada nó um efeito real e descrito**
+> e **injetar mecânicas memoráveis**, concentradas na Fracture. Isto **supera** a
+> simplificação "15 nós / 5 por árvore" do `PASSIVES_V1.md`.
+
+- **Continente 1 = 45 nós** (3 árvores × 15), **moeda = Vestiges**, destrava na 1ª
+  Convergence; gating: maximizar um grupo de 5 libera o próximo; nível máx 12.
+- **Cada nó FAZ algo** (magnitudes reais, 1ª passagem ajustável). Nenhum nó morto.
+- **Mecânicas memoráveis** (não "+%" genérico):
+  - **Éclat:** Bloodlust (dano por kill na run, zera na Convergence), Iron Body
+    (HP→dano), Slayer (Boss/Mini Boss), Exterminator (Elite).
+  - **Vestige:** Deep Explorer (Lumens por área), + economia/eficiência.
+  - **Fracture:** Ancient Memory (ATK/Convergence), Fractured Destiny (dano/área,
+    permanente), Perfect Cycle (mult global a cada 10 Convergences), Fragment
+    Resonance (cada Convergence amplifica TODAS as passivas).
+- Implementação: `src/passives.js` (UNIT/trees/EFFECT_DESC/dynDamageMult/dynLumensMult,
+  Resonance em `effects()`), ligada em `combat.js`/`economy.js`. Testes:
+  `tests/passives.test.js`. Próximos continentes abrem mais grupos.
+- Supera a estrutura auditada em `PASSIVES_AUDIT.md` (clones/mortos).
 
 ## 8. Identidade das árvores de passiva (Decisão 10)
 
@@ -146,20 +164,18 @@ A palavra **"Fracture"** é mantida na árvore (não renomear) — é **proposit
 
 ---
 
-## 9. Tarefas de implementação geradas por este canon
-*(infra/código — a executar em CPs futuros, fora desta entrevista)*
+## 9. Tarefas de implementação geradas por este canon — STATUS
 
-1. **UI World Map:** duas telas (Mapa 1 / Mapa 2), trocáveis; corrigir `ui.js`
-   (hoje só 9 nós; áreas 10–20 colapsam em `[50,50]`).
-2. **Awaken gate:** marcar "Guardião (Área 9) derrotado" e exigir no `awaken.js`.
-3. **Ranks:** adicionar `Endormi`; rank vira `Seeker` no Awaken; remover `data.tiers`
-   e a escada Mortal→Radiant Ascendant.
-4. **Mémoires Era I:** implementar os 3 mecanismos próprios (ramp / proc / escala).
-5. **Lore:** herói começa `Endormi`; First Light = despertar em Seeker.
-6. **Economia:** renomear `convergencePoints → Vestiges` (Decisão 7).
-7. **Convergence:** remover comentário "PLACEHOLDER" do gate=80 (agora canônico);
-   adicionar aviso/tutorial ao destravar (Decisão 8).
-8. **Passivas:** implementar os 15 nós de `PASSIVES_V1.md` (4 efeitos novos; reviver
-   Weakened Void e Void Awareness; tirar Void Piercing do tier 1).
-9. **Higiene:** corrigir log órfão do Boss Final (`combat.js` "Dreaming Wood / Map 1
-   complete"); corrigir header mentiroso de `memoires.js`.
+1. ⏳ **UI World Map:** duas telas (Mapa 1 / Mapa 2), trocáveis; corrigir `ui.js`
+   (hoje só 9 nós; áreas 10–20 colapsam em `[50,50]`). **PENDENTE.**
+2. ✅ **Awaken gate:** `guardianDefeated` marcado em `combat.js`, exigido em `awaken.js`.
+3. ✅ **Ranks:** `Endormi → Seeker` no Awaken; escada por Ascensão; `data.tiers` removido.
+4. ✅ **Mémoires Era I:** 3 bônus implementados (motor/proc/escala) — `memoires.js` + combate.
+5. ✅ **Lore:** `docs/LORE_AND_GAMEPLAY.md` (Endormi → First Light → Seeker). *(texto in-game/UI a revisar)*
+6. ✅ **Economia:** `convergencePoints → vestiges` + migração de save.
+7. ✅/⏳ **Convergence:** gate=80 canônico (✅); aviso/tutorial ao destravar (⏳ pendente).
+8. ✅ **Passivas:** 45 nós funcionais + mecânicas memoráveis (`passives.js`) — ver §7 revisado.
+9. ✅ **Higiene:** log do Boss Final corrigido; header de `memoires.js` corrigido.
+
+> Documentos-fonte: `SYSTEMS.md` (sistemas), `LORE_AND_GAMEPLAY.md` (lore↔gameplay),
+> `PASSIVES_V1.md` (intenção das passivas), este `CANON_V2.md` (decisões).
