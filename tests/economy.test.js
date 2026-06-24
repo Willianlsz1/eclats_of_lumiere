@@ -20,6 +20,8 @@ for (const f of ["util", "data", "gear", "passives", "awaken", "state", "economy
 let failed = 0;
 function ok(c, m) { console.log((c ? "PASS" : "FAIL") + " — " + m); if (!c) failed++; }
 const R0 = { rng: () => 0 }; // rng determinístico: chance passa, qty = min
+// índice de um nó pela effect key (robusto a reorganização das árvores)
+function nodeIdx(tree, key) { return G.passives.trees[tree].list.findIndex((n) => n[1] === key); }
 
 // 1) fresh inicializa materiais zerados
 store = {}; G.state.data = null; G.state.load();
@@ -59,16 +61,16 @@ ok(G.economy.getGear("uncommon") === before, "uncommon não aumentou na área 0"
 
 // 7) passivas Vestige: matCommonPct dobra quantidade (set direto p/ ignorar gating)
 store = {}; G.state.data = null; G.state.load();
-G.passives.UNIT.matCommonPct = 100; G.state.data.passives.vestige[6] = 1; G.state.invalidateStats();
+G.passives.UNIT.matCommonPct = 100; G.state.data.passives.vestige[nodeIdx("vestige", "matCommonPct")] = 1; G.state.invalidateStats();
 ok(G.passives.effect("matCommonPct") === 100, "passiva matCommonPct ativa (placeholder de teste)");
 ok(Math.abs(G.economy.passiveQtyMult("commonMaterial") - 2) < 1e-9, "matCommonPct 100% -> quantidade ×2");
 G.passives.UNIT.matCommonPct = 0;
 
 // 8) passivas Vestige: dropRate -> chance; Fracture: awakenMatPct -> awaken qty
-G.passives.UNIT.dropRate = 50; G.state.data.passives.vestige[9] = 1;
+G.passives.UNIT.dropRate = 50; G.state.data.passives.vestige[nodeIdx("vestige", "dropRate")] = 1;
 ok(Math.abs(G.economy.passiveChanceMult() - 1.5) < 1e-9, "dropRate 50% -> chance ×1.5");
 G.passives.UNIT.dropRate = 0;
-G.passives.UNIT.awakenMatPct = 100; G.state.data.passives.fracture[3] = 1;
+G.passives.UNIT.awakenMatPct = 100; G.state.data.passives.fracture[nodeIdx("fracture", "awakenMatPct")] = 1;
 ok(Math.abs(G.economy.passiveQtyMult("awakenMaterial") - 2) < 1e-9, "awakenMatPct 100% -> awaken qty ×2");
 G.passives.UNIT.awakenMatPct = 0;
 

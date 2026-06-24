@@ -178,11 +178,13 @@ G.combat = {
   },
 
   // ----- aplica o dano no impacto (quando o projétil chega) -----
-  // dano extra por TIPO de alvo (passivas Éclat: Boss Damage / Elite Damage)
+  // dano extra: por TIPO de alvo (Slayer = Boss/Mini Boss · Exterminator = Elite)
+  // + multiplicadores DINÂMICOS (Bloodlust, Fractured Destiny, Ancient Memory,
+  //   Perfect Cycle), que escalam com kills/áreas/convergences.
   typeDamageMult() {
     if (!G.passives || !this.enemy) return 1;
-    let m = 1;
-    if (this.enemy.isBoss) m += (G.passives.effect("bossDmg") || 0) / 100;
+    let m = G.passives.dynDamageMult();          // dinâmicos (Éclat + Fracture)
+    if (this.enemy.isBoss || this.enemy.isMiniBoss) m += (G.passives.effect("bossDmg") || 0) / 100;
     if (this.enemy.isElite) m += (G.passives.effect("eliteDmg") || 0) / 100;
     return m;
   },
@@ -230,7 +232,9 @@ G.combat = {
   onKill() {
     const e = this.enemy;
     const s = G.state.stats(); // bônus de passiva já embutidos em lumensBonus/xpBonus
-    const lumens = Math.ceil(e.lumens * (1 + s.lumensBonus / 100));
+    // Lumens: bônus estático (stats) × dinâmicos (Deep Explorer, Perfect Cycle)
+    const dynEco = G.passives ? G.passives.dynLumensMult() : 1;
+    const lumens = Math.ceil(e.lumens * (1 + s.lumensBonus / 100) * dynEco);
     G.state.data.lumens += lumens;
     G.state.data.xp += Math.round(e.xp * (1 + s.xpBonus / 100));
 

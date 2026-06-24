@@ -20,6 +20,8 @@ for (const f of ["util", "data", "gear", "passives", "awaken", "state", "economy
 let failed = 0;
 function ok(c, m) { console.log((c ? "PASS" : "FAIL") + " — " + m); if (!c) failed++; }
 function fresh() { store = {}; G.state.data = null; G.state.load(); }
+// índice de um nó pela effect key (robusto a reorganização das árvores)
+function nodeIdx(tree, key) { return G.passives.trees[tree].list.findIndex((n) => n[1] === key); }
 // liga um efeito de passiva por nó (bypass de gating) com magnitude de teste
 function setEffect(tree, idx, key, mag) { G.passives.UNIT[key] = mag; G.state.data.passives[tree][idx] = 1; G.state.invalidateStats(); }
 function clearEffect(tree, idx, key) { G.passives.UNIT[key] = 0; G.state.data.passives[tree][idx] = 0; G.state.invalidateStats(); }
@@ -39,16 +41,19 @@ ok(Math.abs(G.state.attackInterval() - 1 / 15) < 1e-9, "attackInterval respeita 
 // ---------- Task 3: efeitos órfãos resolvidos ----------
 // bossDmg / eliteDmg -> combat.typeDamageMult
 fresh();
-G.passives.UNIT.bossDmg = 100; G.state.data.passives.eclat[6] = 1;
+const iBoss = nodeIdx("eclat", "bossDmg"), iElite = nodeIdx("eclat", "eliteDmg");
+G.passives.UNIT.bossDmg = 100; G.state.data.passives.eclat[iBoss] = 1;
 G.combat.enemy = { isBoss: true, isElite: false };
-ok(G.combat.typeDamageMult() === 2, "bossDmg: dano ×2 contra Boss");
+ok(G.combat.typeDamageMult() === 2, "bossDmg (Slayer): dano ×2 contra Boss");
+G.combat.enemy = { isMiniBoss: true, isBoss: false, isElite: false };
+ok(G.combat.typeDamageMult() === 2, "bossDmg (Slayer): dano ×2 contra Mini Boss");
 G.combat.enemy = { isBoss: false, isElite: false };
 ok(G.combat.typeDamageMult() === 1, "bossDmg não afeta mob comum");
-G.passives.UNIT.bossDmg = 0; G.state.data.passives.eclat[6] = 0;
-G.passives.UNIT.eliteDmg = 50; G.state.data.passives.eclat[7] = 1;
+G.passives.UNIT.bossDmg = 0; G.state.data.passives.eclat[iBoss] = 0;
+G.passives.UNIT.eliteDmg = 50; G.state.data.passives.eclat[iElite] = 1;
 G.combat.enemy = { isElite: true };
 ok(Math.abs(G.combat.typeDamageMult() - 1.5) < 1e-9, "eliteDmg: dano ×1.5 contra Elite");
-G.passives.UNIT.eliteDmg = 0; G.state.data.passives.eclat[7] = 0; G.combat.enemy = null;
+G.passives.UNIT.eliteDmg = 0; G.state.data.passives.eclat[iElite] = 0; G.combat.enemy = null;
 
 // capstoneEclat -> atk & hp ×
 fresh();
@@ -74,9 +79,10 @@ G.passives.UNIT.capstoneFracture = 0; G.state.data.passives.fracture[14] = 0;
 // upgradeCostReduction -> gear.cost
 fresh();
 const c0 = G.gear.cost(G.state.data.equipped.weapon);
-G.passives.UNIT.upgradeCostReduction = 50; G.state.data.passives.fracture[10] = 1;
+const iUpg = nodeIdx("vestige", "upgradeCostReduction");
+G.passives.UNIT.upgradeCostReduction = 50; G.state.data.passives.vestige[iUpg] = 1;
 ok(G.gear.cost(G.state.data.equipped.weapon) === Math.ceil(c0 * 0.5), "upgradeCostReduction 50%: custo de upgrade pela metade");
-G.passives.UNIT.upgradeCostReduction = 0; G.state.data.passives.fracture[10] = 0;
+G.passives.UNIT.upgradeCostReduction = 0; G.state.data.passives.vestige[iUpg] = 0;
 
 // awakenReqReduction -> reduz limiares numéricos do Awaken
 fresh();

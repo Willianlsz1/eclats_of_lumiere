@@ -66,13 +66,14 @@ const h = () => G.state.data.equipped.helmet;
 G.state.data.gearMaterials.common = 999; h().level = 100; // abaixo do cap 500
 ok(G.gear.canPromote(h()) === false, "Common 100/500 com materiais -> ainda não (precisa do cap)");
 
-// 9) passiva Fracture promotionCostReduction reduz o custo (placeholder de teste)
+// 9) passiva Vestige promotionCostReduction reduz o custo (placeholder de teste)
+const iProm = G.passives.trees.vestige.list.findIndex((n) => n[1] === "promotionCostReduction");
 G.passives.UNIT.promotionCostReduction = 50;
-G.state.data.passives.fracture[11] = 1; // nó "Promotion Cost Reduction"
+G.state.data.passives.vestige[iProm] = 1; // nó "Promotion Cost Reduction"
 h().level = 500;
 const cost = G.gear.promotionCost(h());
 ok(cost.common === 5, "promotionCostReduction 50% -> custo 10 cai para 5");
-G.passives.UNIT.promotionCostReduction = 0; G.state.data.passives.fracture[11] = 0;
+G.passives.UNIT.promotionCostReduction = 0; G.state.data.passives.vestige[iProm] = 0;
 
 // 10) MIGRAÇÃO de save antigo (5 raridades) -> Common/Uncommon, nível clampado
 store = {};
