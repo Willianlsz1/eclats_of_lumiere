@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -12,27 +12,25 @@
   <link rel="stylesheet" href="styles/components.css" />
   <link rel="stylesheet" href="styles/hud.css" />
   <link rel="stylesheet" href="styles/gear.css" />
-  <link rel="stylesheet" href="styles/convergence.css" />
-  <link rel="stylesheet" href="styles/awaken.css" />
   <link rel="stylesheet" href="styles/worldmap.css" />
-  <link rel="stylesheet" href="styles/passives.css" />
 </head>
 <body class="game">
-  <!-- ===== FUNDO DO MUNDO (tela cheia) ===== -->
+
+  <!-- fundo do mundo -->
   <div class="world-bg"></div>
   <img class="world-img" src="assets/areas/dreaming_wood.png" alt="" onerror="this.remove()" />
   <div class="world-overlay"></div>
 
-  <!-- ===== HUD: TOPO CENTRO — recurso + banner de área ===== -->
+  <!-- HUD topo centro: área atual -->
   <div class="hud hud-topcenter">
     <div class="banner banner--area">
       <button class="area-nav area-nav--prev" id="area-prev" title="Previous area" onclick="G.ui.goToArea(-1)">‹</button>
-      <span class="banner__text" id="res-area">Area 1 · The Dreaming Wood</span>
+      <span class="banner__text" id="res-area">The Dreaming Wood</span>
       <button class="area-nav area-nav--next" id="area-next" title="Next area" onclick="G.ui.goToArea(1)">›</button>
     </div>
   </div>
 
-  <!-- ===== HUD: TOPO DIREITA — Lumens ===== -->
+  <!-- HUD topo direita: Lumens -->
   <div class="hud hud-topright">
     <div class="lumens-hud">
       <img class="lumens-hud__icon" src="assets/ui/lumens.png" alt="Lumens" onerror="this.remove()" />
@@ -40,9 +38,8 @@
     </div>
   </div>
 
-  <!-- ===== CENA DE BATALHA (herói × mob sobre o mundo) ===== -->
+  <!-- cena de batalha -->
   <div class="battle-stage">
-    <!-- HERÓI — sem card/moldura, só o Seeker de corpo inteiro -->
     <div class="battle-hero">
       <div class="hero-figure" id="hero-art">
         <span class="art-ph">🧝</span>
@@ -50,66 +47,64 @@
         <div class="floaters" id="floaters-hero"></div>
       </div>
       <div class="hero-info">
-        <span class="hero-name">O Seeker · Nv. <b id="hero-card-level">1</b></span>
-        <div class="bar hp-bar"><div class="bar-fill hp-fill" id="hero-hp-fill"></div><span class="bar-label" id="hero-hp-label">—</span></div>
+        <span class="hero-name">The Seeker · Lv. <b id="hero-card-level">1</b></span>
+        <div class="bar hp-bar">
+          <div class="bar-fill hp-fill" id="hero-hp-fill"></div>
+          <span class="bar-label" id="hero-hp-label">—</span>
+        </div>
       </div>
     </div>
 
-    <!-- MOB — sem card/moldura, só o inimigo de corpo inteiro -->
     <div class="battle-enemy">
       <div class="enemy-figure" id="enemy-art"></div>
       <div class="floaters" id="floaters"></div>
       <div class="enemy-info">
         <span class="enemy-name" id="enemy-name">—</span>
-        <span class="card-sub">Nv. <b id="enemy-level">1</b> · ATK <b id="enemy-atk">0</b></span>
-        <div class="bar enemy-bar"><div class="bar-fill enemy-fill" id="enemy-hp-fill"></div><span class="bar-label" id="enemy-hp-label">—</span></div>
+        <span class="card-sub">Lv. <b id="enemy-level">1</b> · ATK <b id="enemy-atk">0</b></span>
+        <div class="bar enemy-bar">
+          <div class="bar-fill enemy-fill" id="enemy-hp-fill"></div>
+          <span class="bar-label" id="enemy-hp-label">—</span>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- ===== HUD: BAIXO ESQUERDA — log com abas ===== -->
+  <!-- HUD baixo esquerda: log -->
   <div class="hud hud-bottomleft">
     <div class="tabs" id="log-tabs">
       <button class="tab is-active">System</button>
-      <button class="tab">Loot</button>
-      <button class="tab">Misc</button>
     </div>
     <div class="log" id="log"></div>
   </div>
 
-  <!-- ===== HUD: BAIXO CENTRO — readout de stats ===== -->
+  <!-- HUD baixo centro: stats rápidos -->
   <div class="hud hud-bottomcenter">
     <div class="hud-stats">
       <span>ATK <b id="hud-atk">0</b></span>
       <span>DPS <b id="hud-dps">0</b></span>
-      <span>Crít <b id="hud-crit">0%</b></span>
+      <span>Crit <b id="hud-crit">0%</b></span>
     </div>
   </div>
 
-  <!-- ===== HUD: CIMA ESQUERDA — barra de ações ===== -->
+  <!-- HUD cima esquerda: toolbar -->
   <div class="hud hud-topleft">
     <div class="toolbar">
-      <button class="icon-btn icon-btn--active" id="btn-pause" title="Pausar" onclick="G.ui.togglePause(this)">⏸</button>
+      <button class="icon-btn icon-btn--active" id="btn-pause" title="Pause" onclick="G.ui.togglePause(this)">⏸</button>
       <button class="icon-btn" title="World Map" onclick="G.ui.openModal('modal-worldmap')">
         <span class="ico-ph">🌐</span><img class="ico-img" src="assets/ui/icon_world.png" alt="" onerror="this.remove()" />
       </button>
-      <button class="icon-btn" title="Personagem" onclick="G.ui.openModal('modal-char')">
+      <button class="icon-btn" title="Character" onclick="G.ui.openModal('modal-char')">
         <span class="ico-ph">🧙</span><img class="ico-img" src="assets/ui/icon_player.png" alt="" onerror="this.remove()" />
       </button>
       <button class="icon-btn" title="Equipment" onclick="G.ui.openModal('modal-gear')">
         <span class="ico-ph">🎒</span><img class="ico-img" src="assets/ui/icon_gear.png" alt="" onerror="this.remove()" />
       </button>
-      <button class="icon-btn" title="Convergence" onclick="G.ui.openModal('modal-convergence')">
-        <span class="ico-ph">✦</span><img class="ico-img" src="assets/ui/icon_convergence.png" alt="" onerror="this.remove()" />
-      </button>
-      <button class="icon-btn" title="Awaken" onclick="G.ui.openModal('modal-awaken')">✷</button>
-      <button class="icon-btn" title="Passives" onclick="G.ui.openModal('modal-passives')">❉</button>
-      <button class="icon-btn" title="Ajuda" onclick="G.ui.openModal('modal-help')">❓</button>
-      <button class="icon-btn icon-btn--reset" title="Reiniciar (testar do zero)" onclick="G.ui.resetGame()">🔄</button>
+      <button class="icon-btn" title="Help" onclick="G.ui.openModal('modal-help')">❓</button>
+      <button class="icon-btn icon-btn--reset" title="Reset game" onclick="G.ui.resetGame()">🔄</button>
     </div>
   </div>
 
-  <!-- ===== MODAL: PERSONAGEM (stats + equip + forja) ===== -->
+  <!-- MODAL: Character -->
   <div class="modal-overlay" id="modal-char" hidden onclick="if(event.target===this)this.hidden=true">
     <div class="modal modal--wide">
       <div class="modal__title">The Seeker</div>
@@ -123,23 +118,22 @@
       <button class="btn upgrade-btn" id="btn-upgrade">
         Reforge Weapon (+4% ATK)<br /><small id="upgrade-cost">Cost: 20 ✦</small>
       </button>
-      <div class="modal__actions"><button class="btn ghost" style="width:auto" onclick="document.getElementById('modal-char').hidden=true">Close</button></div>
+      <div class="modal__actions">
+        <button class="btn ghost" style="width:auto" onclick="document.getElementById('modal-char').hidden=true">Close</button>
+      </div>
     </div>
   </div>
 
-  <!-- ===== MODAL: EQUIPMENT (6 peças fixas) ===== -->
+  <!-- MODAL: Equipment -->
   <div class="modal-overlay" id="modal-gear" hidden onclick="if(event.target===this)this.hidden=true">
     <div class="modal modal--gear">
       <button class="modal-close" title="Close" onclick="document.getElementById('modal-gear').hidden=true">✕</button>
       <div class="modal__title">EQUIPMENT</div>
-      <!-- painel de stats (flutua sobre a cena, topo-esquerda) -->
       <aside class="gear-stats-panel">
         <h3 class="sub-title">Stats</h3>
         <ul class="stats" id="gear-stats"></ul>
       </aside>
-      <!-- 6 slots posicionados em arco em volta da Aurélie (via classes pos-*) -->
       <div class="gear-slots" id="gear-slots"></div>
-      <!-- multiplicador (flutua, baixo-direita) -->
       <div class="gear-footer">
         <span class="gear-mult__label">Level amount:</span>
         <div class="gear-mult" id="gear-mult">
@@ -148,85 +142,26 @@
           <button data-mult="max">Max</button>
         </div>
       </div>
-      <!-- tooltip de item (preenchido/posicionado via ui.js no hover) -->
       <div id="gear-tooltip" hidden></div>
     </div>
   </div>
 
-  <!-- ===== MODAL: CONVERGENCE (prestige) ===== -->
-  <div class="modal-overlay" id="modal-convergence" hidden onclick="if(event.target===this)this.hidden=true">
-    <div class="modal conv-modal">
-      <button class="conv-modal__x" onclick="document.getElementById('modal-convergence').hidden=true" title="Close">✕</button>
-      <div class="conv-modal__pad">
-        <h3 class="conv-modal__title">Convergence</h3>
-        <p class="conv-desc">Break the Seeker and begin anew — sacrifice this run for permanent power.</p>
-        <div class="conv-keep">
-          <span class="conv-keep__label">You keep</span>
-          <div class="conv-keep__items">
-            <span>⚔ Gear</span><span>✦ Materials</span><span>◈ Points</span><span>❉ Passives</span>
-          </div>
-        </div>
-        <div class="conv-grant">
-          <span class="conv-grant__l">Converging now grants</span>
-          <span class="conv-grant__v"><b id="conv-pending">0</b> points</span>
-        </div>
-        <div class="conv-transition">
-          <div class="conv-transition__cell"><small>Current</small><b id="conv-current">Lv 1</b></div>
-          <span class="conv-transition__arrow">→</span>
-          <div class="conv-transition__cell"><small>Return to</small><b id="conv-return">Lv 1</b></div>
-        </div>
-        <button class="btn btn-ornate conv-modal__cta" id="btn-converge" style="--btn-c:#7fb0ff">Converge</button>
-        <div class="conv-foot">Points <b id="conv-points">0</b> · Convergences <b id="conv-count">0</b> · Highest Lv <b id="conv-highest">1</b></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ===== SCREEN: PASSIVES (Árvore-Mundo, tela própria) ===== -->
-  <div class="passives-screen" id="modal-passives" hidden>
-    <div class="pv-screen" aria-hidden="true"></div>
-    <button class="modal-close" title="Close" onclick="document.getElementById('modal-passives').hidden=true">✕</button>
-    <div class="pv-points">Convergence Points: <b id="pv-points">0</b></div>
-    <div class="pv-tabs" id="pv-tabs"></div>
-    <div class="pv-body" id="pv-body"></div>
-    <div class="pv-lock" id="pv-lock" hidden>
-      <div class="glyph">✦</div>
-      <h2>The passives sleep</h2>
-      <p>The Seed awakens at your <b>first Convergence</b>. Converge to open the three trees.</p>
-    </div>
-  </div>
-
-  <!-- ===== MODAL: AWAKEN (3ª fonte de poder · tema violeta) ===== -->
-  <div class="modal-overlay" id="modal-awaken" hidden onclick="if(event.target===this)this.hidden=true">
-    <div class="modal awk-modal">
-      <button class="awk-modal__x" onclick="document.getElementById('modal-awaken').hidden=true" title="Close">✕</button>
-      <div class="awk-split">
-        <!-- ESQUERDA: lista compacta de awakenings -->
-        <div class="awk-sidebar">
-          <div class="awk-sidebar__head">
-            <span class="awk-cur-label">Awaken Materials</span>
-            <b class="awk-cur-val" id="awaken-essence">0</b>
-          </div>
-          <ul class="awk-entries" id="awaken-list"></ul>
-        </div>
-        <!-- DIREITA: preview do awakening selecionado -->
-        <div class="awk-preview" id="awaken-preview"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ===== MODAL: AJUDA ===== -->
+  <!-- MODAL: Help -->
   <div class="modal-overlay" id="modal-help" hidden onclick="if(event.target===this)this.hidden=true">
     <div class="modal">
       <div class="modal__title">Éclats of Lumière</div>
       <div class="modal__body">
-        O Seeker ataca automaticamente. Derrote mobs, colete ✦ Lumens e loot,
-        equipe gear melhor e reforce a arma na Forja para avançar a profundidade da área.
+        The Seeker fights automatically. Defeat enemies, collect ✦ Lumens, level up your gear
+        and reforge the weapon at the Forge to push deeper into the Dreaming Wood.
+        Defeat each area's boss to unlock the next region.
       </div>
-      <div class="modal__actions"><button class="btn attack-btn" style="width:auto" onclick="document.getElementById('modal-help').hidden=true">Okay</button></div>
+      <div class="modal__actions">
+        <button class="btn attack-btn" style="width:auto" onclick="document.getElementById('modal-help').hidden=true">Okay</button>
+      </div>
     </div>
   </div>
 
-  <!-- ===== SCREEN: WORLD MAP (tela própria, cobre tudo) ===== -->
+  <!-- SCREEN: World Map -->
   <div class="worldmap-screen" id="modal-worldmap" hidden>
     <button class="wmap-back" id="wmap-back" title="Back">◀ World</button>
     <div class="wmap" id="wmap">
@@ -236,7 +171,6 @@
         <div class="wmap__nodes" id="wmap-nodes"></div>
       </div>
     </div>
-    <!-- painel de info dockado à direita -->
     <aside class="wmap-info" id="wmap-info" hidden>
       <button class="wmap-info__x" id="wmap-info-close" title="Close">✕</button>
       <div class="wmap-info__art" id="wmap-info-art"></div>
@@ -255,18 +189,11 @@
     </aside>
   </div>
 
-  <!-- Sistemas (sem build, sem servidor). -->
   <script src="src/util.js"></script>
   <script src="src/data.js"></script>
-  <script src="src/state.js"></script>
-  <script src="src/economy.js"></script>
-  <script src="src/loot.js"></script>
-  <script src="src/inventory.js"></script>
   <script src="src/gear.js"></script>
+  <script src="src/state.js"></script>
   <script src="src/combat.js"></script>
-  <script src="src/convergence.js"></script>
-  <script src="src/awaken.js"></script>
-  <script src="src/passives.js"></script>
   <script src="src/ui.js"></script>
   <script src="src/main.js"></script>
 </body>
