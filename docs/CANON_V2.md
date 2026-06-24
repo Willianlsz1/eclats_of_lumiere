@@ -98,19 +98,46 @@ O nível da Mémoire (Lv1–Lv10) escala a magnitude do seu efeito.
 
 ---
 
-## 5. Pendências ainda em aberto (próximas perguntas do grill)
+## 5. Economia de 3 camadas (Decisões 6 e 7)
 
-Estas **não** foram decididas ainda; ficam registradas para a continuação da entrevista:
+| Recurso | De onde vem | Pra que serve |
+|---|---|---|
+| **Lumens** | inimigos comuns | gear / básico |
+| **Vestiges** | **Convergence** | **passivas** |
+| **Éclats** | Mini Boss / Boss | **Mémoires** (meta) |
 
-- **Éclats** como **moeda de restauração** vs. **fragmento de memória** (lore) — colisão intencional?
-- **Vestiges** (lore) vs. **`convergencePoints`** (código) — mesmo recurso?
-- **Convergence gate** = nível 80 (cai na Área 2) vs. canônico Área 3.
-- **Passivas compráveis mas inertes** (`UNIT=0`) — placeholder ou bug?
-- **"Fracture"**: nó de passiva (HP) vs. La Fracture (evento cósmico da lore) — mesmo nome, coisas diferentes.
+- **Decisão 6 — Éclat = o fragmento É a moeda.** O fragmento sagrado da luz quebrada
+  (lore) é o mesmo recurso que se coleta dos inimigos e gasta nas Mémoires. Colisão
+  **intencional e temática**: juntar a luz quebrada de volta.
+- **Decisão 7 — "Vestiges" = os pontos da Convergence.** Renomear no código
+  `convergencePoints → Vestiges`. Reaproveita o nome que, no design antigo, já era a
+  moeda das passivas. Fecha a hierarquia canônica **Lumens < Vestiges < Éclats**.
+
+## 6. Convergence (Decisão 8)
+
+- **Gate = nível 80 (Área 2)** — **canônico** (não é mais placeholder). A Convergence
+  abre **cedo**, depois de o jogador sentir um pouco o jogo.
+- **Onboarding:** ao destravar, **avisar o jogador** (mensagem/tutorial) explicando o
+  que é a Convergence e suas vantagens.
+- *(Atualiza/supera os docs que diziam "Área 3".)*
+
+## 7. Passivas (Decisão 9)
+
+- **Continente 1 = 15 nós** (5 por árvore: Éclat / Vestige / Fracture), **primeiro
+  tier simples**, **cada nó distinto** (sem clones). Desenho completo em
+  **`docs/PASSIVES_V1.md`**.
+- Próximos continentes abrem +5 por árvore (Grupo 2, 3…).
+- Moeda = **Vestiges**; árvore destrava na 1ª Convergence.
+- Supera a estrutura auditada em `PASSIVES_AUDIT.md` (45 nós, ~28 clones, 3 mortos).
+
+## 8. Pendências ainda em aberto
+
+- **"Fracture"**: nó/árvore de passiva (HP/defesa) vs. La Fracture (evento cósmico da
+  lore) — mesmo nome, coisas diferentes. (Última pergunta do grill.)
 
 ---
 
-## 6. Tarefas de implementação geradas por este canon
+## 9. Tarefas de implementação geradas por este canon
 *(infra/código — a executar em CPs futuros, fora desta entrevista)*
 
 1. **UI World Map:** duas telas (Mapa 1 / Mapa 2), trocáveis; corrigir `ui.js`
@@ -120,5 +147,10 @@ Estas **não** foram decididas ainda; ficam registradas para a continuação da 
    e a escada Mortal→Radiant Ascendant.
 4. **Mémoires Era I:** implementar os 3 mecanismos próprios (ramp / proc / escala).
 5. **Lore:** herói começa `Endormi`; First Light = despertar em Seeker.
-6. **Higiene:** corrigir log órfão do Boss Final (`combat.js` "Dreaming Wood / Map 1
+6. **Economia:** renomear `convergencePoints → Vestiges` (Decisão 7).
+7. **Convergence:** remover comentário "PLACEHOLDER" do gate=80 (agora canônico);
+   adicionar aviso/tutorial ao destravar (Decisão 8).
+8. **Passivas:** implementar os 15 nós de `PASSIVES_V1.md` (4 efeitos novos; reviver
+   Weakened Void e Void Awareness; tirar Void Piercing do tier 1).
+9. **Higiene:** corrigir log órfão do Boss Final (`combat.js` "Dreaming Wood / Map 1
    complete"); corrigir header mentiroso de `memoires.js`.
