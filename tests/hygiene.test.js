@@ -132,6 +132,15 @@ G.passives.UNIT.moreEnemies = 0; G.state.data.passives.fracture[8] = 0;
 G.state.data.passives.fracture[5] = 12; G.state.data.passives.fracture[6] = 12; G.state.data.passives.fracture[7] = 12;
 ok(G.passives.groupUnlocked("fracture", 2) === true, "grupo 2 libera com 5/6/7 no máx (8/9 Mapa 2 ignorados)");
 
+// ---------- CANON_V2 §6: aviso único de onboarding da Convergence ----------
+fresh();
+ok(G.state.data.convergenceIntroShown === false, "fresh: aviso da Convergence ainda não exibido");
+G.state.data.level = G.convergence.gateLevel - 1;     // logo abaixo do gate
+G.state.data.xp = G.state.xpToNext();                 // xp p/ exatamente 1 level-up
+G.combat.checkLevelUp();                               // sobe ao gate -> dispara o aviso
+ok(G.state.data.level >= G.convergence.gateLevel && G.state.data.convergenceIntroShown === true,
+  "ao cruzar o gate da Convergence, o aviso é marcado (uma vez)");
+
 // ---------- CANON_V2: rename convergencePoints -> vestiges (moeda das passivas) ----------
 fresh();
 ok(G.state.data.vestiges === 0 && !("convergencePoints" in G.state.data), "fresh usa 'vestiges' (sem convergencePoints)");

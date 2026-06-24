@@ -23,6 +23,7 @@ G.state = {
       maxAreaUnlocked: 0,    // maior sub-área liberada (boss anterior derrotado)
       mapOneCleared: false,  // Continente 1 concluído (Boss Final da Área 20 derrotado ao menos 1x)
       guardianDefeated: false, // Guardião (Área 9 / fim do Mapa 1) derrotado — gate do Awaken
+      convergenceIntroShown: false, // aviso de onboarding da Convergence já exibido
       vestiges: 0,           // moeda das passivas, gerada pela Convergence (CANON_V2 §5)
       convergences: 0,       // quantas vezes renasceu
       highestLevel: 1,       // recorde de nível (não reseta na Convergence)

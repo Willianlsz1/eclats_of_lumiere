@@ -350,6 +350,15 @@ G.combat = {
       G.state.invalidateStats(); // nível mudou → stats mudam (atk/hp base)
       G.state.data.hp = G.state.maxHp();
       if (G.ui && G.ui.log) G.ui.log(`★ Reached level ${G.state.data.level}!`, "level");
+      // onboarding: aviso único quando a Convergence se torna possível (CANON_V2 §6)
+      if (!G.state.data.convergenceIntroShown && G.convergence &&
+          G.state.data.level >= G.convergence.gateLevel) {
+        G.state.data.convergenceIntroShown = true;
+        if (G.ui && G.ui.log) {
+          G.ui.log("✦ Convergence awakens — you may now be reborn, trading this life's progress for Vestiges.", "boss");
+          G.ui.log("✦ Vestiges fuel your Passive Trees: power that survives every rebirth.", "good");
+        }
+      }
     }
   },
 
