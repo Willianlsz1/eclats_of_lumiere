@@ -106,6 +106,7 @@ G.ui = {
     this.renderAll();
     // o World Map só renderiza ao abrir (não a cada tick); painel começa fechado
     if (id === "modal-worldmap") {
+      this.worldMapPage = null; // reabre sempre na página da área atual (auto)
       this.renderWorldMap();
       if (this.el["wmap-info"]) this.el["wmap-info"].hidden = true;
     }
