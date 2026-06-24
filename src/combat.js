@@ -182,10 +182,13 @@ G.combat = {
   // + multiplicadores DINÂMICOS (Bloodlust, Fractured Destiny, Ancient Memory,
   //   Perfect Cycle), que escalam com kills/áreas/convergences.
   typeDamageMult() {
-    if (!G.passives || !this.enemy) return 1;
-    let m = G.passives.dynDamageMult();          // dinâmicos (Éclat + Fracture)
-    if (this.enemy.isBoss || this.enemy.isMiniBoss) m += (G.passives.effect("bossDmg") || 0) / 100;
-    if (this.enemy.isElite) m += (G.passives.effect("eliteDmg") || 0) / 100;
+    if (!this.enemy) return 1;
+    let m = G.passives ? G.passives.dynDamageMult() : 1;   // dinâmicos (Éclat + Fracture)
+    if (G.passives) {
+      if (this.enemy.isBoss || this.enemy.isMiniBoss) m += (G.passives.effect("bossDmg") || 0) / 100;
+      if (this.enemy.isElite) m += (G.passives.effect("eliteDmg") || 0) / 100;
+    }
+    if (G.memoires) m *= G.memoires.damageMult();          // Mémoire: Premier Matin (×dano)
     return m;
   },
 
@@ -232,9 +235,12 @@ G.combat = {
   onKill() {
     const e = this.enemy;
     const s = G.state.stats(); // bônus de passiva já embutidos em lumensBonus/xpBonus
-    // Lumens: bônus estático (stats) × dinâmicos (Deep Explorer, Perfect Cycle)
+    // Lumens: estático (stats) × dinâmicos de passiva (Deep Explorer, Perfect Cycle)
+    //         × Mémoire de la Marche (escala c/ áreas), e proc des Rires (×2).
     const dynEco = G.passives ? G.passives.dynLumensMult() : 1;
-    const lumens = Math.ceil(e.lumens * (1 + s.lumensBonus / 100) * dynEco);
+    const memoEco = G.memoires ? G.memoires.gainsMult() : 1;
+    let lumens = Math.ceil(e.lumens * (1 + s.lumensBonus / 100) * dynEco * memoEco);
+    if (G.memoires && G.util.chance(G.memoires.doubleLumensChance())) lumens *= 2; // des Rires
     G.state.data.lumens += lumens;
     G.state.data.xp += Math.round(e.xp * (1 + s.xpBonus / 100));
 

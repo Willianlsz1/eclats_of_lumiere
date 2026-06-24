@@ -149,6 +149,25 @@ G.memoires = {
     return p.total > 0 && p.completed === p.total;
   },
 
+  // ================= BÔNUS MECÂNICO (CANON_V2 §2 — Decisão 1) =================
+  // Cada Mémoire da Era I tem um SABOR distinto, escalando com seu nível (Lv1–10),
+  // e só vale quando RESTAURADA. Magnitudes são 1ª passagem (ajustáveis na Fase 3).
+  //   premierMatin → motor de DANO (o grande amanhecer)
+  //   des Rires    → PROC: chance de Lumens em dobro (a alegria imprevisível)
+  //   de la Marche → ESCALA com áreas alcançadas (a jornada que fortalece)
+  EFFECT_UNIT: { premierMatin: 0.06, desRires: 0.04, deLaMarche: 0.015 },
+  // nível efetivo p/ bônus: 0 se não restaurada
+  bonusLevel(id) { const m = this.get(id); return m.state === "restored" ? (m.level || 1) : 0; },
+  // Premier Matin — multiplicador de dano (×TODO o dano)
+  damageMult() { return 1 + this.bonusLevel("premierMatin") * this.EFFECT_UNIT.premierMatin; },
+  // des Rires — chance [0..~] de dobrar os Lumens do kill
+  doubleLumensChance() { return this.bonusLevel("desRires") * this.EFFECT_UNIT.desRires; },
+  // de la Marche — multiplicador de ganhos que cresce com as áreas alcançadas
+  gainsMult() {
+    const areas = (G.state.data && G.state.data.maxAreaUnlocked) || 0;
+    return 1 + this.bonusLevel("deLaMarche") * this.EFFECT_UNIT.deLaMarche * areas;
+  },
+
   // ---- tabela de descoberta (Era I) — chances PLACEHOLDER (CP-3D ligou >0) ----
   // estrutura configurável; nenhum número é final (balanceamento na Fase 3).
   discoveryTable: {
