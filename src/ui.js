@@ -166,7 +166,7 @@ G.ui = {
     const P = G.passives;
     if (!this.passivesTab) this.passivesTab = "eclat";
     const tab = this.passivesTab;
-    if (this.el["pv-points"]) this.el["pv-points"].textContent = G.util.fmt(G.state.data.convergencePoints || 0);
+    if (this.el["pv-points"]) this.el["pv-points"].textContent = G.util.fmt(G.state.data.vestiges || 0);
     const unlocked = P.unlocked();
     if (this.el["pv-lock"]) this.el["pv-lock"].hidden = unlocked;
     const tabs = this.el["pv-tabs"];
@@ -431,7 +431,7 @@ G.ui = {
   // painel da Convergence (prestige) — renderiza ao abrir o modal
   renderConvergence() {
     const d = G.state.data;
-    if (this.el["conv-points"]) this.el["conv-points"].textContent = G.util.fmt(d.convergencePoints || 0);
+    if (this.el["conv-points"]) this.el["conv-points"].textContent = G.util.fmt(d.vestiges || 0);
     if (this.el["conv-count"]) this.el["conv-count"].textContent = d.convergences || 0;
     if (this.el["conv-highest"]) this.el["conv-highest"].textContent = G.util.fmt(d.highestLevel || d.level);
     if (this.el["conv-pending"]) this.el["conv-pending"].textContent = G.util.fmt(G.convergence.pending());

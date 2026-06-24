@@ -126,5 +126,22 @@ G.passives.UNIT.moreEnemies = 0; G.state.data.passives.fracture[8] = 0;
 G.state.data.passives.fracture[5] = 12; G.state.data.passives.fracture[6] = 12; G.state.data.passives.fracture[7] = 12;
 ok(G.passives.groupUnlocked("fracture", 2) === true, "grupo 2 libera com 5/6/7 no máx (8/9 Mapa 2 ignorados)");
 
+// ---------- CANON_V2: rename convergencePoints -> vestiges (moeda das passivas) ----------
+fresh();
+ok(G.state.data.vestiges === 0 && !("convergencePoints" in G.state.data), "fresh usa 'vestiges' (sem convergencePoints)");
+// converge credita em vestiges
+G.state.data.level = G.convergence.gateLevel; G.state.data.areaIndex = 1; G.state.data.runMaxAreaIndex = 1;
+const before = G.state.data.vestiges; G.convergence.converge();
+ok(G.state.data.vestiges > before, "converge() credita em vestiges");
+// passivas gastam vestiges
+G.state.data.convergences = 1; G.state.data.vestiges = 1e9;
+const v0 = G.state.data.vestiges; G.passives.buy("eclat", 0);
+ok(G.state.data.vestiges < v0, "comprar passiva debita de vestiges");
+// migração de save antigo (convergencePoints -> vestiges)
+store = {}; const oldSave = G.state.fresh(); delete oldSave.vestiges; oldSave.convergencePoints = 1234;
+store[G.state.SAVE_KEY] = JSON.stringify(oldSave);
+G.state.data = null; G.state.load();
+ok(G.state.data.vestiges === 1234 && !("convergencePoints" in G.state.data), "save antigo: convergencePoints migra p/ vestiges");
+
 console.log(failed === 0 ? "\nALL PASS" : `\n${failed} FAIL`);
 process.exit(failed === 0 ? 0 : 1);

@@ -1,10 +1,11 @@
 // =============================================================
-// convergence.js — PRESTIGE (rebirth) + Pontos de Convergence
+// convergence.js — PRESTIGE (rebirth) + Vestiges
 // =============================================================
-// Conforme docs/CONVERGENCE_FINAL.md. Convergence NÃO concede poder direto:
-// concede apenas Pontos de Convergence, gastos nas Árvores de Passivas.
+// Conforme docs/CONVERGENCE_FINAL.md / CANON_V2 §5-6. Convergence NÃO concede
+// poder direto: concede apenas Vestiges (state.vestiges), gastos nas Árvores de
+// Passivas. (Antes chamados "Pontos de Convergence".)
 //
-// Fórmula de pontos (estrutura canônica): Pontos = Área + Bosses + Nível + Kills.
+// Fórmula de Vestiges (estrutura canônica): = Área + Bosses + Nível + Kills.
 // Importância relativa ALVO: Área > Bosses > Nível > Kills.
 //
 // ⚠️ BALANCEAMENTO PENDENTE: os pesos abaixo são PLACEHOLDERS configuráveis.
@@ -17,7 +18,7 @@
 // Mantém: gear, raridades, materiais, passivas, awaken, áreas, Pontos, recordes.
 
 G.convergence = {
-  gateLevel: 80,   // PLACEHOLDER (desbloqueio canônico = Área 3; balanceamento pendente)
+  gateLevel: 80,   // canônico (CANON_V2 §6): abre cedo (~Área 2), após o jogador sentir o jogo
 
   // pesos da fórmula Área + Bosses + Nível + Kills (PLACEHOLDERS configuráveis)
   weights: { area: 0, boss: 0, level: 1, kills: 0 },
@@ -80,7 +81,7 @@ G.convergence = {
     if (!this.canConverge()) return false;
     const d = G.state.data;
     const gained = this.pending();
-    d.convergencePoints = (d.convergencePoints || 0) + gained;
+    d.vestiges = (d.vestiges || 0) + gained;
     d.convergences = (d.convergences || 0) + 1;
 
     d.level = 1;

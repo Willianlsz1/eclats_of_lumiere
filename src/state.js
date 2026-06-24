@@ -23,7 +23,7 @@ G.state = {
       maxAreaUnlocked: 0,    // maior sub-área liberada (boss anterior derrotado)
       mapOneCleared: false,  // Continente 1 concluído (Boss Final da Área 20 derrotado ao menos 1x)
       guardianDefeated: false, // Guardião (Área 9 / fim do Mapa 1) derrotado — gate do Awaken
-      convergencePoints: 0,  // moeda de prestige (gasta nas passivas — ver convergence.js)
+      vestiges: 0,           // moeda das passivas, gerada pela Convergence (CANON_V2 §5)
       convergences: 0,       // quantas vezes renasceu
       highestLevel: 1,       // recorde de nível (não reseta na Convergence)
       totalKills: 0,         // kills acumuladas (NÃO reseta) — requisito de Awaken
@@ -212,6 +212,11 @@ G.state = {
     // garante campos escalares novos em saves antigos (shallow merge é suficiente
     // para primitivos; objetos aninhados são reconciliados individualmente abaixo)
     this.data = Object.assign(this.fresh(), this.data);
+    // migração CANON_V2: a moeda das passivas foi renomeada convergencePoints -> vestiges
+    if (this.data.convergencePoints != null) {
+      this.data.vestiges = (this.data.vestiges || 0) + this.data.convergencePoints;
+      delete this.data.convergencePoints;
+    }
     // reconcilia as 6 peças fixas com a definição atual (stats/afixos novos),
     // preservando nível e raridade salvos
     this.data.equipped = G.gear.reconcile(this.data.equipped);

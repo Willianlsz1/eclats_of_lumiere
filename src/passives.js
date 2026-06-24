@@ -166,11 +166,11 @@ G.passives = {
   canBuy(tree, i) {
     return this.unlocked() && !this.isDeferred(tree, i) && !this.isMax(tree, i) &&
       this.groupUnlocked(tree, this.groupOf(i)) &&
-      (G.state.data.convergencePoints || 0) >= this.nextCost(tree, i);
+      (G.state.data.vestiges || 0) >= this.nextCost(tree, i);
   },
   buy(tree, i) {
     if (!this.canBuy(tree, i)) return false;
-    G.state.data.convergencePoints -= this.nextCost(tree, i);
+    G.state.data.vestiges -= this.nextCost(tree, i);
     G.state.data.passives[tree][i] += 1;
     G.state.invalidateStats();
     G.state.save();
