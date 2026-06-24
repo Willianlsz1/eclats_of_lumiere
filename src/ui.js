@@ -17,6 +17,7 @@ G.ui = {
       "enemy-hp-fill", "enemy-hp-label", "floaters",
       "hero-card-level", "hero-hp-fill", "hero-hp-label", "log",
       "gear-stats", "gear-slots", "gear-mult", "gear-tooltip", "wmap-nodes", "wmap-trail",
+      "wmap-bg", "wmap-tab-1", "wmap-tab-2",
       "wmap-info", "wmap-info-art", "wmap-info-name", "wmap-info-lore", "wmap-info-level",
       "wmap-info-enemies", "wmap-info-status", "wmap-info-res", "wmap-info-travel", "wmap-info-close",
       "conv-points", "conv-count", "conv-highest", "conv-pending", "conv-current", "conv-return", "btn-converge",
@@ -445,27 +446,53 @@ G.ui = {
     }
   },
 
-  // posições dos 9 nós no mapa (% x,y) — fonte única p/ nós E trilha
-  // posicionadas pelo usuário sobre a arte mapa1.png (atualizado conforme marcações)
-  mapNodePos: [
-    [10, 23], // 1 — The Dreaming Wood (extrema esquerda, árvore alta)
-    [36, 18], // 2 — The Lantern Mire (centro-esquerda, alto)
-    [66, 17], // 3 — The Whispering Hollows (centro-direita, cascata)
-    [82, 27], // 4 — The Moonlit Canopy (extrema direita, alto)
-    [61, 42], // 5 — The Sunken Grove (centro-direita, meio)
-    [35, 51], // 6 — The Gilded Thicket (centro-esquerda, lotus pool)
-    [10, 64], // 7 — The Hollow Cathedral (extrema esquerda, baixo)
-    [28, 71], // 8 — The Weeping Roots (centro-esquerda, baixo)
-    [71, 64], // 9 — The Hollow Sanctum (direita, cristais)
+  // ---- World Map: 2 páginas (Mapa 1: áreas 1–9 · Mapa 2: áreas 10–20) ----
+  // CANON_V2 §1: um continente, dois mapas, mostrados um de cada vez.
+  // pos = posições (% x,y) dos nós DAQUELE mapa; start/end = índices globais.
+  MAPS: [
+    {
+      name: "The Dreaming Wood", bg: "assets/ui/map1.png", start: 0, end: 8,
+      pos: [
+        [10, 23], [36, 18], [66, 17], [82, 27], [61, 42],
+        [35, 51], [10, 64], [28, 71], [71, 64],
+      ],
+    },
+    {
+      name: "Cavernes Luminis", bg: "assets/ui/map2.png", start: 9, end: 19,
+      pos: [
+        [12, 20], [32, 14], [54, 17], [76, 14], [88, 30],
+        [68, 40], [46, 44], [26, 50], [14, 66], [42, 70], [74, 66],
+      ],
+    },
   ],
+  worldMapPage: null, // 1 ou 2; null = automático pela área atual
+
+  // página exibida: a escolhida pelo jogador, ou a que contém a área atual
+  currentWorldPage() {
+    if (this.worldMapPage === 1 || this.worldMapPage === 2) return this.worldMapPage;
+    return (G.state.data.areaIndex || 0) >= this.MAPS[1].start ? 2 : 1;
+  },
+  setWorldMapPage(p) { this.worldMapPage = p; this.renderWorldMap(); },
 
   // ---- World Map: nós das áreas + trilha sobre a ilustração do mapa ----
   renderWorldMap() {
     const wrap = this.el["wmap-nodes"];
     if (!wrap) return;
     const d = G.state.data;
-    const pos = this.mapNodePos;
+    const page = this.currentWorldPage();
+    const map = this.MAPS[page - 1];
+    const pos = map.pos;
     const maxU = Math.min(d.maxAreaUnlocked || 0, G.data.areas.length - 1);
+    // fundo + abas ativas
+    if (this.el["wmap-bg"]) { this.el["wmap-bg"].src = map.bg; this.el["wmap-bg"].style.visibility = ""; }
+    for (const p of [1, 2]) {
+      const tab = this.el["wmap-tab-" + p];
+      if (!tab) continue;
+      tab.classList.toggle("is-active", p === page);
+      const locked = this.MAPS[p - 1].start > maxU; // mapa ainda não alcançado
+      tab.classList.toggle("is-locked", locked);
+      if (!tab._wired) { tab.addEventListener("click", () => this.setWorldMapPage(p)); tab._wired = true; }
+    }
 
     // trilha: ribbon curvo Catmull-Rom (curva passa PELOS nós, não perto)
     const trail = this.el["wmap-trail"];
@@ -485,8 +512,10 @@ G.ui = {
         return d;
       };
 
+      // quantos nós DESTA página já estão desbloqueados (índices locais)
+      const doneCount = G.util.clamp(maxU - map.start + 1, 0, pos.length);
       const allPath  = crPath(pos);
-      const donePath = crPath(pos.slice(0, maxU + 1));
+      const donePath = crPath(pos.slice(0, doneCount));
       const vne = 'fill="none" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"';
 
       trail.innerHTML =
@@ -500,11 +529,14 @@ G.ui = {
         `<path d="${donePath}" ${vne} stroke="rgba(255,242,170,0.65)" stroke-width="1.8"/>`;
     }
 
+    // só os nós DESTA página (índices globais map.start..map.end)
     wrap.innerHTML = G.data.areas
-      .map((a, i) => {
+      .slice(map.start, map.end + 1)
+      .map((a, j) => {
+        const i = map.start + j;               // índice global da área
         const locked = i > maxU;
         const cur = i === d.areaIndex;
-        const [x, y] = pos[i] || [50, 50];
+        const [x, y] = pos[j] || [50, 50];
         const cls = `wmap-node${locked ? " is-locked" : ""}${cur ? " is-current" : ""}`;
         return `<button class="${cls}" style="left:${x}%;top:${y}%" data-area="${i}" title="${a.name}"${locked ? " disabled" : ""}>
           <img src="assets/ui/node_${i + 1}.png" alt="" onerror="this.remove()" />

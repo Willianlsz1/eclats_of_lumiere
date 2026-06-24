@@ -245,9 +245,13 @@
   <!-- ===== SCREEN: WORLD MAP (tela própria, cobre tudo) ===== -->
   <div class="worldmap-screen" id="modal-worldmap" hidden>
     <button class="wmap-back" id="wmap-back" title="Back">◀ World</button>
+    <div class="wmap-tabs" id="wmap-tabs">
+      <button class="wmap-tab" id="wmap-tab-1" data-page="1">Ⅰ · The Dreaming Wood</button>
+      <button class="wmap-tab" id="wmap-tab-2" data-page="2">Ⅱ · Cavernes Luminis</button>
+    </div>
     <div class="wmap" id="wmap">
       <div class="wmap__inner">
-        <img class="wmap__bg" src="assets/ui/map1.png" alt="" />
+        <img class="wmap__bg" id="wmap-bg" src="assets/ui/map1.png" alt="" onerror="this.style.visibility='hidden'" />
         <svg class="wmap-trail" id="wmap-trail" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
         <div class="wmap__nodes" id="wmap-nodes"></div>
       </div>
