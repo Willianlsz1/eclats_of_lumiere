@@ -40,10 +40,10 @@ G.state.data = null; G.state.load();
 ok(G.state.data.gearMaterials.common === 5 && G.state.data.gearMaterials.uncommon === 0,
   "reconcile preenche subcampo faltante sem apagar existente");
 
-// 4) mob comum -> só Common material
-store = {}; G.state.data = null; G.state.load(); G.state.data.areaIndex = 0;
-let d = G.economy.rollDrops({}, Object.assign({ type: "common", areaIndex: 0 }, R0));
-ok(d.commonMaterial >= 1 && !d.uncommonMaterial && !d.awakenMaterial, "common dropa só Common material");
+// 4) mob comum na Área 3 (idx 2, onde abre o drop) -> só Common material
+store = {}; G.state.data = null; G.state.load(); G.state.data.areaIndex = 2;
+let d = G.economy.rollDrops({}, Object.assign({ type: "common", areaIndex: 2 }, R0));
+ok(d.commonMaterial >= 1 && !d.uncommonMaterial && !d.awakenMaterial, "common dropa só Common material (Área 3)");
 ok(G.economy.getGear("common") >= 1, "Common material foi ao inventário");
 
 // 5) boss em área alta -> Common + Uncommon + Awaken
@@ -51,11 +51,11 @@ d = G.economy.rollDrops({ isBoss: true }, Object.assign({ areaIndex: 5 }, R0));
 ok(d.commonMaterial && d.uncommonMaterial && d.awakenMaterial, "boss (área 6) dropa Common+Uncommon+Awaken");
 ok(G.economy.getAwaken("firstLight") >= 1, "Awaken material (firstLight) foi ao inventário");
 
-// 6) gate de introdução: boss na área 0 só dropa Common
-const before = G.economy.getGear("uncommon");
-d = G.economy.rollDrops({ isBoss: true }, Object.assign({ areaIndex: 0 }, R0));
-ok(!d.uncommonMaterial && !d.awakenMaterial && d.commonMaterial, "gate: área 0 só Common (Uncommon/Awaken bloqueados)");
-ok(G.economy.getGear("uncommon") === before, "uncommon não aumentou na área 0");
+// 6) gate de drops: Áreas 1-2 (idx 0-1) não dropam nada; Área 3 (idx 2) só Common
+let d0 = G.economy.rollDrops({ isBoss: true }, Object.assign({ areaIndex: 0 }, R0));
+ok(Object.keys(d0).length === 0, "gate: Área 1 (idx 0) não dropa material algum");
+let d2 = G.economy.rollDrops({ isBoss: true }, Object.assign({ areaIndex: 2 }, R0));
+ok(d2.commonMaterial && !d2.uncommonMaterial && !d2.awakenMaterial, "gate: Área 3 (idx 2) só Common (Uncommon=Área5, Awaken=Área6)");
 
 // 7) passivas Vestige: matCommonPct dobra quantidade (set direto p/ ignorar gating)
 store = {}; G.state.data = null; G.state.load();
@@ -83,14 +83,17 @@ ok(G.economy.getGear("common") === 12 && G.economy.getGear("uncommon") === 4 && 
 store = {}; G.state.data = null; G.state.load(); G.state.data.areaIndex = 5;
 const cBefore = G.economy.getGear("common"), aBefore = G.economy.getAwaken("firstLight");
 const realRandom = Math.random; Math.random = () => 0;
-G.combat.enemy = { name: "x", isBoss: true, maxHp: 10, hp: 0, dmg: 1, lumens: 10, xp: 5, level: 1, rarity: null };
+// onKill agora opera sobre o array enemies[] (encontra o primeiro vivo)
+const mob = { name: "x", isBoss: true, maxHp: 10, hp: 0, dmg: 1, lumens: 10, xp: 5, level: 1, rarity: null };
+G.combat.enemies = [mob]; G.combat.enemy = mob;
 G.combat.onKill();
 Math.random = realRandom;
 ok(G.economy.getGear("common") > cBefore && G.economy.getAwaken("firstLight") > aBefore,
   "combat.onKill (boss área 6) concede Common+Awaken via rollDrops");
 
-// 11) awakenEssence legado intacto (First Light fora de escopo)
-ok("awakenEssence" in G.state.data, "awakenEssence legado preservado (First Light fora de escopo)");
+// 11) inventário de Awaken existe (awakenEssence legado virou awakenMaterials.firstLight)
+ok(G.state.data.awakenMaterials && typeof G.state.data.awakenMaterials.firstLight === "number",
+  "awakenMaterials.firstLight presente no estado");
 
 // 12) tipos elite/miniBoss já existem na tabela (prontos p/ inimigos futuros)
 ok(!!(G.economy.dropTable.elite && G.economy.dropTable.miniBoss), "dropTable tem elite e miniBoss (prontos p/ futuro)");

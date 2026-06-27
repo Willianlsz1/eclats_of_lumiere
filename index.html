@@ -12,16 +12,19 @@
   <link rel="stylesheet" href="styles/components.css" />
   <link rel="stylesheet" href="styles/hud.css" />
   <link rel="stylesheet" href="styles/gear.css" />
+  <link rel="stylesheet" href="styles/convergence.css" />
+  <link rel="stylesheet" href="styles/awaken.css" />
   <link rel="stylesheet" href="styles/worldmap.css" />
+  <link rel="stylesheet" href="styles/passives.css" />
 </head>
 <body class="game">
 
-  <!-- fundo do mundo -->
+  <!-- world background -->
   <div class="world-bg"></div>
   <img class="world-img" src="assets/areas/dreaming_wood.png" alt="" onerror="this.remove()" />
   <div class="world-overlay"></div>
 
-  <!-- HUD topo centro: área atual -->
+  <!-- top-center: area banner -->
   <div class="hud hud-topcenter">
     <div class="banner banner--area">
       <button class="area-nav area-nav--prev" id="area-prev" title="Previous area" onclick="G.ui.goToArea(-1)">‹</button>
@@ -30,7 +33,7 @@
     </div>
   </div>
 
-  <!-- HUD topo direita: Lumens -->
+  <!-- top-right: Lumens -->
   <div class="hud hud-topright">
     <div class="lumens-hud">
       <img class="lumens-hud__icon" src="assets/ui/lumens.png" alt="Lumens" onerror="this.remove()" />
@@ -38,7 +41,29 @@
     </div>
   </div>
 
-  <!-- cena de batalha -->
+  <!-- top-left: toolbar -->
+  <div class="hud hud-topleft">
+    <div class="toolbar">
+      <button class="icon-btn icon-btn--active" id="btn-pause" title="Pause" onclick="G.ui.togglePause(this)">⏸</button>
+      <button class="icon-btn" title="World Map" onclick="G.ui.openModal('modal-worldmap')">
+        <span class="ico-ph">🌐</span>
+        <img class="ico-img" src="assets/ui/icon_world.png" alt="" onerror="this.remove()" />
+      </button>
+      <button class="icon-btn" title="Equipment" onclick="G.ui.openModal('modal-gear')">
+        <span class="ico-ph">🎒</span>
+        <img class="ico-img" src="assets/ui/icon_gear.png" alt="" onerror="this.remove()" />
+      </button>
+      <button class="icon-btn" title="Convergence" onclick="G.ui.openModal('modal-convergence')">
+        <span class="ico-ph">✦</span>
+        <img class="ico-img" src="assets/ui/icon_convergence.png" alt="" onerror="this.remove()" />
+      </button>
+      <button class="icon-btn" title="Awaken" onclick="G.ui.openModal('modal-awaken')">✷</button>
+      <button class="icon-btn" title="Passives" onclick="G.ui.openModal('modal-passives')">❉</button>
+      <button class="icon-btn icon-btn--reset" title="Reset game" onclick="G.ui.resetGame()">🔄</button>
+    </div>
+  </div>
+
+  <!-- battle stage -->
   <div class="battle-stage">
     <div class="battle-hero">
       <div class="hero-figure" id="hero-art">
@@ -52,32 +77,23 @@
           <div class="bar-fill hp-fill" id="hero-hp-fill"></div>
           <span class="bar-label" id="hero-hp-label">—</span>
         </div>
-      </div>
-    </div>
-
-    <div class="battle-enemy">
-      <div class="enemy-figure" id="enemy-art"></div>
-      <div class="floaters" id="floaters"></div>
-      <div class="enemy-info">
-        <span class="enemy-name" id="enemy-name">—</span>
-        <span class="card-sub">Lv. <b id="enemy-level">1</b> · ATK <b id="enemy-atk">0</b></span>
-        <div class="bar enemy-bar">
-          <div class="bar-fill enemy-fill" id="enemy-hp-fill"></div>
-          <span class="bar-label" id="enemy-hp-label">—</span>
+        <div class="bar xp-bar">
+          <div class="bar-fill" id="hero-xp-fill"></div>
+          <span class="bar-label" id="hero-xp-label">—</span>
         </div>
       </div>
     </div>
+
+    <div class="enemies-container" id="enemies-container"></div>
+    <div class="mat-drops-wrap" id="mat-drops"></div>
   </div>
 
-  <!-- HUD baixo esquerda: log -->
+  <!-- bottom-left: log -->
   <div class="hud hud-bottomleft">
-    <div class="tabs" id="log-tabs">
-      <button class="tab is-active">System</button>
-    </div>
     <div class="log" id="log"></div>
   </div>
 
-  <!-- HUD baixo centro: stats rápidos -->
+  <!-- bottom-center: quick stats -->
   <div class="hud hud-bottomcenter">
     <div class="hud-stats">
       <span>ATK <b id="hud-atk">0</b></span>
@@ -86,45 +102,7 @@
     </div>
   </div>
 
-  <!-- HUD cima esquerda: toolbar -->
-  <div class="hud hud-topleft">
-    <div class="toolbar">
-      <button class="icon-btn icon-btn--active" id="btn-pause" title="Pause" onclick="G.ui.togglePause(this)">⏸</button>
-      <button class="icon-btn" title="World Map" onclick="G.ui.openModal('modal-worldmap')">
-        <span class="ico-ph">🌐</span><img class="ico-img" src="assets/ui/icon_world.png" alt="" onerror="this.remove()" />
-      </button>
-      <button class="icon-btn" title="Character" onclick="G.ui.openModal('modal-char')">
-        <span class="ico-ph">🧙</span><img class="ico-img" src="assets/ui/icon_player.png" alt="" onerror="this.remove()" />
-      </button>
-      <button class="icon-btn" title="Equipment" onclick="G.ui.openModal('modal-gear')">
-        <span class="ico-ph">🎒</span><img class="ico-img" src="assets/ui/icon_gear.png" alt="" onerror="this.remove()" />
-      </button>
-      <button class="icon-btn" title="Help" onclick="G.ui.openModal('modal-help')">❓</button>
-      <button class="icon-btn icon-btn--reset" title="Reset game" onclick="G.ui.resetGame()">🔄</button>
-    </div>
-  </div>
-
-  <!-- MODAL: Character -->
-  <div class="modal-overlay" id="modal-char" hidden onclick="if(event.target===this)this.hidden=true">
-    <div class="modal modal--wide">
-      <div class="modal__title">The Seeker</div>
-      <div class="char-head">
-        <span class="hero-tier" id="hero-tier">T1 · Seeker</span>
-        <span class="hero-level">Level <b id="hero-level">1</b></span>
-      </div>
-      <div class="bar xp-bar"><div class="bar-fill" id="xp-fill"></div><span class="bar-label" id="xp-label">0 / 0 XP</span></div>
-      <ul class="stats" id="stats-list"></ul>
-      <h3 class="sub-title">Forge</h3>
-      <button class="btn upgrade-btn" id="btn-upgrade">
-        Reforge Weapon (+4% ATK)<br /><small id="upgrade-cost">Cost: 20 ✦</small>
-      </button>
-      <div class="modal__actions">
-        <button class="btn ghost" style="width:auto" onclick="document.getElementById('modal-char').hidden=true">Close</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL: Equipment -->
+  <!-- MODAL: EQUIPMENT -->
   <div class="modal-overlay" id="modal-gear" hidden onclick="if(event.target===this)this.hidden=true">
     <div class="modal modal--gear">
       <button class="modal-close" title="Close" onclick="document.getElementById('modal-gear').hidden=true">✕</button>
@@ -132,6 +110,7 @@
       <aside class="gear-stats-panel">
         <h3 class="sub-title">Stats</h3>
         <ul class="stats" id="gear-stats"></ul>
+        <div class="gear-materials" id="gear-materials"></div>
       </aside>
       <div class="gear-slots" id="gear-slots"></div>
       <div class="gear-footer">
@@ -146,22 +125,72 @@
     </div>
   </div>
 
-  <!-- MODAL: Help -->
-  <div class="modal-overlay" id="modal-help" hidden onclick="if(event.target===this)this.hidden=true">
-    <div class="modal">
-      <div class="modal__title">Éclats of Lumière</div>
-      <div class="modal__body">
-        The Seeker fights automatically. Defeat enemies, collect ✦ Lumens, level up your gear
-        and reforge the weapon at the Forge to push deeper into the Dreaming Wood.
-        Defeat each area's boss to unlock the next region.
-      </div>
-      <div class="modal__actions">
-        <button class="btn attack-btn" style="width:auto" onclick="document.getElementById('modal-help').hidden=true">Okay</button>
+  <!-- stat breakdown popup (matriz Fonte × Camada) -->
+  <div class="stat-pop" id="stat-pop" hidden></div>
+
+  <!-- MODAL: CONVERGENCE (prestige) -->
+  <div class="modal-overlay" id="modal-convergence" hidden onclick="if(event.target===this)this.hidden=true">
+    <div class="modal conv-modal">
+      <button class="conv-modal__x" onclick="document.getElementById('modal-convergence').hidden=true" title="Close">✕</button>
+      <div class="conv-modal__pad">
+        <h3 class="conv-modal__title">Convergence</h3>
+        <p class="conv-desc">Break the Seeker and begin anew — sacrifice this run for permanent power.</p>
+        <div class="conv-keep">
+          <span class="conv-keep__label">You keep</span>
+          <div class="conv-keep__items">
+            <span>⚔ Gear</span><span>✦ Materials</span><span>◈ Points</span><span>❉ Passives</span>
+          </div>
+        </div>
+        <div class="conv-grant">
+          <span class="conv-grant__l">Converging now grants</span>
+          <span class="conv-grant__v"><b id="conv-pending">0</b> points</span>
+        </div>
+        <div class="conv-transition">
+          <div class="conv-transition__cell"><small>Current</small><b id="conv-current">Lv 1</b></div>
+          <span class="conv-transition__arrow">→</span>
+          <div class="conv-transition__cell"><small>Return to</small><b id="conv-return">Lv 1</b></div>
+        </div>
+        <button class="btn btn-ornate conv-modal__cta" id="btn-converge" style="--btn-c:#7fb0ff">Converge</button>
+        <div class="conv-foot">Points <b id="conv-points">0</b> · Convergences <b id="conv-count">0</b> · Highest Lv <b id="conv-highest">1</b></div>
       </div>
     </div>
   </div>
 
-  <!-- SCREEN: World Map -->
+  <!-- MODAL: AWAKEN (3rd power source) -->
+  <div class="modal-overlay" id="modal-awaken" hidden onclick="if(event.target===this)this.hidden=true">
+    <div class="modal awk-modal">
+      <button class="awk-modal__x" onclick="document.getElementById('modal-awaken').hidden=true" title="Close">✕</button>
+      <div class="awk-split">
+        <div class="awk-sidebar">
+          <div class="awk-sidebar__head">
+            <span class="awk-cur-label">Awaken Materials</span>
+            <span class="awk-cur-wrap">
+              <img class="awk-cur-icon" src="assets/materials/firstLight.png" alt="" onerror="this.remove()">
+              <b class="awk-cur-val" id="awaken-essence">0</b>
+            </span>
+          </div>
+          <ul class="awk-entries" id="awaken-list"></ul>
+        </div>
+        <div class="awk-preview" id="awaken-preview"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN: PASSIVES (World-Tree) -->
+  <div class="passives-screen" id="modal-passives" hidden>
+    <div class="pv-screen" aria-hidden="true"></div>
+    <button class="modal-close" title="Close" onclick="document.getElementById('modal-passives').hidden=true">✕</button>
+    <div class="pv-points">Convergence Points: <b id="pv-points">0</b></div>
+    <div class="pv-tabs" id="pv-tabs"></div>
+    <div class="pv-body" id="pv-body"></div>
+    <div class="pv-lock" id="pv-lock" hidden>
+      <div class="glyph">✦</div>
+      <h2>The passives sleep</h2>
+      <p>The Seed awakens at your <b>first Convergence</b>. Converge to open the three trees.</p>
+    </div>
+  </div>
+
+  <!-- SCREEN: WORLD MAP -->
   <div class="worldmap-screen" id="modal-worldmap" hidden>
     <button class="wmap-back" id="wmap-back" title="Back">◀ World</button>
     <div class="wmap" id="wmap">
@@ -180,7 +209,9 @@
         <dl class="wmap-info__stats">
           <div class="wmap-info__row"><dt>Level</dt><dd id="wmap-info-level"></dd></div>
           <div class="wmap-info__row"><dt>Enemies</dt><dd id="wmap-info-enemies"></dd></div>
+          <div class="wmap-info__row" id="wmap-info-boss-row" hidden><dt>Boss</dt><dd id="wmap-info-boss"></dd></div>
           <div class="wmap-info__row"><dt>Status</dt><dd id="wmap-info-status"></dd></div>
+          <div class="wmap-info__row" id="wmap-info-unlock-row" hidden><dt>Unlock</dt><dd id="wmap-info-unlock"></dd></div>
         </dl>
         <span class="wmap-info__label">Resources</span>
         <ul class="wmap-info__res" id="wmap-info-res"></ul>
@@ -193,7 +224,11 @@
   <script src="src/data.js"></script>
   <script src="src/gear.js"></script>
   <script src="src/state.js"></script>
+  <script src="src/economy.js"></script>
   <script src="src/combat.js"></script>
+  <script src="src/convergence.js"></script>
+  <script src="src/awaken.js"></script>
+  <script src="src/passives.js"></script>
   <script src="src/ui.js"></script>
   <script src="src/main.js"></script>
 </body>

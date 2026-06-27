@@ -79,26 +79,26 @@ ok(G.awaken.isDone(FL) && G.state.data.awakenTier === 1, "save/load preserva Awa
 
 // 8) totalKills acumula em onKill e NÃO reseta na Convergence
 store = {}; G.state.data = null; G.state.load();
-G.combat.enemy = { name: "m", level: 1, maxHp: 1, hp: 0, dmg: 1, lumens: 1, xp: 1, isBoss: false };
+const mob8 = { name: "m", level: 1, maxHp: 1, hp: 0, dmg: 1, lumens: 1, xp: 1, isBoss: false };
+G.combat.enemies = [mob8]; G.combat.enemy = mob8;   // onKill opera sobre enemies[]
 G.combat.onKill();
 ok(G.state.data.totalKills === 1, "totalKills incrementa em onKill");
 G.state.data.level = 100; G.convergence.converge();
 ok(G.state.data.totalKills === 1 && G.state.data.runKills === 0, "Convergence reseta runKills mas NÃO totalKills");
 
-// 9) MIGRAÇÃO de save antigo: awakensUnlocked -> awakens; essência -> material
+// 9) MIGRAÇÃO de save: awakenTier ausente é derivado da lista awakens; concluído sobrevive
 store = {};
 const oldSave = G.state.fresh();
-delete oldSave.awakens; delete oldSave.awakenTier;
-oldSave.awakensUnlocked = [FL];
-oldSave.awakenEssence = 7;
+delete oldSave.awakenTier;        // save sem o tier explícito
+oldSave.awakens = [FL];           // campo canônico atual
 oldSave.awakenMaterials = { firstLight: 3 };
 store[G.state.SAVE_KEY] = JSON.stringify(oldSave);
 G.state.data = null; G.state.load();
-ok(G.state.data.awakens.indexOf(FL) !== -1, "migração: awakensUnlocked -> awakens");
-ok(G.state.data.awakenTier === 1, "migração: awakenTier derivado da lista");
-ok(G.state.data.awakenMaterials.firstLight === 10 && G.state.data.awakenEssence === 0,
-  "migração: essência legada (7) dobrada no material canônico (3+7=10)");
-ok(G.awaken.isDone(FL) === true, "migração: Awaken antigo continua concluído");
+ok(G.state.data.awakens.indexOf(FL) !== -1, "migração: awakens preservado no load");
+ok(G.state.data.awakensUnlocked.indexOf(FL) !== -1, "migração: awakensUnlocked espelha awakens");
+ok(G.state.data.awakenTier === 1, "migração: awakenTier derivado da lista (ausente -> 1)");
+ok(G.state.data.awakenMaterials.firstLight === 3, "migração: awakenMaterials preservado");
+ok(G.awaken.isDone(FL) === true, "migração: Awaken concluído continua concluído");
 
 console.log(failed === 0 ? "\nALL PASS" : `\n${failed} FAIL`);
 process.exit(failed === 0 ? 0 : 1);

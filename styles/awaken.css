@@ -41,6 +41,11 @@
 .awk-cur-label {
   font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: #8a94b0;
 }
+.awk-cur-wrap { display: flex; align-items: center; gap: 8px; }
+.awk-cur-icon {
+  width: 34px; height: 34px; object-fit: contain; flex: none;
+  filter: drop-shadow(0 0 8px var(--awk-c));
+}
 .awk-cur-val {
   font-family: "Cormorant Garamond", serif; font-size: 32px; color: #fff;
   text-shadow: 0 2px 8px #000, 0 0 18px var(--awk-c);

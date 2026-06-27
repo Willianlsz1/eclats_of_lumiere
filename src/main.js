@@ -4,7 +4,6 @@
   function init() {
     const loaded = G.state.load();
 
-    // progresso offline
     let idleMsg = null;
     if (loaded && G.state.data.lastSeen) {
       const away  = (Date.now() - G.state.data.lastSeen) / 1000;
@@ -23,12 +22,12 @@
     G.ui.renderAll();
     G.ui.renderEnemy();
 
-    G.ui.log("✦ Welcome to Éclats of Lumière — The Dreaming Wood.", "boss");
+    G.ui.log("✦ Welcome to Éclats of Lumière.", "boss");
     if (idleMsg) G.ui.log(idleMsg, "level");
     if (!G.state.storageOk())
-      G.ui.log("⚠ Opened as local file — progress will NOT be saved. Use the \"Jogar Eclats\" shortcut.", "bad");
+      G.ui.log("⚠ Opened as local file — progress will NOT be saved.", "bad");
 
-    // combate: 10x por segundo
+    // combat: 10× per second
     let last = Date.now();
     setInterval(() => {
       const now = Date.now();
@@ -39,14 +38,13 @@
       G.ui.renderHeroHp();
     }, 100);
 
-    // UI leve: 1x por segundo
+    // UI: 1× per second
     setInterval(() => {
       G.ui.renderResources();
-      G.ui.renderHero();
       G.ui.renderHud();
     }, 1000);
 
-    // auto-save: 10s + ao fechar
+    // auto-save
     setInterval(() => G.state.save(), 10000);
     window.addEventListener("beforeunload", () => G.state.save());
 

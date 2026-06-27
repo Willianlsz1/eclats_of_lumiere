@@ -8,6 +8,8 @@
   position: fixed; inset: 0; z-index: 200; background: #070b16; overflow: hidden;
 }
 .passives-screen[hidden] { display: none; }
+/* botão fechar acima do lock-overlay (z 10) e das camadas internas */
+.passives-screen .modal-close { z-index: 20; }
 .passives-screen .pv-screen { position: absolute; inset: 0; z-index: 0; pointer-events: none;
   background: url('../assets/passives/passives_tree.webp') center / cover no-repeat, #070b16; }
 .passives-screen .pv-points { position: absolute; top: 16px; left: 50%; transform: translateX(-50%); z-index: 6;

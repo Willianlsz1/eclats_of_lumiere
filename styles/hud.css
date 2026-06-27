@@ -51,7 +51,7 @@
   position: fixed; inset: 0; z-index: 1; pointer-events: none;
   display: flex; align-items: center; justify-content: center; gap: 12%;
 }
-.battle-stage .battle-hero, .battle-stage .battle-enemy { pointer-events: auto; align-self: center; }
+.battle-stage .battle-hero, .battle-stage .enemies-container { pointer-events: auto; align-self: center; }
 .battle-stage .hero-figure .floaters { z-index: 6; }
 
 /* ---- herói (sem card — corpo inteiro) ---- */
@@ -80,16 +80,41 @@
 }
 .hero-info .bar { width: 100%; }
 
-/* ---- mob (sem card — corpo inteiro) ---- */
-.battle-enemy {
-  position: relative; flex: 1; max-width: 260px; align-self: center;
-  display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 8px;
+/* ---- wave de inimigos (N cards lado a lado) ---- */
+.enemies-container {
+  flex: 1; max-width: 480px; align-self: flex-end;
+  display: flex; align-items: flex-end; justify-content: center; gap: 10px;
 }
+
+/* cada card de inimigo */
+.enemy-card {
+  flex: 1; min-width: 0; position: relative;
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+}
+/* alvo ativo (frente da onda) — borda laranja sutil */
+.enemy-card.enemy-active .enemy-info {
+  border-color: rgba(255, 154, 77, 0.45);
+}
+
+/* figura do mob — altura escala com tamanho da onda */
 .enemy-figure {
-  position: relative; width: 100%; height: 320px;
+  position: relative; width: 100%; height: 200px;
   display: flex; align-items: flex-end; justify-content: center;
 }
+.enemies-container.pack-1 .enemy-figure { height: 320px; }
+.enemies-container.pack-2 .enemy-figure { height: 240px; }
+/* pack-3 usa o padrão 200px */
+
+/* texto escala para cards menores */
+.enemies-container.pack-2 .enemy-name { font-size: 15px; }
+.enemies-container.pack-3 .enemy-name { font-size: 13px; }
+.enemies-container.pack-2 .card-sub,
+.enemies-container.pack-3 .card-sub { font-size: 10px; }
+
 .enemy-figure .art-ph { font-size: 90px; animation: float 3s ease-in-out infinite; }
+.enemies-container.pack-2 .art-ph { font-size: 60px; }
+.enemies-container.pack-3 .art-ph { font-size: 48px; }
+
 .enemy-figure .art-img {
   position: static; inset: auto; width: 100%; height: 100%; object-fit: contain;
   filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.5)) drop-shadow(0 0 16px rgba(255, 154, 77, 0.18));
@@ -106,9 +131,13 @@
   font-family: "Cormorant Garamond", serif; font-style: italic; font-size: 20px; color: var(--orange);
   text-shadow: 0 1px 4px #000, 0 0 10px rgba(0, 0, 0, 0.85);
 }
-.battle-enemy .floaters { position: absolute; inset: 0; z-index: 6; pointer-events: none; }
-.battle-enemy.enemy-hidden .enemy-info { visibility: hidden; }
-.battle-enemy .enemy-bar { width: 100%; }
+.enemy-card .floaters { position: absolute; inset: 0; z-index: 6; pointer-events: none; }
+.enemy-card .enemy-bar { width: 100%; }
+
+/* inimigo morto — ainda visível mas esmaecido até a onda limpar */
+.enemy-card.enemy-dead { opacity: 0.3; filter: grayscale(0.9); pointer-events: none; }
+.enemy-card.enemy-dead .enemy-name { color: #9aa7bd; }
+.enemy-card.enemy-dead .art-ph { animation: none; }
 .card-sub { font-size: 12px; color: #c7d2e4; text-shadow: 0 1px 3px #000; }
 .card-sub b { color: #fff; }
 
@@ -139,6 +168,32 @@
 .floater.crit { color: var(--gold); font-size: 30px; }
 .floater.enemy { color: var(--bad); font-size: 18px; top: 70%; }
 @keyframes rise { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-40px); } }
+
+/* ---- material drop ---- */
+.mat-drops-wrap {
+  position: absolute; right: 8px; bottom: 30%; z-index: 20;
+  display: flex; flex-direction: column-reverse; gap: 5px;
+  pointer-events: none; align-items: flex-end;
+}
+.mat-drop {
+  display: flex; align-items: center; gap: 5px;
+  background: rgba(7, 10, 22, 0.88);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 20px; padding: 3px 9px 3px 4px;
+  font-size: 12px; font-weight: 700; white-space: nowrap;
+  animation: mat-rise 2.4s ease-out forwards;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+}
+.mat-drop--common    { border-color: #9aa7bd; color: #9aa7bd; }
+.mat-drop--uncommon  { border-color: #7ec8a0; color: #7ec8a0; }
+.mat-drop--firstLight { border-color: #e8d24a; color: #e8d24a; }
+.mat-drop__icon { width: 20px; height: 20px; object-fit: contain; border-radius: 4px; }
+@keyframes mat-rise {
+  0%   { opacity: 0; transform: translateY(0); }
+  12%  { opacity: 1; }
+  65%  { opacity: 1; transform: translateY(-28px); }
+  100% { opacity: 0; transform: translateY(-44px); }
+}
 
 /* ---- projétil ---- */
 .projectile {

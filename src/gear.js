@@ -2,8 +2,14 @@
 
 G.gear = {
   // retorna valor de um afixo no nível atual da peça
+  // af.step (opcional): ganho em DEGRAUS — só pula a cada `step` níveis (breakpoints).
+  // A média é idêntica ao ganho liso; muda só a sensação (pop perceptível vs gota invisível).
   affixValue(item, af) {
-    return af.base + af.perLevel * ((item.level || 1) - 1);
+    const r = G.data.rarities.find(r => r.id === item.rarity);
+    const mult = r ? (r.statMult || 1) : 1;
+    const lv = (item.level || 1) - 1;
+    const eff = af.step ? Math.floor(lv / af.step) * af.step : lv;
+    return af.base + af.perLevel * mult * eff;
   },
 
   // teto de nível pela raridade
@@ -14,10 +20,12 @@ G.gear = {
 
   isMaxed(item) { return (item.level || 1) >= this.cap(item); },
 
-  // custo geométrico: base × growth^(nível-1)
+  // custo geométrico: base × growth^(nível-1) × multiplicador da raridade
   cost(item) {
     const b = G.data.balance;
-    return Math.ceil(b.gearCostBase * Math.pow(b.gearCostGrowth, (item.level || 1) - 1));
+    const r = G.data.rarities.find(r => r.id === item.rarity);
+    const costMult = r ? (r.costMult || 1) : 1;
+    return Math.ceil(b.gearCostBase * Math.pow(b.gearCostGrowth, (item.level || 1) - 1) * costMult);
   },
 
   // sobe 1 nível; devolve true se conseguiu
@@ -42,12 +50,51 @@ G.gear = {
     return done;
   },
 
-  // monta uma peça a partir de gearBase + raridade
+  // rarity helpers
+  _nextRarity(rarityId) {
+    const idx = G.data.rarities.findIndex(r => r.id === rarityId);
+    return (idx >= 0 && idx < G.data.rarities.length - 1) ? G.data.rarities[idx + 1].id : null;
+  },
+
+  // returns { kind, amount } for the promote cost of an item, or null if not promotable
+  promoteCost(item) {
+    if (item.rarity === 'common')   return { kind: 'common',   amount: G.data.balance.promoteCommonCost };
+    if (item.rarity === 'uncommon') return { kind: 'uncommon', amount: G.data.balance.promoteUncommonCost };
+    return null;
+  },
+
+  canPromote(item) {
+    if (!this.isMaxed(item)) return false;
+    if (!this._nextRarity(item.rarity)) return false;
+    const cost = this.promoteCost(item);
+    return cost ? G.economy.getGear(cost.kind) >= cost.amount : false;
+  },
+
+  // consumes materials, promotes piece to next rarity keeping current level
+  promote(item) {
+    if (!this.isMaxed(item)) return false;
+    const nextId = this._nextRarity(item.rarity);
+    if (!nextId) return false;
+    const cost = this.promoteCost(item);
+    if (!cost) return false;
+    if (G.economy.getGear(cost.kind) < cost.amount) return false;
+    G.economy.addGear(cost.kind, -cost.amount);
+    const currentLevel = item.level || 1;
+    const newPiece = this.buildPiece(item.slot, nextId);
+    newPiece.level = currentLevel;
+    G.state.data.equipped[item.slot] = newPiece;
+    G.state.invalidateStats();
+    return true;
+  },
+
+  // monta uma peça a partir de gearBase + raridade (inclui afixos exclusivos da raridade)
   buildPiece(slotId, rarityId) {
     const base   = G.data.gearBase[slotId];
     const slot   = G.data.slots.find((s) => s.id === slotId);
     const rarity = G.data.rarities.find((r) => r.id === rarityId) || G.data.rarities[0];
     const DISP_PCT = ["crit", "critDmg", "xpBonus", "lumensBonus"];
+    const rarityExtras = base[rarityId + "Affixes"] || [];
+    const allAffixes = [...base.affixes, ...rarityExtras];
     return {
       slot:       slotId,
       slotLabel:  slot ? slot.label : slotId,
@@ -56,7 +103,7 @@ G.gear = {
       rarityName: rarity.name,
       color:      rarity.color,
       level:      1,
-      affixes:    base.affixes.map((a) => ({
+      affixes:    allAffixes.map((a) => ({
         id:       a.id,
         label:    a.label,
         stat:     a.stat,
@@ -64,6 +111,7 @@ G.gear = {
         pct:      a.layer === "pct" || DISP_PCT.indexOf(a.stat) !== -1,
         base:     a.base,
         perLevel: a.perLevel,
+        step:     a.step,
       })),
     };
   },
