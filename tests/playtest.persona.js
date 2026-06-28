@@ -244,7 +244,9 @@ function partC() {
   const capMap2 = G.state.currentAtkSpeedCap();
   console.log(`atkSpeed cap: Mapa 1 = ${capMap1} | Mapa 2 = ${capMap2}`);
   if (capMap1 !== G.data.balance.map1AtkSpeedCap) flag("BUG", "C", "Cap do Mapa 1 incorreto");
-  if (capMap2 !== G.data.balance.atkSpeedCap)     flag("BUG", "C", "Cap do Mapa 2 incorreto");
+  if (capMap2 !== G.data.balance.map2AtkSpeedCap) flag("BUG", "C", "Cap do Mapa 2 incorreto");
+  if (G.data.balance.map2AtkSpeedCap >= G.data.balance.atkSpeedCap)
+    flag("BUG", "C", "Cap do Mapa 2 deveria ficar abaixo do teto final (15)");
 
   // PROMOTE: common → uncommon preservando nível e consumindo material
   store = {}; G.state.data = null; G.state.load();

@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="styles/components.css" />
   <link rel="stylesheet" href="styles/hud.css" />
   <link rel="stylesheet" href="styles/gear.css" />
+  <link rel="stylesheet" href="styles/forge.css" />
   <link rel="stylesheet" href="styles/convergence.css" />
   <link rel="stylesheet" href="styles/awaken.css" />
   <link rel="stylesheet" href="styles/worldmap.css" />
@@ -36,7 +37,7 @@
   <!-- top-right: Lumens -->
   <div class="hud hud-topright">
     <div class="lumens-hud">
-      <img class="lumens-hud__icon" src="assets/ui/lumens.png" alt="Lumens" onerror="this.remove()" />
+      <img class="lumens-hud__icon" src="assets/ui/lumens_coin.png" alt="Lumens" onerror="this.remove()" />
       <b class="lumens-hud__value" id="res-lumens">0</b>
     </div>
   </div>
@@ -57,8 +58,18 @@
         <span class="ico-ph">✦</span>
         <img class="ico-img" src="assets/ui/icon_convergence.png" alt="" onerror="this.remove()" />
       </button>
-      <button class="icon-btn" title="Awaken" onclick="G.ui.openModal('modal-awaken')">✷</button>
-      <button class="icon-btn" title="Passives" onclick="G.ui.openModal('modal-passives')">❉</button>
+      <button class="icon-btn" title="Forge" onclick="G.ui.openModal('modal-forge')">
+        <span class="ico-ph">🔨</span>
+        <img class="ico-img" src="assets/ui/icon_forge.png" alt="" onerror="this.remove()" />
+      </button>
+      <button class="icon-btn" title="Passives" onclick="G.ui.openModal('modal-passives')">
+        <span class="ico-ph">❉</span>
+        <img class="ico-img" src="assets/ui/icon_passives.png" alt="" onerror="this.remove()" />
+      </button>
+      <button class="icon-btn" title="Awaken" onclick="G.ui.openModal('modal-awaken')">
+        <span class="ico-ph">✷</span>
+        <img class="ico-img" src="assets/ui/icon_awaken.png" alt="" onerror="this.remove()" />
+      </button>
       <button class="icon-btn icon-btn--reset" title="Reset game" onclick="G.ui.resetGame()">🔄</button>
     </div>
   </div>
@@ -66,13 +77,13 @@
   <!-- battle stage -->
   <div class="battle-stage">
     <div class="battle-hero">
+      <span class="hero-name">The Seeker · Lv. <b id="hero-card-level">1</b></span>
       <div class="hero-figure" id="hero-art">
         <span class="art-ph">🧝</span>
         <img class="art-img" src="assets/hero.png" alt="" onerror="this.remove()" />
         <div class="floaters" id="floaters-hero"></div>
       </div>
       <div class="hero-info">
-        <span class="hero-name">The Seeker · Lv. <b id="hero-card-level">1</b></span>
         <div class="bar hp-bar">
           <div class="bar-fill hp-fill" id="hero-hp-fill"></div>
           <span class="bar-label" id="hero-hp-label">—</span>
@@ -90,15 +101,22 @@
 
   <!-- bottom-left: log -->
   <div class="hud hud-bottomleft">
-    <div class="log" id="log"></div>
+    <div class="log-panel" id="log-panel">
+      <div class="log-header">
+        <span class="log-title">Log</span>
+        <button class="log-toggle" id="log-toggle" title="Minimize" onclick="G.ui.toggleLog()">—</button>
+      </div>
+      <div class="log" id="log"></div>
+    </div>
   </div>
 
-  <!-- bottom-center: quick stats -->
-  <div class="hud hud-bottomcenter">
-    <div class="hud-stats">
-      <span>ATK <b id="hud-atk">0</b></span>
-      <span>DPS <b id="hud-dps">0</b></span>
-      <span>Crit <b id="hud-crit">0%</b></span>
+  <!-- rates panel (Gold/Min, XP/Min, Dmg) -->
+  <div class="hud hud-rates">
+    <div class="rates-panel">
+      <div class="rate-row"><span>Gold/Min</span><b id="rate-gold">0</b></div>
+      <div class="rate-row"><span>XP/Min</span><b id="rate-xp">0</b></div>
+      <div class="rate-row"><span>Kills/Min</span><b id="rate-kills">0</b></div>
+      <div class="rate-row"><span>Dmg</span><b id="rate-dmg">0</b></div>
     </div>
   </div>
 
@@ -121,7 +139,36 @@
           <button data-mult="max">Max</button>
         </div>
       </div>
+      <div class="gear-npc">
+        <div class="gear-npc__name">Aurélie Verlaine</div>
+        <div class="gear-npc__title">Intendante of the Ordre des Éclairés</div>
+        <div class="gear-npc__quote">"The Ordre lends the steel. The light within is yours alone, Seeker."</div>
+      </div>
       <div id="gear-tooltip" hidden></div>
+    </div>
+  </div>
+
+  <!-- MODAL: FORGE -->
+  <div class="modal-overlay" id="modal-forge" hidden onclick="if(event.target===this)this.hidden=true">
+    <div class="modal modal--forge">
+      <button class="modal-close" title="Close" onclick="document.getElementById('modal-forge').hidden=true">✕</button>
+      <div class="modal__title">FORGE</div>
+      <aside class="forge-panel forge-panel--left">
+        <h3 class="sub-title">Materials</h3>
+        <div class="forge-mats" id="forge-mats"></div>
+        <h3 class="sub-title">Convert</h3>
+        <div class="forge-convert" id="forge-convert"></div>
+      </aside>
+      <aside class="forge-panel forge-panel--right">
+        <h3 class="sub-title">Rarity Upgrade</h3>
+        <div class="forge-promote" id="forge-promote"></div>
+      </aside>
+      <div class="forge-anvil" id="forge-anvil" hidden></div>
+      <div class="forge-npc">
+        <div class="forge-npc__name">Maël Lefèvre</div>
+        <div class="forge-npc__title">Forgemaster of the Ordre des Éclairés</div>
+        <div class="forge-npc__quote">"The Ordre gathers the light. Here, I give it form — and an edge."</div>
+      </div>
     </div>
   </div>
 

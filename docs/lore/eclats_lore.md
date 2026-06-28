@@ -6,7 +6,7 @@ Este arquivo junta dois tipos de conteúdo, claramente marcados:
 - 🟢 **REVISADO E APROVADO** — partes reescritas e aprovadas por Willian na sessão de jun/2026 (o "início" da lore).
 - 🟡 **NÃO REVISADO NESTA SESSÃO** — partes herdadas da Lore Bible anterior, mantidas como referência. Podem conter decisões antigas ainda não reconciliadas com a revisão nova.
 
-> ⚠️ Onde houver conflito entre uma parte 🟢 e uma parte 🟡, a versão 🟢 (revisada) prevalece. As partes 🟡 ainda precisam passar por revisão futura para alinhamento total (ex: o sistema de cores do dourado, o rosto do Seeker no tier Lumière, a corte Qliphoth).
+> ⚠️ Onde houver conflito entre uma parte 🟢 e uma parte 🟡, a versão 🟢 (revisada) prevalece. As partes 🟡 ainda precisam passar por revisão futura para alinhamento total (ex: o sistema de cores do dourado, o rosto do Seeker no tier Lumière, a corte Cortices).
 
 Data: 2026-06-20
 
@@ -37,7 +37,7 @@ Um nome que descreve o que aconteceu. Não o que significa.
 
 Quando a luz se quebrou e os fragmentos se espalharam pelo mundo, eles atravessaram o vácuo que a própria quebra havia criado — e esse trânsito os marcou. A luz sem cor tornou-se dourada. Não porque dourado seja a natureza da luz. Mas porque dourado é a cor da ferida: o sinal de que aquela luz passou pelo Nada e sobreviveu marcada.
 
-Cada fragmento da luz quebrada é um *Éclat* — incontáveis, espalhados por florestas, cavernas e ruínas de civilizações que ainda não existiam quando eles caíram. Cada um carrega uma memória: um pedaço do que o mundo foi quando era inteiro. Pulsam. Chamam uns aos outros através da distância, como se a luz ainda soubesse o que perdeu.
+Cada fragmento da luz quebrada é um *Éclat*. A maioria é **poeira de luz** — incontável, espalhada por florestas, cavernas e ruínas de civilizações que ainda não existiam quando caíram. Mas dentre essa poeira destacam-se os **288 Grandes Fragmentos**: os Éclats maiores, que retiveram mais do todo. Cada um carrega uma memória — um pedaço do que o mundo foi quando era inteiro. Pulsam. Chamam uns aos outros através da distância, como se a luz ainda soubesse o que perdeu.
 
 E quando a luz recuou para abrir espaço ao mundo, algo ficou no vácuo que ela deixou.
 
@@ -88,6 +88,14 @@ A diferença entre um Éclat livre e um Éclat absorvido é a diferença entre u
 
 Absorção não é reparação. É contenção. E contenção, dado tempo suficiente, é destruição silenciosa.
 
+## Les Mémoires — os fragmentos que lembram de uma era
+
+E dentre os 288 Grandes Fragmentos, alguns são **excepcionais**: as **Mémoires**. Uma Mémoire não guarda só um pedaço do mundo inteiro — guarda a **memória completa de uma era**: tudo o que aquele tempo foi, viu e perdeu, selado num único fragmento de luz. Absorver uma Mémoire é tocar uma época inteira de uma vez.
+
+São os fragmentos mais raros do mundo — abaixo apenas de Le Premier Éclat.
+
+> 🔧 **Gancho de sistema (futuro):** as Mémoires são a raiz lore do sistema homônimo (ver `docs/lore/MEMOIRES_MASTER_PLAN_V1.md`). Não escopo de implementação agora — só a âncora narrativa.
+
 ## Le Premier Éclat — o fragmento que lembra
 
 Quando Or Ein Sof se quebrou, cada fragmento levou consigo uma memória — o peso de uma luz que não tinha bordas, a impressão de totalidade que nenhuma palavra do mundo consegue nomear. Uma saudade anterior ao mundo, gravada em cada Éclat que toca o chão.
@@ -135,6 +143,8 @@ Os que pertencem a Nihel não vazam luz. Vazam escuridão — veias finas de vaz
 
 *A jornada do Seeker, lida em cores:* do dourado da marca — ao branco-azul da convergência — em direção ao que o mundo nunca viu e não tem nome: a luz antes da ferida, sem cor, inteira outra vez.
 
+> ⚠️ **Isto é leitura simbólica, NÃO restrição de paleta.** As cores acima são *o significado* que a luz carrega na história — não uma regra que proíbe usar ouro ou vermelho em outras partes do jogo. **Ouro está em toda parte** (todo Éclat é dourado; o mundo Belle Époque é dourado). **Vermelho pode aparecer livre** em arte, áreas e UI sem invocar Nihel. A *exclusividade* é **contextual**: é só dentro de *Nil Aeternum* — onde NÃO há outra luz dourada — que o vermelho se lê como "o Nada sem máscara". Fora dali, são apenas cores. (O "dourado/vermelho = Nihel" é um conceito de ARTE específico do Nihel e do Map 5, não um veto global.)
+
 > 🔧 **Pendência de revisão:** os bosses do jogo fazem referência ao vermelho em quantidades variáveis (régua de proximidade de Nihel). Esse detalhamento ainda será reconciliado com a tabela de bosses quando os nomes forem revisados.
 
 ---
@@ -158,9 +168,19 @@ A Ordre des Éclairés não surgiu apesar de Nihel. Surgiu por causa dele.
 
 Cada Éclat que a Ordre absorve é um fragmento que nunca mais converge. Enjaulado num corpo, dissolvido na morte do hospedeiro, apagado em câmera lenta. A instituição mais admirada do mundo — os heróis que protegem as estradas, os Iluminados que as crianças querem se tornar — são, sem saber, o sistema de descarte de Nihel. A fornalha onde a luz vai morrer devagar, com gratidão.
 
-Os *Qliphoth* — as cascas vazias que servem ao Nada — destroem Éclats antes da Ordre chegar, porque destruição imediata é mais eficiente que contenção lenta. Mas as duas servem ao mesmo propósito. Nihel vence dos dois jeitos.
+Os *Cortices* — as cascas vazias que servem ao Nada — destroem Éclats antes da Ordre chegar, porque destruição imediata é mais eficiente que contenção lenta. Mas as duas servem ao mesmo propósito. Nihel vence dos dois jeitos.
 
-A distinção que o mundo faz entre "o mal" (os Qliphoth, as criaturas) e "o bem" (a Ordre, os heróis) não existe na perspectiva de Nihel. São dois braços do mesmo trabalho. O mundo luta contra um deles com fervor — e financia o outro com impostos.
+A distinção que o mundo faz entre "o mal" (os Cortices, as criaturas) e "o bem" (a Ordre, os heróis) não existe na perspectiva de Nihel. São dois braços do mesmo trabalho. O mundo luta contra um deles com fervor — e financia o outro com impostos.
+
+## Os que guardam — e o anômalo que estudam
+
+A maior parte da Ordre nunca soube de nada: coletam e absorvem achando que salvam a luz. Mas no topo — entre os mais altos Iluminados, os que carregam o segredo da Ordre — há os que **sabem que a absorção silencia o Éclat**. Não foram enganados sobre isso. Foram enganados sobre o que *significa*.
+
+Eles acreditam que um Éclat solto é perigoso, instável; que a luz reunindo-se sem controle é uma ameaça ao mundo — e que **contê-la é misericórdia e proteção**. Não servem ao Nada de propósito. São **guardiões sinceros**, convencidos de que enjaular a luz é guardá-la em segurança. É a mentira mais perfeita de Nihel: não corromper o coração da Ordre, mas dar a ela uma razão *nobre* pra fazer exatamente o que ele quer.
+
+E então aparece o Seeker.
+
+Nele, os fragmentos não silenciam — **convergem**. A Ordre não o expulsa nem o caça. Faz o que uma casa de estudiosos faz diante do impossível: **tenta entender**. Observam, registram, perguntam por que neste um a luz volta a se reunir quando em todos os outros ela morre. E não percebem — não podem perceber — que cada passo em direção a compreender o Seeker é um passo em direção à única verdade que desfaria a Ordre inteira: que a convergência sempre foi o caminho, e a contenção, sempre a fornalha.
 
 ## A corte do Nada
 
@@ -174,19 +194,19 @@ Mas a corte não é o exército de Nihel. É o prêmio que ele oferece.
 
 O exército é a Ordre.
 
-> 🔧 **Pendência de revisão:** discutimos usar os nomes dos Qliphoth (Gamaliel, Samael, A'arab Zaraq, Thaumiel) como *ranks* da corte Claimed, com uma régua de vermelho indicando proximidade de Nihel. Essa estrutura foi analisada mas ainda não foi finalizada/aprovada.
+> 🔧 **Pendência de revisão:** discutimos usar os nomes dos Cortices (Gamaliel, Samael, A'arab Zaraq, Thaumiel) como *ranks* da corte Claimed, com uma régua de vermelho indicando proximidade de Nihel. Essa estrutura foi analisada mas ainda não foi finalizada/aprovada.
 
 ---
 ---
 ---
 
-# 🟡 PARTES SEGUINTES — NÃO REVISADAS NESTA SESSÃO
+# PARTES SEGUINTES — status misto
 
-> A partir daqui, o conteúdo vem da Lore Bible anterior (v2/v3). **Não passou pela revisão de jun/2026.** Pode conter decisões que conflitam com as partes 🟢 acima — principalmente sobre o sistema de cores (o dourado), o rosto do Seeker no tier final, e a estrutura da corte. Mantido como referência até revisão futura.
+> **Revisão jun/2026:** Partes **V, VI(história), VII, VIII = REVISADAS** ✅. Parte **VI arco visual do Seeker = ⏸ PARADO** (pesquisa). Partes **IX e X = ⏸ EM ABERTO** — o dono não decidiu o final ainda (é cedo pro fim). Mantidas como rascunho/tema até lá.
 
 ---
 
-# 🟡 PARTE V — O MUNDO DE HOJE *(não revisado)*
+# 🟢 PARTE V — O MUNDO DE HOJE *(revisado jun/2026)*
 
 ## A civilização que herdou as ruínas
 
@@ -200,7 +220,9 @@ A instituição mais respeitada do mundo. Bem financiada, admirada, heroica. Seu
 
 São chamados de Iluminados sem saber que carregam literalmente fragmentos de luz primordial no corpo.
 
-A coleta da Ordre só se torna reparação — só se torna **Tikkun Olam** — através de um único membro. Aquele que carrega a Semente.
+O público é inocente. Só o círculo mais alto — os **guardiões sinceros** (Parte IV) — sabe que a absorção silencia a luz, e ainda assim acredita que contê-la é protegê-la. Ninguém, em nenhum nível, sabe que serve ao Nada.
+
+A coleta da Ordre só se torna reparação — só se torna **The Mending** — através de um único membro. Aquele que carrega a Semente.
 
 ## Os ranks da Ordre
 
@@ -210,15 +232,19 @@ A coleta da Ordre só se torna reparação — só se torna **Tikkun Olam** — 
 - **Estágios raros → francês** (*Éclairé, L'Éveillé, Lumière*) — quanto mais raro o estado, mais ele fala a língua da era radiante.
 - **Lumière = duplo sentido:** é a era/civilização primeira *e* o rank máximo.
 
+> 🔧 *Idioma da era radiante (pendência de NOMES, não de história):* o francês aqui é a língua elevada do mundo de HOJE. Se a era de Lumière perdida ganhar sua própria língua antiga (grego/acádio — ver `docs/lore/LORE_REFERENCE_LIBRARY.md`), os nomes da era primeira virão de lá, não do francês. Decidir na fase de implementação.
+
 ## Séraphine, Doyenne de l'Ordre
 
-A dignitária que preside cada Ascension. A Decana da Ordre, com os olhos vendados (renda fina) — não certifica com os olhos, "vê" a Luz por dentro. Cabelo branco/prata, coroa de filigrana, vestido escuro Belle Époque com bordado dourado. É o NPC da tela de Ascension.
+A dignitária que preside cada Ascension — a Decana da Ordre. Cabelo branco/prata, coroa de filigrana, vestido escuro Belle Époque com bordado dourado. NPC da tela de Ascension.
 
-> 🔧 Discutimos uma camada nova para Séraphine ("vendou-se porque uma vez viu o que a luz absorvida faz") — não finalizada.
+Os olhos **vendados** (renda fina) são escolha sua: ela certifica a Luz não com os olhos, mas por dentro. E há uma razão — **vendou-se porque uma vez viu o que a luz absorvida vira.** Viu o Éclat enjaulado num corpo, mudo, morrendo devagar. Conhece o custo melhor que ninguém. E mesmo assim segue, porque acredita — como todo guardião sincero — que conter é proteger.
+
+Por isso, sem saber, ela é a mais perigosa pra Nihel: dos que sabem ver, é a única que **vê por dentro**. E quando "olha" o Seeker, vê o impossível — a luz nele não silencia, **converge**. Ela é a primeira a perceber que este é diferente, muito antes de a Ordre entender o que tem em mãos.
 
 ---
 
-# 🟡 PARTE VI — O SEEKER *(não revisado)*
+# 🟢 PARTE VI — O SEEKER *(história revisada jun/2026 · ⏸ arco visual PARADO pra pesquisa)*
 
 ## A origem (sem escolhido, sem profecia)
 
@@ -232,7 +258,9 @@ A corrupção não vem da quantidade de luz. Vem da luz enjaulada. Nos Consumed,
 
 ## O arco visual dos cinco tiers
 
-Uma viagem de cor: preto humano → branco convergido. Sem capuz, rosto sempre visível, marcador da escada é a mecha branca que cresce.
+> ⏸ **PARADO PRA PESQUISA — NÃO FECHADO (decisão do dono, jun/2026).** As **mudanças físicas do Seeker** ao longo dos 5 tiers precisam de mais referências e reflexão antes de virar canon. O rascunho abaixo é só ponto de partida; nada aqui está aprovado. *Pendência ativa: juntar referências (arcos de transformação de personagem / awakening art de gacha, FromSoftware, etc.) e o dono decidir como o corpo dele muda.*
+
+*(Rascunho atual — sujeito a revisão completa)* Uma viagem de cor: preto humano → branco convergido. Sem capuz, rosto sempre visível, marcador da escada é a mecha branca que cresce.
 
 1. **Seeker** — rosto humano maduro, cabelo preto com fina mecha de luz, resíduo dourado.
 2. **Illuminate** — mecha branca cresce, vestes branco-prata.
@@ -240,31 +268,39 @@ Uma viagem de cor: preto humano → branco convergido. Sem capuz, rosto sempre v
 4. **L'Éveillé** — cabelo majoritariamente branco, fragmentos de luz flutuando.
 5. **Lumière** — cabelo quase todo branco, auréola circular limpa, luz branco-azul, rosto humano intacto e sereno.
 
-> 🔧 **Conflito conhecido:** a versão v2 desta parte descrevia o tier Lumière com "rosto vazio". A revisão (e a Parte X antiga) ainda usam essa linguagem em alguns pontos. A direção aprovada na conversa é **rosto humano intacto** — este texto já reflete isso, mas a Parte X (espelhos) e o tema dos Gatekeepers ainda precisam ser alinhados.
+> 🔧 **Conflito a resolver junto:** a v2 descrevia o tier Lumière com "rosto vazio"; a direção que vinha sendo seguida era **rosto humano intacto**. Como o arco visual inteiro foi reaberto, essa decisão também volta pra mesa — decidir junto com as mudanças físicas.
 
 ---
 
-# 🟡 PARTE VII — TAXONOMIA DAS CRIATURAS *(não revisado)*
+# 🟢 PARTE VII — TAXONOMIA DAS CRIATURAS *(revisado jun/2026)*
+
+Os 5 tipos abaixo são **sabores** (que espécie), não graus de poder. A **hierarquia de poder** (Common→Kindled→Luminous→Radiant→Mini-Boss→Eidola→Chefe de Mapa→Nihel) está definida em `docs/design/ENEMY_POWER_PYRAMID.md` — *tipo ≠ tier*: qualquer tipo ocupa vários degraus.
 
 - **The Fragmented** — humanos/animais levemente tocados por um Éclat. Belos, silenciosos, errados.
 - **The Consumed** — membros que absorveram Éclats demais; a luz enjaulada racha o vaso.
 - **The Eidola** — grandes manifestações (os chefes); ecos densos de luz ou vazio com forma própria. *(renomeado de "The Vestiges" — Vestiges é só a moeda)*
 - **The Claimed** — os que pertencem a Nihel; vazam escuridão.
-- **The Qliphoth** — cascas vazias que destroem Éclats.
+- **The Cortices** — cascas vazias que destroem Éclats.
 
 > 🔧 Os bosses específicos (Gilded Hollow, Pale Reunion, Ashen King, Claimed Queen, Nihel) e a estrutura de sub-bosses foram analisados na conversa mas não finalizados. O boss do Map 2 muda de tipo (a definir).
 
 ---
 
-# 🟡 PARTE VIII — O REI E A RAINHA *(não revisado)*
+# 🟢 PARTE VIII — O REI E A RAINHA *(revisado jun/2026)*
 
-A primeira civilização caiu. O **Ashen King** (Map 3) recusou-se a morrer com ela e ficou de luto nas ruínas — não serve a Nihel, apenas permanece. A **Claimed Queen** (Map 4) fez diferente: ajoelhou para o Nada e foi coroada por isso. O casal real partido em dois mapas — ele preso ao passado, ela entregue ao vazio.
+A primeira civilização caiu. Sobraram dois: o **Ashen King** recusou-se a morrer com ela e ficou de luto nas **ruínas do próprio reino** — não serve a Nihel, apenas *permanece*. A **Claimed Queen** fez o oposto: ajoelhou para o Nada e foi coroada por isso. Mesma catástrofe, duas respostas à mesma perda — ele *não solta* (fica, recusa o fim), ela *soltou tudo* (entregou-se pra continuar reinando).
 
-> 🔧 Confirmado na conversa: a Rainha de Lumière **é** a Claimed Queen; o Ashen King permanece fora da corte. Detalhamento não finalizado.
+**Os dois vivem no mesmo Mapa — as Ruínas da era de Lumière (Mapa 3):**
+- A **Claimed Queen** é o **sub-boss**: ela *retorna* às ruínas do reino que foi dos dois, já como o que se tornou (Claimed). A resposta do vazio ao luto.
+- O **Ashen King** é o **Chefe de Mapa**: o clímax, no coração das ruínas. A resposta da dor ao luto.
+
+**O beat trágico:** o jogador atravessa **ela** — a esposa que ele ama, agora Claimed, voltando à terra que foi deles — pra chegar **nele**, que a chora como morta, sem aceitar (ou sem saber) que ela ainda existe, do outro lado. Dois bosses, mesmo reino, duas tragédias que se espelham.
+
+> 🔧 A finalizar (fase de implementação): nomes próprios, arte, e como a Rainha "retorna" às ruínas. Confirmado: a Rainha de Lumière **é** a Claimed Queen.
 
 ---
 
-# 🟡 PARTE IX — O FINAL E A CONVERGENCE *(não revisado — nota: sistemas de jogo foram refeitos do zero)*
+# ⏸ PARTE IX — O FINAL E A CONVERGENCE *(EM ABERTO — cedo demais pro final; rascunho/tema)*
 
 No tier Lumière, dentro de Nil Aeternum, o Seeker descobre que Or Ein Sof pode ser reconstituído — mas reconstituí-lo completamente apagaria o espaço onde o mundo existe. A escolha: apagar tudo (completar a reunião) ou não reparar nada (recusá-la).
 
@@ -274,13 +310,13 @@ A terceira via é a **Convergence**: o Seeker se quebra voluntariamente, dispers
 
 ---
 
-# 🟡 PARTE X — SIMETRIAS E TEMAS *(não revisado)*
+# ⏸ PARTE X — SIMETRIAS E TEMAS *(EM ABERTO — junto com o final; rascunho/tema)*
 
 **A Simetria Tripla:** Or Ein Sof se quebrou para o mundo existir (não escolheu). Nihel nasceu do vácuo (não escolheu). O Seeker carrega a Semente por acaso e escolhe se quebrar, ciclo após ciclo. Três seres feitos da mesma coisa; dois que não escolheram, um que escolhe pagar o preço pelos três.
 
 **O Nome como Destino:** o mundo pronuncia "La Fracture" (o nome de Nihel) todos os dias sem saber. O nome verdadeiro, HaShevirah, foi apagado.
 
-**Tikkun Olam:** o Seeker repara o mundo sem nunca poder completar — porque a completude apagaria o que ele repara.
+**The Mending:** o Seeker repara o mundo sem nunca poder completar — porque a completude apagaria o que ele repara.
 
 > 🔧 **Conflito conhecido:** o "quarto espelho" desta parte usa a imagem do Seeker com "rosto vazio". Com a decisão de rosto humano intacto (Parte VI), este trecho precisa ser reescrito: não "você virou o inimigo", mas "você quase virou — e a Semente foi a única diferença".
 
@@ -293,10 +329,10 @@ O jogo é em **inglês** (UI, textos, tooltips). A regra dos idiomas governa de 
 
 | Idioma | Camada | Exemplos |
 |---|---|---|
-| **Hebraico** | A verdade primordial — o que o mundo esqueceu | Or Ein Sof, HaShevirah, Qliphoth, Tikkun Olam |
+| **Hebraico** | A verdade primordial — o que o mundo esqueceu | Or Ein Sof, HaShevirah |
 | **Francês** | O mundo de hoje — a civilização herdeira | Éclats, Lumière, Ordre des Éclairés, La Fracture, L'Éveillé |
-| **Inglês** | A taxonomia das criaturas | The Fragmented, The Consumed, The Eidola, The Claimed, The Fracture |
-| **Latim** | O Nada e seu território | Nil Aeternum |
+| **Inglês** | A taxonomia das criaturas + termos do mundo de hoje | The Fragmented, The Consumed, The Eidola, The Claimed, The Fracture, **The Mending** |
+| **Latim** | O Nada e seu território | Nil Aeternum, **Cortices** |
 
 Nihel é o único bilíngue: **La Fracture** (o mundo) e **The Fracture** (a entidade). Ele atravessa as camadas porque é a fenda entre elas.
 
@@ -310,7 +346,7 @@ As partes 🟢 estão fechadas. As pendências abertas, em ordem de impacto:
 
 1. **Sistema de cores nas partes 🟡** — alinhar Partes V-X com o novo canon (dourado = marca de Nihel).
 2. **Rosto do Seeker tier Lumière** — propagar "rosto humano intacto" para a Parte X (espelhos) e tema dos Gatekeepers.
-3. **A corte / ranks Qliphoth** — finalizar se os nomes Qliphoth viram ranks dos Claimed + régua de vermelho.
+3. **A corte / ranks Cortices** — finalizar se os nomes Cortices viram ranks dos Claimed + régua de vermelho.
 4. **Bosses e sub-bosses** — finalizar nomes e tipos (boss do Map 2 muda de tipo).
 5. **Nomes além do francês** — decidir a ampliação da paleta de idiomas (era primeira, a Semente, etc.).
 6. **"Convergence" como nome** — decidir se o prestige do jogo mantém esse nome ou não.

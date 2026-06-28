@@ -52,4 +52,11 @@ G.util = {
   clamp(v, min, max) {
     return Math.max(min, Math.min(max, v));
   },
+
+  // retorno decrescente: abaixo de `soft` passa 1:1; acima, comprime
+  // assintoticamente em direção a `ceil` (nunca alcança, nunca vira stat morto).
+  softCap(v, soft, ceil) {
+    if (v <= soft) return v;
+    return soft + (ceil - soft) * (1 - Math.exp(-(v - soft) / (ceil - soft)));
+  },
 };

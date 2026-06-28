@@ -11,10 +11,27 @@ G.combat = {
   respawnTimer:     0,
   pendingHits:      [],
   paused:           false,
-  projectileTravel: 0.5,
+  projectileTravel: 0.5,    // bolt do Seeker
+  mobProjectileTravel: 0.9, // bolt do mob — mais lento/telegrafado (decisão do dono)
   enemyInterval:    0.99,
   spawnCount:       0,
   _lastAreaIndex:   -1,
+  _bossKills:       0,    // kills sem morrer na área atual; ≥ bossKillThreshold → Boss de Área spawna (com escolta). Zera na morte e ao trocar de área.
+
+  // tracker de taxas (Gold/Min, XP/Min) — janela rolante
+  _clock:      0,
+  _gains:      [],
+  rateWindow:  60,   // segundos
+
+  getRates() {
+    const cutoff = this._clock - this.rateWindow;
+    const g = this._gains;
+    while (g.length && g[0].t < cutoff) g.shift();
+    let lum = 0, xp = 0;
+    for (let i = 0; i < g.length; i++) { lum += g[i].lumens; xp += g[i].xp; }
+    const mins = this.rateWindow / 60;
+    return { lumens: lum / mins, xp: xp / mins, kills: g.length / mins };
+  },
 
   // pool de mobs da área atual (acumula mobs de todas as áreas anteriores)
   enemyPool() {
@@ -28,9 +45,6 @@ G.combat = {
 
   // quantos inimigos por onda (boss é sempre solo)
   _packSize() {
-    const area  = G.data.currentArea();
-    const atCap = G.state.data.level >= area.levelRange[1];
-    if (atCap && area.boss) return 1;
     const idx = G.util.clamp(G.state.data.areaIndex || 0, 0, G.data.areas.length - 1);
     return idx < 2 ? 1 : idx < 5 ? 2 : 3;
   },
@@ -85,18 +99,24 @@ G.combat = {
 
   // spawna a próxima onda
   spawn() {
-    const area  = G.data.currentArea();
-    const atCap = G.state.data.level >= area.levelRange[1];
-    const n     = this._packSize();
+    const d    = G.state.data;
+    const area = G.data.currentArea();
+
+    // trocou de área → re-grind o threshold do novo Boss
+    if (d.areaIndex !== this._lastAreaIndex) {
+      this._lastAreaIndex = d.areaIndex;
+      this._bossKills = 0;
+    }
+
+    const n    = this._packSize();
     this.enemies = [];
 
-    if (atCap && area.boss) {
-      this.enemies.push(this._buildOne(true, area.boss));
-    } else {
-      const pool = this.enemyPool();
-      for (let i = 0; i < n; i++)
-        this.enemies.push(this._buildOne(false, G.util.pick(pool)));
-    }
+    // Boss de Área aparece por THRESHOLD DE KILL — nunca solo, sempre com escolta de mobs.
+    const bossTime = area.boss && this._bossKills >= G.data.balance.bossKillThreshold;
+    if (bossTime) this.enemies.push(this._buildOne(true, area.boss));   // boss à frente
+    const pool = this.enemyPool();
+    for (let i = 0; i < n; i++)
+      this.enemies.push(this._buildOne(false, G.util.pick(pool)));      // escolta (ou onda normal)
 
     this.enemy = this.enemies[0];
     if (G.ui && G.ui.renderEnemy) G.ui.renderEnemy();
@@ -106,6 +126,7 @@ G.combat = {
   playerHit() {
     const target = this.enemies.find(e => !e.dead);
     if (!target) return;
+    const targetIdx = this.enemies.indexOf(target);
     const s    = G.state.stats();
     const crit = G.util.chance(s.crit / 100);
     let raw    = s.atk * (crit ? s.critMult : 1);
@@ -120,20 +141,20 @@ G.combat = {
       raw *= 1 + (s.eliteDmg || 0) / 100;
     const dmg = Math.ceil(raw);
     if (G.ui && G.ui.projectile) {
-      G.ui.projectile("seeker");
+      G.ui.projectile("seeker", targetIdx);
       this.pendingHits.push({ side: "player", dmg, crit, travel: this.projectileTravel });
     } else {
       this.applyHitToEnemy(dmg, crit);
     }
   },
 
-  // ataque de um mob específico
-  enemyHit(enemy) {
+  // ataque de um mob específico (idx = posição na onda, pro projétil sair do mob certo)
+  enemyHit(enemy, idx) {
     if (!enemy) return;
     const dmg = enemy.dmg;
     if (G.ui && G.ui.projectile) {
-      G.ui.projectile("mob");
-      this.pendingHits.push({ side: "mob", dmg, travel: this.projectileTravel });
+      G.ui.projectile("mob", idx);
+      this.pendingHits.push({ side: "mob", dmg, travel: this.mobProjectileTravel });
     } else {
       this.applyHitToHero(dmg);
     }
@@ -173,6 +194,7 @@ G.combat = {
   // Seeker morreu: cura total, limpa onda
   onDeath() {
     G.state.data.hp = G.state.maxHp();
+    this._bossKills = 0;   // morreu → perde o progresso rumo ao Boss de Área
     if (G.ui && G.ui.log) G.ui.log("☠ The Seeker fell — recovered and returned.", "bad");
     this.pendingHits = [];
     this.enemies = [];
@@ -191,8 +213,10 @@ G.combat = {
     const d = G.state.data;
     d.lumens    += lumens;
     d.xp        += xp;
+    if (G.ui) this._gains.push({ t: this._clock, lumens, xp });
     d.totalKills = (d.totalKills || 0) + 1;
     d.runKills   = (d.runKills  || 0) + 1;
+    if (!e.isBoss) this._bossKills++;   // progresso rumo ao Boss de Área (mortes de boss não contam)
     if ((d.runMaxAreaIndex || 0) < d.areaIndex) d.runMaxAreaIndex = d.areaIndex;
 
     if (G.ui && G.ui.log)
@@ -264,6 +288,7 @@ G.combat = {
 
   // avança o tempo
   tick(dt) {
+    this._clock += dt;
     this.resolvePending(dt);
 
     const anyAlive = this.enemies.length > 0 && this.enemies.some(e => !e.dead);
@@ -290,7 +315,7 @@ G.combat = {
       e.atkTimer += dt;
       while (e.atkTimer >= this.enemyInterval) {
         e.atkTimer -= this.enemyInterval;
-        this.enemyHit(e);
+        this.enemyHit(e, i);
         if (!this.enemies.some(e => !e.dead)) return;
       }
     }

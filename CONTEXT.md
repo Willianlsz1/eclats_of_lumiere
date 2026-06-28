@@ -2,7 +2,7 @@
 
 Glossário canônico dos termos de **design e balanceamento** do Mapa 1. Não é spec
 nem lista de tarefas — só vocabulário. Em conflito de termos, este arquivo manda.
-Visão e pilares completos: `docs/CONSTITUICAO.md`.
+Visão e pilares completos: `docs/project/CONSTITUICAO.md`.
 
 ## Language
 

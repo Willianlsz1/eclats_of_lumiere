@@ -1,0 +1,152 @@
+/* =============================================================
+   forge.css — Tela da Forge (NPC ferreiro: promoção, materiais, conversão)
+   Fundo temporário (escuro + brasa); trocar por assets/ui/forge_bg.png depois.
+   ============================================================= */
+.modal--forge {
+  width: min(1500px, 96vw); height: 92vh; position: relative;
+  display: flex; flex-direction: column; overflow: hidden;
+  background:
+    linear-gradient(rgba(8, 6, 10, 0.18), rgba(8, 6, 10, 0.42)),
+    url("../assets/ui/forge_bg.png") center / cover no-repeat;
+}
+.modal--forge .modal__title {
+  position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
+  margin: 0; z-index: 25; font-style: italic; font-size: 40px; letter-spacing: 5px;
+  color: var(--gold);
+  text-shadow: 0 2px 6px #000, 0 0 18px rgba(232, 140, 40, 0.6), 0 0 36px rgba(232, 140, 40, 0.3);
+}
+
+/* painéis flutuantes (mesma linguagem do gear-stats-panel) */
+/* painéis empilhados à DIREITA — NPC fica livre à esquerda, centro reservado
+   pros itens em transformação */
+.forge-panel {
+  position: absolute; right: 16px; z-index: 20; width: 340px;
+  overflow-y: auto;
+  background: rgba(8, 8, 14, 0.66); border: 1px solid var(--card-border);
+  border-radius: 10px; padding: 12px 14px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.forge-panel--left  { top: 56px;     max-height: 46%; }
+.forge-panel--right { bottom: 16px;  max-height: calc(54% - 80px); }
+.forge-panel .sub-title { margin: 4px 0 2px; }
+.forge-panel .sub-title:first-child { margin-top: 0; }
+
+/* ---- materiais ---- */
+.forge-mats { display: flex; flex-direction: column; gap: 6px; }
+.forge-mat {
+  display: flex; align-items: center; gap: 10px;
+  padding: 6px 8px; border-radius: 8px;
+  background: color-mix(in srgb, var(--c, #888) 12%, rgba(2, 4, 10, 0.5));
+  border: 1px solid color-mix(in srgb, var(--c, #888) 45%, transparent);
+}
+.forge-mat__icon { width: 30px; height: 30px; object-fit: contain; flex: none; }
+.forge-mat__qty  { font-weight: 800; font-size: 17px; color: var(--text); min-width: 48px; }
+.forge-mat__label { font-size: 14px; color: var(--c, var(--muted)); font-weight: 600; }
+
+/* ---- conversão ---- */
+.forge-recipe {
+  display: flex; flex-direction: column; gap: 5px;
+  padding: 8px 10px; border-radius: 8px;
+  background: rgba(2, 4, 10, 0.45); border: 1px solid var(--card-border);
+}
+.forge-recipe__line  { font-size: 15px; color: var(--text); }
+.forge-recipe__line b { color: var(--gold); margin: 0 4px; }
+.forge-recipe__avail { font-size: 12px; color: var(--muted); }
+
+/* ---- promoção (linha por peça) ---- */
+.forge-prom {
+  display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 4px 10px;
+  padding: 9px 12px; border-radius: 9px;
+  background: rgba(2, 4, 10, 0.45); border: 1px solid var(--card-border);
+}
+.forge-prom__name { font-size: 15px; font-weight: 700; color: var(--text); }
+.forge-prom__rar  { grid-column: 1; font-size: 13px; color: var(--muted); }
+.forge-prom__rar b { font-weight: 700; }
+.forge-prom__action { grid-column: 2; grid-row: 1 / span 2; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+.forge-prom__cost { font-size: 12px; font-weight: 600; }
+.forge-prom__cost.ok    { color: #7ec8a0; }
+.forge-prom__cost.short { color: #c98a8a; }
+.forge-prom__note  { font-size: 12px; color: var(--muted); font-style: italic; }
+.forge-prom__state { grid-column: 1; font-size: 13px; font-weight: 600; }
+.forge-prom--max   { opacity: 0.8; }
+
+/* row selecionável (abre o preview na bigorna) */
+.forge-prom--click { cursor: pointer; transition: border-color 0.1s, background 0.1s; }
+.forge-prom--click:hover { border-color: var(--gold); background: rgba(232, 181, 74, 0.08); }
+.forge-prom--click.is-selected { border-color: var(--gold); background: rgba(232, 181, 74, 0.14); }
+.forge-prom__sel { font-size: 12px; font-weight: 700; color: var(--gold); }
+
+/* ---- preview central (sobre a bigorna) ---- */
+.forge-anvil {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  z-index: 22; width: 340px; pointer-events: auto;
+  display: flex; flex-direction: column; align-items: center; gap: 14px;
+}
+.anvil-card {
+  width: 100%;
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  padding: 16px 18px 18px; border-radius: 14px;
+  background: linear-gradient(180deg, rgba(14, 10, 8, 0.92), rgba(8, 6, 10, 0.95));
+  border: 2px solid color-mix(in srgb, var(--gold) 65%, transparent);
+  box-shadow: 0 0 30px rgba(232, 140, 40, 0.35), 0 14px 40px rgba(0, 0, 0, 0.6);
+}
+.anvil-icon {
+  position: relative; width: 104px; height: 104px; border-radius: 14px; font-size: 46px;
+  display: flex; align-items: center; justify-content: center; overflow: hidden;
+  background: color-mix(in srgb, var(--rar, #888) 22%, rgba(2, 4, 10, 0.78));
+  border: 3px solid color-mix(in srgb, var(--rar, #888) 72%, transparent);
+  box-shadow: 0 0 22px color-mix(in srgb, var(--rar, #888) 45%, transparent), 0 8px 24px rgba(0, 0, 0, 0.6);
+}
+.anvil-icon img { position: absolute; inset: 8%; width: 84%; height: 84%; object-fit: contain; }
+.anvil-icon .ico-ph:has(~ img) { display: none; }
+.anvil-name { font-size: 18px; font-weight: 700; color: var(--text); }
+.anvil-rar  { font-size: 15px; } .anvil-rar em { color: var(--muted); font-style: normal; margin: 0 4px; }
+.anvil-affixes {
+  width: 100%; display: flex; flex-direction: column; gap: 6px;
+  margin: 4px 0; padding: 8px 0; border-top: 1px solid rgba(255,255,255,0.1); border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+.anvil-affix { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; font-size: 13px; }
+.anvil-affix__lbl { color: var(--muted); }
+.anvil-affix__val i { color: #9aa7bd; font-style: normal; }
+.anvil-affix__val em { color: var(--gold); font-style: normal; margin: 0 3px; }
+.anvil-affix__val b { color: var(--teal); font-weight: 700; }
+.anvil-affix--new .anvil-affix__val b { color: #7ec8a0; }
+.tag-new { font-size: 10px; font-weight: 700; color: #7ec8a0; background: rgba(126,200,160,0.18); border-radius: 4px; padding: 1px 5px; margin-left: 4px; }
+.anvil-cost { font-size: 13px; font-weight: 600; }
+.anvil-cost.ok { color: #7ec8a0; } .anvil-cost.short { color: #c98a8a; }
+.anvil-card .forge-btn { width: 100%; padding: 8px; font-size: 14px; }
+
+/* ---- banner do NPC (canto inferior-esquerdo) ---- */
+.forge-npc {
+  position: absolute; left: 14px; bottom: 8px; z-index: 22; box-sizing: border-box;
+  width: 520px; height: 260px; pointer-events: none;
+  background: url("../assets/ui/forge_banner.png") center / 100% 100% no-repeat;
+  display: flex; flex-direction: column; justify-content: center; align-items: center;
+  text-align: center; padding: 46px 56px 50px;
+}
+.forge-npc__name {
+  font-family: "Cormorant Garamond", serif; font-style: italic; font-size: 25px;
+  color: var(--gold); letter-spacing: 0.5px; line-height: 1.05;
+  text-shadow: 0 2px 5px #000, 0 0 14px rgba(232, 140, 40, 0.4);
+}
+.forge-npc__title {
+  font-size: 11px; text-transform: uppercase; letter-spacing: 1px;
+  color: #c2b393; margin: 3px 0 6px;
+}
+.forge-npc__quote {
+  font-family: "Cormorant Garamond", serif; font-style: italic; font-size: 15px;
+  color: #e6dccd; line-height: 1.28; text-shadow: 0 1px 3px #000;
+}
+
+/* ---- botão padrão da forge ---- */
+.forge-btn {
+  border: 1px solid var(--gold);
+  background: linear-gradient(180deg, rgba(232, 181, 74, 0.26), rgba(180, 124, 32, 0.18));
+  color: var(--gold); border-radius: 8px; padding: 6px 14px;
+  font-size: 13px; font-weight: 700; letter-spacing: 0.5px; cursor: pointer;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+  transition: filter 0.1s, transform 0.08s;
+}
+.forge-btn:hover:not(:disabled)  { filter: brightness(1.15); }
+.forge-btn:active:not(:disabled) { transform: scale(0.96); }
+.forge-btn:disabled { opacity: 0.35; cursor: default; }

@@ -1,8 +1,9 @@
 // =============================================================
 // convergence.js — PRESTIGE (rebirth) + Pontos de Convergence
 // =============================================================
-// Convergence NÃO concede poder direto: concede apenas Pontos de Convergence,
-// gastos nas Árvores de Passivas.
+// Convergence concede DOIS ganhos (híbrido):
+//  1. Pontos de Convergence — gastos nas Árvores de Passivas (poder indireto).
+//  2. Legacy — +atk%/+hp% direto por convergence, empilha permanente (poder na hora).
 //
 // Fórmula de pontos: Pontos = Área + Bosses + Nível + Kills.
 // ⚠️ BALANCEAMENTO PENDENTE: os pesos abaixo são PLACEHOLDERS. Por padrão só o
@@ -64,6 +65,11 @@ G.convergence = {
   },
 
   pointsFor(level) { return this.weights.level * this.levelTerm(level); },
+
+  // bônus DIRETO por convergence (parte "quente" do híbrido): cada convergence
+  // empilha +atk%/+hp% permanente. Os Pontos (acima) seguem alimentando passivas.
+  legacyAtkPct() { return (G.state.data.convergences || 0) * G.data.balance.convLegacyAtkPct; },
+  legacyHpPct()  { return (G.state.data.convergences || 0) * G.data.balance.convLegacyHpPct; },
 
   pending() { return this.canConverge() ? this.points() : 0; },
   canConverge() { return G.state.data.level >= this.gateLevel; },

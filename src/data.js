@@ -112,17 +112,18 @@ G.data = {
     },
   ],
 
-  // Variantes raras de mob comum (adicionam variedade sem sistema separado)
+  // Variantes raras de mob comum (escala de raridade Éclats: a cor = quanta luz carregam).
+  // Ladder de lore: Common(cinza) → Kindled(teal) → Luminous(azul) → Radiant(violeta). Ver docs/design/ENEMY_POWER_PYRAMID.md
   rareMobs: {
     chance:     0.08,
     plusChance: 0.15,
     rare: {
-      tag: "Rare", color: "#9d7bff",
+      tag: "Kindled", color: "#5ee0d2",
       hpMult: 3, dmgMult: 1.5, rewardMult: 3,
       names: ["Pale Wanderer", "Dusk Remnant", "Mist Shard", "Fractured Echo", "Gilded Wisp"],
     },
     plus: {
-      tag: "Rare+", color: "#e8b54a",
+      tag: "Luminous", color: "#4fa8ff",
       hpMult: 6, dmgMult: 2, rewardMult: 6,
       names: ["Luminal Wraith", "Éclat Splinter", "Hollow Sovereign", "Veil Incarnate", "Shard of Luce"],
     },
@@ -137,7 +138,7 @@ G.data = {
     hpMult:       10,     // sobrevive alguns golpes a mais
     dmgMult:      3,      // bate 3× o ATK da área — o pico de perigo
     rewardMult:   5,      // lumens & XP
-    tag: "Elite", color: "#ff6b4a",
+    tag: "Radiant", color: "#9d7bff",   // tier topo do fluxo (mecânica interna segue "elite"/isElite)
     names: ["Lumin Tyrant", "Veilbreaker", "Hollow Warden", "Gilded Reaver", "Dawnscourge"],
   },
 
@@ -295,8 +296,10 @@ G.data = {
     // (Substitui a fórmula global mobAtkBase×growth^level, que ou sumia ou explodia.)
     mobAtkByArea:      [80, 1750, 3500, 4200, 7000, 21000, 28000, 31500, 36400],
     atkSpeedBase:      0.9,
-    atkSpeedCap:       15,
-    map1AtkSpeedCap:   2,
+    atkSpeedCap:       15,    // teto-assíntota FINAL do jogo (futuros mapas; nunca alcançado em Mapa 1/2)
+    map1AtkSpeedCap:   2,     // teto-assíntota Mapa 1
+    map2AtkSpeedCap:   4,     // teto-assíntota Mapa 2 (placeholder — Mapa 2 fora de escopo)
+    atkSpeedSoftFrac:  0.85,  // soft cap começa a comprimir em ceil×frac (Mapa1≈1.7, Mapa2≈3.4)
     healOnKillFrac:    0.10,
     bossHpMult:        4,
     bossDmgMult:       1.5,
@@ -304,10 +307,16 @@ G.data = {
     bossLumenMult:     5,
     goldRatio:         0.35,   // lumens/HP — calibrado p/ gear acompanhar (não estourar) o HP do mob
     baseXp:            28,      // XP/kill — compensa o TTK saudável p/ Área 1 ≈ 14 min
+    xpCurveBase:       14,      // XP p/ próximo nível = xpCurveBase × nível^xpCurveExp
+    xpCurveExp:        1.62,    // expoente: late-game pesa (XP% vira decisão); subir = mais íngreme
     respawnDelay:      0.5,     // respawn mais ágil → kills/min sem precisar de one-shot
+    bossKillThreshold: 50,      // ⏳ PLACEHOLDER (medir no sim): kills SEM MORRER p/ invocar o Boss de Área (vem com escolta de mobs). Morte zera o contador. Ver docs/design/ENEMY_POWER_PYRAMID.md
     gearCostBase:      2500,
     gearCostGrowth:    1.013,   // custo mais íngreme → gear platô (sem one-shot) e maxa só na Área 3
     promoteCommonCost:    50,   // common material  (common → uncommon)
     promoteUncommonCost:  25,   // uncommon material (uncommon → rare)
+    convertCommonToUncommon: 10, // Forge: junta 10 Common → 1 Uncommon (subir de tier)
+    convLegacyAtkPct:     8,    // +atk% direto POR convergence (empilha; sente forte no clique)
+    convLegacyHpPct:      8,    // +hp%  direto POR convergence (empilha)
   },
 };

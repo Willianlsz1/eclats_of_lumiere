@@ -33,6 +33,25 @@ G.economy = {
   addGear(kind, n) { const m = G.state.data.gearMaterials; m[kind] = (m[kind] || 0) + n; },
   addAwaken(kind, n) { const m = G.state.data.awakenMaterials; m[kind] = (m[kind] || 0) + n; },
 
+  // ---- conversão de materiais (Forge): subir de tier ----
+  // recipe: junta `rate` do material de baixo → 1 do de cima.
+  CONVERSIONS: [
+    { from: "common", to: "uncommon", rateKey: "convertCommonToUncommon", fromLabel: "Common", toLabel: "Uncommon" },
+  ],
+  conversionRate(c) { return G.data.balance[c.rateKey]; },
+  maxConversions(c) { return Math.floor(this.getGear(c.from) / this.conversionRate(c)); },
+
+  // converte `times` lotes (default: o máximo possível). devolve quantos lotes converteu.
+  convertGear(c, times) {
+    const rate = this.conversionRate(c);
+    const max  = this.maxConversions(c);
+    const n    = times == null ? max : Math.min(times, max);
+    if (n <= 0) return 0;
+    this.addGear(c.from, -n * rate);
+    this.addGear(c.to, n);
+    return n;
+  },
+
   // ================= SISTEMA DE DROP (configurável) =================
   // dropTable POR TIPO de inimigo. Cada material: { chance, min, max, minAreaIndex }.
   dropTable: {

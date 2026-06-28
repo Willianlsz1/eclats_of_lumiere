@@ -5,7 +5,7 @@ Companheiros: Lore Bible (narrativa) · GDD Final v2 (sistemas) · Mockup HTML v
 
 **Changelog v3:** Maps 4 e 5 COMPLETOS e aprovados (backgrounds + trios + bosses) · **Âncora de Estilo nº 2 = NIHEL aprovado** · Map 4: trio renomeado/aprovado (Fissure Stalker, Sundered Titan, Claimed Vanguard) + boss The Claimed Queen + encontro raro The Hollowed Pilgrim · Map 5: conceito redefinido como "corte do Nada" — background cósmico (mundo se desfazendo + esfera de vazio), trio Pale Courtier / Crownless King / Crimson Wyrmlord · regra de cor expandida (Claimed vazam escuridão; dourado no Map 5 é exclusivo de Nihel). **ARTE DE MUNDO DOS 5 MAPAS COMPLETA.**
 
-**Changelog v2:** estilo oficial aprovado por teste (anime-cenário / iluminação Shinkai) · chrome de UI branco/azul · âncora de estilo nº 1 definida (cena Tikkun Olam) · todos os prompts atualizados.
+**Changelog v2:** estilo oficial aprovado por teste (anime-cenário / iluminação Shinkai) · chrome de UI branco/azul · âncora de estilo nº 1 definida (cena The Mending) · todos os prompts atualizados.
 
 ---
 
@@ -46,7 +46,7 @@ Companheiros: Lore Bible (narrativa) · GDD Final v2 (sistemas) · Mockup HTML v
 | **4. The Fractured Peaks** | ✅ background v2 aprovado — mundo rachando em câmera lenta | Negro-rocha `#121014` · ouro vazando das fissuras `#e8b54a` · céu âmbar sufocante `#c9952e` rachado em escuro · fragmentos suspensos | Hostil, verdade nua — a fratura acontecendo |
 | **5. Nil Aeternum** | ✅ background aprovado — fim da realidade: ruínas góticas carmesim se desfazendo, fragmentos subindo, céu rasgado revelando cosmos + esfera negra de vazio com anel vermelho | Carmesim `#c41e3a` · vinho `#5c0e1e` · negro `#0a0608` · rosa-lua `#f0a8b0` · **dourado só em Nihel** | O Nada que observa — apocalíptico e sereno |
 
-**Memórias de Lumière / Tikkun Olam (✅ ARTE APROVADA):** a recriação Gemini da escadaria celeste é a arte-conceito canônica — branco-dourado, azul-céu saturado, arquitetura clássica em luz plena, a esfera negra de Nihel como único escuro em cena. Usada em flashbacks de Mémoires e na cinemática do true ending. **É também a Âncora de Estilo nº 1.** O background do Map 5 ecoa intencionalmente esta cena (a mesma esfera de vazio na criação e no fim — ciclo visual fechado).
+**Memórias de Lumière / The Mending (✅ ARTE APROVADA):** a recriação Gemini da escadaria celeste é a arte-conceito canônica — branco-dourado, azul-céu saturado, arquitetura clássica em luz plena, a esfera negra de Nihel como único escuro em cena. Usada em flashbacks de Mémoires e na cinemática do true ending. **É também a Âncora de Estilo nº 1.** O background do Map 5 ecoa intencionalmente esta cena (a mesma esfera de vazio na criação e no fim — ciclo visual fechado).
 
 **Âncora de Estilo nº 2 (✅ NIHEL aprovado):** silhueta negra alada com veias douradas (luz presa no vácuo), anel de luz quebrado como auréola partida, olhos branco-dourados, asas de fragmentos, corvos, cidade morta vermelha ao fundo. **Anexar em todas as gerações do Map 5** (paleta/atmosfera) junto da Âncora nº 1.
 
@@ -122,7 +122,7 @@ High detail, professional anime key visual quality. No text, no watermark, no si
 ```
 
 **Workflow de consistência (obrigatório):**
-1. **Âncora de Estilo nº 1 = a cena Tikkun Olam aprovada.** Anexe-a em TODA geração com "paint in exactly this art style".
+1. **Âncora de Estilo nº 1 = a cena The Mending aprovada.** Anexe-a em TODA geração com "paint in exactly this art style".
 2. **Âncora de Estilo nº 2 = NIHEL aprovado.** Anexar em toda geração do Map 5 (paleta vermelho/negro + linguagem do vazio).
 3. Cada asset aprovado vira âncora adicional da sua categoria (background aprovado → âncora de backgrounds; criatura aprovada → âncora de criaturas).
 4. Nunca gere uma categoria nova sem pelo menos uma âncora anexada.
@@ -187,7 +187,7 @@ crimson light leaking from fissures, black crows scattered in the air, no human
 figures. Apocalyptic yet serene, melancholic, sublime cosmic horror atmosphere.
 The color gold appears nowhere in this scene. [SUFIXO]
 ```
-Notas: continuidade direta do Map 4 (mundo rachando → estágio final); a esfera de vazio ecoa a Âncora nº 1 (Tikkun Olam) fechando o ciclo visual criação→fim; sem figuras humanas para recorte limpo de gameplay.
+Notas: continuidade direta do Map 4 (mundo rachando → estágio final); a esfera de vazio ecoa a Âncora nº 1 (The Mending) fechando o ciclo visual criação→fim; sem figuras humanas para recorte limpo de gameplay.
 
 ---
 
@@ -433,7 +433,7 @@ Render only the texts quoted above, all crisp and legible; no other words anywhe
 
 ## 8. BACKLOG DE ASSETS (ordem de produção)
 
-1. ✅ **Âncora de Estilo nº 1** — cena Tikkun Olam (aprovada; arte canônica do true ending e das memórias de Lumière)
+1. ✅ **Âncora de Estilo nº 1** — cena The Mending (aprovada; arte canônica do true ending e das memórias de Lumière)
 2. ✅ UI Map 1 layout/composição (v3 dourada aprovada como referência de layout) → gerar **v4 branco/azul** (§7)
 3. ✅ Background Map 1 gerado (decisão pendente: manter ou não o vórtice de Nihel no céu — recomendação: manter, foreshadowing)
 4. ✅ **Trio de inimigos Map 1 APROVADO** — Candlewisp Shade, Mothlight Herald, Dreamhorn Warden (âncoras de criaturas)
@@ -458,14 +458,14 @@ Render only the texts quoted above, all crisp and legible; no other words anywhe
        - Prompts registrados na conversa de 2026-06-10. Receita de âncoras de boss frame: moldura comum + arte do boss (+ ref estrutural só no Nihel).
     e. Echoes (pets) — **EM STANDBY por decisão de Willian (2026-06-10):** conceito visual e histórias ainda não definidos; não gerar arte nem propor direção até ele retomar o tema
     f. ✅ **MÉMOIRES — ARTE DE RELÍQUIA ILUSTRADA (15) APROVADA** (2026-06-10) — **substitui os 15 medalhões flat** (gerados e aprovados antes na mesma data, agora DEPRECIADOS; podem sobreviver como mini-ícones de lista). Decisão de Willian: Mémoires e passivas ganham arte ilustrada individual estilo gacha (refs: ampulheta estrelada, lanterna espectral, orbe Granblue) em vez de ícones flat — mais trabalho, mais qualidade e originalidade.
-       - **BLOCO DE ESTILO DE RELÍQUIA:** "Ornate anime fantasy relic illustration, painterly anime style like high-quality gacha game item art: a single beautiful magical object centered on a plain very dark navy background, rich ornamental detail, soft magical glow and floating light particles, elegant and mysterious. No photorealism, no 3D render, no text, no watermark." Paleta das Mémoires: branco-dourado quente (Tikkun Olam).
+       - **BLOCO DE ESTILO DE RELÍQUIA:** "Ornate anime fantasy relic illustration, painterly anime style like high-quality gacha game item art: a single beautiful magical object centered on a plain very dark navy background, rich ornamental detail, soft magical glow and floating light particles, elegant and mysterious. No photorealism, no 3D render, no text, no watermark." Paleta das Mémoires: branco-dourado quente (The Mending).
        - Os 15 objetos: **E1** espelho que guarda o amanhecer (Premier Matin) · caixa de música com figuras de luz dançando (Rires) · botas com trilha de pegadas de luz (Marche). **E2** cinzel + estátua despertando em luz (Forme) · bigorna com fagulha sendo forjada (Façonnage) · lanterna-relicário com cristais (Profondeurs). **E3** esfera armilar com anel rachado e estrela caindo (Chute) · urna com última brasa (Cendres) · lira de corda partida com nota suspensa (Dernier Chant). **E4** coração de mármore enfaixado vazando luz (Blessure) · escudo florescendo pelas rachaduras (Résistance) · ampulheta quebrada com areia congelada no ar (Temps Brisé). **E5** suporte relicário com esfera negra que devora partículas (Vide) · MESMO suporte com esfera de luz radiante — par espelhado (Lumière Entière) · balança perfeitamente nivelada com vazio e luz (Choix).
        - Prompts registrados na conversa de 2026-06-10; cada relíquia aprovada é âncora das seguintes.
     f2. ⏳ **PASSIVAS — 45 artes ilustradas EM ANDAMENTO** (3 árvores × 15; nomes no GDD §7). Mesmo estilo de relíquia, produção em folhas de 3 (validada). Identidade de cor: **Éclat = branco-azul** (exceção: Or Ein Sof's Touch em branco-dourado) · **Vestige = teal** · **Fracture = violeta-escuro** (sem vermelho). **Progresso 2026-06-10: Éclat 15/15 ✅ COMPLETA** (5 folhas aprovadas) · **Vestige 9/15** (folhas 1–3 aprovadas: Lumen's Blessing, Wisdom of Ruins, Remnant Harvest / Vestige Pull, Scavenger, Dreamwalker / Beast Caller, Hoarder, Awakened Harvest; folha 4 — Echo of Greed, Void Scavenger, Eternal Vestige — prompt entregue, geração pendente; folha 5 — Fractured Soul, Luminal Cache, The Collector — pendente) · **Fracture 0/15** (5 folhas pendentes: Weakened Void, Fracture Sense, Void Awareness / Fracture Pulse, Void Haste, Shard Disruption / Nihel's Shadow, Éclat Attunement, La Fracture's Echo / Last Light, Void Collapse, The Fracture's Gift / Claimed Domination, Nil's Embrace, Void Endurance). Prompts das folhas aprovadas registrados na conversa de 2026-06-10.
     g. Telas de menu (Passivas, Gear, Echoes) — referência de layout da tela de Gear: organização estilo Gaiadon (grid de slots com fundo colorido pela raridade, tag de level, tooltip lateral, aba Upgrade com materiais)
     h. ✅ **GEAR — ARTE COMPLETA (6 peças × 5 raridades) APROVADA** (2026-06-10):
        - **Mudança de peça:** Crown of Hollow Stars → **The Silent Vigil** (elmo; coroa virou linguagem de reis caídos). Set final: The Waning Edge (espada) · Veil of Cinders (manto) · The Silent Vigil (elmo) · Grasp of the Unnamed (manoplas) · The Last Resonance (amuleto-sino) · Band of Dusk (anel).
-       - **Raridades na lore** (substituem Common→Legendary): **Faded** (cinza) → **Kindled** (teal) → **Luminous** (azul) → **Radiant** (violeta) → **Converged** (branco-prismático). Futuras: **Primordial** (branco-dourado Tikkun Olam) e **Ein Sof** (prismático arco-íris). Nada de dourado-quente nem laranja-Legendary: o topo é convergência.
+       - **Raridades na lore** (substituem Common→Legendary): **Faded** (cinza) → **Kindled** (teal) → **Luminous** (azul) → **Radiant** (violeta) → **Converged** (branco-prismático). Futuras: **Primordial** (branco-dourado The Mending) e **Ein Sof** (prismático arco-íris). Nada de dourado-quente nem laranja-Legendary: o topo é convergência.
        - **Decisão de design:** raridade evolui a **FORMA** da peça (cada tier é uma versão fisicamente diferente, do bruto à obra-prima — silhueta-base e motivo mantidos); a **COR da raridade fica no fundo do box/slot via CSS**, não na arte. Produção em folha-escada: 1 folha por peça com os 5 estágios lado a lado.
        - **BLOCO DE ESTILO OFICIAL DE GEAR:** "Anime fantasy concept art style, strongly stylized: bold visible outlines, flat cel-shaded coloring in two or three tone steps, simplified expressive shapes, minimal texture detail, soft bloom only on glowing elements — like concept art from a high-quality anime or JRPG artbook. Absolutely no photorealism, no realistic rendering, no 3D render." (O termo "painted illustration style" foi BANIDO — puxa render realista.)
        - Assinaturas por peça: crescente na guarda (Edge) · brasas esmaecendo, nunca fogo vivo (Veil) · recriação fiel da ref EV Ganiin (Vigil) · dedos agarrando algo invisível (Grasp) · badalo de cristal, relíquia silenciosa (Resonance) · gradiente do crepúsculo + gema-estrela no ponto do ocaso (Band). Sem vermelho em nenhuma peça.

@@ -10,6 +10,7 @@ G.ui = {
       "hero-card-level", "hero-hp-fill", "hero-hp-label", "hero-xp-fill", "hero-xp-label",
       "enemies-container", "log",
       "gear-stats", "gear-slots", "gear-mult", "gear-tooltip", "gear-materials",
+      "forge-mats", "forge-convert", "forge-promote", "forge-anvil",
       // World Map
       "wmap-nodes", "wmap-trail", "wmap-info", "wmap-info-art", "wmap-info-name",
       "wmap-info-lore", "wmap-info-level", "wmap-info-enemies", "wmap-info-status",
@@ -112,6 +113,7 @@ G.ui = {
       this.renderWorldMap();
       if (this.el["wmap-info"]) this.el["wmap-info"].hidden = true;
     }
+    if (id === "modal-forge") this.renderForge();
     if (id === "modal-convergence") this.renderConvergence();
     if (id === "modal-awaken") this.renderAwaken();
     if (id === "modal-passives") this.renderPassives();
@@ -157,7 +159,7 @@ G.ui = {
     const max = G.state.maxHp();
     const pct = G.util.clamp((G.state.data.hp / max) * 100, 0, 100);
     this.el["hero-hp-fill"].style.width  = pct + "%";
-    this.el["hero-hp-label"].textContent = `${G.util.fmt(Math.max(0, G.state.data.hp))} / ${G.util.fmt(max)}`;
+    this.el["hero-hp-label"].textContent = `HP ${G.util.fmt(Math.max(0, G.state.data.hp))} / ${G.util.fmt(max)}`;
     const xp = G.state.data.xp;
     const xpNext = G.state.xpToNext();
     if (this.el["hero-xp-fill"]) this.el["hero-xp-fill"].style.width = G.util.clamp((xp / xpNext) * 100, 0, 100) + "%";
@@ -248,9 +250,21 @@ G.ui = {
   renderHud() {
     const s   = G.state.stats();
     const set = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
-    set("hud-atk",  G.util.fmt(s.atk));
-    set("hud-dps",  G.util.fmt(Math.round(s.atk / G.state.attackInterval())));
-    set("hud-crit", s.crit.toFixed(0) + "%");
+    const dps = Math.round(s.atk / G.state.attackInterval());
+
+    const r = G.combat.getRates();
+    set("rate-gold",  G.util.fmt(Math.round(r.lumens)));
+    set("rate-xp",    G.util.fmt(Math.round(r.xp)));
+    set("rate-kills", (r.kills || 0).toFixed(1));
+    set("rate-dmg",   G.util.fmt(dps));
+  },
+
+  toggleLog() {
+    const p = document.getElementById("log-panel");
+    const b = document.getElementById("log-toggle");
+    if (!p) return;
+    const collapsed = p.classList.toggle("collapsed");
+    if (b) { b.textContent = collapsed ? "+" : "—"; b.title = collapsed ? "Expand" : "Minimize"; }
   },
 
   // ---- GEAR MODAL ----
@@ -266,22 +280,12 @@ G.ui = {
       const icon  = slot.icon || "❔";
       let action;
       if (maxed) {
-        const nextRar = G.gear._nextRarity(item.rarity);
-        if (nextRar) {
-          const cost    = G.gear.promoteCost(item);
-          const matLabel = cost.kind === 'uncommon' ? 'Uncommon' : 'Common';
-          const hasMats = G.economy && G.economy.getGear(cost.kind) >= cost.amount;
-          action = `<span class="gear-slot__cost">⬡ ${cost.amount} ${matLabel}</span>
-                    <button class="gear-promote" data-promote="${slot.id}" ${hasMats ? '' : 'disabled'}>Promote</button>`;
-        } else {
-          action = `<span class="gear-max">MAX</span>`;
-        }
+        action = `<button class="gear-max" disabled>Max</button>`;
       } else {
         action = `<span class="gear-slot__cost">✦ ${G.util.fmt(G.gear.cost(item))}</span>
                   <button class="gear-levelup" data-levelup="${slot.id}">Level up</button>`;
       }
       return `<div class="gear-slot pos-${slot.id}" data-tip="${slot.id}" style="--rar:${item.color}">
-        <span class="gear-slot__rar" style="color:${item.color}">${item.rarityName}</span>
         <span class="gear-slot__lvl">LVL ${lvl}/${G.util.fmt(cap)}</span>
         <div class="gear-slot__icon">
           <span class="ico-ph">${icon}</span>
@@ -298,23 +302,138 @@ G.ui = {
     node.querySelectorAll("[data-promote]").forEach((b) => {
       b.addEventListener("click", () => this.doGearPromote(b.dataset.promote));
     });
-    if (this.el["gear-materials"]) {
-      const common   = G.economy ? G.economy.getGear("common")   : 0;
-      const uncommon = G.economy ? G.economy.getGear("uncommon") : 0;
-      const matRow = (kind, qty, label, color) =>
-        `<span class="gear-mat-row" style="color:${color}">` +
-          `<img class="gear-mat-icon" src="assets/materials/${kind}.png" alt="" onerror="this.replaceWith(document.createTextNode('⬡'))">` +
-          `<b>${G.util.fmt(qty)}</b> ${label}</span>`;
-      this.el["gear-materials"].innerHTML =
-        `<span class="gear-mat-label">Materials</span>` +
-        matRow("common", common, "Common", "#9aa7bd") +
-        (uncommon > 0 ? matRow("uncommon", uncommon, "Uncommon", "#7ec8a0") : "");
-    }
+    if (this.el["gear-materials"]) this.el["gear-materials"].innerHTML = "";
     node.querySelectorAll(".gear-slot[data-tip]").forEach((s) => {
       s.addEventListener("mouseenter", () => this.showGearTip(s));
       s.addEventListener("mousemove",  () => this.showGearTip(s));
       s.addEventListener("mouseleave", () => this.hideGearTip());
     });
+  },
+
+  // ---- FORGE MODAL ----
+
+  renderForge() {
+    if (!this.el["forge-mats"]) return;
+    const fmt = G.util.fmt;
+
+    const mat = (kind, qty, label, color) =>
+      `<div class="forge-mat" style="--c:${color}">
+        <img class="forge-mat__icon" src="assets/materials/${kind}.png" alt="" onerror="this.replaceWith(document.createTextNode('⬡'))">
+        <span class="forge-mat__qty">${fmt(qty)}</span>
+        <span class="forge-mat__label">${label}</span>
+      </div>`;
+    this.el["forge-mats"].innerHTML =
+      mat("common",     G.economy.getGear("common"),       "Common",      "#9aa7bd") +
+      mat("uncommon",   G.economy.getGear("uncommon"),     "Uncommon",    "#7ec8a0") +
+      mat("firstLight", G.economy.getAwaken("firstLight"), "First Light", "#d4b4ff");
+
+    this.el["forge-convert"].innerHTML = G.economy.CONVERSIONS.map((c, i) => {
+      const rate = G.economy.conversionRate(c);
+      const max  = G.economy.maxConversions(c);
+      return `<div class="forge-recipe">
+        <span class="forge-recipe__line">${rate} ${c.fromLabel} <b>→</b> 1 ${c.toLabel}</span>
+        <span class="forge-recipe__avail">Can make: ${fmt(max)}</span>
+        <button class="forge-btn" data-convert="${i}" ${max > 0 ? "" : "disabled"}>Convert all</button>
+      </div>`;
+    }).join("");
+
+    this.el["forge-promote"].innerHTML = G.data.slots.map((slot) => {
+      const item = G.state.data.equipped[slot.id];
+      if (!item) return "";
+      const next = G.gear._nextRarity(item.rarity);
+      if (!next) {
+        return `<div class="forge-prom forge-prom--max">
+          <span class="forge-prom__name">${item.slotLabel}</span>
+          <span class="forge-prom__state" style="color:${item.color}">${item.rarityName} · Max rarity</span></div>`;
+      }
+      const nextRar = G.data.rarities.find((r) => r.id === next);
+      const maxed   = G.gear.isMaxed(item);
+      const cost    = G.gear.promoteCost(item);
+      const have    = G.economy.getGear(cost.kind);
+      const costLabel = cost.kind === "uncommon" ? "Uncommon" : "Common";
+      const sel = this._forgeSel === slot.id ? " is-selected" : "";
+      const action = !maxed
+        ? `<span class="forge-prom__note">Reach max level first</span>`
+        : `<span class="forge-prom__cost ${have >= cost.amount ? "ok" : "short"}">${fmt(have)} / ${cost.amount} ${costLabel}</span>
+           <span class="forge-prom__sel">View ›</span>`;
+      return `<div class="forge-prom forge-prom--click${sel}" data-select="${slot.id}">
+        <span class="forge-prom__name">${item.slotLabel}</span>
+        <span class="forge-prom__rar"><b style="color:${item.color}">${item.rarityName}</b> → <b style="color:${nextRar.color}">${nextRar.name}</b></span>
+        <div class="forge-prom__action">${action}</div></div>`;
+    }).join("");
+
+    this.el["forge-convert"].querySelectorAll("[data-convert]").forEach((b) =>
+      b.addEventListener("click", () => this.doForgeConvert(+b.dataset.convert)));
+    this.el["forge-promote"].querySelectorAll("[data-select]").forEach((row) =>
+      row.addEventListener("click", () => { this._forgeSel = row.dataset.select; this.renderForge(); this.renderForgeAnvil(row.dataset.select); }));
+
+    if (this._forgeSel) this.renderForgeAnvil(this._forgeSel);
+    else if (this.el["forge-anvil"]) this.el["forge-anvil"].hidden = true;
+  },
+
+  renderForgeAnvil(slotId) {
+    const anvil = this.el["forge-anvil"];
+    if (!anvil) return;
+    const item = G.state.data.equipped[slotId];
+    const next = item && G.gear._nextRarity(item.rarity);
+    if (!item || !next) { anvil.hidden = true; this._forgeSel = null; return; }
+    const nextRar  = G.data.rarities.find((r) => r.id === next);
+    const newPiece = G.gear.buildPiece(item.slot, next);
+    newPiece.level = item.level || 1;
+    const curById  = {};
+    item.affixes.forEach((a) => { curById[a.id] = a; });
+
+    const rows = newPiece.affixes.map((na) => {
+      const sign = na.pct ? "%" : "";
+      const newV = this.fmtStat(G.gear.affixValue(newPiece, na));
+      const cur  = curById[na.id];
+      if (cur) {
+        const curV = this.fmtStat(G.gear.affixValue(item, cur));
+        return `<div class="anvil-affix">
+          <span class="anvil-affix__lbl">${na.label}</span>
+          <span class="anvil-affix__val"><i>+${curV}${sign}</i> <em>→</em> <b>+${newV}${sign}</b></span></div>`;
+      }
+      return `<div class="anvil-affix anvil-affix--new">
+        <span class="anvil-affix__lbl">${na.label}</span>
+        <span class="anvil-affix__val"><b>+${newV}${sign}</b> <em class="tag-new">NEW</em></span></div>`;
+    }).join("");
+
+    const cost = G.gear.promoteCost(item);
+    const have = G.economy.getGear(cost.kind);
+    const can  = G.gear.canPromote(item);
+    const costLabel = cost.kind === "uncommon" ? "Uncommon" : "Common";
+    const icon = (G.data.slots.find((s) => s.id === item.slot) || {}).icon || "❔";
+
+    anvil.innerHTML = `<div class="anvil-icon" style="--rar:${nextRar.color}">
+        <span class="ico-ph">${icon}</span>
+        <img src="assets/gear/${item.slot}.png" alt="" onerror="this.remove()">
+      </div>
+      <div class="anvil-card">
+      <div class="anvil-name">${item.slotLabel}</div>
+      <div class="anvil-rar"><b style="color:${item.color}">${item.rarityName}</b> <em>→</em> <b style="color:${nextRar.color}">${nextRar.name}</b></div>
+      <div class="anvil-affixes">${rows}</div>
+      <div class="anvil-cost ${have >= cost.amount ? "ok" : "short"}">${G.util.fmt(have)} / ${cost.amount} ${costLabel}</div>
+      <button class="forge-btn forge-btn--up" data-promote="${item.slot}" ${can ? "" : "disabled"}>Promote</button>
+    </div>`;
+    anvil.hidden = false;
+    anvil.querySelectorAll("[data-promote]").forEach((b) =>
+      b.addEventListener("click", () => this.doForgePromote(b.dataset.promote)));
+  },
+
+  doForgeConvert(i) {
+    const c = G.economy.CONVERSIONS[i];
+    if (c && G.economy.convertGear(c) > 0) { G.state.save(); this.renderForge(); }
+  },
+
+  doForgePromote(slotId) {
+    const item = G.state.data.equipped[slotId];
+    if (item && G.gear.promote(item)) {
+      G.state.invalidateStats();
+      G.state.save();
+      this.renderForge();
+      this.renderGear();
+      this.renderStats();
+    }
   },
 
   gearTipHtml(item) {
@@ -423,23 +542,25 @@ G.ui = {
       return;
     }
 
-    const n   = alive.length;
-    const sig = alive.map(e => e.name + (e.rarity ? e.rarity.tag : "") + (e.isBoss ? "B" : "")).join("|");
+    // renderiza a onda INTEIRA (mortos inclusos, greyed) → posições não mudam quando 1 morre,
+    // e os índices enemy-art-{i} batem com os índices do combat (projéteis/floaters certos).
+    const list = G.combat.enemies;
+    const sig  = list.map(e => e.name + (e.rarity ? e.rarity.tag : "") + (e.isBoss ? "B" : "")).join("|");
 
     if (this._enemySig !== sig) {
       this._enemySig = sig;
-      container.className = `enemies-container pack-${n}`;
-      container.innerHTML = alive.map((e, i) => {
+      container.className = `enemies-container pack-${Math.min(list.length, 3)}`;
+      container.innerHTML = list.map((e, i) => {
         const nameHtml  = e.rarity ? `${e.name} · ${e.rarity.tag}` : (e.name + (e.isBoss ? " 👑" : ""));
         const nameColor = e.rarity ? ` style="color:${e.rarity.color}"` : "";
-        return `<div class="enemy-card${i === 0 ? " enemy-active" : ""}${e.isBoss ? " boss" : ""}" data-idx="${i}">
+        return `<div class="enemy-card${e.isBoss ? " boss" : ""}" data-idx="${i}">
+          <span class="enemy-name"${nameColor}>${nameHtml}</span>
           <div class="enemy-figure${e.isBoss ? " boss" : ""}" id="enemy-art-${i}">
             <span class="art-ph">${e.sprite}</span>
             ${e.img ? `<img class="art-img" src="${e.img}" alt="" onerror="this.remove()" />` : ""}
             <div class="floaters" id="floaters-enemy-${i}"></div>
           </div>
           <div class="enemy-info">
-            <span class="enemy-name"${nameColor}>${nameHtml}</span>
             <span class="card-sub">Lv. <b>${e.level}</b> · ATK <b>${G.util.fmt(e.dmg)}</b></span>
             <div class="bar enemy-bar">
               <div class="bar-fill enemy-fill" id="enemy-hp-fill-${i}"></div>
@@ -450,11 +571,18 @@ G.ui = {
       }).join("");
     }
 
-    alive.forEach((e, i) => {
+    // por tick: HP + classes morto/ativo (sem rebuild → nada se reposiciona)
+    const firstAlive = list.findIndex(e => !e.dead);
+    list.forEach((e, i) => {
+      const card = container.children[i];
+      if (card) {
+        card.classList.toggle("enemy-dead", !!e.dead);
+        card.classList.toggle("enemy-active", i === firstAlive);
+      }
       const fill  = document.getElementById(`enemy-hp-fill-${i}`);
       const label = document.getElementById(`enemy-hp-label-${i}`);
       if (fill)  fill.style.width = G.util.clamp((e.hp / e.maxHp) * 100, 0, 100) + "%";
-      if (label) label.textContent = `${G.util.fmt(Math.max(0, e.hp))} / ${G.util.fmt(e.maxHp)}`;
+      if (label) label.textContent = `HP ${G.util.fmt(Math.max(0, e.hp))} / ${G.util.fmt(e.maxHp)}`;
     });
   },
 
@@ -470,9 +598,10 @@ G.ui = {
     setTimeout(() => f.remove(), 800);
   },
 
-  projectile(type) {
-    const fromEl = document.getElementById(type === "mob" ? "enemy-art-0" : "hero-art");
-    const toEl   = document.getElementById(type === "mob" ? "hero-art"   : "enemy-art-0");
+  projectile(type, idx) {
+    const enemyEl = "enemy-art-" + (idx || 0);
+    const fromEl = document.getElementById(type === "mob" ? enemyEl : "hero-art");
+    const toEl   = document.getElementById(type === "mob" ? "hero-art" : enemyEl);
     if (!fromEl || !toEl) return;
     const a = fromEl.getBoundingClientRect(), b = toEl.getBoundingClientRect();
     const x1 = a.left + a.width / 2, y1 = a.top + a.height * 0.42;
@@ -481,11 +610,13 @@ G.ui = {
     const img = document.createElement("img");
     img.className = "projectile" + (type === "mob" ? " projectile--mob" : "");
     img.src       = type === "mob" ? "assets/fx/bolt_mob.png" : "assets/fx/bolt_seeker.png";
+    const dur = type === "mob" ? 0.9 : 0.5;   // bolt do mob mais lento/telegrafado
     img.style.cssText = `left:${x1}px;top:${y1}px;transform:translate(-50%,-50%) rotate(${ang}deg)`;
+    img.style.transitionDuration = dur + "s";
     document.body.appendChild(img);
     void img.offsetWidth;
     img.style.left = x2 + "px"; img.style.top = y2 + "px"; img.style.opacity = "0.7";
-    setTimeout(() => img.remove(), 540);
+    setTimeout(() => img.remove(), dur * 1000 + 80);
   },
 
   // ---------- PASSIVES (Árvore-Mundo) ----------
@@ -646,7 +777,7 @@ G.ui = {
 
     panel.innerHTML = `<div class="awk-preview__inner${stateClass}">
       <div class="awk-preview__head">
-        <img class="awk-emblem" src="assets/ui/icon_awaken.svg" alt="" onerror="this.remove()">
+        <img class="awk-emblem" src="assets/ui/icon_awaken.png" alt="" onerror="this.remove()">
         <h3 class="awk-preview__title">${a.name}</h3>
         ${a.lore ? `<p class="awk-preview__lore">"${a.lore}"</p>` : ""}
       </div>

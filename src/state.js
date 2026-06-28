@@ -76,6 +76,12 @@ G.state = {
     // Awaken (inerte na slice; sem breakdown por enquanto)
     if (G.awaken) G.awaken.applyTo(layer);
 
+    // Convergence Legacy — bônus direto de atk%/hp% por convergence (no breakdown)
+    if (G.convergence && G.convergence.legacyAtkPct) {
+      add("atk", "pct", G.convergence.legacyAtkPct(), "Convergence Legacy");
+      add("hp",  "pct", G.convergence.legacyHpPct(),  "Convergence Legacy");
+    }
+
     // Passivas — efeitos LIVE somam nas camadas; demais expostos via effect()
     let passEff = null;
     if (G.passives) {
@@ -105,7 +111,7 @@ G.state = {
       crit:             G.util.clamp(fin("crit"), 0, 100),
       critDmg:          fin("critDmg"),
       critMult:         1 + fin("critDmg") / 100,
-      atkSpeed:         G.util.clamp(fin("atkSpeed"), 0, this.currentAtkSpeedCap()),
+      atkSpeed:         G.util.softCap(fin("atkSpeed"), this.currentAtkSpeedSoft(), this.currentAtkSpeedCap()),
       xpBonus:          fin("xpBonus"),
       lumensBonus:      fin("lumensBonus"),
       damageReduction:  G.util.clamp(fin("damageReduction"), 0, 75),
@@ -118,9 +124,10 @@ G.state = {
   },
 
   maxHp()              { return this.stats().hp; },
-  currentAtkSpeedCap() { return this.data.mapOneCleared ? G.data.balance.atkSpeedCap : G.data.balance.map1AtkSpeedCap; },
+  currentAtkSpeedCap() { return this.data.mapOneCleared ? G.data.balance.map2AtkSpeedCap : G.data.balance.map1AtkSpeedCap; },
+  currentAtkSpeedSoft() { return this.currentAtkSpeedCap() * G.data.balance.atkSpeedSoftFrac; },
   attackInterval()     { return G.util.clamp(1 / this.stats().atkSpeed, 1 / this.currentAtkSpeedCap(), 5); },
-  xpToNext()           { return Math.ceil(14 * Math.pow(this.data.level, 1.5)); },
+  xpToNext()           { return Math.ceil(G.data.balance.xpCurveBase * Math.pow(this.data.level, G.data.balance.xpCurveExp)); },
 
   // save/load — fallback em memória quando localStorage está bloqueado (file://)
   _mem: {},

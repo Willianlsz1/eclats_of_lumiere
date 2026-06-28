@@ -1,7 +1,7 @@
 # LORE ↔ GAMEPLAY — Auditoria de Consistência
 
 > Auditoria **read-only**. Não reescreve a lore nem altera sistemas. Cruza a
-> *Lore Bible* (`docs/eclats_lore.md`) com o gameplay implementado (`src/`).
+> *Lore Bible* (`docs/lore/eclats_lore.md`) com o gameplay implementado (`src/`).
 > Contexto importante: a própria lore (Parte IX) avisa que **os sistemas de jogo
 > foram refeitos do zero** e "não correspondem mais" ao texto narrativo — então
 > várias divergências aqui são **conhecidas/pendentes**, não pontos cegos.
@@ -104,7 +104,7 @@ têm representação no jogo.
   **"Cavernes Luminis"** (Mapa 2, cristalino). Mapa 3 = ruínas + **Ashen King**;
   Mapa 4 = **Claimed Queen**; Mapa 5 = **Nil Aeternum / Nihel**. Sequência coerente.
 - **Conflita:** a **taxonomia de criaturas** da lore (Fragmented, Consumed, Eidola,
-  Claimed, Qliphoth) **não aparece** nos tipos do jogo (Common/Rare/Elite/
+  Claimed, Cortices) **não aparece** nos tipos do jogo (Common/Rare/Elite/
   MiniBoss/Boss são mecânicos). A lore diz "The Eidola = os chefes" — então bosses
   *deveriam* ser Eidola, mas o jogo não os marca assim. O mundo Belle Époque /
   Ordre também não se conecta ao Mapa 1 (floresta) no jogo.
@@ -123,7 +123,7 @@ têm representação no jogo.
   o jogador gasta **Pontos de Convergence** (reunião da luz) para comprar nós
   **Fracture** (Nihel) — tematicamente invertido (reunir luz para empoderar a
   Fenda?).
-- **Ausente:** presságios de Nihel no Mapa 1; o twist da Ordre; Claimed/Qliphoth
+- **Ausente:** presságios de Nihel no Mapa 1; o twist da Ordre; Claimed/Cortices
   no elenco de inimigos.
 - **Severidade:** 🟠 Média-Alta.
 
@@ -148,10 +148,10 @@ têm representação no jogo.
 | **Mémoires / Éclats como coletáveis** | Ausente — premissa central sem mecânica |
 | **Le Premier Éclat (a Semente)** | Implícito (a conta que sobrevive à Convergence), nunca nomeado in-game |
 | **Nihel + o twist da Ordre** | Ausente no Mapa 1 |
-| **Taxonomia** (Fragmented/Consumed/Eidola/Claimed/Qliphoth) | Ausente (tipos são mecânicos) |
+| **Taxonomia** (Fragmented/Consumed/Eidola/Claimed/Cortices) | Ausente (tipos são mecânicos) |
 | **Ascension + Séraphine** | Ausente como sistema (tiers são só rótulo) |
 | **Arco de cor** (dourado→branco-azul→sem cor) | Ausente como expressão de progressão |
-| **Névoa Dourada, Or Ein Sof, HaShevirah, Tikkun Olam** | Ausentes do texto in-game |
+| **Névoa Dourada, Or Ein Sof, HaShevirah, The Mending** | Ausentes do texto in-game |
 | **Claimed Queen / Ashen King** | Planejados (Maps 3–4), ainda não no jogo |
 
 ---
@@ -189,7 +189,7 @@ têm representação no jogo.
 5. **R-L5 — Cor como dívida.** O arco de cor é o fio condutor visual da lore. Se
    não for ligado a tiers/awaken/mapas cedo, retrofitá-lo em 5 mapas de arte vira
    caro.
-6. **R-L6 — Pendências de lore não fechadas** (corte Qliphoth, rosto Lumière,
+6. **R-L6 — Pendências de lore não fechadas** (corte Cortices, rosto Lumière,
    nomes além do francês, nomes das 9 sub-áreas) podem **bifurcar** a produção de
    arte/conteúdo dos Maps 2–5 se decididas tarde.
 
@@ -200,7 +200,7 @@ têm representação no jogo.
 1. **Decidir o destino do termo "Convergence"** (pendência #6 da lore). Opção A:
    renomear a **mecânica** de prestige (ex.: "Reconvergence", "Shedding",
    "Fracture cycle") e **reservar "Convergence"** para o ato narrativo final. Opção
-   B: assumir que o loop É a tarefa-que-não-termina (Tikkun Olam) e abraçar isso no
+   B: assumir que o loop É a tarefa-que-não-termina (The Mending) e abraçar isso no
    texto — então o "final" não é a Convergence, e sim **conter Nihel**.
 2. **Ressignificar os ranks da Ordre.** Desacoplar Seeker→Lumière dos níveis 1–100
    (que se esgotam cedo) e amarrá-los a **marcos de mapa/Awaken** (ex.: 1 rank por
@@ -213,7 +213,7 @@ têm representação no jogo.
    (Lumens) numa coleta **narrativa** (Éclats/memórias). É o maior buraco e a maior
    oportunidade.
 5. **Mapear taxonomia ↔ tipos mecânicos** (Boss = Eidola, variantes Claimed/
-   Qliphoth para Maps 4–5) antes de produzir os inimigos dos Maps 2–5.
+   Cortices para Maps 4–5) antes de produzir os inimigos dos Maps 2–5.
 6. **Amarrar o arco de cor** a tiers/awaken/mapas desde já (decisão barata agora,
    cara depois) — é o que dá significado **visual** à escala de poder numérica.
 7. **Alinhar moeda/termos**: decidir Lumens vs Vestiges; reconciliar os nomes das 3

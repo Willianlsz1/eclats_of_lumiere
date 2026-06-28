@@ -1,0 +1,27 @@
+# docs/ — Índice
+
+Documentação do Éclats of Lumière, organizada por pasta.
+
+## 📖 `lore/` — Mundo & História
+- **`eclats_lore.md`** — a Lore Bible (cosmologia, Éclats, cores, a Ordre, o Seeker, criaturas, Rei & Rainha…). Fonte de verdade narrativa.
+- **`LORE_REFERENCE_LIBRARY.md`** — biblioteca de referências reais (Cabala, mitos, Belle Époque, craft de jogos) pra aprofundar a lore.
+- **`MAP_DESIGN.md`** — design dos mapas (geografia, bioma, história, mobs por mapa).
+- **`eclats_art_direction.md`** — direção de arte (estilo, paleta, prompts, âncoras visuais).
+- **`MEMOIRES_MASTER_PLAN_V1.md`** — plano das Mémoires (sistema futuro).
+
+## ⚙️ `design/` — Sistemas de Jogo
+- **`ENEMY_POWER_PYRAMID.md`** — pirâmide de poder dos inimigos (tiers, spawn, modificadores).
+- **`ASCENSION_SYSTEM_V1.md`** — sistema de Ascension.
+- **`CONVERGENCE_FINAL.md`** — sistema de Convergence (prestige).
+- **`PROGRESSION_MAP1.md`** — progressão do Mapa 1.
+
+## ⚖️ `balance/` — Balanceamento
+- **`BALANCE_AUDIT.md`**, **`BALANCE_REPORT_MAP1_V1.md`**, **`PRE_BALANCE_REVIEW_V2.md`**
+
+## 🔍 `audits/` — Auditorias & Revisões
+- **`LORE_GAMEPLAY_AUDIT.md`** — cruza lore × gameplay implementado.
+- **`AUDIT_CONSISTENCY.md`**, **`PASSIVES_AUDIT.md`**, **`FINAL_ARCHITECTURE_REVIEW.md`**
+
+## 🏛️ `project/` — Visão & Engine
+- **`CONSTITUICAO.md`** — visão e pilares do projeto.
+- **`ENGINE.md`** — fundação técnica.

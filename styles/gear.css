@@ -26,13 +26,13 @@
 /* layer dos slots (arco em volta da Aurélie) */
 .gear-slots { position: absolute; inset: 0; pointer-events: none; z-index: 15; }
 
-/* posições em arco (centro de cada slot) */
-.pos-weapon { left: 35%; top: 18%; }
-.pos-helmet { left: 30%; top: 47%; }
-.pos-armor  { left: 30%; top: 78%; }
-.pos-gloves { left: 67%; top: 17%; }
-.pos-boots  { left: 68%; top: 48%; }
-.pos-cloak  { left: 72%; top: 78%; }
+/* duas colunas simétricas (centro de cada slot) — 3 à esquerda, 3 à direita */
+.pos-weapon { left: 26%; top: 20%; }
+.pos-helmet { left: 26%; top: 50%; }
+.pos-armor  { left: 26%; top: 80%; }
+.pos-gloves { left: 74%; top: 20%; }
+.pos-boots  { left: 74%; top: 50%; }
+.pos-cloak  { left: 74%; top: 80%; }
 
 /* slot — LVL · box do ícone (cor da raridade) · ação */
 .gear-slot {
@@ -48,8 +48,8 @@
 }
 .gear-slot__icon {
   position: relative; width: 100%; aspect-ratio: 1 / 1; border-radius: 10px; font-size: 48px;
-  background: color-mix(in srgb, var(--rar, transparent) 16%, rgba(2, 4, 10, 0.62));
-  border: 2px solid color-mix(in srgb, var(--rar, transparent) 60%, var(--card-border));
+  background: color-mix(in srgb, var(--rar, transparent) 34%, rgba(2, 4, 10, 0.62));
+  border: 3px solid color-mix(in srgb, var(--rar, transparent) 78%, var(--card-border));
   display: flex; align-items: center; justify-content: center; overflow: hidden;
   transition: border-color 0.12s, filter 0.12s;
 }
@@ -58,7 +58,15 @@
 .gear-slot__icon .ico-ph:has(~ .ico-img) { display: none; }
 .gear-slot__action { display: flex; flex-direction: column; align-items: center; gap: 5px; }
 .gear-slot__cost { font-size: 12px; color: var(--gold); font-weight: 600; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85); }
-.gear-max { font-size: 13px; font-weight: 700; color: var(--gold); padding: 4px 0; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85); }
+.gear-max {
+  width: 100%; border: 1px solid var(--gold);
+  background: linear-gradient(180deg, rgba(232, 200, 90, 0.32), rgba(180, 124, 32, 0.22));
+  color: var(--gold); border-radius: 8px; padding: 6px 10px;
+  font-size: 13px; font-weight: 800; letter-spacing: 1px; text-align: center;
+  text-transform: uppercase; cursor: default; opacity: 1;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+  box-shadow: 0 0 12px rgba(232, 200, 90, 0.28), inset 0 0 8px rgba(232, 200, 90, 0.12);
+}
 
 .gear-levelup {
   width: 100%; border: 1px solid var(--card-border); background: rgba(46, 124, 196, 0.2);
@@ -80,6 +88,28 @@
 .gear-promote:active:not(:disabled) { transform: scale(0.96); }
 .gear-promote:disabled { opacity: 0.35; cursor: default; }
 
+/* ---- banner do NPC do gear (Aurélie) — bottom-center ---- */
+.gear-npc {
+  position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%); z-index: 20;
+  box-sizing: border-box; width: 420px; height: 232px; pointer-events: none; text-align: center;
+  background: url("../assets/ui/gear_banner.png") center / 100% 100% no-repeat;
+  display: flex; flex-direction: column; justify-content: center; align-items: center;
+  padding: 28px 34px 32px;
+}
+.gear-npc__name {
+  font-family: "Cormorant Garamond", serif; font-style: italic; font-size: 23px;
+  color: var(--teal); letter-spacing: 0.5px; line-height: 1.05;
+  text-shadow: 0 2px 5px #000, 0 0 14px rgba(94, 224, 210, 0.35);
+}
+.gear-npc__title {
+  font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.8px;
+  color: #9fb3c2; margin: 3px 0 6px;
+}
+.gear-npc__quote {
+  font-family: "Cormorant Garamond", serif; font-style: italic; font-size: 14px;
+  color: #d6dde0; line-height: 1.3; text-shadow: 0 1px 3px #000;
+}
+
 .gear-materials {
   margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--card-border);
   display: flex; flex-direction: column; gap: 4px;
@@ -90,23 +120,23 @@
 
 /* tooltip de item */
 #gear-tooltip {
-  position: absolute; z-index: 60; width: 300px; pointer-events: none;
+  position: absolute; z-index: 60; width: 380px; pointer-events: none;
   background: linear-gradient(160deg, rgba(14, 24, 38, 0.97), rgba(8, 12, 20, 0.97));
   border: 2px solid color-mix(in srgb, var(--gold) 75%, transparent);
-  border-radius: 6px; padding: 16px 18px; box-shadow: 0 14px 34px rgba(0, 0, 0, 0.6);
+  border-radius: 6px; padding: 20px 24px; box-shadow: 0 14px 34px rgba(0, 0, 0, 0.6);
 }
 #gear-tooltip::before {
   content: ""; position: absolute; inset: 4px; pointer-events: none;
   border: 1px solid color-mix(in srgb, var(--gold) 38%, transparent); border-radius: 4px;
 }
 #gear-tooltip[hidden] { display: none; }
-.tip-name { font-weight: 700; font-size: 19px; }
-.tip-sub { font-size: 14px; opacity: 0.9; margin-top: 2px; }
-.tip-lvl { font-size: 14px; color: var(--muted); font-style: italic; margin: 9px 0; }
-.tip-affixes { display: flex; flex-direction: column; gap: 8px; }
+.tip-name { font-weight: 700; font-size: 26px; }
+.tip-sub { font-size: 18px; opacity: 0.9; margin-top: 3px; }
+.tip-lvl { font-size: 17px; color: var(--muted); font-style: italic; margin: 12px 0; }
+.tip-affixes { display: flex; flex-direction: column; gap: 11px; }
 .tip-affix { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
-.tip-affix__main { font-size: 15px; color: var(--teal); font-weight: 600; }
-.tip-perlv { font-size: 13px; color: var(--muted); }
+.tip-affix__main { font-size: 19px; color: var(--teal); font-weight: 600; }
+.tip-perlv { font-size: 15px; color: var(--muted); }
 
 /* multiplicador de level-up */
 .gear-mult__label { font-size: 13px; color: var(--muted); }
