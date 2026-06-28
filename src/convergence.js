@@ -89,6 +89,7 @@ G.convergence = {
     d.runKills = 0;
     d.runBosses = 0;
     d.runMaxAreaIndex = 0;
+    if (G.combat) G.combat._bossKills = 0;   // não carregar progresso de boss pro novo ciclo
 
     G.state.invalidateStats();
     d.hp = G.state.maxHp();

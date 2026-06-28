@@ -36,8 +36,6 @@ Browser-based idle/loot game (Map 1 focus). Vanilla JS, no framework, no build s
 | `src/convergence.js` | Prestige reset. `converge()` resets level/XP/area, credits Convergence Points. Formula weights in `weights` are placeholders (only level term is active). |
 | `src/ui.js` | DOM reads and writes only. No game logic. `renderAll()`, `renderEnemy()`, `renderHeroHp()`, `renderResources()`, `renderHero()`, `renderHud()`. |
 | `src/main.js` | Init + two `setInterval` clocks (100ms combat, 1000ms UI). Offline progress on load. |
-| `src/loot.js` | **DORMANT.** Old random loot system. Nothing calls it. Do not touch. |
-| `src/inventory.js` | **DORMANT.** Old inventory for random loot. Do not touch. |
 
 ---
 
@@ -88,8 +86,6 @@ To reset save from the browser console: `G.state.reset(); location.reload()`
 - Completing partially-built systems (gear promotion UI, materials display, mini-boss/elite encounters)
 
 **Do not touch:**
-- `src/loot.js` — dormant, intentionally disconnected
-- `src/inventory.js` — dormant, intentionally disconnected
 - Mémoires system — not yet scoped for implementation
 - Ascension/Divinity system — not yet scoped for implementation
 - Map 2 content — not in scope until Map 1 ships
@@ -178,8 +174,6 @@ Unlock with Convergence Points. Passive effects aggregate in `passives.effects()
 
 **Do not use `Math.random()` inside tests or idle simulation.** Pass an `rng` option (see `economy.rollDrops(enemy, opts)` pattern).
 
-**Do not add items to `G.state.data.inventory`.** The inventory system is dormant. The old loot flow (`loot.js → inventory.js`) is intentionally disconnected.
-
 **Do not create new global variables.** Everything goes on `G`.
 
 **Do not implement Mémoires, Ascension, or Map 2 features.** These are not in scope for current work.
@@ -196,6 +190,5 @@ Answer these before writing anything:
 2. Does this change any stat source? → call `invalidateStats()` after.
 3. Does this change visible state? → call the right render function after.
 4. Is the value I'm writing a constant? → it goes in `data.js`, not inline.
-5. Am I touching `loot.js` or `inventory.js`? → stop, those are dormant.
-6. Am I adding a feature not currently in the codebase? → confirm it's in scope first.
-7. Does `G.state.save()` need to be called? (Only for persistent state changes.)
+5. Am I adding a feature not currently in the codebase? → confirm it's in scope first.
+6. Does `G.state.save()` need to be called? (Only for persistent state changes.)

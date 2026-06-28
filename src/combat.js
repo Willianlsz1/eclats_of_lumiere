@@ -176,7 +176,7 @@ G.combat = {
   applyHitToEnemy(dmg, crit) {
     const target = this.enemies.find(e => !e.dead);
     if (!target) return;
-    if (G.ui && G.ui.floater) G.ui.floater(dmg, crit ? "crit" : "hit");
+    if (G.ui && G.ui.floater) G.ui.floater(dmg, crit ? "crit" : "hit", this.enemies.indexOf(target));
     target.hp -= dmg;
     if (target.hp <= 0) this.onKill();
     else if (G.ui && G.ui.renderEnemy) G.ui.renderEnemy();

@@ -586,9 +586,10 @@ G.ui = {
     });
   },
 
-  floater(amount, type) {
+  floater(amount, type, idx) {
     const target = type === "enemy"
-      ? document.getElementById("floaters-hero") : document.getElementById("floaters-enemy-0");
+      ? document.getElementById("floaters-hero")
+      : document.getElementById("floaters-enemy-" + (idx || 0));
     if (!target) return;
     const f = document.createElement("span");
     f.className = "floater " + type;
@@ -610,7 +611,7 @@ G.ui = {
     const img = document.createElement("img");
     img.className = "projectile" + (type === "mob" ? " projectile--mob" : "");
     img.src       = type === "mob" ? "assets/fx/bolt_mob.png" : "assets/fx/bolt_seeker.png";
-    const dur = type === "mob" ? 0.9 : 0.5;   // bolt do mob mais lento/telegrafado
+    const dur = type === "mob" ? G.combat.mobProjectileTravel : G.combat.projectileTravel;  // fonte única (combat.js)
     img.style.cssText = `left:${x1}px;top:${y1}px;transform:translate(-50%,-50%) rotate(${ang}deg)`;
     img.style.transitionDuration = dur + "s";
     document.body.appendChild(img);
