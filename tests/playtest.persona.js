@@ -25,6 +25,19 @@ for (const f of ["util", "data", "gear", "passives", "awaken", "state", "economy
   eval(fs.readFileSync(path.join(SRC, f + ".js"), "utf8"));
 G.ui = null; // headless: combat resolve hits na hora (sem projéteis)
 
+// RNG determinístico: combat/economy usam Math.random (via G.util.chance/pick).
+// Semear torna a sim REPRODUTÍVEL — pré-requisito pra medir balance, não chutar.
+function mulberry32(a) {
+  return function () {
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function seed(s) { Math.random = mulberry32(s >>> 0); }
+seed(0xEC1A75); // seed global padrão
+
 // ---------- coletor de achados ----------
 const findings = [];
 function flag(sev, area, msg) { findings.push({ sev, area, msg }); }
@@ -276,10 +289,107 @@ function partC() {
   console.log("Drop gating Área 1-2 bloqueado / Área 3 liberado: verificado");
 }
 
+// ============================================================
+// PART D — REACH TEST (playthrough completo headless, motor real)
+// Mede o "ponto cego": dá pra completar o Mapa 1 SEM convergir? E COM, em quantas?
+// Modela a Marina voltando a pé pós-convergence (avança 1 área por boss batido),
+// e convergindo quando EMPACA (não troca de área há 15 min virtuais).
+// ============================================================
+const fmtT = (s) => (s < 60 ? s.toFixed(0) + "s" : s < 3600 ? (s / 60).toFixed(1) + "m" : (s / 3600).toFixed(2) + "h");
+
+function reachRun(allowConverge, runSeed) {
+  seed(runSeed);
+  store = {}; G.state.data = null; G.state.load();
+  const d = G.state.data;
+  let t = 0, conv = 0, deaths = 0;
+  const dt = 0.25;
+  const origDeath = G.combat.onDeath.bind(G.combat);
+  G.combat.onDeath = function () { deaths++; return origDeath(); };
+  const perArea = [];
+  let lastArea = -1, lastLevel = d.level, lastLevelT = 0;
+  const T_MAX = (allowConverge ? 24 : 6) * 3600;
+  let outcome = "timeout";
+
+  const snapshot = () => {
+    const s = G.state.stats();
+    const a = G.data.currentArea();
+    const mhp = G.data.mobHpAt(d.level, a);
+    const dps = s.atk * s.atkSpeed * (1 + (s.crit / 100) * (s.critMult - 1));
+    const pack = d.areaIndex < 2 ? 1 : d.areaIndex < 5 ? 2 : 3;
+    const inDps = (G.data.balance.mobAtkByArea[d.areaIndex] / 0.99) * pack;
+    perArea[d.areaIndex] = { t, level: d.level, gear: d.equipped.weapon.rarity + " Lv" + d.equipped.weapon.level, conv, ttk: mhp / dps, survS: s.hp / inDps };
+  };
+
+  while (t < T_MAX) {
+    G.combat.tick(dt); t += dt;
+    spendLumens();
+    // Marina sobe de nível DENTRO da área e só avança quando "outgrow" o teto de
+    // nível dela (modelo realista; evita avançar subnivelada no boss-rush).
+    const area = G.data.currentArea();
+    if (d.level >= area.levelRange[1] && (d.maxAreaUnlocked || 0) > d.areaIndex && d.areaIndex < 8) d.areaIndex++;
+    if (d.areaIndex !== lastArea) { lastArea = d.areaIndex; snapshot(); }
+    if (d.level > lastLevel) { lastLevel = d.level; lastLevelT = t; }
+    if (d.mapOneCleared) { outcome = "cleared"; break; }
+    // PAREDE = nível estagnado (morrendo em loop / TTK infinito) por 10 min virtuais
+    if (t - lastLevelT > 10 * 60) {
+      if (allowConverge && G.convergence.canConverge()) {
+        conv++; G.convergence.converge(); spendPassives();
+        lastArea = -1; lastLevel = d.level; lastLevelT = t; // resetou pra Área 1
+      } else { outcome = "wall"; break; }
+    }
+  }
+  G.combat.onDeath = origDeath;
+  if (!perArea[d.areaIndex]) snapshot();
+  return { perArea, t, conv, deaths, outcome, areaStuck: d.areaIndex + 1, level: d.level };
+}
+
+function partD() {
+  console.log("\n===== PART D — Reach test (playthrough completo) =====");
+  const printRun = (r, label) => {
+    console.log(`\n· ${label}`);
+    console.log("  Área | chegada | Lv | gear | TTK | sobrev | conv");
+    for (let i = 0; i < 9; i++) { const p = r.perArea[i]; if (!p) continue;
+      console.log(`  A${i+1} | ${fmtT(p.t)} | ${p.level} | ${p.gear} | ${p.ttk.toFixed(1)}s | ${p.survS.toFixed(1)}s | ${p.conv}`); }
+    if (r.outcome === "cleared") console.log(`  ✓ LIMPO em ${fmtT(r.t)} | ${r.conv} convergences | ${r.deaths} mortes`);
+    else if (r.outcome === "wall") console.log(`  ✋ PAREDE na Área ${r.areaStuck} | ${fmtT(r.t)} | ${r.deaths} mortes`);
+    else console.log(`  (timeout em ${fmtT(r.t)}, parou na Área ${r.areaStuck})`);
+  };
+
+  const SEEDS = [0xA11, 0xB22, 0xC33, 0xD44, 0xE55];
+  const median = (xs) => { const a = xs.slice().sort((p, q) => p - q); return a[Math.floor(a.length / 2)]; };
+
+  // gear-only: roda todos os seeds, reporta 1 e agrega a parede
+  const g0s = SEEDS.map((s) => reachRun(false, s));
+  printRun(g0s[0], "SEM CONVERGENCE (gear-only) — seed 1 de " + SEEDS.length);
+  const wallAreas = g0s.map((r) => r.outcome === "cleared" ? 99 : r.areaStuck);
+  const wMed = median(wallAreas);
+  console.log(`  paredes por seed: [${wallAreas.join(", ")}] → mediana A${wMed}`);
+
+  const gCs = SEEDS.map((s) => reachRun(true, s));
+  printRun(gCs[0], "COM CONVERGENCE — seed 1 de " + SEEDS.length);
+  const convs = gCs.map((r) => r.outcome === "cleared" ? r.conv : null);
+  const cleared = convs.filter((c) => c != null);
+  console.log(`  convergences p/ limpar por seed: [${gCs.map(r => r.outcome === "cleared" ? r.conv : "✗A" + r.areaStuck).join(", ")}]`);
+
+  // ---- avalia vs o alvo do dono: A1-3 passáveis sem conv; parede na A4; clear com conv ----
+  if (wMed >= 99) flag("BAL", "D", `Gear-only LIMPA o mapa — convergence é pulável (alvo: parede na A4)`);
+  else if (wMed < 4) flag("BAL", "D", `Parede cedo demais: gear-only trava na A${wMed} (alvo A4 — A1-3 sem convergence)`);
+  else if (wMed > 4) flag("BAL", "D", `Parede tarde demais: gear-only trava na A${wMed} (alvo A4)`);
+  else console.log(`  ✓ alvo: gear-only passa A1-3 e trava na A4 (mediana) — correto`);
+
+  if (cleared.length < SEEDS.length) flag("BAL", "D", `Com convergence nem sempre limpa (${cleared.length}/${SEEDS.length} seeds)`);
+  else { const cMed = median(cleared);
+    if (cMed < 8) flag("BAL", "D", `Limpa com poucas convergences (mediana ${cMed}; alvo 8-12)`);
+    else if (cMed > 14) flag("BAL", "D", `Limpa com convergences demais (mediana ${cMed}; alvo 8-12)`);
+    else console.log(`  ✓ alvo: limpa com mediana ${cMed} convergences (8-12) — correto`); }
+  return { g0s, gCs };
+}
+
 // ---------- run ----------
 const A = partA();
 const B = partB();
 partC();
+partD();
 
 console.log("\n========== ACHADOS DA MARINA ==========");
 if (!findings.length) console.log("Nenhum problema crítico encontrado nos aspectos testados.");
