@@ -19,7 +19,7 @@
 
 - **Demiurgo** — criador falho do mundo material, ignorante e/ou hostil à fonte divina suprema. Fonte: Gnosticism/Nag Hammadi (2-1). → **Nihel como análogo do Demiurgo**: não originou a criação, mas habita e distorce o espaço falho deixado pela Quebra — ignorante quanto malévolo.
 - **Sophia** — a emanação mais baixa que produziu o Demiurgo **sem autorização** (desobediência), ligando erro divino à criação falha. Fonte (2-1). → **Análogo de Sophia = Le Premier Éclat**: o fragmento que "foi sem autorização" e semeou no mundo o potencial de Convergence. Aprofunda a Semente sem inventar nada.
-- **Archons** — seres subordinados (**sete**, na escola ofita/setiana) que controlam o reino material sob o Demiurgo; nomes (Apócrifo de João): **Yaldabaoth, Iaoth, Astaphaios, Yao, Sabaoth, Adonaios, Sabbataios**. Fonte (3-0). → **Sete bosses / os Eidola** podem SER os sete Archons (executores de Nihel no mundo). Nomes de registro hebraico-aramaico → camada de entidade.
+- **Archons** — seres subordinados (**sete**, na escola ofita/setiana) que controlam o reino material sob o Demiurgo; nomes (Apócrifo de João): **Yaldabaoth, Iaoth, Astaphaios, Yao, Sabaoth, Adonaios, Sabbataios**. Fonte (3-0). → A semente "sete executores de Nihel" foi **mantida**; mas a sessão de lore jun/2026 **descartou** mapeá-los aos Eidola e usar os nomes gnósticos. Canon atual: os **7 Archons** são **Chefe de Mapa (degrau 7), não Eidola (degrau 6)**, com nomes próprios estilizados (Kenoth, Entropir, Umbrar, Nebulor, Cinerath, Taciel, Speculor). Ver `docs/design/ENEMY_POWER_PYRAMID.md`.
 
 ## A3. Ordens ocultistas reais da Belle Époque (modelo direto pra Ordre des Éclairés)
 

@@ -53,9 +53,9 @@ Quanto mais **luz de Éclat** uma criatura carrega, mais forte e mais **brilhant
 | Tier | Nome | Papel | Tipo/Lore |
 |------|------|-------|-----------|
 | 5 | **Mini-Boss** | encontro especial periódico | um Consumed/Cortice maior, com modificador |
-| 6 | **Boss de Área** | porteiro da área (libera a próxima) | **The Eidola** (luz ou vazio) |
-| 7 | **Chefe de Mapa** | clímax do Mapa inteiro | grande figura (Gilded Hollow M1, Ashen King M3…) |
-| 8 | **Nihel** | o ápice, confrontação final | The Fracture |
+| 6 | **Boss de Área** | porteiro da área (libera a próxima) | **The Eidola** — nome poético em inglês ("The + algo"), **um por área** (ex. The Waking Bloom, Área 1). Sem grupo/esquadrão fixo. |
+| 7 | **Chefe de Mapa** | clímax do Mapa inteiro | **os 7 Archons** nos Mapas ligados ao vazio (ver tabela abaixo); Mapas fora do vazio usam nome próprio (Gilded Hollow M1, Ashen King M3) |
+| 8 | **Nihel** | o ápice, confrontação final | The Fracture — *nome estilizado de "nihil" (latim: nada); a mesma receita de nome dos Archons* |
 
 ### Regras dos Marcos (5-8) — decisão do dono
 - **Spawn por threshold de kill:** um contador de kills; ao atingir o limite, o Marco **sempre** aparece.
@@ -65,13 +65,34 @@ Quanto mais **luz de Éclat** uma criatura carrega, mais forte e mais **brilhant
 
 ---
 
+## Os 7 Archons (degrau 7 — Chefe de Mapa dos Mapas ligados ao vazio)
+
+Os Archons preenchem o degrau de **Chefe de Mapa** dos Mapas ligados ao vazio (Map 2, Map 4 e Mapas abertos). **Não** são Eidola — Eidola é só degrau 6. Map 3 (Ashen King) e Map 5 (o próprio Nihel) ficam **de fora**: não servem a Nihel.
+
+**Receita de nome:** palavra real (qualquer idioma) + estilização leve — a mesma de "Nihel" (de *nihil*, latim para nada).
+
+| Nome | Subtítulo | Raiz real |
+|------|-----------|-----------|
+| **Kenoth**   | the First Hollow          | grego *kenón* — vácuo |
+| **Entropir**  | the Unmaking Choir        | grego *entropia* — desordem crescente |
+| **Umbrar**    | the Velvet Court          | latim *umbra* — sombra/eclipse |
+| **Nebulor**   | the Drowned Cartographer  | latim *nebula* — nuvem que engole estrelas |
+| **Cinerath**  | the Patient Flame         | latim *cinis* — cinza/brasa |
+| **Taciel**    | the Voiceless             | latim *tacitus* — silencioso |
+| **Speculor**  | the Last Mirror           | latim *speculum* — espelho |
+
+⏳ **Pendente (sem pressa):** origem dos Archons (nasceram com Nihel na Quebra, ou foram corrompidos/recrutados depois?) e qual Archon vai em qual Mapa — só decide quando os Mapas 2/4/abertos tiverem mais forma.
+
+---
+
 ## Regras gerais da pirâmide
-- **Tipo ≠ tier.** Os 5 tipos (Fragmented, Consumed, Eidola, Claimed, Cortices) são *sabores*; a pirâmide é o *poder*. Qualquer tipo ocupa vários degraus.
+- **Tipo ≠ tier.** Os 5 tipos (Fragmented, Consumed, Eidola, Claimed, Cortices) são *sabores*; a pirâmide é o *poder*. Qualquer tipo ocupa vários degraus — **exceto Eidola**, que é sempre Boss de Área (degrau 6), de propósito.
 - **Recompensa escala com o degrau** (common → uncommon → awaken).
-- **Eidola = todo Boss de Área.** Os **7 Archons** (Yaldabaoth no topo) são candidatos a nomear os Eidola de *vazio*; os de *luz* (ex. Ashen King) usam nomes próprios.
+- **Eidola = sempre Boss de Área (degrau 6)** — nunca outro degrau. Os **7 Archons** ficam um degrau acima (Chefe de Mapa, degrau 7) e **não são Eidola**: são um roster próprio (ver tabela acima). *(Supersede a ideia antiga de "Archons = Eidola de vazio / Yaldabaoth no topo".)*
+- **Claimed e Cortices são tipos SEPARADOS** (sem fusão). Ranks internos do Claimed: **pausados** — não usar os nomes dos Qliphoth (Gamaliel/Samael/etc.; significado popular refutado como fonte primária).
 
 ## Status: ESTRUTURA APROVADA (jun/2026)
-Os 8 degraus, a regra tipo≠tier, fluxo vs marco, cor=luz=poder, e as regras de spawn dos Marcos estão **aprovados**. Faltam só números e listas, adiados de propósito:
+Os 8 degraus, a regra tipo≠tier, fluxo vs marco, cor=luz=poder, e as regras de spawn dos Marcos estão **aprovados**. **Aprovado também (sessão de lore jun/2026):** o roster dos **7 Archons** (degrau 7), a separação Archon ≠ Eidola, Eidola sempre no degrau 6 com nome poético inglês, e Claimed/Cortices como tipos separados. Faltam só números e listas, adiados de propósito:
 
 - ⏳ **Thresholds de kill** de cada Marco (Mini-Boss / Boss / Chefe) → **MEDIR NUM SIM** na fase de balance (persona Marina), não chutar. Cada um precisa ser verificado.
 - ⏳ **Menu de modificadores** (Elite+ / Marcos: escudo, aura de dano, regen, invocar mobs…) → **PESQUISAR e listar** na fase de criação. Dono adiciona ideias conforme surgirem.
