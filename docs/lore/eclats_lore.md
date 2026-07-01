@@ -274,15 +274,15 @@ A corrupção não vem da quantidade de luz. Vem da luz enjaulada. Nos Consumed,
 
 # 🟢 PARTE VII — TAXONOMIA DAS CRIATURAS *(revisado jun/2026)*
 
-Os 5 tipos abaixo são **sabores** (que espécie), não graus de poder. A **hierarquia de poder** (Common→Kindled→Luminous→Radiant→Mini-Boss→Eidola→Chefe de Mapa→Nihel) está definida em `docs/design/ENEMY_POWER_PYRAMID.md` — *tipo ≠ tier*: qualquer tipo ocupa vários degraus.
+Os 5 tipos abaixo são **sabores** (que espécie), não graus de poder. A **hierarquia de poder** (Common→Ember→Lumen→Corona→Mini-Boss→The Harbingers→Chefe de Mapa→Nihel) está definida em `docs/design/ENEMY_POWER_PYRAMID.md` — *tipo ≠ tier*: qualquer tipo ocupa vários degraus.
 
 - **The Fragmented** — humanos/animais levemente tocados por um Éclat. Belos, silenciosos, errados.
 - **The Consumed** — membros que absorveram Éclats demais; a luz enjaulada racha o vaso.
-- **The Eidola** — grandes manifestações (os chefes); ecos densos de luz ou vazio com forma própria. *(renomeado de "The Vestiges" — Vestiges é só a moeda)* — na pirâmide de poder, Eidola é **sempre Boss de Área (degrau 6)**, a única exceção ao "tipo ≠ tier".
+- **The Harbingers** — grandes manifestações (os chefes); ecos densos de luz ou vazio com forma própria. *(renomeado: "The Vestiges" → "Eidola" → **The Harbingers**, jul/2026)* — na pirâmide de poder, é **sempre Boss de Área (degrau 6)**, a única exceção ao "tipo ≠ tier".
 - **The Claimed** — os que pertencem a Nihel; vazam escuridão. *(tipo separado dos Cortices — sem fusão; ranks internos pausados, sem nomes de Qliphoth)*
 - **The Cortices** — cascas vazias que destroem Éclats.
 
-> Acima do degrau dos Eidola, os **7 Archons** (Kenoth, Entropir, Umbrar, Nebulor, Cinerath, Taciel, Speculor) ocupam o degrau de **Chefe de Mapa** dos Mapas ligados ao vazio (≠ Eidola). Roster e regras em `docs/design/ENEMY_POWER_PYRAMID.md`.
+> Acima do degrau dos Harbingers, os **7 Archons** (Kenoth, Entropir, Umbrar, Nebulor, Cinerath, Taciel, Speculor) ocupam o degrau de **Chefe de Mapa** dos Mapas ligados ao vazio (≠ Harbinger). Roster e regras em `docs/design/ENEMY_POWER_PYRAMID.md`.
 
 > 🔧 Os bosses específicos (Gilded Hollow, Pale Reunion, Ashen King, Claimed Queen, Nihel) e a estrutura de sub-bosses foram analisados na conversa mas não finalizados. O boss do Map 2 muda de tipo (a definir).
 
