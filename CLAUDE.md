@@ -48,6 +48,16 @@ node .claude/static-server.js
 
 Or double-click `Jogar Eclats.bat`. Do **not** open `index.html` directly as `file://` — localStorage is blocked and saves won't persist.
 
+**Balance simulator** (headless, runs the real `src/` modules in Node — never mirror formulas by hand):
+
+```
+node tools/sim.js baseline [--to-level N] [--hours H]   # one run, no prestige: time-to-level, TTK/TTD per area
+node tools/sim.js gates --gates 80,150,351              # time + points of the 1st Convergence per candidate gate
+node tools/sim.js campaign --gate 351 [--push 2.0]      # full Map 1 loop to First Light
+```
+
+Seeded RNG (`--seed`), deterministic. Any balance change must be justified with sim output.
+
 To reset save from the browser console: `G.state.reset(); location.reload()`
 
 ---
