@@ -1,3 +1,5 @@
+> ⚠️ **ESTRUTURALMENTE DEFASADO (jul/2026):** este doc descreve o Mapa 1 com **9 áreas** e mini-boss por área. A estrutura nova (18 áreas · 6 grupos · Harbinger por grupo · Okhra) está em `docs/lore/DECISOES_JUL26.md` §4, e o balance novo será travado passo a passo em `docs/design/BALANCE_FRAMEWORK_MAP1.md`. A **filosofia** daqui (tutorial expandido, ordem de descoberta dos sistemas, sensação por área) segue válida como intenção.
+
 # PROGRESSION_MAP1
 
 > Documento de design — define a jornada do jogador no Mapa 1. **Nomes são
