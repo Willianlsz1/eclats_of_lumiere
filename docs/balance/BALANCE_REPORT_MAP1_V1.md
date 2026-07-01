@@ -1,7 +1,7 @@
 # Balance Report — Map 1, Day 1 Rewrite
 **Date:** 2026-06-24  
 **Scope:** Areas 1–9, gear system, XP curve, Lumens economy  
-**Status:** Research + audit + plan verified. Nothing implemented yet.
+**Status:** ⚠️ **HISTÓRICO — números superados.** As mudanças foram aplicadas e depois recalibradas de novo (o `data.js` atual usa `goldRatio 0.35`, `gearCostBase 2500`, `xpCurveExp 1.62`, `mobAtkByArea` por área — não os valores propostos aqui). **A §1 (Research Synthesis) continua sendo a base de citação dos alvos de gênero** (TTK, saltos de HP, timing de prestige); o resto é registro.
 
 ---
 
