@@ -1,3 +1,5 @@
+> ⚠️ **DESATUALIZADO EM PARTE (jul/2026):** a sessão de decisões (`docs/lore/DECISOES_JUL26.md`) revisou hierarquia (Vessels→Harbingers→Nihelim→Nihel; Archons e os 7 nomes antigos saíram), Mapa 1 (18 áreas: Floresta + Porto Afundado; Okhra é o Chefe), espinha de 7 mapas, cores (assinaturas) e o Seeker (nome roubado). Onde este doc divergir, `DECISOES_JUL26.md` vence.
+
 # Éclats of Lumière — Contexto do Jogo (onboarding)
 
 > Documento único de contexto: o que é o jogo, como se joga, suas mecânicas, sua lore, seus inimigos e mapas, o estado do projeto e o stack técnico. Feito para que **qualquer pessoa ou modelo** entenda o jogo sem ler o resto dos docs.

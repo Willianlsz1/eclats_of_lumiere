@@ -1,3 +1,5 @@
+> ⚠️ **DESATUALIZADO EM PARTE (jul/2026):** ver `docs/lore/DECISOES_JUL26.md` — hierarquia de 4 nomes (Vessels/Harbingers/Nihelim/Nihel), os 7 Nihelim substituem os Archons (Kenoth etc. saíram), Mapa 1 = 18 áreas com Okhra no topo, espinha de 7 mapas, cores como assinaturas, tipos rebaixados a bestiário. Onde divergir, o doc de decisões vence.
+
 > **Export consolidado (jul/2026).** Este arquivo reúne, num só lugar e sem resumir: a Lore Bible completa (`docs/lore/eclats_lore.md`), a Pirâmide de Poder dos Inimigos (`docs/design/ENEMY_POWER_PYRAMID.md`) e o Design dos Mapas (`docs/lore/MAP_DESIGN.md` + roster real do Map 1 em `src/data.js`). Fontes de verdade continuam sendo os arquivos originais; onde este export divergir do código, o código vence.
 > Marcadores: 🟢 revisado/aprovado · 🟡 herdado (não revisado) · ⏸ parado/em aberto · ⏳ pendente · 🔧 nota de reconciliação.
 

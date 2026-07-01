@@ -3,7 +3,10 @@
 > Estrutura de design (lore + gameplay). Define os **degraus de poder** dos inimigos, do mais comum ao ápice. Depois isto vira dados no jogo (`combat.js`, `economy.js dropTable`, spawns).
 > Números de poder/frequência são **bandas aproximadas** (placeholder) — a estrutura é o que importa; o balance fino vem na implementação.
 >
-> **Nomenclatura atual (jul/2026):** os tags dos tiers de FLUXO foram renomeados — **Ember · Lumen · Corona** (antes Kindled/Luminous/Radiant) — e o Boss de Área virou **The Harbingers** (antes "Eidola"). "The Harbingers" **supersede "Eidola"** em todo o canon (outros docs ainda a reconciliar).
+> **Nomenclatura atual (jul/2026):** os tags dos tiers de FLUXO foram renomeados — **Ember · Lumen · Corona** (antes Kindled/Luminous/Radiant) — e o Boss de Área virou **The Harbingers** (antes "Eidola").
+>
+> ⚠️ **REVISADO pela sessão jul/2026 — ver `docs/lore/DECISOES_JUL26.md` (que VENCE onde divergir):**
+> a apresentação oficial virou a **escada de 4 nomes**: **The Vessels** (mobs, Common→Ember→Lumen→Corona) → **The Harbingers** (chefe de GRUPO, 1 a cada 3 áreas) → **NIHELIM** (chefe de mapa, os 7 de Nihel — substituem "Archons"; roster novo: Vhorel, Séveth, Okhra, Naameth, Duskarion, Mireuth, Cindrel) → **NIHEL**. Os tipos (Fragmented/Consumed/Claimed/Cortices) foram **rebaixados a texto de bestiário** — deixam de ser sistema. A estrutura de 8 degraus abaixo segue válida como esqueleto mecânico.
 
 ---
 
@@ -58,10 +61,10 @@ A raridade **mapeia na espécie** (decisão jul/2026, "Opção A"): quanto mais 
 
 | Tier | Nome | Papel | Tipo/Lore |
 |------|------|-------|-----------|
-| 5 | **Mini-Boss** | encontro especial periódico | ⏸️ **parqueado** (sem nome/definição). Candidato: um Consumed/Cortice maior, com modificador; lado-vazio seria um Cortice grande ou Claimed baixo. |
-| 6 | **The Harbingers** | porteiro da área (libera a próxima) | o arauto do limiar — manifestação de luz OU vazio com forma própria; nome poético em inglês ("The + algo"), **um por área** (ex. The Waking Bloom, Área 1). Sem grupo/esquadrão fixo. *(antes "Eidola")* |
-| 7 | **Chefe de Mapa** | clímax do Mapa inteiro | **os 7 Archons** nos Mapas ligados ao vazio (ver tabela abaixo); Mapas fora do vazio usam nome próprio (Gilded Hollow M1, Ashen King M3) |
-| 8 | **Nihel** | o ápice, confrontação final | The Fracture — *nome estilizado de "nihil" (latim: nada); a mesma receita de nome dos Archons* |
+| 5 | **Mini-Boss** | encontro especial periódico | ⏸️ **parqueado** (sem nome/definição). *(Os 6 Harbingers da floresta que perderam o posto de grupo NÃO viram Mini-Boss — decidido jul/2026; ficam guardados.)* |
+| 6 | **The Harbingers** | **chefe de GRUPO — 1 a cada 3 áreas** (libera o próximo grupo) | o arauto do limiar — manifestação com forma própria; nome poético em inglês ("The + algo"). Do mais fraco ao mais forte dentro do mapa (progressão reta única). *(antes "Eidola"; antes 1 por área — revisado jul/2026)* |
+| 7 | **Chefe de Mapa** | clímax do Mapa inteiro | **um dos 7 NIHELIM** (ver tabela abaixo) — 1 por mapa, Mapas 1–7. Okhra é o do Mapa 1 (Gilded Hollow rebaixado a Harbinger). |
+| 8 | **Nihel** | o ápice, confrontação final | The Fracture — dimensão/mapa próprio, separado da numeração. *Nome de "nihil" (latim: nada).* |
 
 ### Regras dos Marcos (5-8) — decisão do dono
 - **Spawn por threshold de kill:** um contador de kills; ao atingir o limite, o Marco **sempre** aparece.
@@ -71,46 +74,44 @@ A raridade **mapeia na espécie** (decisão jul/2026, "Opção A"): quanto mais 
 
 ---
 
-## Os 7 Archons (degrau 7 — Chefe de Mapa dos Mapas ligados ao vazio)
+## Os 7 NIHELIM (degrau 7 — Chefe de Mapa, 1 por mapa)
 
-Os Archons preenchem o degrau de **Chefe de Mapa** dos Mapas ligados ao vazio (Map 2, Map 4 e Mapas abertos). **Não** são Harbingers — Harbinger é só degrau 6. Map 3 (Ashen King) e Map 5 (o próprio Nihel) ficam **de fora**: não servem a Nihel.
+*(Substituem os "Archons" — os 7 nomes antigos, Kenoth etc., saíram do canon em jul/2026. Ver `docs/lore/DECISOES_JUL26.md` §2–3.)*
 
-**Receita de nome:** palavra real (qualquer idioma) + estilização leve — a mesma de "Nihel" (de *nihil*, latim para nada).
+**Nihelim** — plural hebraico de Nihel ("os de Nihel", eco de Nephilim/Seraphim). Cada um é um **órgão da Guerra Silenciosa** — uma forma de impedir a convergência. Todo Nihelim carrega um **eco do anel quebrado de Nihel**, distorcido pela sua função; nenhum lê por vermelho (assinatura selada pro Nihel).
 
-| Nome | Subtítulo | Raiz real |
-|------|-----------|-----------|
-| **Kenoth**   | the First Hollow          | grego *kenón* — vácuo |
-| **Entropir**  | the Unmaking Choir        | grego *entropia* — desordem crescente |
-| **Umbrar**    | the Velvet Court          | latim *umbra* — sombra/eclipse |
-| **Nebulor**   | the Drowned Cartographer  | latim *nebula* — nuvem que engole estrelas |
-| **Cinerath**  | the Patient Flame         | latim *cinis* — cinza/brasa |
-| **Taciel**    | the Voiceless             | latim *tacitus* — silencioso |
-| **Speculor**  | the Last Mirror           | latim *speculum* — espelho |
-
-⏳ **Pendente (sem pressa):** origem dos Archons (nasceram com Nihel na Quebra, ou foram corrompidos/recrutados depois?) e qual Archon vai em qual Mapa — só decide quando os Mapas 2/4/abertos tiverem mais forma.
+| Nihelim | Epíteto | Órgão da guerra | Mapa |
+|---|---|---|---|
+| **Okhra**     | the Starving Tide   | a Fome (afundou o porto do Mapa 1) | **1** |
+| **Naameth**   | the Hollow Choir    | a Voz que Enjaula (fabrica os Consumed) | 2 |
+| **Cindrel**   | the Last Ember      | o Fim (colhe a última luz) | 3 |
+| **Duskarion** | the Patient Court   | a Sedução (todo Claimed passou pela mesa dele) | 4 |
+| **Mireuth**   | the Drowned Silence | o Silenciamento (território neutro, sem amarra com a Ordre) | 5 |
+| **Séveth**    | the Gilded Wound    | a Corrupção da Marca | 6 |
+| **Vhorel**    | the Unwritten       | o Esquecimento (comeu HaShevirah — derrotá-lo abre Nil Aeternum) | 7 |
 
 ---
 
-## Regras gerais da pirâmide
-- **Tipo ≠ tier.** Os 5 tipos (Fragmented, Consumed, **The Harbingers**, Claimed, Cortices) são *sabores*; a pirâmide é o *poder*. Qualquer tipo ocupa vários degraus — **exceto The Harbingers**, que é sempre Boss de Área (degrau 6), de propósito.
-- **Duas linguagens de cor.** Luz (Fragmented/Consumed) sobe pela régua fria teal→azul→violeta (Ember→Lumen→Corona). Vazio (Cortices/Claimed) lê por escuridão/vermelho e ocupa a escada por força bruta — não acende.
+## Regras gerais da pirâmide *(revisadas jul/2026)*
+- **A escada oficial tem 4 nomes:** The Vessels → The Harbingers → Nihelim → Nihel. "The Vessels" (raiz: *Shevirat ha-Kelim*, a quebra dos vasos) é nome de LORE/bestiário — nunca aparece na tela; o nameplate segue `Nome · Ember/Lumen/Corona`.
+- **Fragmented / Consumed / Claimed / Cortices = texto de bestiário**, não sistema. A regra antiga "tipo ≠ tier" fica obsoleta junto (não há mais tipos mecânicos). A pendência "corte-vazio com régua vermelha" **morreu como sistema**.
+- **Cores: assinaturas, não paleta** (ver `DECISOES_JUL26.md` §5): "ouro sangrando por rachaduras" = a ferida da luz; "vermelho que não ilumina" = o Nada. Fora do comportamento, cor é só cor.
 - **Recompensa escala com o degrau** (common → uncommon → awaken).
-- **The Harbingers = sempre Boss de Área (degrau 6)** — nunca outro degrau. Os **7 Archons** ficam um degrau acima (Chefe de Mapa, degrau 7) e **não são Harbingers**: são um roster próprio (ver tabela acima). *(Supersede a ideia antiga de "Archons = Eidola de vazio / Yaldabaoth no topo".)*
-- **Claimed e Cortices são tipos SEPARADOS** (sem fusão). Ranks internos do Claimed: **pausados** — não usar os nomes dos Qliphoth (Gamaliel/Samael/etc.; significado popular refutado como fonte primária).
+- **Harbinger = chefe de grupo (1 a cada 3 áreas)**, do mais fraco ao mais forte dentro do mapa. Os **Nihelim** ficam um degrau acima (Chefe de Mapa, 1 por mapa).
+- Fora da escada: **Ashen King** (recusa Nihel e a morte; exceção reversível).
 
-## Status: ESTRUTURA APROVADA (jun/2026 · nomes jul/2026)
-Os 8 degraus, a regra tipo≠tier, fluxo vs marco, cor=luz=poder, e as regras de spawn dos Marcos estão **aprovados**. **Aprovado também (sessão de lore jun/2026):** o roster dos **7 Archons** (degrau 7), a separação Archon ≠ Harbinger, Harbinger sempre no degrau 6, e Claimed/Cortices como tipos separados.
+## Status: ESTRUTURA APROVADA (jun/2026 · nomes jul/2026 · hierarquia final jul/2026)
 
-**Travado na sessão de nomes (jul/2026):**
-- Tags de FLUXO: **Ember** (teal) · **Lumen** (azul) · **Corona** (violeta). Common fica **sem tag**.
-- Raridade **mapeia na espécie** (Opção A): 1–2 = Fragmented, 3–4 = Consumed.
-- Boss de Área renomeado de "Eidola" para **The Harbingers**.
-- Princípio das **duas linguagens de cor** (luz fria vs vazio escuridão/vermelho).
+**Travado (acumulado):**
+- Escada de 4 nomes: **Vessels → Harbingers → Nihelim → Nihel** (apresentação oficial; os 8 degraus seguem como esqueleto mecânico).
+- Tags de FLUXO: **Ember** (teal) · **Lumen** (azul) · **Corona** (violeta). Common **sem tag**.
+- **Harbinger = chefe de grupo, 1 a cada 3 áreas** (Map 1: 18 áreas → 6 Harbingers). Gilded Hollow rebaixado a Harbinger; **Okhra** é o Chefe do Mapa 1.
+- Roster dos **7 Nihelim** + mapa de cada um (tabela acima). Tipos rebaixados a bestiário.
+- Cores como **assinaturas** de comportamento, não paleta.
 
 Faltam ainda (adiados de propósito):
-- ⏸️ **Mini-Boss (degrau 5)** — parqueado: sem nome nem definição por ora.
-- ⏳ **A metade-vazio / a "corte"** — ranks Claimed (Crowned/Court/Sworn) + Cortices, com a régua de vermelho. Não iniciada.
-- ⏳ **Thresholds de kill** de cada Marco → **MEDIR NUM SIM** na fase de balance (persona Marina), não chutar.
-- ⏳ **Menu de modificadores** (Elite+ / Marcos: escudo, aura de dano, regen, invocar mobs…) → **PESQUISAR e listar** na fase de criação.
-- Quantos **Chefes de Mapa** ao todo (provável 1 por Mapa) → definir junto com os Mapas.
-- **Revisar o roster de bosses** do Map 1 + resolver o duplo-papel do Gilded Hollow (Boss de Área da área 9 *e* Chefe de Mapa).
+- ⏸️ **Mini-Boss (degrau 5)** — parqueado (os 6 Harbingers da floresta guardados NÃO viram Mini-Boss).
+- ⏳ **Thresholds de kill** de cada Marco → **MEDIR NO SIM** (`tools/sim.js`), não chutar.
+- ⏳ **Menu de modificadores** (Corona+ / Marcos: escudo, aura, regen, invocar…) → pesquisar e listar na fase de criação.
+- 🔍 Quais 3 Harbingers da floresta viram titulares de grupo (e quais 6 ficam guardados).
+- 🔍 Import do doc `mapa1_tema_b_porto_afundado.md` + ajuste Nebulor → Okhra na área 17.

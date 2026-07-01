@@ -143,7 +143,7 @@ Os que pertencem a Nihel não vazam luz. Vazam escuridão — veias finas de vaz
 
 *A jornada do Seeker, lida em cores:* do dourado da marca — ao branco-azul da convergência — em direção ao que o mundo nunca viu e não tem nome: a luz antes da ferida, sem cor, inteira outra vez.
 
-> ⚠️ **Isto é leitura simbólica, NÃO restrição de paleta.** As cores acima são *o significado* que a luz carrega na história — não uma regra que proíbe usar ouro ou vermelho em outras partes do jogo. **Ouro está em toda parte** (todo Éclat é dourado; o mundo Belle Époque é dourado). **Vermelho pode aparecer livre** em arte, áreas e UI sem invocar Nihel. A *exclusividade* é **contextual**: é só dentro de *Nil Aeternum* — onde NÃO há outra luz dourada — que o vermelho se lê como "o Nada sem máscara". Fora dali, são apenas cores. (O "dourado/vermelho = Nihel" é um conceito de ARTE específico do Nihel e do Map 5, não um veto global.)
+> ⚠️ **REVISADO (jul/2026 — `DECISOES_JUL26.md` §5 vence):** a regra virou **ASSINATURAS, não paleta**. Nenhuma cor é reservada; o que carrega significado é a cor **se comportando de um jeito específico**: **ouro sangrando por rachaduras** = a ferida da luz · **vermelho que não ilumina** (brilha sem lançar luz ao redor) = o Nada sem máscara. Fora do comportamento, cor é só cor. A Claimed Queen passa a ser "o primeiro *vermelho que não ilumina* fora de Nil Aeternum"; Nil Aeternum é o lugar onde o vermelho *inteiro* se comporta assim. Disciplina: assinatura = uso raro e intencional.
 
 > 🔧 **Pendência de revisão:** os bosses do jogo fazem referência ao vermelho em quantidades variáveis (régua de proximidade de Nihel). Esse detalhamento ainda será reconciliado com a tabela de bosses quando os nomes forem revisados.
 
@@ -194,7 +194,7 @@ Mas a corte não é o exército de Nihel. É o prêmio que ele oferece.
 
 O exército é a Ordre.
 
-> 🔧 **Pendência de revisão:** discutimos usar os nomes dos Cortices (Gamaliel, Samael, A'arab Zaraq, Thaumiel) como *ranks* da corte Claimed, com uma régua de vermelho indicando proximidade de Nihel. Essa estrutura foi analisada mas ainda não foi finalizada/aprovada.
+> ✅ **RESOLVIDO (jul/2026):** a ideia de ranks internos da corte Claimed (nomes de Qliphoth + régua de vermelho) **morreu como sistema** — Claimed/Cortices viraram texto de bestiário. A corte sobrevive só como narrativa (e como o domínio de **Duskarion, the Patient Court**). Ver `DECISOES_JUL26.md` §1–2.
 
 ---
 ---
@@ -274,17 +274,16 @@ A corrupção não vem da quantidade de luz. Vem da luz enjaulada. Nos Consumed,
 
 # 🟢 PARTE VII — TAXONOMIA DAS CRIATURAS *(revisado jun/2026)*
 
-Os 5 tipos abaixo são **sabores** (que espécie), não graus de poder. A **hierarquia de poder** (Common→Ember→Lumen→Corona→Mini-Boss→The Harbingers→Chefe de Mapa→Nihel) está definida em `docs/design/ENEMY_POWER_PYRAMID.md` — *tipo ≠ tier*: qualquer tipo ocupa vários degraus.
+> ⚠️ **REVISADO (jul/2026 — ver `DECISOES_JUL26.md`, que vence):** a hierarquia oficial virou a **escada de 4 nomes** — **The Vessels** (mobs; Common→Ember→Lumen→Corona) → **The Harbingers** (chefe de grupo, 1 a cada 3 áreas) → **NIHELIM** (os 7 de Nihel: Vhorel, Séveth, Okhra, Naameth, Duskarion, Mireuth, Cindrel — substituem os "Archons") → **NIHEL**. Os 4 tipos abaixo foram **rebaixados a texto de bestiário** — deixam de ser ranks/sistema; a distinção "escolheu o Nada vs nasceu oco" sobrevive só na narrativa.
+
+Texto de bestiário (sabores narrativos, sem função mecânica):
 
 - **The Fragmented** — humanos/animais levemente tocados por um Éclat. Belos, silenciosos, errados.
-- **The Consumed** — membros que absorveram Éclats demais; a luz enjaulada racha o vaso.
-- **The Harbingers** — grandes manifestações (os chefes); ecos densos de luz ou vazio com forma própria. *(renomeado: "The Vestiges" → "Eidola" → **The Harbingers**, jul/2026)* — na pirâmide de poder, é **sempre Boss de Área (degrau 6)**, a única exceção ao "tipo ≠ tier".
-- **The Claimed** — os que pertencem a Nihel; vazam escuridão. *(tipo separado dos Cortices — sem fusão; ranks internos pausados, sem nomes de Qliphoth)*
+- **The Consumed** — quem absorveu Éclats demais; a luz enjaulada racha o vaso. *(Naameth, the Hollow Choir, é quem os fabrica.)*
+- **The Claimed** — os que pertencem a Nihel; vazam escuridão. *(Todo Claimed passou pela mesa de Duskarion.)*
 - **The Cortices** — cascas vazias que destroem Éclats.
 
-> Acima do degrau dos Harbingers, os **7 Archons** (Kenoth, Entropir, Umbrar, Nebulor, Cinerath, Taciel, Speculor) ocupam o degrau de **Chefe de Mapa** dos Mapas ligados ao vazio (≠ Harbinger). Roster e regras em `docs/design/ENEMY_POWER_PYRAMID.md`.
-
-> 🔧 Os bosses específicos (Gilded Hollow, Pale Reunion, Ashen King, Claimed Queen, Nihel) e a estrutura de sub-bosses foram analisados na conversa mas não finalizados. O boss do Map 2 muda de tipo (a definir).
+> "The Vessels" (raiz: *Shevirat ha-Kelim* — a quebra dos vasos) é nome de lore/bestiário; nunca aparece na tela. Nameplate: `Nome do mob · Ember/Lumen/Corona`.
 
 ---
 

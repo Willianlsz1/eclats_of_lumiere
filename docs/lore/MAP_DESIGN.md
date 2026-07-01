@@ -9,24 +9,29 @@
 
 ## Estrutura geral
 
-**Foco atual: Mapas 1-3.** Os Mapas 4+ ficam **abertos** — o dono pode criar mais mapas antes do final. *Nil Aeternum + Nihel* são o **fim eventual** do jogo, mas o número do mapa NÃO está travado (pode haver vários mapas entre o 3 e o vazio).
+> ⚠️ **REVISADO (jul/2026 — `DECISOES_JUL26.md` §3–4 vence):** a espinha travou em **7 mapas, 1 Nihelim cada, + o mapa final de Nihel** (dimensão própria, fora da numeração). Lógica do arco: braços externos primeiro (fome, voz, fim, sedução) → escalada íntima → o nome apagado como portão final (derrotar Vhorel devolve HaShevirah = a chave de Nil Aeternum).
 
-| Mapa | Tema | Chefe de Mapa | Status |
-|------|------|---------------|--------|
-| **1** | Floresta (sonho/aurora) | a definir | em jogo (9 áreas) |
-| **2** | Mesclado — lugar X + lugar Y | a definir | **em design** |
-| **3** | Ruínas da civilização caída (era de Lumière) | **Ashen King** (sub: Claimed Queen) | conceito |
-| **…** | *(abertos — dono pode criar mais)* | — | — |
-| **Final** | *Nil Aeternum* — o reino do Nada | **Nihel** | lore fechada (número TBD) |
+| Mapa | Nihelim (Chefe de Mapa) | Bioma | Status |
+|------|------------------------|-------|--------|
+| **1** | **Okhra**, the Starving Tide | Floresta (áreas 1–9) + **Porto Afundado** (áreas 10–18) | bioma desenhado |
+| **2** | **Naameth**, the Hollow Choir | Relojoaria + Circo dos Pesadelos (circo = o Coro Oco literal) | 🔍 a desenhar |
+| **3** | **Cindrel**, the Last Ember | Ruínas da era de Lumière — Cindrel veio colher a última luz; o Ashen King recusa entregá-la | 🔍 a revisar |
+| **4** | **Duskarion**, the Patient Court | Corte Claimed (Claimed Queen é dele por definição) | 🔍 a revisar |
+| **5** | **Mireuth**, the Drowned Silence | *(sem bioma definido — sem amarra com a Ordre)* | 🔍 aberto |
+| **6** | **Séveth**, the Gilded Wound | *(sem bioma definido)* | 🔍 aberto |
+| **7** | **Vhorel**, the Unwritten | *(a desenhar)* — derrotá-lo devolve HaShevirah ao mundo | 🔍 aberto |
+| **Final** | **Nihel** | *Nil Aeternum* — dimensão/mapa próprio | futuro |
+
+Pontas soltas herdadas (🔍): destino do **The Pale Reunion** (ex-chefe do Mapa 2) · **Claimed Queen** aparição dupla (M3 sub + M4) ou só M4 · **Ashen King vs Cindrel** — quem fecha o Mapa 3.
 
 ---
 
-## MAPA 1 — A Floresta *(em jogo)*
-- **Geografia/Bioma:** floresta encantada, pântanos de lanterna, dossel enluarado, bosques submersos. Aurora, névoa dourada, luz que ainda sonha.
-- **História:** "onde o Seeker primeiro desperta." A área mais próxima do mundo civilizado; a luz aqui ainda é gentil.
-- **Áreas (9, já no jogo):** Dreaming Wood · Lantern Mire · Sunken Grove · Moonlit Canopy · Gilded Thicket · Weeping Roots · Whispering Hollows · Hollow Cathedral · Hollow Sanctum.
-- **Mobs:** criaturas da floresta tocadas pela luz (Fragmented), sem rosto humano (regra). Boss Área 1 = The Waking Bloom.
-- **Chefe de Mapa:** *a definir* (candidato lore: Gilded Hollow).
+## MAPA 1 — Floresta + Porto Afundado *(revisado jul/2026 — 18 áreas, 2 temas)*
+- **Tema A — Floresta (áreas 1–9, em jogo):** floresta encantada, pântanos de lanterna, dossel enluarado. Aurora, névoa dourada, luz que ainda sonha. "Onde o Seeker primeiro desperta."
+- **Tema B — Porto Afundado (áreas 10–18, desenhado):** o porto que **Okhra** devorou. Lovecraft crescente: quanto mais fundo, menos humano. *(doc `mapa1_tema_b_porto_afundado.md` — import pendente; ajustar Nebulor → Okhra, área 17.)*
+- **Harbingers:** 1 a cada 3 áreas = 6 no mapa (3 por tema). Grupo 1 < 2 < 3; Tema A inteiro < Tema B. Dos 9 bosses antigos da floresta, 3 viram titulares de grupo e 6 ficam guardados. 🔍 escolher quais.
+- **Chefe de Mapa: OKHRA, the Starving Tide** (sprite ✅ aprovado). Gilded Hollow rebaixado a Harbinger.
+- **Mobs:** criaturas tocadas pela luz, sem rosto humano (regra).
 
 ## MAPA 2 — Relojoaria + Circo dos Pesadelos *(em design)*
 **Dois biomas distintos, cada um com sua própria geografia** (não um lugar só / não a mesma rua — ver Princípio de Mundo). Uma terra de relojoaria e uma terra de circo, lado a lado num mapa, impossíveis e naturais em Éclats.
