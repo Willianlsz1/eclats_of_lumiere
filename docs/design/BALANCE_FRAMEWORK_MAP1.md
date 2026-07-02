@@ -22,21 +22,20 @@ A cadência natural de beats: **fim de grupo = parede + Harbinger** (6×), **tro
 
 ---
 
-## PASSO 0 — O Relógio ⬜ ← ESTAMOS AQUI
+## PASSO 0 — O Relógio ✅ TRAVADO (jul/2026)
 
 **Pergunta central:** quanto TEMPO o Mapa 1 deve custar, e em que ritmo?
-Toda régua dos passos seguintes deriva daqui — sem o relógio, nenhum número tem significado.
 
-Decide (4 números):
-1. **Duração total do Mapa 1** (horas de jogo ativo até o First Light).
-2. **Sessão típica** (minutos) — cada sessão deve fechar ≥1 beat (área, Harbinger ou convergence).
-3. **Split ativo/idle** — quanto do progresso vem de offline (o cap de 8h já existe no código).
-4. **Timing do 1º prestige** (o sim confirmou: 20–40min é atingível com gate ~351).
+| # | Decisão | Valor travado |
+|---|---------|---------------|
+| 1 | Duração total do Mapa 1 (ativo, até o First Light) | **18 horas** |
+| 2 | Sessão típica | **30–50 min**, com a regra do beat: toda sessão fecha ≥1 beat (área, Harbinger ou convergence) — especialmente no início, sempre há algo a fazer |
+| 3 | Split ativo/idle | **~50/50** (cap offline de 8h existente sustenta) |
+| 4 | Timing do 1º prestige | **25–40 min** de jogo ativo |
 
-Insumos: sim `baseline`/`campaign` atual (9 áreas ≈ 3h sem paredes) · pesquisa de gênero (BALANCE_REPORT §1).
-Valida: N/A (decisão de produto — é do dono).
+Validação: decisão de produto do dono (sessão jul/2026). Consequência aritmética: ~25–35 sessões pra fechar o mapa; calendário casual ≈ 2–3 semanas com idle.
 
-## PASSO 1 — O Esqueleto (áreas × níveis × tempo) ⬜
+## PASSO 1 — O Esqueleto (áreas × níveis × tempo) ⬜ ← ESTAMOS AQUI
 
 **Pergunta central:** que faixa de nível cobre cada uma das 18 áreas, e quanto tempo cada grupo custa?
 
@@ -109,4 +108,4 @@ Valida: `sim baseline` com rarity find — frequência de Ember/Lumen/Corona por
 4. **Decisão travada não reabre** sem número novo do sim (mesma disciplina da lore).
 
 ## Log de decisões travadas
-*(vazio — preenche conforme os passos fecham)*
+- **jul/2026 — PASSO 0 (Relógio):** 18h ativas · sessão 30–50min c/ regra do beat · ~50/50 ativo/idle · 1º prestige 25–40min.
