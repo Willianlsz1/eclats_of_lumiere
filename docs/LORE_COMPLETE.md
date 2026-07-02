@@ -1,3 +1,13 @@
+> ⚠️ **DESATUALIZADO EM PARTE (jul/2026):** ver `docs/lore/DECISOES_JUL26.md` — hierarquia de 4 nomes (Vessels/Harbingers/Nihelim/Nihel), os 7 Nihelim substituem os Archons (Kenoth etc. saíram), Mapa 1 = 18 áreas com Okhra no topo, espinha de 7 mapas, cores como assinaturas, tipos rebaixados a bestiário. Onde divergir, o doc de decisões vence.
+
+> **Export consolidado (jul/2026).** Este arquivo reúne, num só lugar e sem resumir: a Lore Bible completa (`docs/lore/eclats_lore.md`), a Pirâmide de Poder dos Inimigos (`docs/design/ENEMY_POWER_PYRAMID.md`) e o Design dos Mapas (`docs/lore/MAP_DESIGN.md` + roster real do Map 1 em `src/data.js`). Fontes de verdade continuam sendo os arquivos originais; onde este export divergir do código, o código vence.
+> Marcadores: 🟢 revisado/aprovado · 🟡 herdado (não revisado) · ⏸ parado/em aberto · ⏳ pendente · 🔧 nota de reconciliação.
+
+---
+---
+
+# ✦ PARTE A — LORE (Lore Bible completa)
+
 # ✦ Éclats of Lumière — Lore (Revisão Junho 2026)
 
 **Documento consolidado.**
@@ -143,7 +153,7 @@ Os que pertencem a Nihel não vazam luz. Vazam escuridão — veias finas de vaz
 
 *A jornada do Seeker, lida em cores:* do dourado da marca — ao branco-azul da convergência — em direção ao que o mundo nunca viu e não tem nome: a luz antes da ferida, sem cor, inteira outra vez.
 
-> ⚠️ **REVISADO (jul/2026 — `DECISOES_JUL26.md` §5 vence):** a regra virou **ASSINATURAS, não paleta**. Nenhuma cor é reservada; o que carrega significado é a cor **se comportando de um jeito específico**: **ouro sangrando por rachaduras** = a ferida da luz · **vermelho que não ilumina** (brilha sem lançar luz ao redor) = o Nada sem máscara. Fora do comportamento, cor é só cor. A Claimed Queen passa a ser "o primeiro *vermelho que não ilumina* fora de Nil Aeternum"; Nil Aeternum é o lugar onde o vermelho *inteiro* se comporta assim. Disciplina: assinatura = uso raro e intencional.
+> ⚠️ **Isto é leitura simbólica, NÃO restrição de paleta.** As cores acima são *o significado* que a luz carrega na história — não uma regra que proíbe usar ouro ou vermelho em outras partes do jogo. **Ouro está em toda parte** (todo Éclat é dourado; o mundo Belle Époque é dourado). **Vermelho pode aparecer livre** em arte, áreas e UI sem invocar Nihel. A *exclusividade* é **contextual**: é só dentro de *Nil Aeternum* — onde NÃO há outra luz dourada — que o vermelho se lê como "o Nada sem máscara". Fora dali, são apenas cores. (O "dourado/vermelho = Nihel" é um conceito de ARTE específico do Nihel e do Map 5, não um veto global.)
 
 > 🔧 **Pendência de revisão:** os bosses do jogo fazem referência ao vermelho em quantidades variáveis (régua de proximidade de Nihel). Esse detalhamento ainda será reconciliado com a tabela de bosses quando os nomes forem revisados.
 
@@ -194,7 +204,7 @@ Mas a corte não é o exército de Nihel. É o prêmio que ele oferece.
 
 O exército é a Ordre.
 
-> ✅ **RESOLVIDO (jul/2026):** a ideia de ranks internos da corte Claimed (nomes de Qliphoth + régua de vermelho) **morreu como sistema** — Claimed/Cortices viraram texto de bestiário. A corte sobrevive só como narrativa (e como o domínio de **Duskarion, the Patient Court**). Ver `DECISOES_JUL26.md` §1–2.
+> 🔧 **Pendência de revisão:** discutimos usar os nomes dos Cortices (Gamaliel, Samael, A'arab Zaraq, Thaumiel) como *ranks* da corte Claimed, com uma régua de vermelho indicando proximidade de Nihel. Essa estrutura foi analisada mas ainda não foi finalizada/aprovada.
 
 ---
 ---
@@ -274,16 +284,17 @@ A corrupção não vem da quantidade de luz. Vem da luz enjaulada. Nos Consumed,
 
 # 🟢 PARTE VII — TAXONOMIA DAS CRIATURAS *(revisado jun/2026)*
 
-> ⚠️ **REVISADO (jul/2026 — ver `DECISOES_JUL26.md`, que vence):** a hierarquia oficial virou a **escada de 4 nomes** — **The Vessels** (mobs; Common→Ember→Lumen→Corona) → **The Harbingers** (chefe de grupo, 1 a cada 3 áreas) → **NIHELIM** (os 7 de Nihel: Vhorel, Séveth, Okhra, Naameth, Duskarion, Mireuth, Cindrel — substituem os "Archons") → **NIHEL**. Os 4 tipos abaixo foram **rebaixados a texto de bestiário** — deixam de ser ranks/sistema; a distinção "escolheu o Nada vs nasceu oco" sobrevive só na narrativa.
-
-Texto de bestiário (sabores narrativos, sem função mecânica):
+Os 5 tipos abaixo são **sabores** (que espécie), não graus de poder. A **hierarquia de poder** (Common→Ember→Lumen→Corona→Mini-Boss→The Harbingers→Chefe de Mapa→Nihel) está definida na PARTE B abaixo (`docs/design/ENEMY_POWER_PYRAMID.md`) — *tipo ≠ tier*: qualquer tipo ocupa vários degraus.
 
 - **The Fragmented** — humanos/animais levemente tocados por um Éclat. Belos, silenciosos, errados.
-- **The Consumed** — quem absorveu Éclats demais; a luz enjaulada racha o vaso. *(Naameth, the Hollow Choir, é quem os fabrica.)*
-- **The Claimed** — os que pertencem a Nihel; vazam escuridão. *(Todo Claimed passou pela mesa de Duskarion.)*
+- **The Consumed** — membros que absorveram Éclats demais; a luz enjaulada racha o vaso.
+- **The Harbingers** — grandes manifestações (os chefes); ecos densos de luz ou vazio com forma própria. *(renomeado: "The Vestiges" → "Eidola" → **The Harbingers**, jul/2026)* — na pirâmide de poder, é **sempre Boss de Área (degrau 6)**, a única exceção ao "tipo ≠ tier".
+- **The Claimed** — os que pertencem a Nihel; vazam escuridão. *(tipo separado dos Cortices — sem fusão; ranks internos pausados, sem nomes de Qliphoth)*
 - **The Cortices** — cascas vazias que destroem Éclats.
 
-> "The Vessels" (raiz: *Shevirat ha-Kelim* — a quebra dos vasos) é nome de lore/bestiário; nunca aparece na tela. Nameplate: `Nome do mob · Ember/Lumen/Corona`.
+> Acima do degrau dos Harbingers, os **7 Archons** (Kenoth, Entropir, Umbrar, Nebulor, Cinerath, Taciel, Speculor) ocupam o degrau de **Chefe de Mapa** dos Mapas ligados ao vazio (≠ Harbinger). Roster e regras na PARTE B.
+
+> 🔧 Os bosses específicos (Gilded Hollow, Pale Reunion, Ashen King, Claimed Queen, Nihel) e a estrutura de sub-bosses foram analisados na conversa mas não finalizados. O boss do Map 2 muda de tipo (a definir).
 
 ---
 
@@ -332,8 +343,8 @@ O jogo é em **inglês** (UI, textos, tooltips). A regra dos idiomas governa de 
 |---|---|---|
 | **Hebraico** | A verdade primordial — o que o mundo esqueceu | Or Ein Sof, HaShevirah |
 | **Francês** | O mundo de hoje — a civilização herdeira | Éclats, Lumière, Ordre des Éclairés, La Fracture, L'Éveillé |
-| **Inglês** | A taxonomia das criaturas + termos do mundo de hoje | The Fragmented, The Consumed, The Eidola, The Claimed, The Fracture, **The Mending** |
-| **Latim** | O Nada e seu território | Nil Aeternum, **Cortices** |
+| **Inglês** | A taxonomia das criaturas + termos do mundo de hoje | The Fragmented, The Consumed, The Harbingers, The Claimed, The Fracture, **The Mending** |
+| **Latim** | O Nada e seu território | Nil Aeternum, **Cortices**, Nihel (*nihil*) |
 
 Nihel é o único bilíngue: **La Fracture** (o mundo) e **The Fracture** (a entidade). Ele atravessa as camadas porque é a fenda entre elas.
 
@@ -352,3 +363,211 @@ As partes 🟢 estão fechadas. As pendências abertas, em ordem de impacto:
 5. **Nomes além do francês** — decidir a ampliação da paleta de idiomas (era primeira, a Semente, etc.).
 6. **"Convergence" como nome** — decidir se o prestige do jogo mantém esse nome ou não.
 7. **Termo "Map 1 = The Dreaming Wood"** vs nomes das 9 sub-áreas — definir nomes in-game.
+
+---
+---
+---
+
+# ✦ PARTE B — INIMIGOS (Pirâmide de Poder completa)
+
+# Éclats of Lumière — Pirâmide de Poder dos Inimigos
+
+> Estrutura de design (lore + gameplay). Define os **degraus de poder** dos inimigos, do mais comum ao ápice. Depois isto vira dados no jogo (`combat.js`, `economy.js dropTable`, spawns).
+> Números de poder/frequência são **bandas aproximadas** (placeholder) — a estrutura é o que importa; o balance fino vem na implementação.
+>
+> **Nomenclatura atual (jul/2026):** os tags dos tiers de FLUXO foram renomeados — **Ember · Lumen · Corona** (antes Kindled/Luminous/Radiant) — e o Boss de Área virou **The Harbingers** (antes "Eidola"). "The Harbingers" **supersede "Eidola"** em todo o canon.
+
+## Gancho de lore: a COR é o poder
+
+Quanto mais **luz de Éclat** uma criatura carrega, mais forte e mais **brilhante** ela é. A raridade de um mob não é abstrata — é *quanta luz ele absorveu*. Por isso cada degrau tem uma **cor** (cinza → teal → azul → violeta, as cores de raridade aprovadas na art-direction). O jogador lê o poder pela cor do nome, como já é hoje.
+
+> **Duas linguagens de cor.** Os de **luz** (Fragmented/Consumed) sobem pela régua fria **teal → azul → violeta** (Ember → Lumen → Corona) — a cor conta quanta luz absorveram. Os de **vazio** (Cortices/Claimed) **não acendem**: leem por **escuridão/vermelho** (proximidade de Nihel) e ocupam a escada por força bruta, não por grau de luz. *(Essa metade-vazio — a "corte" — ainda está por fazer.)*
+
+## A Pirâmide (base = comum/fraco · topo = raro/forte)
+
+```
+                         ▲  NIHEL              degrau 8 · ápice
+                        ╱ ╲
+                       ╱ A ╲    ARCHON         degrau 7 · Chefe de Mapa       ┐
+                      ╱─────╲                  (7 nomeados / nome próprio)     │  MARCOS
+                     ╱ HARB. ╲  THE HARBINGERS degrau 6 · Boss de Área         │  entidades únicas
+                    ╱─────────╲                (1 por área · "The + …")        │  (nunca solo;
+                   ╱ MINI-BOSS ╲ (parqueado)   degrau 5                        ┘  spawn por threshold)
+                  ╱─────────────╲
+                 ╱    CORONA      ╲ violeta     degrau 4 · elite (modificador) ┐
+                ╱─────────────────╲                                            │  FLUXO
+               ╱      LUMEN         ╲ azul       degrau 3                       │  mesmo mob, + luz
+              ╱─────────────────────╲                                          │  = + raro
+             ╱        EMBER           ╲ teal     degrau 2                       │  (a cor = o poder)
+            ╱─────────────────────────╲                                        │
+           ╱         COMMON             ╲ cinza   degrau 1 · sem tag            ┘
+          ╱───────────────────────────────╲
+```
+
+> 🔗 A **chance** de Ember/Lumen/Corona aparecer é construída pelo jogador (gear acha + passiva levanta o teto), base 0%, caps 30/15/5 — ver `docs/design/RARITY_FIND.md`.
+
+## FLUXO — os que aparecem nas ondas (a cor = o poder)
+
+A raridade **mapeia na espécie** (decisão jul/2026, "Opção A"): quanto mais luz, mais fundo na transformação Fragmented → Consumed. Degraus 1–2 = **Fragmented**; 3–4 = **Consumed** (a luz demais racha o vaso — o modificador do Corona *é* a rachadura).
+
+| Tier | Tag (cor) | O que é | Tipo (lore) | Poder ~×common | Cap |
+|------|-----------|---------|-------------|----------------|-----|
+| 1 | **Common** (cinza, *sem tag*) | mob base, mal tocado pela luz | Fragmented | 1× | — (toda onda) |
+| 2 | **Ember** (teal) | uma fagulha de luz a mais | Fragmented | ~2.5–3× | 30% |
+| 3 | **Lumen** (azul) | claramente aceso | Consumed | ~5–6× | 15% |
+| 4 | **Corona** (violeta) | saturado de luz — **tem modificador** (escudo, aura, etc.) | Consumed | ~10× | 5% (área 3+) |
+
+> Nameplate: **`Thornlight Stalker`** (comum) → **`… · Ember`** → **`… · Lumen`** → **`… · Corona`**, com o tag na cor do tier. Common = sem tag, nome neutro. O tipo (Fragmented/Consumed) fica por baixo, na camada de lore.
+> *(Converged — branco-prismático — fica reservado como variante ultra-rara futura ou pra gear; não usar agora.)*
+
+## MARCOS — encontros especiais (gate de progressão)
+
+| Tier | Nome | Papel | Tipo/Lore |
+|------|------|-------|-----------|
+| 5 | **Mini-Boss** | encontro especial periódico | ⏸️ **parqueado** (sem nome/definição). Candidato: um Consumed/Cortice maior, com modificador; lado-vazio seria um Cortice grande ou Claimed baixo. |
+| 6 | **The Harbingers** | porteiro da área (libera a próxima) | o arauto do limiar — manifestação de luz OU vazio com forma própria; nome poético em inglês ("The + algo"), **um por área** (ex. The Waking Bloom, Área 1). Sem grupo/esquadrão fixo. *(antes "Eidola")* |
+| 7 | **Chefe de Mapa** | clímax do Mapa inteiro | **os 7 Archons** nos Mapas ligados ao vazio (ver tabela abaixo); Mapas fora do vazio usam nome próprio (Gilded Hollow M1, Ashen King M3) |
+| 8 | **Nihel** | o ápice, confrontação final | The Fracture — *nome estilizado de "nihil" (latim: nada); a mesma receita de nome dos Archons* |
+
+### Regras dos Marcos (5-8) — decisão do dono
+- **Spawn por threshold de kill:** um contador de kills; ao atingir o limite, o Marco **sempre** aparece.
+- **Morte reseta o contador:** se o Seeker morre antes de atingir o threshold, o contador zera (tem que sobreviver até lá).
+- **Nunca aparecem solo:** o Mini-Boss / Boss / Chefe **sempre vem acompanhado de mobs** (a onda + o marco juntos).
+- **Do Elite (Corona) pra cima todos têm um modificador** (escudo/aura/algo diferente) — o "tem algo a mais" que diferencia do mob raso.
+
+## Os 7 Archons (degrau 7 — Chefe de Mapa dos Mapas ligados ao vazio)
+
+Os Archons preenchem o degrau de **Chefe de Mapa** dos Mapas ligados ao vazio (Map 2, Map 4 e Mapas abertos). **Não** são Harbingers — Harbinger é só degrau 6. Map 3 (Ashen King) e Map 5 (o próprio Nihel) ficam **de fora**: não servem a Nihel.
+
+**Receita de nome:** palavra real (qualquer idioma) + estilização leve — a mesma de "Nihel" (de *nihil*, latim para nada).
+
+| Nome | Subtítulo | Raiz real |
+|------|-----------|-----------|
+| **Kenoth**   | the First Hollow          | grego *kenón* — vácuo |
+| **Entropir**  | the Unmaking Choir        | grego *entropia* — desordem crescente |
+| **Umbrar**    | the Velvet Court          | latim *umbra* — sombra/eclipse |
+| **Nebulor**   | the Drowned Cartographer  | latim *nebula* — nuvem que engole estrelas |
+| **Cinerath**  | the Patient Flame         | latim *cinis* — cinza/brasa |
+| **Taciel**    | the Voiceless             | latim *tacitus* — silencioso |
+| **Speculor**  | the Last Mirror           | latim *speculum* — espelho |
+
+⏳ **Pendente (sem pressa):** origem dos Archons (nasceram com Nihel na Quebra, ou foram corrompidos/recrutados depois?) e qual Archon vai em qual Mapa — só decide quando os Mapas 2/4/abertos tiverem mais forma.
+
+## Regras gerais da pirâmide
+- **Tipo ≠ tier.** Os 5 tipos (Fragmented, Consumed, **The Harbingers**, Claimed, Cortices) são *sabores*; a pirâmide é o *poder*. Qualquer tipo ocupa vários degraus — **exceto The Harbingers**, que é sempre Boss de Área (degrau 6), de propósito.
+- **Duas linguagens de cor.** Luz (Fragmented/Consumed) sobe pela régua fria teal→azul→violeta (Ember→Lumen→Corona). Vazio (Cortices/Claimed) lê por escuridão/vermelho e ocupa a escada por força bruta — não acende.
+- **Recompensa escala com o degrau** (common → uncommon → awaken).
+- **The Harbingers = sempre Boss de Área (degrau 6)** — nunca outro degrau. Os **7 Archons** ficam um degrau acima (Chefe de Mapa, degrau 7) e **não são Harbingers**: são um roster próprio. *(Supersede a ideia antiga de "Archons = Eidola de vazio / Yaldabaoth no topo".)*
+- **Claimed e Cortices são tipos SEPARADOS** (sem fusão). Ranks internos do Claimed: **pausados** — não usar os nomes dos Qliphoth (Gamaliel/Samael/etc.; significado popular refutado como fonte primária).
+
+## Status: ESTRUTURA APROVADA (jun/2026 · nomes jul/2026)
+Os 8 degraus, a regra tipo≠tier, fluxo vs marco, cor=luz=poder, e as regras de spawn dos Marcos estão **aprovados**, junto do roster dos **7 Archons**, a separação Archon ≠ Harbinger, e Claimed/Cortices como tipos separados.
+
+**Travado na sessão de nomes (jul/2026):** tags de FLUXO Ember/Lumen/Corona (Common sem tag) · raridade mapeia na espécie (1–2 Fragmented, 3–4 Consumed) · Boss de Área "Eidola" → **The Harbingers** · princípio das duas linguagens de cor.
+
+**Faltam ainda (adiados de propósito):** Mini-Boss (degrau 5) parqueado · a "corte-vazio" (ranks Claimed Crowned/Court/Sworn + Cortices, com régua de vermelho) · thresholds de kill dos Marcos (medir em sim) · menu de modificadores · quantos Chefes de Mapa ao todo · revisar o roster de bosses do Map 1 + resolver o duplo-papel do Gilded Hollow.
+
+---
+---
+---
+
+# ✦ PARTE C — MAPAS
+
+## Estrutura geral
+
+**Foco atual: Mapas 1-3.** Os Mapas 4+ ficam **abertos** — o dono pode criar mais mapas antes do final. *Nil Aeternum + Nihel* são o **fim eventual** do jogo, mas o número do mapa NÃO está travado (pode haver vários mapas entre o 3 e o vazio).
+
+> 🌍 **PRINCÍPIO DE MUNDO:** os biomas de Éclats **NÃO obedecem à lógica do mundo real.** Uma terra inteira de relojoaria, um bioma de circo, geografias impossíveis — tudo pode existir, lado a lado. O que nunca aconteceria na realidade é natural aqui.
+
+| Mapa | Tema | Chefe de Mapa | Status |
+|------|------|---------------|--------|
+| **1** | Floresta (sonho/aurora) | a definir *(candidato: The Gilded Hollow)* | em jogo (9 áreas) |
+| **2** | Mesclado — Relojoaria + Circo dos Pesadelos | The Pale Reunion | **em design** |
+| **3** | Ruínas da civilização caída (era de Lumière) | **The Ashen King** (sub: Claimed Queen) | conceito |
+| **4** | Corte Claimed *(a definir)* | **The Claimed Queen** | conceito |
+| **…** | *(abertos — dono pode criar mais)* | — | — |
+| **Final** | *Nil Aeternum* — o reino do Nada | **Nihel** | lore fechada (número TBD) |
+
+---
+
+## MAPA 1 — A Floresta *(em jogo)*
+- **Geografia/Bioma:** floresta encantada, pântanos de lanterna, dossel enluarado, bosques submersos. Aurora, névoa dourada, luz que ainda sonha.
+- **História:** "onde o Seeker primeiro desperta." A área mais próxima do mundo civilizado; a luz aqui ainda é gentil.
+- **Filosofia:** o Map 1 é um **tutorial expandido** — ensina TODOS os sistemas (Gear, Lumens, Convergence, Passivas, Materiais, Promoções, Awaken, First Light).
+- **Mobs:** criaturas da floresta tocadas pela luz (Fragmented/Consumed), **sem rosto humano** (regra de arte).
+
+### Roster real das 9 áreas (fonte: `src/data.js`)
+
+| # | Área | Faixa de nível | Mobs (comuns) | Boss (Harbinger) |
+|---|------|----------------|---------------|------------------|
+| 1 | The Dreaming Wood | 1–80 | Candlewisp Shade · Mothlight Herald · Dreamhorn Warden | **The Waking Bloom** 🌸 |
+| 2 | The Lantern Mire | 81–350 | Mirelight Drifter · Candlewisp Shade · Mothlight Herald | **The Drowned Lantern** 🕯 |
+| 3 | The Whispering Hollows | 351–700 | Husklight Murmur · Dreamhorn Warden · Mirelight Drifter | **The Hollow Cantor** 🎶 |
+| 4 | The Moonlit Canopy | 701–1150 | Boughlight Creeper · Mothlight Herald · Husklight Murmur | **The Moonlit Sovereign** 👑 |
+| 5 | The Sunken Grove | 1151–1700 | Glasswater Wraith · Mirelight Drifter · Boughlight Creeper | **The Stillwater Maiden** 🪷 |
+| 6 | The Gilded Thicket | 1701–2350 | Thornlight Stalker · Candlewisp Shade · Glasswater Wraith | **The Bramble King** 🥀 |
+| 7 | The Hollow Cathedral | 2351–3150 | Hollowed Acolyte · Husklight Murmur · Thornlight Stalker | **The Gilded Confessor** ✝ |
+| 8 | The Weeping Roots | 3151–4050 | Rootbound Weeper · Thornlight Stalker · Hollowed Acolyte | **The Heartroot Mourner** 🩸 |
+| 9 | The Hollow Sanctum | 4051–5000 | Rootbound Weeper · Hollowed Acolyte · Thornlight Stalker | **The Gilded Hollow** 👁 *(também Chefe de Mapa)* |
+
+**Blurbs das áreas (in-game):**
+1. *The Dreaming Wood* — onde o Seeker primeiro desperta; auroras suaves pingam por galhos antigos, e aqui a luz ainda sonha.
+2. *The Lantern Mire* — um pântano afogado de lanternas trêmulas, onde almas Fragmented se perderam perseguindo a luz.
+3. *The Whispering Hollows* — árvores ocas que cantam a luz presa, seus murmúrios se enrolando sem fim pelo escuro.
+4. *The Moonlit Canopy* — o dossel alto, mais perto da aurora, onde mariposas e wardens vagam por um brilho pálido e inquieto.
+5. *The Sunken Grove* — um bosque alagado e espelhado — cada poça reflete a Névoa de volta ao Seeker.
+6. *The Gilded Thicket* — um emaranhado de espinhos onde a corrupção dourada sobe — linda, e completamente errada.
+7. *The Hollow Cathedral* — uma catedral feita de madeira viva, onde os Fragmented ajoelham e adoram a luz capturada.
+8. *The Weeping Roots* — as raízes profundas, onde a floresta sangra luz e chora tudo o que perdeu.
+9. *The Hollow Sanctum* — o coração da floresta — o clímax do Sonho, onde o Gilded Hollow espera no silêncio.
+
+- **Chefe de Mapa:** *a definir* (candidato lore: The Gilded Hollow). ⏳ **Nota:** a área 9 hoje acumula dois papéis (Boss de Área **e** Chefe de Mapa) — a resolver.
+
+---
+
+## MAPA 2 — Relojoaria + Circo dos Pesadelos *(em design)*
+**Dois biomas distintos, cada um com sua própria geografia** (não um lugar só). Uma terra de relojoaria e uma terra de circo, lado a lado, impossíveis e naturais em Éclats.
+
+### Metade X — A Relojoaria (bioma do tempo)
+- **Geografia/bioma:** uma terra feita de relojoaria — engrenagens gigantes como colinas, mostradores como luas, pêndulos, ampulhetas, paisagem de ouro e azul-noite.
+- **Mobs:** autômatos de relógio — **rosto = mostrador** (sem rosto humano ✔), criaturas de engrenagem, figuras-ampulheta. Tipo: Consumed/Fragmented mecanizados.
+- **Sub-boss (fim da metade X):** uma grande figura relojoeira (o cavalheiro com mostrador no rosto, corrente e ampulheta). *Nome a definir.*
+
+### Metade Y — O Circo dos Pesadelos (bioma do carnaval)
+- **Geografia/bioma:** uma terra-carnaval sombria — tendas que se estendem ao horizonte, picadeiros, luz de palco doente, máscaras.
+- **Mobs:** palhaços/arlequins mascarados — **máscara esconde o rosto** (sem rosto humano ✔), bonecos, performers torcidos. Tipo: Fragmented/Consumed do delírio.
+- **Chefe de Mapa (fim da metade Y):** **The Pale Reunion** (referência aprovada) — uma convergência incompleta: bela, serena e errada.
+
+> 💡 *Ideia solta (NÃO adotada):* um fio temático ligando os dois (negar o tempo / mascarar a dor). Por ora são dois biomas pela estética/geografia, sem significado forçado.
+> 🔧 A definir: nome do sub-boss; como/se há transição entre os biomas; quantas áreas cada metade tem.
+
+---
+
+## MAPA 3 — As Ruínas da Era de Lumière *(conceito)*
+- **Geografia/Bioma:** ruínas de uma civilização radiante caída — colunas que alcançavam o céu, agora quebradas; a primeira idade de ouro, soterrada.
+- **História:** aqui caiu a **primeira civilização**, a era de Lumière. O reino do Ashen King e da Claimed Queen. Ele ficou; ela partiu pro vazio.
+- **Mobs:** o que sobrou da corte e do povo — Fragmented/Consumed da era antiga, ecos de luz nas ruínas; possíveis Claimed (a influência da Rainha voltando).
+- **Sub-boss:** **The Claimed Queen** — aparece nas ruínas do reino, já como o que se tornou.
+- **Chefe de Mapa:** **The Ashen King** — o luto que se recusa a morrer, no coração das ruínas.
+
+---
+
+## MAPA 4 — A Corte Claimed *(conceito)*
+- **Boss:** **The Claimed Queen** (armadura negra ornamentada com fios dourados opacos, coroa de espinhos, **único brilho vermelho dos Maps 1–4** nos olhos, vaza escuridão). A esposa do Ashen King que ajoelhou para Nihel.
+- **Trio (art):** Fissure Stalker · Sundered Titan · Claimed Vanguard. Encontro raro: The Hollowed Pilgrim.
+
+---
+
+## MAPA 5 (Final) — Nil Aeternum *(lore fechada)*
+- **Bioma:** o território do Nada — lua permanentemente vermelha, nuvens carmesim, o rio que escorre do portão do castelo. **Sem dourado** (só Nihel sangra ouro aqui).
+- **A corte do Nada:** nos Maps 1–4 o jogador luta contra vítimas e corrompidos; no Map 5 enfrenta os que **escolheram** Nihel e foram recompensados com nobreza. Trio: **Pale Courtier · Crownless King · Crimson Wyrmlord**. Encontro raro: **The First Éclairé** (o primeiro membro da Ordre a alcançar o Nil Aeternum — viu Nihel e ajoelhou).
+- **Chefe de Mapa / do jogo:** **NIHEL, The Fracture** — silhueta negra alada com veias de luz dourada vazando (luz presa no vácuo), anel de luz quebrado como auréola partida, olhos branco-dourados, corvos orbitando, cidade morta em vermelho ao fundo. O anjo trágico.
+
+---
+
+## Pendências dos mapas
+- Total de Mapas + o que é exatamente o Mapa 4.
+- Mapa 1: confirmar/definir o Chefe de Mapa (e o duplo-papel do Gilded Hollow).
+- Mapa 2: nomes finais dos sub-bosses; transição entre os biomas; nº de áreas por metade.
+- Mobs específicos, sub-bosses e Harbingers de cada Mapa (fase de criação, com a pirâmide de poder).
+- Divisão temática do Map 1 em dois atos (proposta feita, não decidida).

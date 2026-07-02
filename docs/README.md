@@ -16,11 +16,13 @@ Documentação do Éclats of Lumière, organizada por pasta.
 - **`PROGRESSION_MAP1.md`** — progressão do Mapa 1.
 
 ## ⚖️ `balance/` — Balanceamento
-- **`BALANCE_AUDIT.md`**, **`BALANCE_REPORT_MAP1_V1.md`**, **`PRE_BALANCE_REVIEW_V2.md`**
+- **`PRE_BALANCE_REVIEW_V2.md`** — decisão do gate de Convergence por nível (vivo).
+- **`BALANCE_REPORT_MAP1_V1.md`** — ⚠️ histórico; só a §1 (pesquisa de alvos de gênero) segue como referência.
+
+> Auditorias antigas (BALANCE_AUDIT, PASSIVES_AUDIT, AUDIT_CONSISTENCY, FINAL_ARCHITECTURE_REVIEW) foram **removidas em jul/2026**: descreviam gerações anteriores do código e viraram fonte de confusão. Regra daqui pra frente: auditoria é um **LOG datado** — age-se sobre ela e apaga-se; só SPECs vivem.
 
 ## 🔍 `audits/` — Auditorias & Revisões
 - **`LORE_GAMEPLAY_AUDIT.md`** — cruza lore × gameplay implementado.
-- **`AUDIT_CONSISTENCY.md`**, **`PASSIVES_AUDIT.md`**, **`FINAL_ARCHITECTURE_REVIEW.md`**
 
 ## 🏛️ `project/` — Visão & Engine
 - **`CONSTITUICAO.md`** — visão e pilares do projeto.
